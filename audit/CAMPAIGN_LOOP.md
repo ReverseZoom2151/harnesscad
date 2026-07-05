@@ -27,7 +27,15 @@ with a `| Build idea | Status | Repository comparison |` table. Status is
    - checks the existing package inventory to avoid duplication;
    - implements every deterministic buildable idea as NEW files (distinctive
      names prefixed by the paper concept; do NOT edit existing files, any
-     `__init__.py`, or `pyproject.toml`);
+     `__init__.py`, or `pyproject.toml`). PLACE files in the most-fitting
+     package, NOT at the repo root (root is reserved for the core spine).
+     Topical homes: `programs/` (CAD-program analysis/review/commenting),
+     `generation/` (multi-agent/generation orchestration), `drawings/` (2D
+     drawings <-> 3D features, orthographic projection), `fabrication/`
+     (fabrication/manufacturing workflows), `numeric/` (math/sampling/ODE
+     primitives), plus existing `verifiers/ reliability/ quality/ surfaces/
+     dataengine/ datagen/ bench/ reconstruction/ ingest/ vision/ spec/
+     geometry/ exploration/ rag/ memory/` etc. by function;
    - adds `tests/test_<name>.py` (unittest, stdlib, deterministic) and iterates
      until green;
    - returns the `### N.` idea-table rows.
