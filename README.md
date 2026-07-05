@@ -2,280 +2,434 @@
 
 # HarnessCAD
 
-**A native agentic harness for engineering/mechanical text-to-CAD.**
+**A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-*The harness — not the model — is the product: verifier-first, frontier-model-native, kernel-agnostic.*
+![Tests](https://img.shields.io/badge/tests-159%20passing-brightgreen?style=flat-square)
+![Phase](https://img.shields.io/badge/phase-1%20minimal%20harness-blue?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+![Core: stdlib](https://img.shields.io/badge/core-stdlib--only-informational?style=flat-square)
 
-[![tests](https://img.shields.io/badge/tests-92%20passing-brightgreen)](tests/)
-[![status](https://img.shields.io/badge/status-phase--0-blue)](HARNESS_BLUEPRINT.md)
-[![python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![license](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
-[![core deps](https://img.shields.io/badge/core%20runtime-stdlib%20only-success)](pyproject.toml)
-[![LiteLLM](https://img.shields.io/badge/LLM-LiteLLM-6f42c1?logo=litellm&logoColor=white)](https://github.com/BerriAI/litellm)
-[![CadQuery](https://img.shields.io/badge/kernel-CadQuery-orange)](https://github.com/CadQuery/cadquery)
-[![OpenCASCADE](https://img.shields.io/badge/geometry-OpenCASCADE-red)](https://dev.opencascade.org/)
+![LiteLLM](https://img.shields.io/badge/LLM-LiteLLM-1A1A1A?style=flat-square)
+![CadQuery](https://img.shields.io/badge/kernel-CadQuery-F7A800?style=flat-square)
+![OpenCASCADE](https://img.shields.io/badge/geometry-OpenCASCADE-EE3524?style=flat-square)
+![Instructor](https://img.shields.io/badge/structured-Instructor-4B8BBE?style=flat-square)
 
 </div>
 
----
+HarnessCAD turns a natural-language design brief into a precise, *verified* sequence of
+parametric CAD operations. It is not a model and it is not a plugin: it is the
+**harness** around a frontier model — the loop, the typed op language, the plural
+geometry verifier, the event-sourced op history, and the kernel seam — that makes
+text-to-CAD reliable enough to trust. The core spine is pure Python standard library
+(no required dependencies); a real OpenCASCADE geometry kernel and a provider-agnostic
+LLM layer are opt-in extras.
 
-## What it is
+## About
 
-HarnessCAD is a from-scratch **agentic harness** for turning a natural-language
-engineering brief into precise, editable, *verified* parametric CAD. Its founding
-bet, argued in full in [`HARNESS_BLUEPRINT.md`](HARNESS_BLUEPRINT.md), is that in
-2026 the frontier model is no longer the bottleneck — **the loop around it is**.
-So the product is the harness:
+The thesis is simple and load-bearing: **the harness, not the model, is the product.**
+Frontier models can already emit CAD code; what they cannot do on their own is know
+whether the geometry they emitted is *right*. Structured output guarantees a tool call
+*parses* — it never guarantees the solid is manifold, the sketch is fully constrained,
+or the boolean did not null the body. The real safety net is always **external
+execution plus geometry checks**, never model self-confidence.
 
-- **Verifier-first.** CAD is a rare *verifiable-reward* domain: geometry compiles
-  or it doesn't, constraints solve or they don't, a solid is manifold or it isn't.
-  A deterministic verifier is simultaneously the **reward, the eval, and the
-  ceiling**. HarnessCAD is built around that verifier, not around model confidence
-  — *structured output ≠ correct output*, so nothing is trusted until geometry
-  checks pass.
-- **Frontier-model-native.** No fine-tuned house model required. The agent seam
-  takes any chat LLM (via [LiteLLM](https://github.com/BerriAI/litellm), ~100
-  providers) and the harness does the correction, verification and checkpointing
-  around it.
-- **Kernel-agnostic.** Every layer above the geometry kernel — ops, the ops-DAG,
-  verifiers, the loop — is pure Python with **zero required runtime dependencies**.
-  A backend turns an op stream into geometry behind one `GeometryBackend` protocol:
-  a dependency-free **stub** ships today, a **CadQuery/OCCT** backend produces real
-  B-rep solids, and a future Rust kernel (Fornjot / Truck / Cadmium) can be dropped
-  in behind the same interface.
+CAD is the rare, valuable setting where that safety net can be made rigorous: it is a
+**verifiable-reward domain**. Geometry compiles or it does not; constraints solve or
+they do not; dimensions, mass, and interference either match the spec or they do not.
+The deterministic verifier is simultaneously the reward, the eval, and the ceiling —
+so HarnessCAD is built **verifier-first**, around a verifier that is *plural* (several
+independent checks whose diagnostics feed back into the loop) rather than a single
+end-gate.
 
-## Why now
+The winning loop is already proven in coding agents. Aider's `edit -> compile -> run
+tests -> commit` maps one-to-one onto CAD:
 
-Both of the reference works this design distils — *The Hitchhiker's Guide to
-Agentic AI* and *Agentic Design Patterns* — independently name our exact situation
-("a product where the agent harness is a core differentiator") as the explicit
-trigger to **build custom** rather than adopt a framework. Frontier models in 2026
-can already emit competent CAD operations; what's missing is the disciplined loop
-that plans, executes against a real kernel, verifies geometry, and rolls back
-cleanly on failure. That loop is the constraint, and it is what HarnessCAD builds.
+| Coding agent (solved) | HarnessCAD |
+|---|---|
+| Edit a source file | **Emit a typed CISP op** (sketch, constrain, extrude, fillet, boolean) |
+| Compile | **Kernel regeneration** of the op stream |
+| Compile error | Regen failure (empty profile, failed boolean, over-constrained sketch) |
+| Run tests | **Geometry checks** (sketch DOF, manifold / watertight, solid presence) |
+| Observe the traceback | Read diagnostics + measurements |
+| Git commit on success | **Checkpoint the op-DAG** (deterministic replay + rollback) |
+
+HarnessCAD is **frontier-model-native** (bring any model through the LiteLLM seam;
+train nothing) and **kernel-agnostic**: everything above the `GeometryBackend` seam is
+pure logic, so the dependency-free stub, the CadQuery/OCCT kernel, and a future
+Rust-native kernel are interchangeable behind one interface.
 
 ## How it works
 
-The control loop is small and already proven in coding agents (Aider's
-`edit → compile → run tests → commit`). HarnessCAD maps that one-to-one onto CAD:
-
-| Coding agent (solved)      | HarnessCAD                                        |
-| -------------------------- | ------------------------------------------------- |
-| Edit a file                | **Emit a CISP op** (sketch / constrain / extrude) |
-| Compile                    | **Kernel regenerate** the feature tree            |
-| Run tests                  | **Verify geometry** (DOF, manifold, watertight)   |
-| Git commit on green        | **Checkpoint** the ops-DAG                         |
-| Read the traceback, retry  | **Read diagnostics, re-plan** (block-and-correct)  |
-
-Concretely, one turn of the loop is:
+Each op the agent emits goes through the same transactional cycle. An op the backend
+rejects (bad reference, non-positive radius, kernel exception) never mutates
+state — **block-and-correct**. An op that applies but fails a verifier is **rolled
+back** to the last good state. Only an accepted *and* verified op is checkpointed:
 
 ```
-Contract ─▶ plan ─▶ emit CISP op ─▶ regen ─▶ verify ─▶ checkpoint
-                       ▲                          │
-                       └──── diagnostics ◀────────┘   (block-and-correct)
+brief ──▶ planner ──▶ [op, op, op] ──▶ HarnessSession.apply_ops
+                ▲                              │
+                │                     ┌────────┴─────────┐
+                │                     ▼                  ▼   (per op)
+                │              backend.apply        block-and-correct
+                │                     │             (reject, no mutate)
+                │                     ▼
+                │              backend.regenerate
+                │                     ▼
+                │              verify (plural)  ──ERROR──▶ rollback last op
+                │                     │ ok
+                │                     ▼
+                │              checkpoint op-DAG
+                │                     │
+                └──── diagnostics ◀───┘  (re-plan until verified or max_iters)
 ```
 
-An op the backend rejects (bad reference, non-positive radius) **never mutates
-state**; the batch stops and returns diagnostics. An op that applies but fails the
-plural verifier (e.g. an over-constrained sketch) is **rolled back** to the last
-good state. Every accepted-and-verified op is checkpointed, giving deterministic
-replay and rollback to any point.
+The op-DAG is append-only and content-hashed: each node chains its parent's hash with
+the canonical JSON of its op, so an identical op sequence always produces an identical
+`digest`. That single invariant gives checkpoint, rollback, and deterministic replay
+for free.
 
 ## Architecture
 
+Every layer below is kernel-agnostic and LLM-agnostic until the seam that names
+otherwise. The from-scratch core is the middle band.
+
 ```
-  natural-language brief
-          │
-  ┌───────▼────────────────────────────────────────────────────┐
-  │  LLM seam            llm/  — provider-neutral (LiteLLM, mock) │
-  ├───────▼────────────────────────────────────────────────────┤
-  │  Agent / planner     agent/  — NL → validated CISP ops,      │
-  │                      plan → apply → observe → re-plan        │
-  ├───────▼────────────────────────────────────────────────────┤
-  │  Harness loop        loop.py — applyOps → regen → verify →   │
-  │                      checkpoint, block-and-correct, rollback │
-  ├───────▼────────────────────────────────────────────────────┤
-  │  Verifier (plural)   verify.py — sketch DOF · solid presence │
-  │                      checks_geometry.py — real B-rep validity │
-  ├───────▼────────────────────────────────────────────────────┤
-  │  Ops-DAG (state)     state/opdag.py — content-hashed,        │
-  │                      append-only "git for CAD"               │
-  ├───────▼────────────────────────────────────────────────────┤
-  │  GeometryBackend     backends/  — StubBackend (no deps)      │
-  │                      · CadQueryBackend (OCCT B-rep)          │
-  │                      · future Rust kernel (same protocol)    │
-  └───────▲────────────────────────────────────────────────────┘
-          │
-  CISP server (server.py) + CLI (cli.py) + trace (trace.py)
+┌──────────────────────────────────────────────────────────────────┐
+│  LLM seam        llm/  — Message · ToolSpec · CompletionResult    │  provider-neutral
+│                  LiteLLMClient (~100 providers)  ·  Instructor     │
+├──────────────────────────────────────────────────────────────────┤
+│  Build pipeline  pipeline.build — brief -> planner -> session ->  │  one-call end-to-end
+│                  verified geometry -> STEP  ·  cli.py build        │
+├──────────────────────────────────────────────────────────────────┤
+│  Agent           agent/  — Planner (NL brief -> validated ops)    │
+│                  runner.run (plan -> apply -> observe -> replan)   │
+├──────────────────────────────────────────────────────────────────┤
+│  Grounding       memory/  — MemoryStore (working/episodic/        │  skills grow only when
+│                  semantic/procedural) · Voyager-style SkillLibrary │  their geometry verifies
+├──────────────────────────────────────────────────────────────────┤
+│  Harness loop    loop.HarnessSession                              │  ← the from-scratch core
+│                  applyOps -> regen -> verify -> checkpoint         │
+│                  block-and-correct · transactional rollback        │
+├──────────────────────────────────────────────────────────────────┤
+│  Plural verifier verify.py — SketchConstraintCheck (DOF) ·        │  diagnostics feed
+│                  SolidPresenceCheck · BRepValidityCheck (topology) │  back into the loop
+│                  contract.ContractCheck · constraints.py (solver)  │
+├──────────────────────────────────────────────────────────────────┤
+│  Ops-DAG         state/opdag.py  — append-only, content-hashed    │  "git for CAD"
+│                  checkpoint · rollback · deterministic replay      │
+├──────────────────────────────────────────────────────────────────┤
+│  GeometryBackend backends/base.py  (swappable kernel seam)        │
+│    StubBackend (stdlib) · CadQueryBackend (OCCT) · future Rust    │
+├──────────────────────────────────────────────────────────────────┤
+│  CISP surface    cisp/ (typed ops + protocol) · server.py (stdio) │  LSP-inspired
+│                  cli.py · trace.py (event stream)                 │  JSON methods
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-The **CISP** surface (a compact, LSP-inspired protocol —
-`initialize / applyOps / query / verify / export`) is the stable JSON boundary the
-agent targets, so the geometry kernel underneath is swappable without touching the
-agent.
+`CISP` is the CAD Interaction / Sketch Protocol — an LSP-inspired vocabulary
+(`initialize` / `applyOps` / `query` / `verify` / `export`) over line-delimited JSON,
+so the same harness drops into an MCP server, a subprocess, or a stdio pipe unchanged.
+
+Four newer layers wrap that spine. **`pipeline.build`** (and `cli.py build`) is the
+single end-to-end entry point: brief -> planner -> `HarnessSession` -> verified
+geometry -> STEP. The **plural verifier** now runs three independent checks in the
+default set — `SketchConstraintCheck` (DOF), `SolidPresenceCheck`, and the real
+`BRepValidityCheck` (OCCT topology / manifold / watertight) — while `constraints.py`
+adds a genuine DOF model (`ConstraintGraph` rank analysis, plus an optional
+SolveSpace-backed `SolveSpaceSketch` real 2D solver) and `contract.py` adds an
+opt-in **Contract** acceptance spec (required dims + tolerances, volume/mass,
+feature counts, manifold/validity, named predicates) verified by `ContractCheck`.
+The **`memory/`** grounding layer holds the four memory types and a Voyager-style
+`SkillLibrary` that admits a skill only when its expanded ops verify. And
+**`bench/`** is CADBench-Verified — a SWE-bench-style eval that runs tasks through
+the same spine and scores editability, program execution, B-rep validity, and
+dimension match per difficulty.
 
 ## Quickstart
 
-No dependencies are required for the core spine (Python 3.10+, stdlib only).
+The core spine has **no dependencies** — clone and run. Python 3.10+.
 
-```bash
-git clone https://github.com/ReverseZoom2151/harnesscad
-cd harnesscad
+```sh
+git clone <repo> && cd harnesscad
+python cli.py demo                             # built-in constrained-plate -> extrude sample
+python -m unittest discover -s tests -t . -v   # the full suite (159 tests)
 ```
 
-### Build a constrained plate, then extrude it
+### Drive a session directly
+
+Build a plate and extrude it on the dependency-free stub backend. The stub is not
+geometry — it models the op *semantics* (DOF tracking, references, digests,
+deterministic replay) so the whole harness spine runs with nothing installed.
 
 ```python
 from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 from loop import HarnessSession
+from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 
 session = HarnessSession(StubBackend())
-
 result = session.apply_ops([
     NewSketch(plane="XY"),
-    AddRectangle(sketch="sk1", x=0, y=0, w=20, h=10),
-    Constrain(kind="distance", a="e1", value=20),   # pin the 4 DOF a
-    Constrain(kind="distance", a="e1", value=10),   # rectangle contributes
-    Constrain(kind="distance", a="e1", value=20),
-    Constrain(kind="distance", a="e1", value=10),
-    Extrude(sketch="sk1", distance=5),
+    AddRectangle(sketch="sk1", x=0.0, y=0.0, w=20.0, h=10.0),
+    Constrain(kind="distance", a="e1", value=20.0),
+    Constrain(kind="distance", a="e1", value=10.0),
+    Extrude(sketch="sk1", distance=5.0),
 ])
 
-print("ok:      ", result.ok)        # True
-print("applied: ", result.applied)   # 7
-print("digest:  ", result.digest)    # stable across identical replays
-print("summary: ", session.summary())
-# {'sketch_count': 1, 'entity_count': 1, 'feature_count': 1, 'solid_present': True}
+print("ok:", result.ok)            # -> ok: True
+print("applied:", result.applied)  # -> applied: 5
+print("digest:", result.digest)    # deterministic content hash of the model
+print("summary:", session.summary())
+# -> {'sketch_count': 1, 'entity_count': 1, 'feature_count': 1, 'solid_present': True}
 ```
 
-`apply_ops` returns an `ApplyOpsResult` — `ok`, `applied`, the deterministic
-`digest`, a list of `diagnostics`, and (on failure) the `rejected` op.
+Ids are assigned deterministically: sketches are `sk1, sk2, ...`, sketch entities are
+`e1, e2, ...`, features are `f1, f2, ...`. `apply_ops` returns an `ApplyOpsResult`
+(`ok`, `applied`, `digest`, `diagnostics`, `rejected`).
 
-### Block-and-correct in action
+### Close the agent loop
 
-Reference a sketch that has no profile and the offending op is rejected without
-corrupting state:
+Give the planner any `LLM` (a mock here; a live model in practice) and let the runner
+plan, apply, observe diagnostics, and re-plan until the model verifies:
 
 ```python
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, Extrude
+from llm.base import LLM, CompletionResult
+from agent.planner import Planner
+from agent.runner import run
 from loop import HarnessSession
+from backends.stub import StubBackend
+
+class MockLLM(LLM):
+    def complete(self, messages, tools=None, response_schema=None, **o):
+        return CompletionResult(text='''[
+          {"op": "new_sketch", "plane": "XY"},
+          {"op": "add_circle", "sketch": "sk1", "cx": 0, "cy": 0, "r": 8},
+          {"op": "extrude", "sketch": "sk1", "distance": 4}
+        ]''')
+    def stream(self, *a, **k):
+        yield ""
 
 session = HarnessSession(StubBackend())
-result = session.apply_ops([NewSketch(plane="XY"), Extrude(sketch="sk1", distance=5)])
-
-print(result.ok)        # False
-print(result.rejected)  # {'op': 'extrude', 'sketch': 'sk1', 'distance': 5}
-for d in result.diagnostics:
-    print(d.severity.value, d.code, d.message)
-    # error empty-sketch sketch 'sk1' has no profile
+result = run(session, Planner(MockLLM()), "a round boss 16mm across, 4mm tall")
+print("ok:", result.ok, "applied:", result.applied)   # -> ok: True applied: 3
 ```
 
-### From the command line
+To use a real model, swap in the LiteLLM backend (`pip install -e .[llm]`):
 
-The CLI drives a session end-to-end. `demo` runs the built-in constrained-plate
-sample; `apply` runs any JSON array of ops. Use `--backend cadquery` for real OCCT
-geometry (falls back to the stub with a note if CadQuery isn't installed).
-
-```bash
-python cli.py demo
-python cli.py apply examples/ops_plate.json
-python cli.py demo --backend cadquery
+```python
+from llm.litellm_backend import LiteLLMClient
+planner = Planner(LiteLLMClient(model="gpt-4o-mini", temperature=0.0))
 ```
 
-### Run the tests
+### Build from a brief
 
-```bash
-python -m unittest discover -s tests -t . -v
+`pipeline.build` is the single end-to-end entry point — brief -> LLM planner ->
+`HarnessSession` -> verified geometry -> STEP. Drive it from the CLI:
+
+```sh
+export ANTHROPIC_API_KEY=...                    # or OPENAI_API_KEY
+python cli.py build "an M6 clearance plate, 40x20x5mm" --out part.step
+python cli.py build "a round boss 16mm across, 4mm tall" --backend stub
+```
+
+`build` needs a provider key in the environment (`ANTHROPIC_API_KEY` or
+`OPENAI_API_KEY`); with neither set it exits with a clear, actionable error. The
+`--backend cadquery` default **falls back to the stub** when CadQuery is not
+installed (reported in a `note:` line), so the command always runs.
+
+In Python, inject any `LLM` (a mock here so the snippet runs with nothing installed;
+a live model in practice) and get a plain result dict back:
+
+```python
+from pipeline import build
+from llm.base import LLM, CompletionResult
+
+class MockLLM(LLM):
+    def complete(self, messages, tools=None, response_schema=None, **o):
+        return CompletionResult(text='''[
+          {"op": "new_sketch", "plane": "XY"},
+          {"op": "add_circle", "sketch": "sk1", "cx": 0, "cy": 0, "r": 8},
+          {"op": "extrude", "sketch": "sk1", "distance": 4}
+        ]''')
+    def stream(self, *a, **k):
+        yield ""
+
+result = build("a round boss 16mm across, 4mm tall", llm=MockLLM(), backend="stub")
+print("ok:", result["ok"], "applied:", result["applied"], "backend:", result["backend"])
+# -> ok: True applied: 3 backend: stub
+```
+
+Omit `llm=` and `build` constructs a lazy `LiteLLMClient` (built only on the first
+model call) using the environment key. The result dict carries `ok`, `applied`,
+`digest`, `diagnostics`, `summary`, the resolved `backend`, and the exported `step`
+text when `ok`.
+
+### The CLI
+
+```sh
+python cli.py demo                              # constrained-plate sample (stub)
+python cli.py apply examples/ops_plate.json     # run a JSON array of ops
+python cli.py apply examples/ops_plate.json --backend cadquery   # real OCCT solid
+python cli.py build "<brief>" --out part.step   # brief -> verified geometry (needs API key)
+```
+
+`cli.py apply` and `cli.py build` exit non-zero when the resulting model is not `ok`,
+so they compose in scripts and CI (`python cli.py apply plan.json && next-step`).
+
+### The CISP server
+
+The harness also speaks CISP over stdio — one JSON request per line, one response per
+line — for MCP / subprocess integration:
+
+```python
+from server import CISPServer
+
+server = CISPServer(backend="stub")   # or "cadquery"
+server.handle({"id": 1, "method": "initialize"})
+server.handle({"id": 2, "method": "applyOps", "params": {"ops": [
+    {"op": "new_sketch", "plane": "XY"},
+    {"op": "add_circle", "sketch": "sk1", "cx": 0, "cy": 0, "r": 5},
+    {"op": "extrude", "sketch": "sk1", "distance": 3},
+]}})
+# python server.py --backend stub        # or run it as a stdio loop
 ```
 
 ## The CISP op set (v0)
 
-The typed, agent-facing operations the model emits. Every op is a frozen dataclass
-with a stable `op` tag, so an op stream is deterministic, hashable and diffable —
-the substrate for the ops-DAG. Sketch + constraint ops come first *by design*: the
-wedge is sketch/constraint/layout assist, not one-shot solids.
+These are the *mutating* ops the agent emits; `measure` and `export` are queries handled
+by the backend, not the op log. Sketch and constraint ops come first by design — the
+wedge is sketch/constraint/layout assist, not one-shot solids. Each op is a frozen,
+hashable dataclass with a stable tag, which is what makes the op stream deterministic.
 
-| Op tag          | Class          | Purpose                                            |
-| --------------- | -------------- | -------------------------------------------------- |
-| `new_sketch`    | `NewSketch`    | Start a sketch on a plane (`XY` / `YZ` / `XZ`)      |
-| `add_point`     | `AddPoint`     | Add a point primitive to a sketch                  |
-| `add_line`      | `AddLine`      | Add a line segment                                 |
-| `add_circle`    | `AddCircle`    | Add a circle (radius must be > 0)                  |
-| `add_rectangle` | `AddRectangle` | Add a rectangle (w, h must be > 0)                 |
-| `constrain`     | `Constrain`    | Apply a geometric/dimensional constraint           |
-| `extrude`       | `Extrude`      | Extrude a sketch profile into a solid              |
-| `fillet`        | `Fillet`       | Fillet edges of the current solid                  |
-| `boolean`       | `Boolean`      | `union` / `cut` / `intersect` two solids           |
+| Op tag | Parameters | What it does |
+|--------|------------|--------------|
+| `new_sketch` | `plane` (`"XY"` / `"YZ"` / `"XZ"`) | Start a sketch on a datum plane |
+| `add_point` | `sketch, x, y` | Add a point (2 DOF) |
+| `add_line` | `sketch, x1, y1, x2, y2` | Add a line segment (4 DOF) |
+| `add_circle` | `sketch, cx, cy, r` | Add a circle (3 DOF); `r > 0` |
+| `add_rectangle` | `sketch, x, y, w, h` | Add a rectangle profile (4 DOF); `w, h > 0` |
+| `constrain` | `kind, a, b?, value?` | Apply a geometric/dimensional constraint, reducing sketch DOF |
+| `extrude` | `sketch, distance` | Extrude a closed profile into a solid; `distance != 0` |
+| `fillet` | `edges, radius` | Round edges of the current solid; `radius > 0` |
+| `boolean` | `kind` (`union` / `cut` / `intersect`), `target, tool` | Combine two solids |
 
-Constraint kinds: `coincident`, `horizontal`, `vertical`, `parallel`,
-`perpendicular`, `distance`, `radius`, `equal`. Dimensional kinds (`distance`,
-`radius`) require a numeric `value`. A sketch that ends over-constrained is an
-**error** (rolled back); under-constrained is a **warning**.
+Constraint kinds and the DOF each removes: `coincident` (2), `horizontal`, `vertical`,
+`parallel`, `perpendicular`, `distance`, `radius`, `equal` (1 each). Dimensional
+constraints (`distance`, `radius`) require a numeric `value`. A sketch that reaches
+0 remaining DOF is fully constrained; a negative DOF is over-constrained (an ERROR that
+gets rolled back), a positive DOF is under-constrained (a warning).
 
-## Layout
+## Dependencies / tech stack
+
+The **core spine is standard-library-only** — there is nothing to install to run the
+stub backend, the loop, the verifier, the op-DAG, the CLI, or the CISP server. Real
+geometry and live models are **opt-in extras**, imported lazily so the package loads
+even when they are absent. Install what you need:
+
+```sh
+pip install -e .                        # core only (stdlib)
+pip install -e .[cadquery]              # + real OCCT geometry backend
+pip install -e .[llm]                   # + provider-agnostic model access
+pip install -e .[constraints]           # + real 2D constraint solver (SolveSpace)
+pip install -e .[cadquery,llm,constraints]   # everything
+```
+
+| Dependency | Extra | How it's resolved / notes |
+|------------|-------|---------------------------|
+| [Python](https://www.python.org) 3.10+ | core | The whole spine is stdlib-only — zero required runtime dependencies |
+| [CadQuery](https://github.com/CadQuery/cadquery) | `cadquery` | The real-geometry `GeometryBackend`; imported lazily, so the module loads without it |
+| [OpenCASCADE](https://dev.opencascade.org) (OCCT) | `cadquery` | The B-rep kernel under CadQuery (via `cadquery-ocp`); powers real solids, validity checks, and STEP/STL export |
+| [LiteLLM](https://github.com/BerriAI/litellm) | `llm` | One call shape across ~100 providers behind the vendor-neutral `LLM` seam; lazy import |
+| [Instructor](https://github.com/jxnl/instructor) | `llm` | Optional structured-output coaxing; the harness falls back to plain JSON + `parse_op` when absent |
+| [python-solvespace](https://github.com/KmolYuan/solvespace) | `constraints` | Real 2D sketch constraint solver (SolveSpace) behind `constraints.SolveSpaceSketch`; imported lazily. The stdlib `ConstraintGraph` rank-based DOF analysis needs nothing installed |
+
+The kernel is deliberately behind a seam (`backends/base.py`): the same op stream runs
+on the stub, on CadQuery/OCCT, or on a future Rust-native kernel (Fornjot / Truck /
+Cadmium) with no change above the backend.
+
+## Project structure
 
 ```
 harnesscad/
-├── cisp/                    # CISP typed op set + result protocol
-│   ├── ops.py               #   the v0 ops (frozen dataclasses, canonical JSON)
-│   └── protocol.py          #   ApplyOpsResult { ok, applied, digest, diagnostics }
+├── cli.py                  # CLI: `demo`, `apply <ops.json>`, `build "<brief>"` (--backend stub|cadquery)
+├── pipeline.py             # build() — brief -> planner -> session -> verified geometry -> STEP
+├── server.py               # CISPServer: initialize/applyOps/query/verify/export over stdio
+├── loop.py                 # HarnessSession — the applyOps->regen->verify->checkpoint spine
+├── verify.py               # plural verifier: SketchConstraintCheck, SolidPresenceCheck, BRepValidity
+├── checks_geometry.py      # BRepValidityCheck — real OCCT topology check (manifold/watertight)
+├── constraints.py          # 2D DOF: ConstraintGraph (rank analysis) + SolveSpaceSketch (real solver)
+├── contract.py             # Contract acceptance spec + ContractCheck verifier (dims/mass/topology)
+├── trace.py                # observability: typed event stream (Null/InMemory/Jsonl tracers)
+├── cisp/
+│   ├── ops.py              #   the v0 CISP op set (frozen dataclasses) + parse/canonical JSON
+│   └── protocol.py         #   ApplyOpsResult — the shape the agent sees back
 ├── state/
-│   └── opdag.py             # content-hashed append-only ops-DAG ("git for CAD")
+│   └── opdag.py            #   ops-DAG: append-only, content-hashed history ("git for CAD")
 ├── backends/
-│   ├── base.py              # GeometryBackend protocol + ApplyResult
-│   ├── stub.py              # dependency-free backend (op semantics, no geometry)
-│   └── cadquery_backend.py  # real B-rep solids via CadQuery / OCCT
-├── verify.py                # plural verifier: sketch DOF, solid presence
-├── checks_geometry.py       # real OCCT B-rep validity check (manifold/watertight)
-├── loop.py                  # HarnessSession: applyOps → regen → verify → checkpoint
-├── agent/                   # NL → ops planner + plan/apply/observe/re-plan runner
-├── llm/                     # provider-neutral LLM seam (LiteLLM backend, structured)
-├── server.py                # CISP stdio server (initialize/applyOps/query/verify/export)
-├── cli.py                   # command-line driver (demo / apply)
-├── trace.py                 # structured observability events off the loop spine
-├── examples/                # sample op streams (ops_plate.json)
-├── tests/                   # unittest suite (77 tests)
-├── HARNESS_BLUEPRINT.md     # the founding design doc
-└── pyproject.toml
+│   ├── base.py             #   GeometryBackend protocol (the swappable kernel seam)
+│   ├── stub.py             #   StubBackend — dependency-free op semantics
+│   └── cadquery_backend.py #   CadQueryBackend — real OCCT B-rep solids
+├── llm/
+│   ├── base.py             #   the provider seam: Message, ToolSpec, CompletionResult, LLM
+│   ├── litellm_backend.py  #   LiteLLMClient — ~100 providers behind the seam
+│   └── structured.py       #   response -> validated ops (with re-promptable error strings)
+├── agent/
+│   ├── system_prompt.py    #   role + op vocabulary (generated from cisp.ops, never drifts)
+│   ├── planner.py          #   Planner — NL brief -> validated CISP ops
+│   └── runner.py           #   plan -> apply -> observe -> replan correction loop
+├── memory/
+│   ├── store.py            #   MemoryStore — working/episodic/semantic/procedural memory
+│   └── skills.py           #   SkillLibrary — Voyager-style, execution-verified skill templates
+├── bench/
+│   ├── task.py             #   CADBench-Verified Task schema (spec + reference ops + acceptance)
+│   ├── runner.py           #   run_task / run_suite over the HarnessSession spine
+│   └── metrics.py          #   editability, program-execution, B-rep validity, dimension match
+├── examples/
+│   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
+│   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
+├── tests/                  # 159 unittest tests across every module
+├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
+└── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
 
-> Research and reference material (PDFs, corpus notes) lives under `resources/`,
-> which is **gitignored** and not part of the product.
+Research and reference material lives under a gitignored `resources/` directory and is
+never committed — it is not part of the product.
 
 ## Roadmap
 
-HarnessCAD follows the staged plan in the blueprint. Phase 0 is the spine that
-exists today; later phases are in progress or planned.
+The staged plan from [HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md). Phase 0/1 and the
+first slices of the kernel and LLM layers are in place; the rest is sequenced behind
+them.
 
-- **Phase 0 — foundations** ✅ — the deterministic verifier and Contract-shaped
-  result schema (reward + eval + ceiling), CISP typed ops, event-sourced ops-DAG.
-- **Phase 1 — minimal harness** ✅ — the Aider loop: typed ops → kernel regen →
-  geometry checks → checkpoint, single agent, block-and-correct, rollback.
-- **Real geometry backend** — CadQuery/OCCT backend (present) producing real B-rep
-  solids with true manifold/watertight validity; **planned**: a real 2D constraint
-  solver (planegcs / SolveSpace) to replace the nominal DOF bookkeeping.
-- **LLM planner** — provider-neutral seam + NL→ops planner and correction runner
-  (present); **planned**: grammar-constrained decoding and Best-of-N + verifier.
-- **Phase 2 — grounding** *(planned)* — context manager, episodic/semantic/
-  procedural memory, an execution-verified skill library, structure-aware RAG.
-- **Phase 3 — reliability** *(planned)* — Reflexion loop, `before_tool_callback`
-  guardrails, the full error-recovery ladder.
-- **Phase 4 — measurement** *(planned)* — **CADBench-Verified**: a SWE-bench-style,
-  contamination-controlled eval (spec → agent builds part → programmatic checker),
-  plus full trajectory logging and replay tooling.
-- **Phase 5 — scale** *(planned)* — multi-agent (Verifier / DFM / Red-Team),
-  variant exploration, a canvas UI over typed SSE events.
-- **Future kernel** *(planned)* — a Rust-native geometry backend behind the same
-  `GeometryBackend` protocol.
+**Done**
+
+- Phase 0 — the deterministic verifier and the result/diagnostic schema (reward + eval + ceiling).
+- Phase 1 — the minimal harness: typed ops, kernel regen, plural verification, checkpoint/rollback, an event-sourced op-DAG, and the single-agent plan/apply/observe/replan loop.
+- The `GeometryBackend` seam with a dependency-free stub **and** a real CadQuery/OCCT backend (real B-rep solids, validity checks, STEP/STL export).
+- The vendor-neutral LLM layer (LiteLLM backend + structured-output funnel) and the CISP stdio server + CLI.
+- The **end-to-end build pipeline** (`pipeline.build`) and its `cli.py build` front door: brief -> planner -> session -> verified geometry -> STEP.
+- The **Contract** layer — a machine-verifiable acceptance spec (required dims + tolerances, volume/mass, feature counts, manifold/validity, named predicates) verified by `ContractCheck`.
+- A real **2D constraint solver**: the stdlib `ConstraintGraph` rank-based DOF analysis plus the optional SolveSpace-backed `SolveSpaceSketch`, replacing the nominal DOF placeholder. B-rep validity is now in the default verifier set.
+- Phase 2 grounding (first slice): `MemoryStore` (working/episodic/semantic/procedural) and a Voyager-style, execution-verified **skill library**.
+- **CADBench-Verified**: a SWE-bench-style, programmatically-checked eval harness (sketch editability, program execution, B-rep validity, dimension match) over the harness spine, with easy/medium/hard task files.
+
+**In progress / planned**
+
+- Phase 2 (remainder) — hybrid **RAG grounding** over standards and API docs, and a richer context manager.
+- Phase 3 — reliability: Best-of-N + verifier, a Reflexion loop, `before_tool_callback` guardrails, and the full error-recovery ladder.
+- A **VLM-judge** verifier and assembly-mate checks to broaden the plural verifier beyond geometry/topology.
+- Phase 5 — scale: **multi-agent orchestration** (Designer / Verifier / DFM Critic / Red Team), variant exploration with Elo ranking, and the canvas UI.
+- A **data flywheel** — trajectory logging turned into a curated dataset for training/fine-tuning.
+- A **Rust-native kernel** (Fornjot / Truck / Cadmium) dropped in behind the existing `GeometryBackend` seam.
 
 ## Design doc
 
-The authoritative thesis, architecture, decisions and sequencing live in
-**[`HARNESS_BLUEPRINT.md`](HARNESS_BLUEPRINT.md)** — the north star this codebase
-is built to.
+The full thesis, layered architecture, verification strategy, and open decisions are in
+[HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md) — the north star this codebase is built
+toward.
 
 ## License
 
 MIT.
+</content>
+</invoke>
