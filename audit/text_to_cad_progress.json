@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 20,
-  "next_manifest_index": 21,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-20 implemented",
+  "reviewed_count": 25,
+  "next_manifest_index": 26,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-25 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -104,6 +104,31 @@
     {
       "index": 20,
       "paper": "CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 21,
+      "paper": "CAD Shape Grammar- Procedural Generation for Massive CAD Model.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 22,
+      "paper": "CAD(Block) - Photorealistic 3D Generation via Adversarial Distillation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 23,
+      "paper": "CAD-Assistant - Tool-Augmented VLLMs as Generic CAD Task Solvers.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 24,
+      "paper": "CAD-Coder - An Open-Source Vision-Language Model for Computer-Aided Design Code Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 25,
+      "paper": "CAD-Coder - Text-Guided CAD Files Code Generation.md",
       "status": "reviewed"
     }
   ]

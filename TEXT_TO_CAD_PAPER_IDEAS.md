@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 20 / 186 papers reviewed.
+Status: 25 / 186 papers reviewed.
 
 Classifications:
 
@@ -502,3 +502,103 @@ multi-task behavior.
 All deterministic and locally testable ideas from papers 16–20 are implemented.
 Paper 19 is retained as an audited acronym false positive with only defensible
 cross-domain infrastructure transferred.
+
+## Batch 5 — papers 21–25
+
+### 21. CAD Shape Grammar — Procedural Generation for Massive CAD Model
+
+Source: `CAD Shape Grammar- Procedural Generation for Massive CAD Model.md`
+
+Core mechanism: compact recursive parametric productions, inherited transform
+and material state, lazy visible-branch expansion, template instancing and
+compression for scenes containing millions of repeated CAD objects.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Seeded parameterized productions, inheritance and bounded derivation | **implemented** | `procedural/shape_grammar.py` |
+| Lazy branch expansion, culling and instance batching | **implemented** | `procedural/lazy_scene.py` |
+| Linear/radial/grid/pipe pattern transforms | **implemented** | `procedural/cad_patterns.py` |
+| Grammar compression, reuse and rule-coverage metrics | **implemented** | `quality/grammar_compression.py` |
+| GPU-resident generation/rendering and plant-scale datasets | **external** | requires specialized renderer, data and benchmark hardware |
+
+### 22. CAD(Block) — Photorealistic 3D Generation via Adversarial Distillation
+
+Source: `CAD(Block) - Photorealistic 3D Generation via Adversarial Distillation.md`
+
+Core transferable mechanism: prune weak camera evidence, preserve multiview
+geometry through an appearance upscaling stage, cache immutable priors, and
+evaluate view quality, diversity and angular consistency separately.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Geometry/semantic camera pruning with coverage fallback | **implemented** | `quality/camera_pruning.py` |
+| Pairwise multiview consistency and outlier localization | **implemented** | `quality/multiview_consistency.py` |
+| Raw/upscaled appearance-vs-geometry quality gate | **implemented** | `quality/render_stages.py` |
+| Content-addressed prompt/camera/refiner prior cache | **implemented** | `dataengine/prior_cache.py` |
+| Render-distribution quality/diversity/coverage summary | **implemented** | `bench/render_distribution.py` |
+| StyleGAN/triplane/GAN/diffusion distillation and neural rendering | **research-heavy** | requires models, GPUs and multi-day training |
+
+### 23. CAD-Assistant — Tool-Augmented VLLMs as Generic CAD Task Solvers
+
+Source: `CAD-Assistant - Tool-Augmented VLLMs as Generic CAD Task Solvers.md`
+
+Core mechanism: iteratively plan, execute tools and replan from digest-bound
+visual/structured observations; retrieve only relevant tool documentation;
+ground sketch JSON in primitive-ID overlays; measure solver impact, tool use,
+QA evidence and task cost.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Verifier-gated termination and atomic CAD observations | **implemented** | `agent/termination.py`, `agent/cad_observation.py` |
+| Tool retrieval recall/budget and trajectory validity metrics | **implemented** | `bench/tool_retrieval.py`, `bench/tool_trajectory.py` |
+| Over-parameterized sketch schema and primitive-ID overlay | **implemented** | `quality/sketch_serialization.py`, `surfaces/id_overlay.py` |
+| Constraint movement/DOF impact and analytic cross-sections | **implemented** | `quality/constraint_impact.py`, `ingest/cross_section.py` |
+| Grounded QA, sketch PF1/CF1 and provider-cost reports | **implemented** | `bench/cad_qa.py`, `bench/sketch_metrics.py`, `bench/agent_cost.py` |
+| Learned sketch/scan recognizers and FreeCAD host | **external** | require model weights and installed FreeCAD |
+| Arbitrary planner-authored Python | **rejected** | typed CISP/MCP execution is safer and more auditable |
+
+### 24. CAD-Coder — An Open-Source Vision-Language Model for Computer-Aided Design Code Generation
+
+Source:
+`CAD-Coder - An Open-Source Vision-Language Model for Computer-Aided Design Code Generation.md`
+
+Core transferable mechanism: deterministic editable code emission, immutable
+image/code manifests, explicit complexity/overflow handling, static execution
+safety, inertia-normalized geometry alignment, conditioning robustness and
+capability-retention evaluation.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Restricted typed-op→CadQuery code emitter and AST normalization | **implemented** | `datagen/cadquery_codegen.py`, `quality/cad_code_normalize.py` |
+| Image/code and generation provenance manifests | **implemented** | `datagen/image_code_manifest.py`, `dataengine/generation_manifest.py` |
+| Code complexity balance and no-silent-truncation contract | **implemented** | `dataengine/code_complexity.py`, `llm/generation_contract.py` |
+| Static code safety/VSR and injected solid-IoU alignment | **implemented** | `bench/code_execution.py`, `bench/solid_iou.py` |
+| Image-conditioning and capability-retention benchmarks | **implemented** | `bench/image_conditioning.py`, `bench/capability_retention.py` |
+| LLaVA/CAD-Coder fine-tuning and real-photo corpus | **research-heavy** | requires datasets, weights, H100-class compute and physical capture |
+
+### 25. CAD-Coder — Text-Guided CAD Files Code Generation
+
+Source: `CAD-Coder - Text-Guided CAD Files Code Generation.md`
+
+Core mechanism: generate editable DXF through standardized source programs,
+legal family-specific parameter sweeps and intent comments; evaluate safe AST
+structure, parameters, drafting annotations, unbiased pass-at-K, geometry and
+cross-platform evidence.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Neutral DXF entities/layers/units/annotation contracts | **implemented** | `formats/dxf_contract.py` |
+| Typed dimension/tolerance/chamfer/roughness annotations | **implemented** | `cisp/annotations.py` |
+| Seeded legal parent-script family generation and replay | **implemented** | `datagen/script_family.py` |
+| Intent-comment ambiguity lint and inheritance | **implemented** | `datagen/code_comments.py` |
+| Safe AST function/parameter/annotation metrics and unbiased pass-at-K | **implemented** | `bench/code_metrics.py`, `bench/code_passk.py` |
+| Geometry distance and evidence-only cross-platform matrix | **implemented** | `bench/geometry_distance.py`, `bench/cross_platform.py` |
+| Prompt/script/artifact lineage and paired ablations | **implemented** | `dataengine/cfsc_record.py`, `research/ablation_matrix.py` |
+| ezdxf and commercial-platform compatibility | **external** | adapters and licensed hosts are required for real claims |
+| LoRA/RL training and the 29K artifact corpus | **research-heavy** | requires model training, curated data and GPU compute |
+
+## Batch-5 implementation result
+
+All deterministic and locally testable findings from papers 21–25 are
+implemented. Unsafe arbitrary code execution is explicitly rejected, and
+external/model-dependent claims remain behind typed seams.
