@@ -8,7 +8,8 @@ real geometric :class:`SolveSpaceSketch` solver.
 import unittest
 
 from constraints import (
-    ConstraintGraph, SketchStatus, SolveSpaceSketch, solvespace_available,
+    ConstraintGraph, ConstraintRef, RelaxationResult, SketchStatus,
+    SolveSpaceSketch, solvespace_available,
 )
 
 
@@ -95,6 +96,137 @@ class TestConstraintGraphClassification(unittest.TestCase):
         self.assertEqual(a.effective_removed, 4)
         self.assertEqual(a.redundant_dof, 0)
         self.assertIs(a.status, SketchStatus.WELL)
+
+
+class TestRelaxation(unittest.TestCase):
+    """Graceful relaxation fallback (best-effort resolution over the graph)."""
+
+    @staticmethod
+    def _rebuild_without(builder, drop_indices):
+        """Rebuild a fresh graph from ``builder`` skipping the given constraint
+        indices, so a drop suggestion can be *applied* and re-classified."""
+        drop = set(drop_indices)
+        g = ConstraintGraph()
+        for eid, kind in builder["entities"]:
+            g.add_entity(eid, kind)
+        for i, (kind, a, b, value) in enumerate(builder["constraints"]):
+            if i in drop:
+                continue
+            g.add_constraint(kind, a, b, value)
+        return g
+
+    def test_over_constrained_reports_conflict_and_drop_restores_well(self):
+        entities = [("e1", "rectangle")]
+        constraints = [("distance", "e1", None, 1.0) for _ in range(5)]  # 1 too many
+        g = ConstraintGraph()
+        for eid, kind in entities:
+            g.add_entity(eid, kind)
+        for kind, a, b, value in constraints:
+            g.add_constraint(kind, a, b, value)
+
+        rr = g.relax()
+        self.assertIsInstance(rr, RelaxationResult)
+        self.assertIs(rr.status, SketchStatus.OVER)
+        self.assertFalse(rr.feasible)
+        self.assertEqual(rr.residual, 1.0)              # one redundant DOF
+        # non-empty conflict set + a non-empty drop suggestion
+        self.assertTrue(rr.conflicting_constraints)
+        self.assertTrue(rr.dropped_suggestions)
+        self.assertTrue(all(isinstance(r, ConstraintRef) for r in rr.conflicting_constraints))
+
+        # applying the drop suggestion restores well-constrained status
+        repaired = self._rebuild_without(
+            {"entities": entities, "constraints": constraints},
+            rr.dropped_indices,
+        )
+        self.assertIs(repaired.analyze().status, SketchStatus.WELL)
+
+    def test_conflicts_shortcut_matches_relax(self):
+        g = ConstraintGraph()
+        g.add_entity("e1", "rectangle")
+        for _ in range(6):
+            g.add_constraint("distance", "e1", value=1.0)
+        self.assertEqual(
+            [r.index for r in g.conflicts()],
+            g.relax().conflict_indices,
+        )
+        self.assertTrue(g.conflicts())
+
+    def test_redundancy_hidden_by_free_entity_still_flags_conflict(self):
+        # p2 keeps net DOF positive, but p1 is over-constrained -> still OVER,
+        # and the drop suggestion, once applied, must remove the conflict.
+        entities = [("p1", "point"), ("p2", "point")]
+        constraints = [("distance", "p1", None, 1.0) for _ in range(3)]  # p1 has 2 DOF
+        g = ConstraintGraph()
+        for eid, kind in entities:
+            g.add_entity(eid, kind)
+        for kind, a, b, value in constraints:
+            g.add_constraint(kind, a, b, value)
+
+        rr = g.relax()
+        self.assertIs(rr.status, SketchStatus.OVER)
+        self.assertFalse(rr.feasible)
+        self.assertTrue(rr.dropped_suggestions)
+        repaired = self._rebuild_without(
+            {"entities": entities, "constraints": constraints},
+            rr.dropped_indices,
+        )
+        self.assertIsNot(repaired.analyze().status, SketchStatus.OVER)
+
+    def test_under_constrained_reports_free_dof_and_unpinned(self):
+        g = ConstraintGraph()
+        g.add_entity("e1", "rectangle")     # 4 DOF
+        g.add_entity("p1", "point")         # 2 DOF, never constrained
+        g.add_constraint("distance", "e1", value=1.0)   # binds 1 of e1
+
+        rr = g.relax()
+        self.assertIs(rr.status, SketchStatus.UNDER)
+        self.assertTrue(rr.feasible)                    # a placement still exists
+        self.assertEqual(rr.residual, 0.0)              # no conflict
+        self.assertFalse(rr.conflicting_constraints)
+        self.assertFalse(rr.dropped_suggestions)
+        self.assertEqual(rr.free_dof, 5)                # 3 left on e1 + 2 on p1
+        # both entities still have slack -> both unpinned
+        self.assertEqual(rr.unpinned_entities, ["e1", "p1"])
+
+    def test_well_constrained_is_feasible_with_empty_conflict(self):
+        g = ConstraintGraph()
+        g.add_entity("e1", "rectangle")
+        for _ in range(4):
+            g.add_constraint("distance", "e1", value=1.0)
+
+        rr = g.relax()
+        self.assertIs(rr.status, SketchStatus.WELL)
+        self.assertTrue(rr.feasible)
+        self.assertEqual(rr.residual, 0.0)
+        self.assertEqual(rr.conflicting_constraints, [])
+        self.assertEqual(rr.dropped_suggestions, [])
+        self.assertEqual(rr.free_dof, 0)
+        self.assertEqual(rr.unpinned_entities, [])
+
+    def test_analyze_relax_attaches_relaxation_and_preserves_core(self):
+        g = ConstraintGraph()
+        g.add_entity("e1", "rectangle")
+        for _ in range(5):
+            g.add_constraint("distance", "e1", value=1.0)
+
+        plain = g.analyze()
+        rich = g.analyze(relax=True)
+        # core classification is identical; relax=False carries no relaxation.
+        self.assertIsNone(plain.relaxation)
+        self.assertEqual(plain.status, rich.status)
+        self.assertEqual(plain.residual_dof, rich.residual_dof)
+        self.assertEqual(plain.redundant_dof, rich.redundant_dof)
+        self.assertIsInstance(rich.relaxation, RelaxationResult)
+        self.assertFalse(rich.relaxation.feasible)
+        self.assertTrue(rich.relaxation.conflicting_constraints)
+
+    def test_empty_sketch_is_feasible(self):
+        rr = ConstraintGraph().relax()
+        self.assertIs(rr.status, SketchStatus.EMPTY)
+        self.assertTrue(rr.feasible)
+        self.assertEqual(rr.conflicting_constraints, [])
+        self.assertEqual(rr.unpinned_entities, [])
 
 
 @unittest.skipUnless(HAVE_SOLVESPACE, "python-solvespace extra not installed")
