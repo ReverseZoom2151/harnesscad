@@ -1130,3 +1130,59 @@ All deterministic and in-scope findings from papers 66-70 are implemented
 (DeepCAD built modestly since earlier batches covered its metrics; the
 diffusion/generation papers kept only their deterministic scaffolding).
 Suite: 2929 tests, all passing. All modules placed in packages, not root.
+
+### 71. Draw It Like Euclid — Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Ruler-and-compass construction engine (entities, primitives, line/circle intersections, ~15 atomic construction steps) | **implemented** | `geometry/euclid_construction.py` |
+| Construction-step DSL + quantization + tokenizer/detokenizer | **implemented** | `geometry/euclid_dsl.py` |
+| Construction-sequence -> CAD profile replay compiler | **implemented** | `geometry/euclid_compiler.py` |
+| Constructibility/validity checker + profile-validity + construction-accuracy metrics | **implemented** | `geometry/euclid_validity.py` |
+| Learned autoregressive transformer + RL fine-tuning + OCCT/ABC dataset extraction | **research-heavy/external** | trained model / kernel / dataset |
+
+### 72. DreamCAD — Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Rational Bezier curve/surface evaluation (Bernstein + derivatives, de Casteljau, weighted control grids, normals) | **implemented** | `geometry/dreamcad_rational_bezier.py` |
+| Differentiable tessellation (uv sampling -> quads -> triangles, multi-patch welding, C0 continuity) | **implemented** | `geometry/dreamcad_tessellation.py` |
+| Analytic CAD primitives (plane/cylinder/cone/sphere/torus) | **implemented** | `geometry/dreamcad_primitives.py` |
+| Surface point-sampling + Chamfer/Hausdorff/consistency metrics | **implemented** | `geometry/dreamcad_metrics.py` |
+| Multi-modal condition-encoding schema | **implemented** | `reconstruction/dreamcad_condition_schema.py` |
+| Learned VAE/SLAT + flow-matching generation + DINOv2/PointNet++ encoders | **research-heavy/external** | trained models |
+
+### 73. E3D-Bench — A Benchmark for End-to-End 3D Geometric Foundation Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Umeyama Sim(3)/SE(3) alignment + stdlib linear-algebra core (Jacobi eigensolver, 3x3 SVD) | **implemented** | `geometry/e3dbench_umeyama.py` |
+| Depth metrics (AbsRel, delta-threshold inlier ratios, median scaling) | **implemented** | `bench/e3dbench_depth_metrics.py` |
+| Camera-pose metrics (geodesic rotation error, ATE, RPE-trans/rot) | **implemented** | `bench/e3dbench_pose_metrics.py` |
+| Point-map metrics (accuracy, completeness, Chamfer-L1, threshold F-score, normal consistency) | **implemented** | `bench/e3dbench_pointmap_metrics.py` |
+| Per-scene-normalized cross-scene leaderboard harness | **implemented** | `bench/e3dbench_harness.py` |
+| The 16 GFM models + latency/GPU benchmarking | **out-of-scope / external** | trained foundation models / hardware |
+
+### 74. EnzymeCAGE — A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Ranked-retrieval quality metrics (DCG/NDCG, MRR, success-rate@k, enrichment factor) | **implemented** | `bench/ranked_retrieval_metrics.py` |
+| Enzyme/pocket GNN encoders, reaction fingerprints, biochemistry data pipeline | **out-of-scope** | molecular biology; no CAD transfer |
+
+### 75. Error Notebook-Guided, Training-Free Part Retrieval in 3D CAD Assemblies via Vision-Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Error-notebook corrective memory (entry schema + append-only store + leak-safe recall + few-shot rendering + JSON persistence) | **implemented** | `memory/errornotebook_store.py` |
+| Grammar-constraint verifier (strict/relaxed final-answer extraction, corrected-trajectory assembly) | **implemented** | `reliability/errornotebook_gc.py` |
+| Training-free re-ranking policy consulting the notebook | **implemented** | `rag/partretr_rerank.py` |
+| Part-retrieval eval harness (exact-set accuracy, recall/precision/F1, recall@k, MRR, difficulty buckets) | **implemented** | `bench/partretr_eval.py` |
+| VLM part-description/retrieval/correction inference + Fusion 360 dataset | **research-heavy/external** | learned VLM / proprietary data |
+
+## Batch-15 implementation result
+
+All deterministic and in-scope findings from papers 71-75 are implemented
+(EnzymeCAGE is biochemistry -- only its ranked-retrieval metrics kept;
+the text-to-3D/mesh/foundation-model papers kept only their deterministic
+geometry/metric primitives). Suite: 3124 tests, all passing.

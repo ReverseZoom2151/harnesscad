@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 70,
-  "next_manifest_index": 71,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-70 implemented",
+  "reviewed_count": 75,
+  "next_manifest_index": 76,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-75 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -354,6 +354,31 @@
     {
       "index": 70,
       "paper": "Don't Mesh with Me - Generating Constructive Solid Geometry Instead of Meshes by Fine-Tuning a Code-Generation LLM.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 71,
+      "paper": "Draw It Like Euclid - Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 72,
+      "paper": "DreamCAD - Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 73,
+      "paper": "E3D-Bench - A Benchmark for End-to-End 3D Geometric Foundation Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 74,
+      "paper": "EnzymeCAGE - A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 75,
+      "paper": "Error Notebook-Guided, Training-Free Part Retrieval in 3D CAD Assemblies via Vision-Language Models.md",
       "status": "reviewed"
     }
   ]
