@@ -213,18 +213,21 @@ class TestAutoCoversNewOp(unittest.TestCase):
     """The schema/grammar must auto-cover a newly registered op (no hardcoding)."""
 
     def setUp(self):
+        # A hypothetical op tag NOT in the real registry, to prove the
+        # schema/grammar auto-cover a newly registered op (chamfer is now a
+        # real op, so this fixture uses an unregistered fictional tag).
         @dataclass(frozen=True)
-        class Chamfer(Op):
-            OP: ClassVar[str] = "chamfer"
+        class Groove(Op):
+            OP: ClassVar[str] = "groove"
             edges: tuple = ()
             distance: float = 1.0
             label: Optional[str] = None
 
-        self.tag = "chamfer"
-        self.cls = Chamfer
+        self.tag = "groove"
+        self.cls = Groove
         self._added = self.tag not in _REGISTRY
         if self._added:
-            _REGISTRY[self.tag] = Chamfer
+            _REGISTRY[self.tag] = Groove
 
     def tearDown(self):
         if self._added:

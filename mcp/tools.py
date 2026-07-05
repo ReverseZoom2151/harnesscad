@@ -374,7 +374,107 @@ _OP_DESCRIPTIONS = {
         side_effects="Mutates the model: replaces bodies with the combined result; "
                      "a cut that nulls the body raises a typed error.",
         output="ApplyOps result with the combined feature and digest."),
+    "revolve": ToolDescription(
+        what="Revolve a sketch profile about an axis by an angle to create a solid "
+             "of revolution (shafts, bosses, turned parts).",
+        when="Once a closed profile exists and the shape is rotationally symmetric "
+             "about an axis; the turned analogue of extrude.",
+        when_not="Not on an empty sketch; not for prismatic shapes (use extrude); "
+                 "angle 0 is a typed bad-value error.",
+        side_effects="Mutates the model: adds a solid feature and sets solid_present true.",
+        output="ApplyOps result with the new feature id and an updated digest."),
+    "chamfer": ToolDescription(
+        what="Bevel one or more edges of a solid with a flat angled face (distinct "
+             "from fillet's rounded edge).",
+        when="After a solid exists, to break sharp edges with a straight bevel for "
+             "assembly lead-ins or deburring.",
+        when_not="Not before a solid exists (no-solid error); distance must be > 0 "
+                 "and smaller than adjacent edges.",
+        side_effects="Mutates the solid topology; a too-large / non-positive distance "
+                     "raises a typed error.",
+        output="ApplyOps result; face/edge counts in the summary change."),
+    "hole": ToolDescription(
+        what="Drill a semantic hole (simple/counterbore/countersink/threaded) at a "
+             "point on a face, through or to a blind depth.",
+        when="To add a manufacturable, DFM-legible hole feature rather than a raw "
+             "circle+boolean-cut.",
+        when_not="Not before a solid exists; a blind hole needs a depth; diameter "
+                 "must be > 0.",
+        side_effects="Mutates the solid: subtracts the hole and records it as a "
+                     "recognizable feature for DFM/BOM.",
+        output="ApplyOps result with the hole feature id and updated digest."),
+    "shell": ToolDescription(
+        what="Hollow a solid to a constant wall thickness, optionally removing "
+             "faces to open the shell.",
+        when="For thin-walled parts: enclosures, housings, cups.",
+        when_not="Not before a solid exists; thickness must be non-zero and less "
+                 "than the smallest wall.",
+        side_effects="Mutates the solid into a shelled body; an over-thick shell "
+                     "that nulls the body raises a typed error.",
+        output="ApplyOps result; volume and face counts change."),
+    "draft": ToolDescription(
+        what="Apply a draft angle to faces about a neutral plane (moulding/casting "
+             "release).",
+        when="To add manufacturing draft to vertical walls of a cast or moulded part.",
+        when_not="Not before a solid exists; angle must be positive. May report "
+                 "not-yet-supported on the current kernel build.",
+        side_effects="Mutates face angles; validates references before applying.",
+        output="ApplyOps result, or a typed not-yet-supported diagnostic."),
+    "loft": ToolDescription(
+        what="Loft a solid through a sequence of profile sketches (ruled or smooth).",
+        when="For transitional shapes blending between differing cross-sections.",
+        when_not="Needs two or more valid profiles. May report not-yet-supported "
+                 "for unreliable coplanar-profile cases.",
+        side_effects="Mutates the model: adds a lofted solid feature.",
+        output="ApplyOps result, or a typed not-yet-supported diagnostic."),
+    "sweep": ToolDescription(
+        what="Sweep a profile sketch along a path to create a solid (pipes, rails, "
+             "extruded channels).",
+        when="For constant-section geometry that follows a curved path.",
+        when_not="Needs a valid profile and path. May report not-yet-supported on "
+                 "the current kernel build.",
+        side_effects="Mutates the model: adds a swept solid feature.",
+        output="ApplyOps result, or a typed not-yet-supported diagnostic."),
+    "linear_pattern": ToolDescription(
+        what="Replicate a feature in a linear array along a direction with a count "
+             "and spacing.",
+        when="To repeat a hole/boss/cut evenly along a line without re-modeling it.",
+        when_not="Needs an existing feature to pattern; count must be >= 2.",
+        side_effects="Mutates the model: unions the replicated instances.",
+        output="ApplyOps result with the patterned feature and updated digest."),
+    "circular_pattern": ToolDescription(
+        what="Replicate a feature around an axis with a count over a total angle "
+             "(bolt circles, radial ribs).",
+        when="To repeat a feature evenly around a center, e.g. a bolt-hole circle.",
+        when_not="Needs an existing feature and an axis; count must be >= 2.",
+        side_effects="Mutates the model: unions the rotated instances.",
+        output="ApplyOps result with the patterned feature and updated digest."),
+    "mirror": ToolDescription(
+        what="Mirror a feature or the whole body across a plane to create a "
+             "symmetric copy.",
+        when="For symmetric parts, to model one side and mirror it.",
+        when_not="Needs an existing body/feature and a mirror plane.",
+        side_effects="Mutates the model: unions the mirrored geometry.",
+        output="ApplyOps result with the mirrored feature and updated digest."),
 }
+
+
+def _fallback_description(tag: str) -> "ToolDescription":
+    """Synthesize a description for any registered op lacking a curated entry.
+
+    Keeps the catalog registry-derived: a newly registered CISP op is covered
+    automatically (with a generic 5-part description) instead of KeyError-ing.
+    """
+    label = tag.replace("_", " ")
+    return ToolDescription(
+        what=f"Apply the '{label}' CISP operation to the model.",
+        when=f"When the design step calls for a {label} operation and its "
+             "references/parameters are valid.",
+        when_not="Not when its typed references do not exist yet, or its numeric "
+                 "parameters are out of range (raises a typed diagnostic).",
+        side_effects="Mutates the model per the op's semantics; reversible via "
+                     "rollback; invalid input is block-and-corrected.",
+        output="ApplyOps result (ok, applied, digest, diagnostics) plus the reward.")
 
 # Output spec shared by every mutating op tool.
 _OP_OUTPUT = {
@@ -531,7 +631,7 @@ class ToolCatalog:
                 params.append(ParamSpec(
                     name=f.name, type=jtype, required=required, default=default,
                     description=doc, enum=enum, nullable=nullable))
-            desc = _OP_DESCRIPTIONS[tag]
+            desc = _OP_DESCRIPTIONS.get(tag) or _fallback_description(tag)
             self._tools[tag] = ToolDefinition(
                 name=tag, description=desc, params=params, output=dict(_OP_OUTPUT),
                 annotations=annotate(tag), op_tag=tag)
