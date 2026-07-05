@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 10 / 186 papers reviewed.
+Status: 15 / 186 papers reviewed.
 
 Classifications:
 
@@ -265,3 +265,138 @@ All deterministic, locally testable candidates from papers 6–10 are now
 implemented. Remaining partial items require corpus-wide dataset conversion;
 remaining external or research-heavy items require hosted infrastructure,
 FreeCAD, proprietary datasets, trained neural models, or substantial compute.
+
+## Batch 3 — papers 11–15
+
+### 11. Atlas3D — Physically Constrained Self-Supporting Text-to-3D
+
+Source:
+`Atlas3D - Physically Constrained Self-Supporting Text-to-3D for Simulation and Fabrication.md`
+
+Core mechanism:
+
+- Add physical standability as a refinement objective instead of optimizing
+  visual similarity alone.
+- Measure rigid-body stability under gravity/contact, sample tilt directions,
+  regularize adjacent normals and flatten the contact base.
+- Schedule expensive physics checks intermittently during coarse-to-fine
+  refinement and validate in independent simulators and physical trials.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| COM projection, support polygon, signed stability margin and tilt robustness | **implemented** | `verifiers/standability.py` |
+| Adjacent-normal and bottom-surface regularity metrics | **implemented** | `quality/mesh_stability.py` |
+| Coarse/refine cadence policy for expensive physics checks | **implemented** | `quality/physics_schedule.py` |
+| Stress/deflection/buckling checks | **implemented** | existing analytic simulation verifier |
+| Differentiable Warp simulation, SDS/DMTet refinement and learned visual guidance | **research-heavy** | requires neural generators, GPU simulation and differentiable rendering |
+| IPC cross-simulation and physical 3D-print validation | **external** | requires external simulators, fabrication and laboratory testing |
+
+### 12. Automated CAD Modeling Sequence Generation from Text Descriptions via Transformer-Based Large Language Models
+
+Source:
+`Automated CAD Modeling Sequence Generation from Text Descriptions via Transformer-Based Large Language Models.md`
+
+Core mechanism:
+
+- Generate parameter and appearance descriptions through separate annotation
+  channels, reconcile them, and route conflicts to manual review.
+- Reverse-generate a command sequence from each description and accept it only
+  when ordered LCS recovery reaches 0.9; reflect and retry at most twice.
+- Preserve command/type/argument confidence and address command-distribution
+  imbalance rather than exposing only one sequence-level score.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Ordered reverse-description LCS gate with bounded reflection | **implemented** | `dataengine/reverse_description.py` |
+| Image/point-cloud description reconciliation and review routing | **implemented** | `dataengine/annotation_reconcile.py` |
+| Per-command, type and argument confidence with selective correction context | **implemented** | `quality/sequence_confidence.py` |
+| Command frequency, weighting and rare-operation coverage audit | **implemented** | `dataengine/command_balance.py` |
+| Typed executable CAD command grammar and geometric constraints | **implemented** | CISP, grammar and verifier layers |
+| Dual DeBERTa encoders, dynamic routing and BiLSTM/transformer decoder | **research-heavy** | requires model training and the annotated corpus |
+| Hosted VLM/PointLLM annotation and manual review | **external** | adapters can supply candidates; services and annotators are external |
+
+### 13. Automatic 3D CAD Models Reconstruction from 2D Orthographic Drawings
+
+Source: `Automatic 3D CAD Models Reconstruction from 2D Orthographic Drawings.md`
+
+Core mechanism:
+
+- Parse normalized front/bottom/left SVG engineering views containing visible
+  and hidden lines, arcs and circles.
+- Match view-projection patterns to reconstruct a 3D wireframe.
+- Find coplanar graph cycles, cluster nested outer/inner loops, stitch candidate
+  faces, and require every manifold edge to be incident to exactly two faces.
+- Evaluate reconstruction with coordinate-tolerant edge and topological face
+  precision/recall/F1.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Orthographic input contract and safe SVG engineering-entity parser | **implemented** | `reconstruction/` input and parser stages |
+| 2D edge normalization, sampling, collinear merge and deduplication | **implemented** | `reconstruction/` normalization stage |
+| Table-driven multi-view projection-pattern matcher | **implemented** | `reconstruction/` matching stage |
+| Wireframe graph and deterministic coplanar cycle discovery | **implemented** | `reconstruction/` wireframe/loop stages |
+| Nested planar loop clustering and manifold incidence gate | **implemented** | `reconstruction/` clustering/validation stages |
+| Edge/face reconstruction metrics and stage report | **implemented** | `reconstruction/` metrics and orchestrator |
+| Kernel trim/sew for every curved analytic surface | **external** | exposed as an injected stitch adapter; full operation requires OCCT |
+| B-spline, partial-view, section-view and raster drawing recovery | **research-heavy** | outside the paper’s own supported assumptions and requires additional inference |
+
+### 14. B-repLer — Language-guided Editing of CAD Models
+
+Source: `B-repLer - Language-guided Editing of CAD Models.md`
+
+Core mechanism:
+
+- Edit construction-history-free B-reps from high-level language.
+- Generate verified face-delete/inverse-add pairs and annotate before/after
+  changes bidirectionally at multiple semantic detail levels.
+- Localize affected faces in selected views, generate multiple edit candidates,
+  reject invalid geometry, and preserve unaffected topology and design
+  relations.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| History-free B-rep edit provider, stable face sequence and ranked K candidates | **implemented** | `editing/brep.py`, `ingest/brep_sequence.py` |
+| Verified reversible face delete/add data synthesis | **implemented** | `datagen/brep_edit_pairs.py` |
+| Bidirectional multilevel edit annotations with leakage checks | **implemented** | `dataengine/brep_edit_annotations.py` |
+| Edit-visible view/context selection and projected bounding boxes | **implemented** | `surfaces/edit_views.py` |
+| Validity@K, symmetric Chamfer, unchanged topology and relation preservation | **implemented** | `bench/edit_metrics.py` |
+| Edit-complexity bins and deterministic balanced sampling | **implemented** | `dataengine/edit_complexity.py` |
+| HoLa-BRep latent encoder, DINO/ROIAlign fusion and flow decoder | **research-heavy** | requires the 240K dataset, learned weights and GPU training |
+| Fusion 360 face-deletion host | **external** | injected kernel protocol supports it; Fusion is not locally available |
+
+### 15. BlenderLLM — Training Large Language Models for Computer-Aided Design with Self-improvement
+
+Source:
+`BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md`
+
+Core mechanism:
+
+- Balance generated instructions across 16 object classes, eight styles and
+  five length bins; deduplicate and measure unit count, parameter density and
+  voxel occupancy entropy.
+- Use a cost-aware coarse/fine validation cascade.
+- Iterate generate-filter-train-evaluate while retaining the best checkpoint
+  and stopping before validation degradation.
+- Evaluate per-sample binary criteria by attribute, spatial and instruction
+  dimensions, routing each criterion to image or script evidence.
+- Use two independent annotators, third-party adjudication, deterministic QC
+  sampling and Cohen’s kappa.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Balanced instruction taxonomy, seeded quotas and similarity deduplication | **implemented** | `datagen/instruction_taxonomy.py` |
+| Unit count, parameter density and occupancy entropy | **implemented** | `datagen/complexity.py` |
+| Coarse-to-fine filter with short-circuit and cost accounting | **implemented** | `dataengine/cascade_filter.py` |
+| Best-checkpoint self-improvement round controller | **implemented** | `dataengine/self_improvement.py` |
+| Typed hybrid benchmark criteria, routing and aggregation | **implemented** | `bench/criteria.py` |
+| Source-aware synthetic/wild split leakage and quota audit | **implemented** | `bench/splits.py` |
+| Two-reviewer adjudication, deterministic QC and Cohen’s kappa | **implemented** | `dataengine/annotation_workflow.py`, `research/agreement.py` |
+| Existing multi-view rendering, CADBench execution and verification | **implemented** | render, vision and bench layers |
+| Qwen full-parameter SFT, learned cascade filter and iterative retraining | **research-heavy** | controller is implemented; actual learning requires GPUs and datasets |
+| Blender/bpy, GPT-4o judging and forum collection | **external** | require external applications, services and network data |
+
+## Batch-3 implementation result
+
+All deterministic and locally testable ideas from papers 11–15 are implemented.
+External kernel/application seams remain explicit, and model-training or
+physical-validation claims are not simulated with unusable placeholders.

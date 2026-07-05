@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 10,
-  "next_manifest_index": 11,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-10 implemented",
+  "reviewed_count": 15,
+  "next_manifest_index": 16,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-15 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -54,6 +54,31 @@
     {
       "index": 10,
       "paper": "Artificial Intelligence-Based Design of Assemblies in the FreeCAD Software.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 11,
+      "paper": "Atlas3D - Physically Constrained Self-Supporting Text-to-3D for Simulation and Fabrication.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 12,
+      "paper": "Automated CAD Modeling Sequence Generation from Text Descriptions via Transformer-Based Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 13,
+      "paper": "Automatic 3D CAD Models Reconstruction from 2D Orthographic Drawings.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 14,
+      "paper": "B-repLer - Language-guided Editing of CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 15,
+      "paper": "BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md",
       "status": "reviewed"
     }
   ]
