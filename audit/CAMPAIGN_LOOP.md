@@ -51,7 +51,10 @@ with a `| Build idea | Status | Repository comparison |` table. Status is
 ## Conventions
 
 Python stdlib-only, absolute imports, deterministic (no wall clock; seed any
-randomness). No emojis. Tests in `tests/`. Skip — do not fake — anything that
+randomness). No emojis. Tests in `tests/` MUST be `unittest.TestCase` classes
+(NOT bare pytest `def test_` functions) so they are collected by the canonical
+`python -m unittest` runner — verify each paper's tests print `OK` (not
+`NO TESTS RAN`) before committing. Skip — do not fake — anything that
 needs a trained model, GPU, optimal-transport tooling, proprietary host
 (Rhino/Revit/Fusion), or licensed data; log it as `research-heavy/external`.
 
