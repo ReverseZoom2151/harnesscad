@@ -32,6 +32,11 @@ py-modules = [
     "cadreview_taxonomy", "cadreview_blocks", "cadreview_detect",
     "cadreview_errorgen", "cadreview_correct", "cadreview_review",
     "cadreview_quantize",
+    "cadtalk_parser", "cadtalk_metrics", "cadtalk_voting",
+    "cadtalk_primitive_program", "cadtalk_label_transfer",
+    "cadsmith_design_plan", "cadsmith_error_patterns", "cadsmith_kernel_metrics",
+    "cadsmith_three_view", "cadsmith_abs_metrics", "cadsmith_escalation",
+    "cadsmith_tiers", "cadsmith_dual_loop",
 ]
 packages = [
     # core spine + foundations
