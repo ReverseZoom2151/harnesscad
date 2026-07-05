@@ -488,6 +488,9 @@ harnesscad/
 ├── datagen/
 │   ├── generators.py       #   seeded synthetic (brief, ops, params) generators
 │   └── pipeline.py         #   solver-in-the-loop: keep only parts that verifiably build
+├── exploration/
+│   ├── elo.py              #   rating-conserving Elo + Leaderboard
+│   └── tournament.py       #   Co-Scientist generate -> debate -> evolve; cluster + rank variants
 ├── bench/
 │   ├── task.py             #   CADBench-Verified Task schema (spec + reference ops + acceptance)
 │   ├── runner.py           #   run_task / run_suite over the HarnessSession spine
@@ -495,7 +498,7 @@ harnesscad/
 ├── examples/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
-├── tests/                  # 520 unittest tests across every module
+├── tests/                  # 574 unittest tests across every module
 ├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
@@ -511,8 +514,9 @@ The same ~35 modules grouped by blueprint layer, for navigation:
 - **Plural verifier** — `verify.py`, `checks_geometry.py`, `constraints.py`, `contract.py`, `checks_dfm.py`, `checks_vision.py`
 - **Agent + pipeline** — `agent/`, `pipeline.py`, `cli.py`
 - **Grounding** — `context/`, `rag/`, `memory/`
-- **Reliability** — `strategies/`, `guardrails.py`, `loopdetect.py`
-- **Multi-agent** — `agents/`, `a2a/`
+- **Reliability** — `strategies/`, `guardrails.py`, `loopdetect.py`, `executor.py`
+- **Multi-agent** — `agents/`, `a2a/`, `harness.py`
+- **Design-space exploration** — `exploration/` (Co-Scientist + Elo tournament)
 - **LLM + decoding** — `llm/`, `routing.py`, `grammar.py`
 - **Surfaces** — `server.py`, `mcp/`, `ui/`, `render.py`
 - **Observability** — `observe.py`, `trace.py`
@@ -533,7 +537,7 @@ real training runs, or a shipped UI — not new harness logic.
 - **Phase 2 — grounding.** The `context/` manager (token-budget assembly + overflow guard) and file-based `StagingArea`; the dependency-free hybrid **RAG** layer (`rag/` — BM25 + hashed-vector, RRF fusion); the four-type `MemoryStore` and a Voyager-style, execution-verified **skill library**.
 - **Phase 3 — reliability.** `strategies/` best-of-N + a Reflexion loop; `guardrails.GuardrailGate` (`before_tool_callback`), the `ErrorRecovery` ladder, and `loopdetect.LoopDetector`.
 - **Phase 4 — measurement.** **CADBench-Verified** (SWE-bench-style, programmatically-checked: editability, program execution, B-rep validity, dimension match, easy/medium/hard tasks) and the `observe.py` observability layer (spans, KPI metrics with confidence intervals, failure taxonomy, run replay). The plural verifier now also spans an opt-in **DFM critic** (`checks_dfm`) and a **VLM-judge** (`checks_vision`).
-- **Phase 5 — scale.** The multi-agent `Supervisor` + role personas (Designer / Modeler / Verifier / DFMCritic / RedTeam / Reviewer) and the `AsyncOverseer` with halt authority; the `a2a/` inter-agent message bus + task lifecycle; the `mcp/` tool server + `CADGymEnv` Gym environment; the `ui/` SSE event contract + three-tier approval; and grammar-constrained decoding artefacts (`grammar.py`). The data-engine exporters (`dataengine/` — GRPO / DPO / STaR) and synthetic `datagen/` (solver-in-the-loop) are in place, and `routing.RoutingLLM` adds cost-aware model routing.
+- **Phase 5 — scale.** The multi-agent `Supervisor` + role personas (Designer / Modeler / Verifier / DFMCritic / RedTeam / Reviewer) and the `AsyncOverseer` with halt authority; the `a2a/` inter-agent message bus + task lifecycle; the `mcp/` tool server + `CADGymEnv` Gym environment; the `ui/` SSE event contract + three-tier approval; and grammar-constrained decoding artefacts (`grammar.py`). The data-engine exporters (`dataengine/` — GRPO / DPO / STaR) and synthetic `datagen/` (solver-in-the-loop) are in place; `exploration/` adds Co-Scientist generate-debate-evolve variant search with Elo-tournament ranking + clustering; and `routing.RoutingLLM` adds cost-aware model routing. `harness.AgentHarness` ties the ReAct loop together and `executor.ToolExecutor` adds the sandbox / retry / timeout / approval layer.
 
 **Planned / future**
 
