@@ -4,7 +4,7 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-2106%20passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-2391%20passing-brightgreen?style=flat-square)
 ![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
