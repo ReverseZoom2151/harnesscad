@@ -1,6 +1,42 @@
 {
   "version": 1,
   "closure_definition": "Every corpus file is reviewed and every atomic idea has source evidence plus a closed, validated disposition.",
-  "coverage": [],
+  "coverage": [
+    {
+      "glob": "pdf/*.pdf",
+      "status": "reviewed",
+      "method": "verified full-text twin plus direct figure inspection"
+    },
+    {
+      "glob": "extracted/*.txt",
+      "status": "reviewed",
+      "method": "sequential section pass plus adversarial capability/TODO search"
+    },
+    {
+      "glob": "extracted/chunks/*.txt",
+      "status": "reviewed",
+      "method": "byte/line-equivalence check against Part-1 primary extract"
+    },
+    {
+      "glob": "_fig/*.png",
+      "status": "reviewed",
+      "method": "direct visual inspection at high/original resolution"
+    },
+    {
+      "glob": "docs/skills/*.md",
+      "status": "reviewed",
+      "method": "full heading, protocol, checklist and action-item pass"
+    },
+    {
+      "glob": "docs/skills/standalone/*.md",
+      "status": "reviewed",
+      "method": "semantic diff against primary variant plus standalone-only review"
+    },
+    {
+      "glob": "summaries/*.md",
+      "status": "reviewed",
+      "method": "cross-check against corresponding primary-extract line ranges"
+    }
+  ],
   "ideas": []
 }

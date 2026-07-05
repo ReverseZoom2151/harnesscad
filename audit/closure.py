@@ -71,6 +71,10 @@ def validate_register(
         report.issues.append(AuditIssue("ideas-shape", "ideas must be a list"))
         return report
     report.idea_count = len(ideas)
+    if not ideas:
+        report.issues.append(AuditIssue(
+            "empty-register", "register must contain at least one atomic idea"
+        ))
     if not isinstance(coverage, list):
         report.issues.append(AuditIssue("coverage-shape", "coverage must be a list"))
         coverage = []
@@ -168,15 +172,31 @@ def _validate_coverage(
             report.issues.append(AuditIssue("coverage-entry", "coverage entry is not an object"))
             continue
         path = str(raw.get("path", "")).strip()
+        path_glob = str(raw.get("glob", "")).strip()
         if path:
             declared.add(path)
+        elif path_glob:
+            matches = {
+                str(match.relative_to(corpus)).replace("\\", "/")
+                for match in corpus.glob(path_glob) if match.is_file()
+            }
+            if not matches:
+                report.issues.append(AuditIssue(
+                    "empty-coverage-glob", f"coverage glob has no files: {path_glob}"
+                ))
+            declared.update(matches)
+        else:
+            report.issues.append(AuditIssue(
+                "missing-coverage-path", "coverage entry needs path or glob"
+            ))
+        label = path or path_glob
         if raw.get("status") != "reviewed":
             report.issues.append(AuditIssue(
-                "unreviewed-source", f"source {path!r} is not marked reviewed"
+                "unreviewed-source", f"source {label!r} is not marked reviewed"
             ))
         if not str(raw.get("method", "")).strip():
             report.issues.append(AuditIssue(
-                "missing-review-method", f"source {path!r} has no review method"
+                "missing-review-method", f"source {label!r} has no review method"
             ))
     for path in sorted(actual - declared):
         report.issues.append(AuditIssue("uncovered-file", f"corpus file not covered: {path}"))

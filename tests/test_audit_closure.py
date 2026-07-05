@@ -76,6 +76,33 @@ class AuditClosureTests(unittest.TestCase):
             report = validate_register(register, repo_root=repo, corpus_root=corpus)
             self.assertIn("missing-rationale", {issue.code for issue in report.issues})
 
+    def test_coverage_glob_expands_and_new_files_break_closure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "repo"
+            corpus = root / "corpus"
+            repo.mkdir()
+            (corpus / "docs").mkdir(parents=True)
+            (corpus / "docs/a.md").write_text("a\n", encoding="utf-8")
+            register = {
+                "coverage": [{
+                    "glob": "docs/*.md", "status": "reviewed", "method": "full text"
+                }],
+                "ideas": [{
+                    "id": "I-001",
+                    "statement": "A non-build product-positioning statement.",
+                    "disposition": "rejected",
+                    "rationale": "No executable engineering capability.",
+                    "sources": [{"path": "docs/a.md", "locator": "line 1"}],
+                }],
+            }
+            self.assertTrue(validate_register(
+                register, repo_root=repo, corpus_root=corpus
+            ).closed)
+            (corpus / "outside.txt").write_text("new\n", encoding="utf-8")
+            report = validate_register(register, repo_root=repo, corpus_root=corpus)
+            self.assertIn("uncovered-file", {issue.code for issue in report.issues})
+
 
 if __name__ == "__main__":
     unittest.main()
