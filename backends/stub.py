@@ -19,8 +19,8 @@ from cisp.ops import (
     AddInstance, Mate, SetParam,
     canonical_json, edit_oplog,
 )
-from checks_assembly import mate_dof
-from verify import Diagnostic, Severity
+from verifiers.assembly import mate_dof
+from verifiers.verify import Diagnostic, Severity
 from backends.base import ApplyResult
 
 

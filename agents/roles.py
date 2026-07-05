@@ -24,8 +24,8 @@ from typing import Callable, List, Optional
 
 from cisp.ops import Op
 from cisp.protocol import ApplyOpsResult
-from verify import Diagnostic, Severity, VerifyReport
-from checks_dfm import DFMCheck, DFMRules
+from verifiers.verify import Diagnostic, Severity, VerifyReport
+from verifiers.dfm import DFMCheck, DFMRules
 from agent.planner import Planner
 from llm.base import LLM
 

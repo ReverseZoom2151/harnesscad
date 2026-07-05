@@ -8,11 +8,11 @@ still imports fine — cadquery is imported lazily inside its methods).
 import unittest
 
 from backends.cadquery_backend import CadQueryBackend
-from checks_geometry import BRepValidityCheck
+from verifiers.geometry import BRepValidityCheck
 from cisp.ops import (
     NewSketch, AddRectangle, AddCircle, Extrude, Fillet, Boolean,
 )
-from verify import Severity
+from verifiers.verify import Severity
 
 
 def _cadquery_available() -> bool:

@@ -14,7 +14,7 @@ import unittest
 
 from cisp.ops import NewSketch, AddRectangle, Extrude
 from backends.stub import StubBackend
-from verify import Severity
+from verifiers.verify import Severity
 from contract import (
     Contract, Tolerance, MassSpec, ContractCheck,
     contract_from_brief_schema, register_predicate,

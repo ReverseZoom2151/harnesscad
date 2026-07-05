@@ -13,7 +13,7 @@ import unittest
 
 from backends.stub import StubBackend
 from loop import HarnessSession
-from verify import Severity
+from verifiers.verify import Severity
 from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 
 from llm.base import CompletionResult

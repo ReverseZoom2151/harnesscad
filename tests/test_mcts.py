@@ -13,9 +13,9 @@ from backends.stub import StubBackend
 from cisp.ops import Op, NewSketch, AddRectangle, Constrain, Extrude
 from cisp.protocol import ApplyOpsResult
 from loop import HarnessSession
-from verify import Diagnostic, Severity, VerifyReport
+from verifiers.verify import Diagnostic, Severity, VerifyReport
 
-from strategies.mcts import (
+from reliability.strategies.mcts import (
     mcts_search,
     MctsResult,
     MctsNode,

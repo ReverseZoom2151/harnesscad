@@ -18,8 +18,8 @@ import unittest
 
 from cisp.ops import NewSketch, AddRectangle, Extrude
 from backends.stub import StubBackend
-from verify import Severity
-from anomaly import (
+from verifiers.verify import Severity
+from quality.anomaly import (
     feature_vector, AnomalyModel, AnomalyScore, IsolationLite,
     AnomalyCheck, with_anomaly,
 )

@@ -9,11 +9,11 @@ Two regimes, mirroring the Contract tests:
 
 import unittest
 
-from verify import Severity
+from verifiers.verify import Severity
 from backends.stub import StubBackend
 from cisp.ops import NewSketch, AddRectangle, Extrude
 from spec.formalize import Requirement, RequirementSet, formalize
-from checks_requirements import RequirementsCheck, with_requirements
+from verifiers.requirements import RequirementsCheck, with_requirements
 
 
 def _codes(report):

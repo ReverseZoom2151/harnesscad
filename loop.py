@@ -20,7 +20,7 @@ from cisp.ops import Op, canonical_json
 from cisp.protocol import ApplyOpsResult
 from state.opdag import OpDAG
 from trace import NullTracer, Tracer
-from verify import Diagnostic, VerifyReport, Verifier, default_verifiers
+from verifiers.verify import Diagnostic, VerifyReport, Verifier, default_verifiers
 
 
 class HarnessSession:

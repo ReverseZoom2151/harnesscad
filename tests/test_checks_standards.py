@@ -15,8 +15,8 @@ import unittest
 from cisp.ops import NewSketch, AddCircle, Fillet
 from state.opdag import OpDAG
 from backends.stub import StubBackend
-from verify import Severity
-from checks_standards import (
+from verifiers.verify import Severity
+from verifiers.standards import (
     StandardsRules, StandardsCheck, with_standards, nearest_standard,
 )
 

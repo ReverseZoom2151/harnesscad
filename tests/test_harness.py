@@ -11,7 +11,7 @@ import unittest
 from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 from backends.stub import StubBackend
 from loop import HarnessSession
-from loopdetect import LoopDetector
+from reliability.loopdetect import LoopDetector
 from llm.structured import ParsedOps
 from trace import InMemoryTracer
 from contract import Contract

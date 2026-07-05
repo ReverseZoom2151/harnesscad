@@ -16,8 +16,8 @@ two overlapping boxes as a hard ERROR.
 import unittest
 
 from backends.stub import StubBackend
-from verify import Severity
-from checks_interference import (
+from verifiers.verify import Severity
+from verifiers.interference import (
     InterferenceCheck, Clash, with_interference,
     _sweep_and_prune, _aabb_overlap, _overlap_dims,
 )

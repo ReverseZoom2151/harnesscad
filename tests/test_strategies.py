@@ -17,7 +17,7 @@ from cisp.ops import (
 from loop import HarnessSession
 from memory.store import MemoryStore
 
-from strategies import (
+from reliability.strategies import (
     best_of_n,
     default_scorer,
     BestOfNResult,
@@ -178,7 +178,7 @@ class TestBestOfN(unittest.TestCase):
 
     def test_default_scorer_ordering(self):
         from cisp.protocol import ApplyOpsResult
-        from verify import Diagnostic, Severity
+        from verifiers.verify import Diagnostic, Severity
         ok_clean = ApplyOpsResult(True, 3, "d", [])
         ok_warn = ApplyOpsResult(True, 3, "d",
                                  [Diagnostic(Severity.WARNING, "w", "m")])
@@ -292,17 +292,17 @@ class TestReflexion(unittest.TestCase):
 
 class TestHeuristicReflect(unittest.TestCase):
     def test_maps_known_codes(self):
-        from verify import Diagnostic, Severity
+        from verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "over-constrained", "sketch sk1 over-constrained")]
         self.assertIn("over-constrained", heuristic_reflect(d, "brief"))
 
     def test_coplanar_message_keyword_fallback(self):
-        from verify import Diagnostic, Severity
+        from verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "boolean-failed", "faces are coplanar")]
         self.assertIn("offset", heuristic_reflect(d, "brief"))
 
     def test_ignores_non_error_severity(self):
-        from verify import Diagnostic, Severity
+        from verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.WARNING, "under-constrained", "m")]
         # A warning-only report still returns a generic (never empty) insight.
         out = heuristic_reflect(d, "brief")
@@ -310,7 +310,7 @@ class TestHeuristicReflect(unittest.TestCase):
         self.assertNotIn("under-constrained", out)
 
     def test_unknown_code_generic_insight(self):
-        from verify import Diagnostic, Severity
+        from verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "weird-code", "m")]
         out = heuristic_reflect(d, "brief")
         self.assertIn("weird-code", out)

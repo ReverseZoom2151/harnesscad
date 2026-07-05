@@ -7,8 +7,8 @@ reference / model INFO-skips.
 
 import unittest
 
-from verify import Severity
-from checks_reference import ReferenceMatchCheck, with_reference
+from verifiers.verify import Severity
+from verifiers.reference import ReferenceMatchCheck, with_reference
 from ingest import ImportedPart
 
 

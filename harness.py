@@ -37,7 +37,7 @@ from contract import Contract, ContractCheck
 from llm.structured import ParsedOps
 from loop import HarnessSession
 from trace import NullTracer, Tracer
-from verify import Diagnostic, Severity
+from verifiers.verify import Diagnostic, Severity
 
 
 # The harness-level event kinds (in addition to the loop's own EVENT_KINDS in

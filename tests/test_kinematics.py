@@ -16,9 +16,9 @@ Deterministic; stdlib + the harness only.
 import unittest
 
 from backends.stub import StubBackend
-from checks_assembly import AssemblyModel, Mate
-from verify import Severity
-from kinematics import (
+from verifiers.assembly import AssemblyModel, Mate
+from verifiers.verify import Severity
+from quality.kinematics import (
     ROT_NEG, ROT_POS, TRANS_POS,
     JointIntent, MotionSpec, MechanismGraph, KinematicsCheck,
     kinematics_diagnostics, with_kinematics,

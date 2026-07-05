@@ -9,12 +9,12 @@ only when cadquery is installed.
 
 import unittest
 
-from checks_vision import (
+from verifiers.vision import (
     VLMJudgeCheck, GEvalScore, JudgeVerdict,
     parse_judge_json, build_judge_messages, DEFAULT_RUBRIC,
 )
 from llm.base import CompletionResult
-from verify import Severity
+from verifiers.verify import Severity
 from backends.stub import StubBackend
 from cisp.ops import NewSketch, AddRectangle, Extrude
 
@@ -116,7 +116,7 @@ class TestHeadlessSkip(unittest.TestCase):
 class TestSwapAugmentation(unittest.TestCase):
     def test_two_passes_averaged(self):
         # Judge is stubbed at the render level: feed a fake RenderResult.
-        from render import RenderResult
+        from surfaces.render import RenderResult
         result = RenderResult(images={"iso": b"<svg/>", "front": b"<svg/>"},
                              fmt="svg", note=None)
         llm = MockVisionLLM(['{"score": 0.2}', '{"score": 0.8}'])
@@ -126,7 +126,7 @@ class TestSwapAugmentation(unittest.TestCase):
         self.assertEqual(len(llm.calls), 2)  # both orderings judged
 
     def test_swap_disabled_single_pass(self):
-        from render import RenderResult
+        from surfaces.render import RenderResult
         result = RenderResult(images={"iso": b"<svg/>", "front": b"<svg/>"},
                              fmt="svg", note=None)
         llm = MockVisionLLM(['{"score": 0.2}', '{"score": 0.8}'])

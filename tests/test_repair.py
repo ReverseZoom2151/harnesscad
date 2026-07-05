@@ -15,9 +15,9 @@ from cisp.ops import (
     Constrain, NewSketch, AddRectangle, AddCircle, Extrude,
 )
 from state.opdag import OpDAG
-from verify import Diagnostic, Severity
-from repair import RepairAdvisor, RepairResult, RepairSuggestion, repair_solid
-from guardrails import ErrorRecovery
+from verifiers.verify import Diagnostic, Severity
+from reliability.repair import RepairAdvisor, RepairResult, RepairSuggestion, repair_solid
+from reliability.guardrails import ErrorRecovery
 
 
 def _cadquery_available() -> bool:

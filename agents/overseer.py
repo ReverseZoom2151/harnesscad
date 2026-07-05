@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from cisp.ops import parse_op
-from loopdetect import LoopDetector
+from reliability.loopdetect import LoopDetector
 
 
 @dataclass

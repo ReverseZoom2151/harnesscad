@@ -20,22 +20,31 @@ llm = ["litellm>=1.0", "instructor>=1.0"]
 # geometric solve via constraints.SolveSpaceSketch.
 constraints = ["python-solvespace"]
 
-# The product code lives FLAT at the repo root. harnesscad is an application
-# repo, not a pip library, so the layout is intentional: top-level packages and
-# modules are the project itself rather than being nested under a src/ package.
+# The product code is grouped into layer packages at the repo root, matching
+# the blueprint's architecture bands: verifiers/ (the plural verifier),
+# reliability/ (guardrails + strategies), surfaces/ (server/mcp/ui/render),
+# quality/ (analysis), with the core spine (loop/harness/pipeline/cli/...) and
+# the foundational packages (cisp/backends/state/...) alongside them.
 [tool.setuptools]
 py-modules = [
-    "verify", "loop", "trace", "server", "cli", "checks_geometry",
-    "pipeline", "contract", "constraints", "checks_dfm", "loopdetect",
-    "guardrails", "routing", "render", "checks_vision", "observe", "grammar",
-    "executor", "harness", "repair", "checks_assembly", "checks_interference",
-    "estimate", "fitness", "checks_standards", "checks_compliance",
-    "checks_requirements", "checks_reference", "diff", "anomaly",
-    "kinematics", "describe", "featuregraph", "suggest_cots",
+    "loop", "harness", "pipeline", "cli", "trace", "observe",
+    "contract", "constraints", "grammar", "routing",
 ]
 packages = [
-    "cisp", "state", "backends", "llm", "agent", "memory", "bench",
-    "context", "rag", "strategies", "agents", "a2a", "ui", "mcp",
-    "dataengine", "datagen", "exploration", "spec", "skeleton", "sizing",
-    "ingest", "library",
+    # core spine + foundations
+    "cisp", "state", "backends", "llm", "agent", "agents", "a2a",
+    # grounding
+    "context", "rag", "memory",
+    # the plural verifier
+    "verifiers",
+    # reliability (includes the search/repair strategies)
+    "reliability", "reliability.strategies",
+    # surfaces
+    "surfaces", "surfaces.mcp", "surfaces.ui",
+    # quality / analysis
+    "quality",
+    # data engine + eval + generation
+    "dataengine", "datagen", "exploration", "bench",
+    # front-of-pipeline + ingestion + parts
+    "spec", "skeleton", "sizing", "ingest", "library",
 ]

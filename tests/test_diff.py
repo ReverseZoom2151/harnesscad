@@ -13,7 +13,7 @@ from cisp.ops import (
     NewSketch, AddRectangle, Extrude, Fillet, Chamfer, Hole,
 )
 from state.opdag import OpDAG
-from diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
+from quality.diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
 
 
 def _cadquery_available() -> bool:

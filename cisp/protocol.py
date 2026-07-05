@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from verify import Diagnostic
+from verifiers.verify import Diagnostic
 
 
 @dataclass

@@ -155,7 +155,7 @@ class Supervisor:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
-from verify import Severity as _Severity  # noqa: E402 - local alias for Finding severity
+from verifiers.verify import Severity as _Severity  # noqa: E402 - local alias for Finding severity
 _ERROR = _Severity.ERROR
 
 

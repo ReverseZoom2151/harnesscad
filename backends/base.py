@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import List, Protocol, runtime_checkable
 
 from cisp.ops import Op
-from verify import Diagnostic
+from verifiers.verify import Diagnostic
 
 
 @dataclass

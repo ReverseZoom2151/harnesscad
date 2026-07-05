@@ -12,15 +12,15 @@ import unittest
 from cisp.ops import _REGISTRY
 from loop import HarnessSession
 from backends.stub import StubBackend
-from mcp.annotations import (
+from surfaces.mcp.annotations import (
     TIER_AUTO, TIER_NOTIFY, TIER_REQUIRE, annotate, approval_tier,
 )
-from mcp.tools import (
+from surfaces.mcp.tools import (
     ToolCatalog, ToolDefinition, ToolResult,
     UnknownToolError, ToolValidationError, ToolExecutionError,
     reward_from_apply,
 )
-from mcp.gym import CADGymEnv
+from surfaces.mcp.gym import CADGymEnv
 
 
 PLATE = [

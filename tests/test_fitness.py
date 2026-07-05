@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import unittest
 
-from estimate import PartEstimate
-from fitness import (
+from quality.estimate import PartEstimate
+from quality.fitness import (
     Objective, PENALTY, Term, cost_objective, dominates, mass_objective,
     multi_objective, target_dims_objective,
 )
-from verify import Diagnostic, Severity, VerifyReport
+from verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
 class MetricsBackend:

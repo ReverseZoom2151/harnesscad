@@ -2,7 +2,7 @@
 
 import unittest
 
-from server import CISPServer
+from surfaces.server import CISPServer
 
 
 PLATE_OPS = [

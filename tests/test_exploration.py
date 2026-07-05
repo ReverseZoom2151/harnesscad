@@ -14,7 +14,7 @@ from backends.stub import StubBackend
 from cisp.ops import Op, NewSketch, AddRectangle, AddCircle, Extrude
 from cisp.protocol import ApplyOpsResult
 from loop import HarnessSession
-from verify import Diagnostic, Severity
+from verifiers.verify import Diagnostic, Severity
 
 from exploration import (
     EloRating,

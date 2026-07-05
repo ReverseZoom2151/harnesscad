@@ -22,9 +22,9 @@ from cisp.ops import (
     parse_op, canonical_json,
 )
 from backends.stub import StubBackend
-from verify import Severity
-from checks_assembly import AssemblyCheck, AssemblyModel
-from checks_interference import InterferenceCheck
+from verifiers.verify import Severity
+from verifiers.assembly import AssemblyCheck, AssemblyModel
+from verifiers.interference import InterferenceCheck
 
 
 def _codes(report):

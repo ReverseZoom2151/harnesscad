@@ -9,7 +9,7 @@ import os
 import tempfile
 import unittest
 
-from render import (
+from surfaces.render import (
     STANDARD_VIEWS, DEFAULT_VIEWS, ViewSpec, RenderResult,
     render, render_views, save_views, resolve_views,
 )

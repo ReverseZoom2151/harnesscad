@@ -3,8 +3,8 @@
 import unittest
 
 from cisp.ops import AddCircle, AddRectangle, Boolean, Extrude, Fillet, NewSketch
-from guardrails import ErrorRecovery, GuardrailGate, GuardrailLimits
-from verify import Severity
+from reliability.guardrails import ErrorRecovery, GuardrailGate, GuardrailLimits
+from verifiers.verify import Severity
 
 
 def _codes(diags):

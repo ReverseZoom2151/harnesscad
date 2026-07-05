@@ -24,7 +24,7 @@ import json
 import sys
 from typing import List, Optional
 
-from server import CISPServer
+from surfaces.server import CISPServer
 
 
 # The deterministic sample: sk1 = first sketch, e1 = first entity (rectangle).

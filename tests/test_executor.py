@@ -15,9 +15,9 @@ from cisp.protocol import ApplyOpsResult
 from backends.base import ApplyResult
 from backends.stub import StubBackend
 from loop import HarnessSession
-from verify import Diagnostic, Severity
+from verifiers.verify import Diagnostic, Severity
 
-from executor import ExecResult, LogicalClock, ToolExecutor
+from reliability.executor import ExecResult, LogicalClock, ToolExecutor
 
 
 # --- test doubles ----------------------------------------------------------

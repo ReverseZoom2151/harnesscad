@@ -19,7 +19,7 @@ except Exception:  # noqa: BLE001
     Hole = None
     HAVE_HOLE = False
 
-from describe import describe_part, answer_query
+from quality.describe import describe_part, answer_query
 
 
 def _plate(backend, n_holes=0, fillet=False):

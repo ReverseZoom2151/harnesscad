@@ -13,8 +13,8 @@ Covers, per the blueprint's third verifier family:
 import unittest
 
 from backends.stub import StubBackend
-from verify import Severity
-from checks_assembly import (
+from verifiers.verify import Severity
+from verifiers.assembly import (
     MATE_DOF, mate_dof, Mate, AssemblyModel, AssemblyCheck,
     assembly_diagnostics, with_assembly,
 )

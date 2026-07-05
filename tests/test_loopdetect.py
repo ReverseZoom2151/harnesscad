@@ -3,7 +3,7 @@
 import unittest
 
 from cisp.ops import Extrude, Fillet, NewSketch, Boolean
-from loopdetect import LoopDetector, signature
+from reliability.loopdetect import LoopDetector, signature
 
 
 class TestSignature(unittest.TestCase):

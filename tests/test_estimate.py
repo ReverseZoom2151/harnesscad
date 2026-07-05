@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import unittest
 
-from estimate import (
+from quality.estimate import (
     BOM, BOMEstimator, BudgetCheck, BudgetSpec, Material, MaterialTable,
     PartEstimate, estimate_part, resolve_metrics,
 )
-from verify import Severity
+from verifiers.verify import Severity
 
 
 # --------------------------------------------------------------------------- #

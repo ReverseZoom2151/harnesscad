@@ -17,10 +17,10 @@ import unittest
 from cisp.ops import (
     NewSketch, AddCircle, AddRectangle, Constrain, Extrude, Fillet, Boolean,
 )
-from ui.events import (
+from surfaces.ui.events import (
     EVENT_TYPES, EventStream, EventType, UIEvent, parse_sse, parse_stream,
 )
-from ui.approval import (
+from surfaces.ui.approval import (
     ApprovalGate, ApprovalTier, DryRunPreview, RiskLevel,
     tier_for, tier_from_annotations, risk_for,
 )

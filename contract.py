@@ -31,7 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 
-from verify import Diagnostic, Severity, VerifyReport
+from verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
 # --------------------------------------------------------------------------- #

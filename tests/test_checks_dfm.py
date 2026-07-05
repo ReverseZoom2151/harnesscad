@@ -14,8 +14,8 @@ import unittest
 
 from cisp.ops import NewSketch, AddRectangle, Extrude
 from backends.stub import StubBackend
-from verify import Severity
-from checks_dfm import DFMRules, DFMCheck, with_dfm
+from verifiers.verify import Severity
+from verifiers.dfm import DFMRules, DFMCheck, with_dfm
 
 
 def _build_plate(backend):

@@ -14,8 +14,8 @@ Covers:
 import unittest
 
 from backends.stub import StubBackend
-from verify import Severity
-from checks_compliance import (
+from verifiers.verify import Severity
+from verifiers.compliance import (
     ComplianceRules, ComplianceCheck, with_compliance,
 )
 

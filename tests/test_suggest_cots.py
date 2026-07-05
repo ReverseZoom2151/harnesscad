@@ -11,7 +11,7 @@ from backends.stub import StubBackend
 from loop import HarnessSession
 
 from library.catalog import build_default_catalog
-from suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
+from quality.suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
 
 
 def session_factory() -> HarnessSession:
