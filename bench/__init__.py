@@ -14,7 +14,8 @@ from __future__ import annotations
 
 from bench.task import DIFFICULTIES, Task, load_task, load_tasks
 from bench.metrics import (
-    brep_validity, dimension_match, program_execution,
+    assembly_mate_accuracy, brep_validity, cad_sequence_f1, collision_rate,
+    dimension_match, program_execution, program_execution_rate,
     sketch_editability, trajectory_efficiency,
 )
 from bench.runner import (
@@ -30,6 +31,10 @@ __all__ = [
     "brep_validity",
     "dimension_match",
     "program_execution",
+    "program_execution_rate",
+    "cad_sequence_f1",
+    "assembly_mate_accuracy",
+    "collision_rate",
     "sketch_editability",
     "trajectory_efficiency",
     "DifficultyReport",

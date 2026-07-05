@@ -11,7 +11,9 @@ import unittest
 from backends.stub import StubBackend
 from bench import (
     DIFFICULTIES, Task, load_tasks, run_suite, run_task,
-    dimension_match, sketch_editability, trajectory_efficiency,
+    assembly_mate_accuracy, cad_sequence_f1, collision_rate,
+    dimension_match, program_execution_rate, sketch_editability,
+    trajectory_efficiency,
 )
 
 _TASK_DIR = os.path.join(
@@ -76,6 +78,25 @@ class TestSuiteOnStub(unittest.TestCase):
         d = self.report.to_dict()
         self.assertEqual(d["n_tasks"], len(self.tasks))
         self.assertIn("per_difficulty", d)
+
+    def test_program_execution_rate_all_pass(self):
+        # Every sample task rebuilds cleanly on the stub -> rate 1.0.
+        self.assertEqual(self.report.program_execution_rate, 1.0)
+
+    def test_assembly_and_collision_none_on_single_part_stub(self):
+        # The stub exposes no assembly query, and the sample tasks carry no
+        # reference_ops/reference_assembly, so every optional metric is skipped.
+        self.assertIsNone(self.report.collision_rate)
+        self.assertIsNone(self.report.mean_assembly_mate_accuracy)
+        self.assertIsNone(self.report.mean_cad_sequence_f1)
+        for r in self.report.results:
+            self.assertIsNone(r.collision_rate)
+            self.assertIsNone(r.assembly_mate_accuracy)
+            self.assertIsNone(r.cad_sequence_f1)
+        # ...and they serialise as null-valued fields without breaking to_dict.
+        d = self.report.to_dict()
+        self.assertIsNone(d["collision_rate"])
+        self.assertIsNone(d["results"][0]["cad_sequence_f1"])
 
 
 class TestDeliberateFailure(unittest.TestCase):
@@ -147,6 +168,90 @@ class TestMetricsUnits(unittest.TestCase):
         self.assertTrue(ok)
         self.assertEqual(details["skipped"], 1)
         self.assertEqual(details["failed"], 0)
+
+
+class _OkStub:
+    """Minimal ApplyOpsResult-shaped object for program_execution_rate tests."""
+
+    def __init__(self, ok):
+        self.ok = ok
+
+
+class TestProgramExecutionRate(unittest.TestCase):
+    def test_aggregates_mixed_pass_fail(self):
+        # 2 of 4 rebuilt -> 0.5, over ApplyOpsResult-shaped items.
+        items = [_OkStub(True), _OkStub(True), _OkStub(False), _OkStub(False)]
+        self.assertEqual(program_execution_rate(items), 0.5)
+
+    def test_all_pass_and_all_fail(self):
+        self.assertEqual(program_execution_rate([True, True, True]), 1.0)
+        self.assertEqual(program_execution_rate([False, False]), 0.0)
+
+    def test_empty_is_none(self):
+        self.assertIsNone(program_execution_rate([]))
+
+
+class TestCadSequenceF1(unittest.TestCase):
+    OPS = [
+        {"op": "new_sketch", "plane": "XY"},
+        {"op": "add_rectangle", "sketch": "sk1",
+         "x": 0.0, "y": 0.0, "w": 20.0, "h": 10.0},
+        {"op": "extrude", "sketch": "sk1", "distance": 5.0},
+    ]
+
+    def test_identical_is_one(self):
+        score = cad_sequence_f1(self.OPS, self.OPS)
+        self.assertEqual(score["f1"], 1.0)
+        self.assertEqual(score["precision"], 1.0)
+        self.assertEqual(score["recall"], 1.0)
+        self.assertEqual(score["matched"], 3)
+
+    def test_partial_match_below_one(self):
+        # Same op tags, but the extrude distance differs -> that op is unmatched.
+        built = [dict(o) for o in self.OPS]
+        built[-1] = {"op": "extrude", "sketch": "sk1", "distance": 7.0}
+        score = cad_sequence_f1(built, self.OPS)
+        self.assertEqual(score["matched"], 2)
+        self.assertLess(score["f1"], 1.0)
+        self.assertGreater(score["f1"], 0.0)
+
+    def test_ignores_reference_ids(self):
+        # Differing sketch handles must NOT count against the match (id-agnostic).
+        built = [dict(o) for o in self.OPS]
+        built[1] = dict(built[1], sketch="sketch_a")
+        built[2] = dict(built[2], sketch="sketch_a")
+        self.assertEqual(cad_sequence_f1(built, self.OPS)["f1"], 1.0)
+
+    def test_none_reference_skips(self):
+        self.assertIsNone(cad_sequence_f1(self.OPS, None))
+
+
+class TestAssemblyMetrics(unittest.TestCase):
+    def test_mate_accuracy_none_without_assembly(self):
+        self.assertIsNone(assembly_mate_accuracy({}, {}))
+        self.assertIsNone(assembly_mate_accuracy(None, {"mates": []}))
+
+    def test_mate_accuracy_scores_types_and_dof(self):
+        ref = {"mates": [{"type": "coincident"}, {"type": "concentric"}],
+               "residual_dof": 0}
+        built = {"mates": [{"type": "coincident"}, {"type": "parallel"}],
+                 "residual_dof": 1}
+        score = assembly_mate_accuracy(built, ref)
+        self.assertEqual(score["mate_type_accuracy"], 0.5)
+        self.assertEqual(score["residual_dof_error"], 1.0)
+
+    def test_collision_rate_none_when_single_part(self):
+        # No assembly at all (single-part stub) -> not applicable.
+        self.assertIsNone(collision_rate([StubBackend()]))
+        self.assertIsNone(collision_rate([]))
+
+    def test_collision_rate_fraction_over_assemblies(self):
+        clean = {"part_count": 2, "mates": [{"type": "coincident"}],
+                 "interferences": []}
+        clashing = {"part_count": 2, "interferences": [{"a": "p1", "b": "p2"}]}
+        self.assertEqual(collision_rate([clean, clashing]), 0.5)
+        self.assertEqual(collision_rate([clashing]), 1.0)
+        self.assertEqual(collision_rate([clean]), 0.0)
 
 
 if __name__ == "__main__":

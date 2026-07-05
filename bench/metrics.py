@@ -22,12 +22,19 @@ rather than scored as failures, so the same metric code runs on every backend.
 
 from __future__ import annotations
 
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 from cisp.protocol import ApplyOpsResult
 
 # Default relative tolerance for dimensional comparisons (1%).
 DEFAULT_TOLERANCE = 0.01
+
+# Op parameters that are auto-generated reference handles (sketch/entity ids,
+# boolean targets/tools). They are stable under deterministic replay but would
+# spuriously differ between a *generated* op-DAG and the reference, so the
+# sequence-level match ignores them and keys only on op tag + geometric params
+# (the DeepCAD/CAD-LLM "entity/sketch accuracy" convention).
+_REFERENCE_PARAM_KEYS = frozenset({"sketch", "a", "b", "target", "tool"})
 
 
 # --- individual metrics -----------------------------------------------------
@@ -135,3 +142,207 @@ def trajectory_efficiency(optimal_len: int, actual_len: int) -> float:
     if actual_len <= 0:
         return 0.0
     return min(1.0, optimal_len / actual_len)
+
+
+# --- suite-level program-execution rate -------------------------------------
+def _rebuilt_ok(item) -> bool:
+    """Extract the "op stream rebuilt without kernel errors" bit from one item.
+
+    Accepts either an :class:`ApplyOpsResult` (has ``.ok``), a ``TaskResult``
+    (has ``.program_execution``), or a raw bool.
+    """
+    if hasattr(item, "program_execution"):
+        return bool(item.program_execution)
+    if hasattr(item, "ok"):
+        return bool(item.ok)
+    return bool(item)
+
+
+def program_execution_rate(results) -> Optional[float]:
+    """Fraction of a suite's tasks whose full op stream rebuilt cleanly.
+
+    This is the suite-level aggregate of the per-task :func:`program_execution`
+    (ApplyOpsResult.ok) — the DeepCAD/CAD-LLM "program execution / build success
+    rate". ``results`` is any iterable of ApplyOpsResults, TaskResults, or bools.
+    Returns ``None`` (not applicable) for an empty suite, never divides by zero.
+    """
+    items = list(results)
+    if not items:
+        return None
+    return sum(1 for it in items if _rebuilt_ok(it)) / len(items)
+
+
+# --- CAD sequence F1 (entity/op accuracy of the generated op-DAG) -----------
+def _as_op_dict(op) -> dict:
+    """Normalise an op (a cisp.ops.Op or its dict form) to a plain dict."""
+    if hasattr(op, "to_dict"):
+        return op.to_dict()
+    return dict(op)
+
+
+def _op_signature(op, ndigits: int = 6):
+    """A hashable signature = op tag + geometric params (rounded, ids dropped).
+
+    Reference-handle params (sketch/entity ids) are excluded so the match keys
+    on op type and its dimensional/geometric parameters, mirroring DeepCAD's
+    entity-accuracy scoring rather than exact string identity.
+    """
+    d = _as_op_dict(op)
+    tag = d.get("op")
+    params = []
+    for key in sorted(d):
+        if key == "op" or key in _REFERENCE_PARAM_KEYS:
+            continue
+        value = d[key]
+        if isinstance(value, float):
+            value = round(value, ndigits)
+        elif isinstance(value, (list, tuple)):
+            value = tuple(
+                round(v, ndigits) if isinstance(v, float) else v for v in value)
+        params.append((key, value))
+    return (tag, tuple(params))
+
+
+def cad_sequence_f1(built_ops, reference_ops) -> Optional[dict]:
+    """Entity/op-level precision, recall and F1 of a generated op-DAG.
+
+    The DeepCAD / CAD-LLM "Entity/Sketch Accuracy, CAD F1" metric: match each
+    generated op against the reference by op tag + key params (multiset match),
+    then report precision = matched/generated, recall = matched/reference, and
+    their harmonic mean F1. Two identical op lists score 1.0; a partial match
+    scores below 1.0. Returns ``None`` when no reference ops are available.
+    """
+    if reference_ops is None or built_ops is None:
+        return None
+    built = [_op_signature(o) for o in built_ops]
+    ref = [_op_signature(o) for o in reference_ops]
+
+    if not built and not ref:
+        return {"precision": 1.0, "recall": 1.0, "f1": 1.0,
+                "matched": 0, "n_built": 0, "n_reference": 0}
+
+    # Multiset intersection: each reference op can be matched at most once.
+    remaining: dict = {}
+    for sig in ref:
+        remaining[sig] = remaining.get(sig, 0) + 1
+    matched = 0
+    for sig in built:
+        if remaining.get(sig, 0) > 0:
+            remaining[sig] -= 1
+            matched += 1
+
+    precision = matched / len(built) if built else 0.0
+    recall = matched / len(ref) if ref else 0.0
+    f1 = (2 * precision * recall / (precision + recall)
+          if (precision + recall) > 0 else 0.0)
+    return {
+        "precision": precision, "recall": recall, "f1": f1,
+        "matched": matched, "n_built": len(built), "n_reference": len(ref),
+    }
+
+
+# --- assembly metrics (mate accuracy + collision) ---------------------------
+def _assembly_of(item) -> Optional[dict]:
+    """Coerce ``item`` to an assembly-state dict, or ``None`` when there isn't one.
+
+    Accepts a backend (calls ``query('assembly')``), an already-queried dict, or
+    anything falsy/unsupported (-> ``None``). The ``assembly`` query family is an
+    optional, concurrently-added capability; a backend that doesn't expose it
+    returns ``{}`` and every assembly metric degrades to "not applicable".
+    """
+    if item is None:
+        return None
+    if isinstance(item, dict):
+        return item or None
+    query = getattr(item, "query", None)
+    if callable(query):
+        try:
+            asm = query("assembly")
+        except Exception:  # noqa: BLE001 - unknown query key -> not applicable
+            return None
+        return asm or None
+    return None
+
+
+def _has_interference(asm: dict) -> bool:
+    """Does an assembly-state dict report any interpenetration?"""
+    if asm.get("interferences"):
+        return True
+    if asm.get("collision") or asm.get("interference"):
+        return True
+    return int(asm.get("interference_count", 0) or 0) > 0
+
+
+def _is_multipart(asm: dict) -> bool:
+    """A collision/mate check only applies once there are >= 2 parts."""
+    if "part_count" in asm:
+        return int(asm.get("part_count", 0) or 0) >= 2
+    if "parts" in asm:
+        return len(asm.get("parts") or []) >= 2
+    # No explicit part count: presence of mates implies an assembly.
+    return bool(asm.get("mates"))
+
+
+def assembly_mate_accuracy(built_assembly, reference_assembly) -> Optional[dict]:
+    """Mate-type accuracy + residual-DOF error of a built assembly vs reference.
+
+    Reads the ``assembly`` query family (mates + residual degrees of freedom).
+    ``mate_type_accuracy`` is the fraction of reference mates whose type matches
+    the built mate at the same position; ``residual_dof_error`` is the absolute
+    difference in leftover assembly DOF. Returns ``None`` (INFO / skip) when
+    either side has no assembly — e.g. a single-part model.
+    """
+    built = _assembly_of(built_assembly)
+    reference = _assembly_of(reference_assembly)
+    if not built or not reference:
+        return None
+
+    built_mates = list(built.get("mates") or [])
+    ref_mates = list(reference.get("mates") or [])
+
+    def _mate_type(m) -> object:
+        return m.get("type") if isinstance(m, dict) else m
+
+    if ref_mates:
+        correct = sum(
+            1 for i, rm in enumerate(ref_mates)
+            if i < len(built_mates)
+            and _mate_type(built_mates[i]) == _mate_type(rm))
+        mate_type_accuracy = correct / len(ref_mates)
+    else:
+        # No reference mates: vacuously correct iff the build added none either.
+        correct = 0
+        mate_type_accuracy = 1.0 if not built_mates else 0.0
+
+    built_dof = built.get("residual_dof")
+    ref_dof = reference.get("residual_dof")
+    if built_dof is None or ref_dof is None:
+        residual_dof_error = None
+    else:
+        residual_dof_error = abs(float(built_dof) - float(ref_dof))
+
+    return {
+        "mate_type_accuracy": mate_type_accuracy,
+        "residual_dof_error": residual_dof_error,
+        "matched_mates": correct,
+        "n_built_mates": len(built_mates),
+        "n_reference_mates": len(ref_mates),
+    }
+
+
+def collision_rate(results_or_backends) -> Optional[float]:
+    """Fraction of multi-part assemblies exhibiting interpenetration.
+
+    Reads each item's ``assembly`` interference signal. Only multi-part
+    assemblies count toward the denominator; a suite (or backend) with no
+    assembly at all returns ``None`` (single-part -> not applicable), never a
+    misleading 0.0.
+    """
+    assemblies = []
+    for item in results_or_backends:
+        asm = _assembly_of(item)
+        if asm and _is_multipart(asm):
+            assemblies.append(asm)
+    if not assemblies:
+        return None
+    return sum(1 for a in assemblies if _has_interference(a)) / len(assemblies)

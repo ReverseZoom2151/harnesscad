@@ -23,7 +23,8 @@ from cisp.ops import Op
 from loop import HarnessSession
 from bench.task import DIFFICULTIES, Task
 from bench.metrics import (
-    brep_validity, dimension_match, program_execution,
+    assembly_mate_accuracy, brep_validity, cad_sequence_f1, collision_rate,
+    dimension_match, program_execution, program_execution_rate,
     sketch_editability, trajectory_efficiency,
 )
 
@@ -55,6 +56,16 @@ class TaskResult:
     applied: int
     emitted: int
     dimension_details: dict = field(default_factory=dict)
+    # Optional metric families (None = not applicable to this task/backend):
+    #   cad_sequence_f1        -> {"precision","recall","f1",...} when the task
+    #                             carries reference_ops (DeepCAD entity/CAD F1).
+    #   assembly_mate_accuracy -> {"mate_type_accuracy","residual_dof_error",...}
+    #                             when the task carries reference_assembly AND the
+    #                             backend exposes the assembly query.
+    #   collision_rate         -> interference fraction; None for single-part.
+    cad_sequence_f1: Optional[dict] = None
+    assembly_mate_accuracy: Optional[dict] = None
+    collision_rate: Optional[float] = None
 
     def to_dict(self) -> dict:
         return {
@@ -69,6 +80,9 @@ class TaskResult:
             "applied": self.applied,
             "emitted": self.emitted,
             "dimension_details": self.dimension_details,
+            "cad_sequence_f1": self.cad_sequence_f1,
+            "assembly_mate_accuracy": self.assembly_mate_accuracy,
+            "collision_rate": self.collision_rate,
         }
 
 
@@ -99,6 +113,14 @@ def run_task(task: Task,
     efficiency = trajectory_efficiency(task.optimal_len(), emitted)
     success = pe and valid and dim_ok
 
+    # Optional metric families — each None when its input isn't present.
+    ref_seq = task.sequence_reference_ops()
+    seq_f1 = cad_sequence_f1(ops, ref_seq) if ref_seq else None
+    built_assembly = _query_assembly(backend)
+    mate_acc = (assembly_mate_accuracy(built_assembly, task.ref_assembly)
+                if task.ref_assembly else None)
+    collisions = collision_rate([backend])
+
     return TaskResult(
         task_id=task.id,
         difficulty=task.difficulty,
@@ -111,7 +133,22 @@ def run_task(task: Task,
         applied=result.applied,
         emitted=emitted,
         dimension_details=dim_details,
+        cad_sequence_f1=seq_f1,
+        assembly_mate_accuracy=mate_acc,
+        collision_rate=collisions,
     )
+
+
+def _query_assembly(backend) -> dict:
+    """Read the optional ``assembly`` query family, tolerating backends that
+    don't expose it (returns ``{}``)."""
+    query = getattr(backend, "query", None)
+    if not callable(query):
+        return {}
+    try:
+        return query("assembly") or {}
+    except Exception:  # noqa: BLE001 - unknown query key -> no assembly
+        return {}
 
 
 @dataclass
@@ -138,6 +175,15 @@ class SuiteReport:
     mean_sketch_editability: float
     per_difficulty: dict  # difficulty -> DifficultyReport
     results: List[TaskResult] = field(default_factory=list)
+    # Added metric families (None when no task in the suite supplies the input):
+    #   program_execution_rate     -> suite-wide op-stream rebuild success rate.
+    #   mean_cad_sequence_f1       -> mean CAD F1 over tasks that carry ref ops.
+    #   mean_assembly_mate_accuracy-> mean mate-type accuracy over assembly tasks.
+    #   collision_rate             -> fraction of multi-part assemblies colliding.
+    program_execution_rate: Optional[float] = None
+    mean_cad_sequence_f1: Optional[float] = None
+    mean_assembly_mate_accuracy: Optional[float] = None
+    collision_rate: Optional[float] = None
 
     def to_dict(self) -> dict:
         return {
@@ -145,6 +191,10 @@ class SuiteReport:
             "task_success_rate": self.task_success_rate,
             "mean_trajectory_efficiency": self.mean_trajectory_efficiency,
             "mean_sketch_editability": self.mean_sketch_editability,
+            "program_execution_rate": self.program_execution_rate,
+            "mean_cad_sequence_f1": self.mean_cad_sequence_f1,
+            "mean_assembly_mate_accuracy": self.mean_assembly_mate_accuracy,
+            "collision_rate": self.collision_rate,
             "per_difficulty": {
                 d: r.to_dict() for d, r in self.per_difficulty.items()},
             "results": [r.to_dict() for r in self.results],
@@ -174,12 +224,26 @@ def run_suite(tasks: List[Task],
                 [r.trajectory_efficiency for r in bucket]),
         )
 
+    # Optional aggregates — averaged only over tasks that reported the metric,
+    # and left None when the whole suite lacks it (e.g. the single-part stub
+    # suite reports no assembly, so collision/mate stay None).
+    f1s = [r.cad_sequence_f1["f1"] for r in results
+           if r.cad_sequence_f1 is not None]
+    mates = [r.assembly_mate_accuracy["mate_type_accuracy"] for r in results
+             if r.assembly_mate_accuracy is not None]
+    collisions = [r.collision_rate for r in results
+                  if r.collision_rate is not None]
+
     return SuiteReport(
         n_tasks=len(results),
         task_success_rate=_mean([1.0 if r.success else 0.0 for r in results]),
         mean_trajectory_efficiency=_mean(
             [r.trajectory_efficiency for r in results]),
         mean_sketch_editability=_mean([r.sketch_editability for r in results]),
+        program_execution_rate=program_execution_rate(results),
+        mean_cad_sequence_f1=_mean(f1s) if f1s else None,
+        mean_assembly_mate_accuracy=_mean(mates) if mates else None,
+        collision_rate=_mean(collisions) if collisions else None,
         per_difficulty=per_difficulty,
         results=results,
     )

@@ -57,6 +57,14 @@ class Task:
     brief: str
     ops: List[dict] = field(default_factory=list)
     acceptance: dict = field(default_factory=dict)
+    # Optional eval extras (blueprint sec.16 / Part 2 spec). Present only on tasks
+    # that carry them; every metric keyed off these degrades to None when absent.
+    #   ref_ops       -> JSON "reference_ops": the reference op-DAG for CAD F1.
+    #                    Distinct from `ops` (the gold trajectory / default solver)
+    #                    so a generated-DAG task can score fidelity independently.
+    #   ref_assembly  -> JSON "reference_assembly": reference mates + residual DOF.
+    ref_ops: List[dict] = field(default_factory=list)
+    ref_assembly: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.difficulty not in DIFFICULTIES:
@@ -67,6 +75,14 @@ class Task:
     def reference_ops(self) -> List[Op]:
         """The reference op stream as parsed cisp.ops.Op objects."""
         return [parse_op(d) for d in self.ops]
+
+    def sequence_reference_ops(self) -> List[dict]:
+        """Reference op-DAG for CAD-sequence F1, or ``[]`` when the task has none.
+
+        Uses the explicit ``reference_ops`` field when present; a task without it
+        skips the CAD F1 metric entirely (returns ``[]`` -> None downstream).
+        """
+        return list(self.ref_ops)
 
     def optimal_len(self) -> int:
         """L* — the optimal trajectory length (the reference op count)."""
@@ -80,16 +96,25 @@ class Task:
             brief=d.get("brief", ""),
             ops=list(d.get("ops", [])),
             acceptance=dict(d.get("acceptance", {})),
+            ref_ops=list(d.get("reference_ops", [])),
+            ref_assembly=dict(d.get("reference_assembly", {})),
         )
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "id": self.id,
             "difficulty": self.difficulty,
             "brief": self.brief,
             "ops": self.ops,
             "acceptance": self.acceptance,
         }
+        # Optional extras: only surface them when the task actually carries them,
+        # so existing task JSON round-trips byte-for-byte.
+        if self.ref_ops:
+            d["reference_ops"] = self.ref_ops
+        if self.ref_assembly:
+            d["reference_assembly"] = self.ref_assembly
+        return d
 
 
 def load_task(path: str) -> Task:
