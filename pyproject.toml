@@ -48,5 +48,5 @@ packages = [
     # front-of-pipeline + ingestion + parts
     "spec", "skeleton", "sizing", "ingest", "library", "standards",
     # security and research governance
-    "security", "research",
+    "security", "research", "audit",
 ]
