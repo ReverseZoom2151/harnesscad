@@ -17,6 +17,9 @@ class AuditClosureTests(unittest.TestCase):
             (repo / "test_feature.py").write_text("pass\n", encoding="utf-8")
             (corpus / "source.txt").write_text("idea\n", encoding="utf-8")
             register = {
+                "reverse_map": [{
+                    "layer": "feature", "paths": ["feature.py"], "ideas": ["I-001"]
+                }],
                 "coverage": [{
                     "path": "source.txt", "status": "reviewed", "method": "full text"
                 }],
@@ -41,6 +44,9 @@ class AuditClosureTests(unittest.TestCase):
             corpus.mkdir()
             (corpus / "source.txt").write_text("idea\n", encoding="utf-8")
             register = {
+                "reverse_map": [{
+                    "layer": "feature", "paths": ["feature.py"], "ideas": ["I-001"]
+                }],
                 "coverage": [],
                 "ideas": [{
                     "id": "I-001",
@@ -63,6 +69,9 @@ class AuditClosureTests(unittest.TestCase):
             corpus.mkdir()
             (corpus / "source.txt").write_text("idea\n", encoding="utf-8")
             register = {
+                "reverse_map": [{
+                    "layer": "feature", "paths": ["feature.py"], "ideas": ["I-001"]
+                }],
                 "coverage": [{
                     "path": "source.txt", "status": "reviewed", "method": "full text"
                 }],
@@ -85,6 +94,9 @@ class AuditClosureTests(unittest.TestCase):
             (corpus / "docs").mkdir(parents=True)
             (corpus / "docs/a.md").write_text("a\n", encoding="utf-8")
             register = {
+                "reverse_map": [{
+                    "layer": "docs", "paths": ["."], "ideas": ["I-001"]
+                }],
                 "coverage": [{
                     "glob": "docs/*.md", "status": "reviewed", "method": "full text"
                 }],

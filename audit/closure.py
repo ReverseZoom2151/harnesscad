@@ -65,6 +65,7 @@ def validate_register(
     corpus = Path(corpus_root)
     ideas = register.get("ideas")
     coverage = register.get("coverage")
+    source_catalog = register.get("source_catalog", {})
     report = AuditReport()
 
     if not isinstance(ideas, list):
@@ -118,7 +119,10 @@ def validate_register(
             ))
         else:
             for source in sources:
-                _validate_source(source, corpus, report, idea_id)
+                _validate_source(
+                    source, corpus, report, idea_id,
+                    source_catalog if isinstance(source_catalog, Mapping) else {},
+                )
 
         if disposition == "implemented":
             _validate_paths(raw.get("code"), repo, "missing-code", report, idea_id)
@@ -156,6 +160,7 @@ def validate_register(
                     f"duplicate target {target!r} does not exist",
                     str(raw.get("id", "")) or None,
                 ))
+    _validate_reverse_map(register.get("reverse_map"), repo, seen, report)
     return report
 
 
@@ -209,6 +214,7 @@ def _validate_source(
     corpus: Path,
     report: AuditReport,
     idea_id: str,
+    source_catalog: Mapping[str, Any],
 ) -> None:
     if not isinstance(source, Mapping):
         report.issues.append(AuditIssue(
@@ -216,6 +222,13 @@ def _validate_source(
         ))
         return
     path = str(source.get("path", "")).strip()
+    ref = str(source.get("ref", "")).strip()
+    if not path and ref:
+        path = str(source_catalog.get(ref, "")).strip()
+        if not path:
+            report.issues.append(AuditIssue(
+                "bad-source-ref", f"source reference is absent: {ref!r}", idea_id
+            ))
     locator = str(source.get("locator", "")).strip()
     if not path or not (corpus / path).is_file():
         report.issues.append(AuditIssue(
@@ -243,3 +256,51 @@ def _validate_paths(
             report.issues.append(AuditIssue(
                 code, f"evidence path is absent: {raw!r}", idea_id
             ))
+
+
+def _validate_reverse_map(
+    value: Any,
+    repo: Path,
+    idea_ids: set,
+    report: AuditReport,
+) -> None:
+    if not isinstance(value, list) or not value:
+        report.issues.append(AuditIssue(
+            "missing-reverse-map", "register requires repository-to-idea mapping"
+        ))
+        return
+    for entry in value:
+        if not isinstance(entry, Mapping):
+            report.issues.append(AuditIssue(
+                "reverse-map-shape", "reverse-map entry must be an object"
+            ))
+            continue
+        layer = str(entry.get("layer", "")).strip()
+        paths = entry.get("paths")
+        ideas = entry.get("ideas")
+        if not layer:
+            report.issues.append(AuditIssue(
+                "reverse-map-layer", "reverse-map entry needs a layer"
+            ))
+        if not isinstance(paths, list) or not paths:
+            report.issues.append(AuditIssue(
+                "reverse-map-paths", f"reverse-map layer {layer!r} needs paths"
+            ))
+        else:
+            for path in paths:
+                if not (repo / str(path)).exists():
+                    report.issues.append(AuditIssue(
+                        "reverse-map-missing-path",
+                        f"reverse-map path is absent: {path!r}",
+                    ))
+        if not isinstance(ideas, list) or not ideas:
+            report.issues.append(AuditIssue(
+                "reverse-map-ideas", f"reverse-map layer {layer!r} needs ideas"
+            ))
+        else:
+            for idea_id in ideas:
+                if idea_id not in idea_ids:
+                    report.issues.append(AuditIssue(
+                        "reverse-map-bad-idea",
+                        f"reverse-map idea is absent: {idea_id!r}",
+                    ))

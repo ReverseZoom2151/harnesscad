@@ -1,6 +1,26 @@
 {
   "version": 1,
   "closure_definition": "Every corpus file is reviewed and every atomic idea has source evidence plus a closed, validated disposition.",
+  "source_catalog": {
+    "P1": "extracted/AI CAD Research Paper Part 1 _FINAL_.txt",
+    "P2": "extracted/AI CAD Research Paper Part 2 _FINAL_.txt",
+    "GAUDI": "extracted/Gaudi MVP_ 3-Month Execution Plan.txt",
+    "KINTH": "extracted/Kinth Snap.txt",
+    "ROADMAP": "extracted/Roadmap for Building the Gaudi MVP Architectural Design Foundation Model.txt",
+    "SCALE": "extracted/Scale AI for Spatial Intelligence _FINAL_.txt",
+    "FIG_GAUDI": "_fig/gaudi_03.png",
+    "FIG_KINTH": "_fig/kinth_10.png",
+    "SK01": "docs/skills/01-literature-and-novelty.md",
+    "SK02": "docs/skills/02-idea-perspectives.md",
+    "SK03": "docs/skills/03-planning-and-validation.md",
+    "SK04": "docs/skills/04-result-debate.md",
+    "SK05": "docs/skills/05-quality-review.md",
+    "SK06": "docs/skills/standalone/06-writing-pipeline.md",
+    "SK08": "docs/skills/08-experiment-execution.md",
+    "SK13": "docs/skills/standalone/13-researchclaw-pipeline-stages.md",
+    "SK14": "docs/skills/standalone/14-ai-scientist-review.md",
+    "SK15": "docs/skills/standalone/15-alternative-pipelines.md"
+  },
   "coverage": [
     {
       "glob": "pdf/*.pdf",
@@ -38,5 +58,355 @@
       "method": "cross-check against corresponding primary-extract line ranges"
     }
   ],
-  "ideas": []
+  "reverse_map": [
+    {"layer": "typed CAD core", "paths": ["cisp", "state"], "ideas": ["CAD-001", "CAD-003", "CAD-004", "CAD-005", "CAD-021"]},
+    {"layer": "geometry backends", "paths": ["backends"], "ideas": ["CAD-002", "CAD-004", "CAD-018"]},
+    {"layer": "verification", "paths": ["verifiers", "constraints.py", "contract.py"], "ideas": ["CAD-003", "CAD-006", "CAD-007", "CAD-008", "CAD-009", "CAD-014", "CAD-015", "CAD-030", "CAD-032"]},
+    {"layer": "quality analysis", "paths": ["quality"], "ideas": ["CAD-016", "CAD-017", "CAD-022", "CAD-023", "CAD-028", "CAD-029", "CAD-031", "CAD-043", "CAD-061"]},
+    {"layer": "agent execution", "paths": ["agent", "agents", "loop.py", "harness.py"], "ideas": ["CAD-025", "CAD-027", "CAD-044"]},
+    {"layer": "grounding and recovery", "paths": ["rag", "memory", "reliability"], "ideas": ["CAD-010", "CAD-029", "CAD-036"]},
+    {"layer": "ingestion and adapters", "paths": ["ingest", "adapters"], "ideas": ["CAD-018", "CAD-019", "CAD-020", "CAD-035"]},
+    {"layer": "surfaces", "paths": ["surfaces"], "ideas": ["CAD-024", "CAD-026", "CAD-045", "CAD-062"]},
+    {"layer": "data engine", "paths": ["dataengine", "datagen"], "ideas": ["CAD-037", "CAD-038", "CAD-039", "CAD-040", "CAD-063"]},
+    {"layer": "evaluation and observability", "paths": ["bench", "observe.py", "trace.py"], "ideas": ["CAD-041", "CAD-042"]},
+    {"layer": "security", "paths": ["security"], "ideas": ["CAD-033", "CAD-034"]},
+    {"layer": "research governance", "paths": ["research"], "ideas": ["CAD-046", "CAD-047", "CAD-064"]}
+  ],
+  "ideas": [
+    {
+      "id": "CAD-001", "statement": "Represent CAD edits as typed, serializable, executable operations rather than free-form geometry prose.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10235-10240, 10818-10826"}],
+      "code": ["cisp/ops.py", "cisp/protocol.py"], "tests": ["tests/test_ops.py"]
+    },
+    {
+      "id": "CAD-002", "statement": "Run operation streams behind a swappable geometry-kernel interface with a dependency-free fake.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 26231-27858"}],
+      "code": ["backends/base.py", "backends/stub.py", "backends/cadquery_backend.py"], "tests": ["tests/test_cadquery_backend.py"]
+    },
+    {
+      "id": "CAD-003", "statement": "Model sketches with explicit primitives, constraints and residual degrees of freedom.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10568-10571, 11137-11155"}],
+      "code": ["constraints.py", "cisp/ops.py"], "tests": ["tests/test_constraints.py"]
+    },
+    {
+      "id": "CAD-004", "statement": "Support editability-first solid features including extrude, revolve, fillet, chamfer, holes, shell, loft, sweep, patterns and mirror.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 63400-65000"}, {"ref": "P2", "locator": "lines 10818-10888"}],
+      "code": ["cisp/ops.py", "backends/cadquery_backend.py"], "tests": ["tests/test_ops_features.py"]
+    },
+    {
+      "id": "CAD-005", "statement": "Make dimensions editable through parameter mutation followed by deterministic replay.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10818-10911"}],
+      "code": ["cisp/ops.py", "backends/stub.py"], "tests": ["tests/test_ops_assembly.py"]
+    },
+    {
+      "id": "CAD-006", "statement": "Represent assemblies as part instances, rigid transforms and mate constraints with residual DOF.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10826, 10902-10911"}],
+      "code": ["verifiers/assembly.py", "cisp/ops.py"], "tests": ["tests/test_checks_assembly.py"]
+    },
+    {
+      "id": "CAD-007", "statement": "Detect static part interference and collision in assemblies.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10568-10571, 10911"}],
+      "code": ["verifiers/interference.py"], "tests": ["tests/test_checks_interference.py"]
+    },
+    {
+      "id": "CAD-008", "statement": "Validate mechanism mobility, travel limits and one-way motion intent.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 33001-49500 simulation/mechanism sections"}],
+      "code": ["quality/kinematics.py", "verifiers/functional.py"], "tests": ["tests/test_kinematics.py", "tests/test_functional.py"]
+    },
+    {
+      "id": "CAD-009", "statement": "Use plural verification for sketch, B-rep, assembly, DFM, requirements, standards and reference fidelity.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 10568-10571, 11348-11350"}],
+      "code": ["verifiers/verify.py", "verifiers/geometry.py", "verifiers/dfm.py"], "tests": ["tests/test_cadquery_backend.py", "tests/test_checks_dfm.py"]
+    },
+    {
+      "id": "CAD-010", "statement": "Repair invalid B-reps and rank explicit repair suggestions instead of only rejecting geometry.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 33001-49500 geometry-healing discussion"}],
+      "code": ["reliability/repair.py"], "tests": ["tests/test_repair.py"]
+    },
+    {
+      "id": "CAD-011", "statement": "Formalize natural-language requirements into machine-checkable constraints and ask for missing information.",
+      "disposition": "implemented", "sources": [{"ref": "KINTH", "locator": "lines 2002-2173"}, {"ref": "ROADMAP", "locator": "Natural Language Integration"}],
+      "code": ["spec/formalize.py", "spec/interview.py", "verifiers/requirements.py"], "tests": ["tests/test_spec.py", "tests/test_checks_requirements.py"]
+    },
+    {
+      "id": "CAD-012", "statement": "Create a top-down master-sketch/skeleton before detailed feature generation.",
+      "disposition": "implemented", "sources": [{"ref": "KINTH", "locator": "requirements and workflow diligence sections"}],
+      "code": ["skeleton/layout.py"], "tests": ["tests/test_skeleton.py"]
+    },
+    {
+      "id": "CAD-013", "statement": "Provide first-principles engineering sizing assistance for shafts, plates and bolts.",
+      "disposition": "implemented", "sources": [{"ref": "KINTH", "locator": "requirements/performance design sections"}],
+      "code": ["sizing/calc.py"], "tests": ["tests/test_sizing.py"]
+    },
+    {
+      "id": "CAD-014", "statement": "Express acceptance criteria as a reusable machine-verifiable design contract.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 18457-19528 rules and reports"}],
+      "code": ["contract.py"], "tests": ["tests/test_contract.py"]
+    },
+    {
+      "id": "CAD-015", "statement": "Ingest versioned engineering clauses into typed rules with citations and conflict detection.",
+      "disposition": "implemented", "sources": [{"ref": "ROADMAP", "locator": "alignment, validation and regulatory-rule sections"}],
+      "code": ["standards/registry.py", "standards/ingest.py", "standards/conflict.py"], "tests": ["tests/test_standards_registry.py"]
+    },
+    {
+      "id": "CAD-016", "statement": "Measure volume, mass, center of mass, stock, material cost, machining cost and BOM.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 1-230 and 65000-65789"}, {"ref": "FIG_KINTH", "locator": "Measure and BOM toolbar"}],
+      "code": ["quality/estimate.py"], "tests": ["tests/test_estimate.py"]
+    },
+    {
+      "id": "CAD-017", "statement": "Include embodied carbon and energy in design estimates and optimization objectives.",
+      "disposition": "implemented", "sources": [{"ref": "ROADMAP", "locator": "sustainability-agent and feedback sections"}],
+      "code": ["quality/estimate.py", "quality/fitness.py"], "tests": ["tests/test_estimate.py", "tests/test_fitness.py"]
+    },
+    {
+      "id": "CAD-018", "statement": "Import STEP, IGES and STL references, extract metadata and decompile recognizable features.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 63400-65000 and format-conversion sections"}, {"ref": "KINTH", "locator": "lines 3485+"}],
+      "code": ["ingest/import_brep.py", "ingest/decompile.py", "ingest/metadata.py"], "tests": ["tests/test_ingest.py"]
+    },
+    {
+      "id": "CAD-019", "statement": "Measure round-trip information loss between imported and rebuilt geometry.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 15655-15657"}],
+      "code": ["ingest/fidelity.py"], "tests": ["tests/test_recovered_features.py"]
+    },
+    {
+      "id": "CAD-020", "statement": "Reconcile model metrics, drawing annotations and reference metadata through persistent correspondence IDs.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 441-545, 11599-11698"}],
+      "code": ["ingest/reconcile.py"], "tests": ["tests/test_reconcile.py"]
+    },
+    {
+      "id": "CAD-021", "statement": "Maintain append-only operation history with checkpoints, bisect, branches and three-way merge.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 22412-23226"}, {"ref": "P2", "locator": "lines 18440-18618"}],
+      "code": ["state/opdag.py"], "tests": ["tests/test_opdag.py", "tests/test_opdag_branch.py"]
+    },
+    {
+      "id": "CAD-022", "statement": "Produce semantic operation/geometry diffs and requirement-to-feature traceability.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "IntentGraph token diffs and visual Git log"}],
+      "code": ["quality/diff.py", "quality/traceability.py"], "tests": ["tests/test_diff.py"]
+    },
+    {
+      "id": "CAD-023", "statement": "Generate dimensioned 2D engineering drawings and title blocks from model facts.",
+      "disposition": "implemented", "sources": [{"ref": "FIG_KINTH", "locator": "Drawings toolbar item"}],
+      "code": ["quality/drawing.py"], "tests": ["tests/test_drawing.py"]
+    },
+    {
+      "id": "CAD-024", "statement": "Serialize operation history, feature relations and diagnostics into deterministic visual JSON/SVG.",
+      "disposition": "implemented", "sources": [{"ref": "FIG_GAUDI", "locator": "three-stage graph diagram"}, {"ref": "GAUDI", "locator": "lines 274-293"}],
+      "code": ["surfaces/graphview.py"], "tests": ["tests/test_graphview.py"]
+    },
+    {
+      "id": "CAD-025", "statement": "Support approval-gated multi-turn edits with preview, semantic diff, stale-base protection and rollback.",
+      "disposition": "implemented", "sources": [{"ref": "GAUDI", "locator": "lines 274-293, 344-351"}],
+      "code": ["agent/edit_session.py"], "tests": ["tests/test_edit_session.py"]
+    },
+    {
+      "id": "CAD-026", "statement": "Provide a keyboard-first, mode-aware command grammar producing typed CAD intents without shell execution.",
+      "disposition": "implemented", "sources": [{"ref": "SCALE", "locator": "lines 102-369"}],
+      "code": ["surfaces/commands.py"], "tests": ["tests/test_commands.py"]
+    },
+    {
+      "id": "CAD-027", "statement": "Validate sketch/image attachments with provenance, type, size, hash and path confinement behind a provider-neutral encoder seam.",
+      "disposition": "implemented", "sources": [{"ref": "KINTH", "locator": "lines 10-18"}],
+      "code": ["agent/attachments.py"], "tests": ["tests/test_attachments.py"]
+    },
+    {
+      "id": "CAD-028", "statement": "Rank state-valid next CAD operations with reasons, confidence and top-k metrics.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 58700-59180"}, {"ref": "P2", "locator": "lines 15192, 15571-15573"}],
+      "code": ["quality/nextop.py"], "tests": ["tests/test_nextop.py"]
+    },
+    {
+      "id": "CAD-029", "statement": "Search design variants with best-of-N, Reflexion, MCTS and Pareto/Elo ranking.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 63400-65000 AlphaZero-for-CAD notes"}, {"ref": "SK02", "locator": "shared five-phase debate"}],
+      "code": ["reliability/strategies/mcts.py", "exploration/tournament.py", "quality/pareto.py"], "tests": ["tests/test_mcts.py", "tests/test_exploration.py"]
+    },
+    {
+      "id": "CAD-030", "statement": "Run analytic beam, pressure-vessel and buckling checks through a pluggable solver interface.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "physics/quantitative verification sections"}],
+      "code": ["verifiers/simulation.py"], "tests": ["tests/test_simulation.py"]
+    },
+    {
+      "id": "CAD-031", "statement": "Orchestrate simulation jobs with deterministic IDs, cache, retry, timeout, cancellation and solver provenance.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 18440-18618"}],
+      "code": ["quality/simjobs.py"], "tests": ["tests/test_simjobs.py"]
+    },
+    {
+      "id": "CAD-032", "statement": "Plan collision-aware assembly and disassembly sequences and verify service-tool access.",
+      "disposition": "implemented", "sources": [{"ref": "ROADMAP", "locator": "construction sequencing and access transfer principles"}],
+      "code": ["quality/assemblyseq.py", "verifiers/access.py"], "tests": ["tests/test_assemblyseq.py", "tests/test_access.py"]
+    },
+    {
+      "id": "CAD-033", "statement": "Secure local ingestion with allowlisted formats, root confinement, metadata redaction, hashes and audit provenance.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 3222-3255, 3694"}, {"ref": "SCALE", "locator": "lines 1331-1343"}],
+      "code": ["security/policy.py"], "tests": ["tests/test_security_policy.py"]
+    },
+    {
+      "id": "CAD-034", "statement": "Block prompt-injection patterns and enforce explicit tool allowlists and trust tiers.",
+      "disposition": "implemented", "sources": [{"ref": "GAUDI", "locator": "page 7 robustness and safety"}],
+      "code": ["security/tool_gate.py"], "tests": ["tests/test_tool_gate.py"]
+    },
+    {
+      "id": "CAD-035", "statement": "Expose a transactional adapter contract with capability discovery, idempotency and apply/verify/commit/rollback.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 2843-2851"}, {"ref": "GAUDI", "locator": "pages 4-7 Revit connector"}],
+      "code": ["adapters/base.py", "adapters/memory.py"], "tests": ["tests/test_adapters.py"]
+    },
+    {
+      "id": "CAD-036", "statement": "Retrieve similar verified precedents and return an explicitly approximate fallback after failure.",
+      "disposition": "implemented", "sources": [{"ref": "ROADMAP", "locator": "retrieval and fallback principles"}],
+      "code": ["rag/retriever.py", "reliability/fallback.py"], "tests": ["tests/test_rag.py", "tests/test_recovered_features.py"]
+    },
+    {
+      "id": "CAD-037", "statement": "Capture consented modeling events aligned to proposed, accepted, adjusted and rejected operations.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "line ~63658 modeling-session/video dataset TODO"}],
+      "code": ["dataengine/session_capture.py"], "tests": ["tests/test_session_capture.py"]
+    },
+    {
+      "id": "CAD-038", "statement": "Convert human edit deltas into inspectable preference-training records.",
+      "disposition": "implemented", "sources": [{"ref": "ROADMAP", "locator": "continuous improvement via human feedback"}],
+      "code": ["dataengine/edit_pairs.py"], "tests": ["tests/test_recovered_features.py"]
+    },
+    {
+      "id": "CAD-039", "statement": "Audit operation, family, source, geography, process and geometry-family distribution skew.",
+      "disposition": "implemented", "sources": [{"ref": "SCALE", "locator": "lines 1287-1343"}],
+      "code": ["dataengine/distribution_audit.py", "dataengine/bias_audit.py"], "tests": ["tests/test_dataengine_ext.py", "tests/test_bias_audit.py"]
+    },
+    {
+      "id": "CAD-040", "statement": "Generate synthetic parametric samples, augment them and retain only solver-verified outputs.",
+      "disposition": "implemented", "sources": [{"ref": "SCALE", "locator": "lines 513-711, 818-859"}],
+      "code": ["datagen/generators.py", "datagen/augment.py", "datagen/pipeline.py"], "tests": ["tests/test_datagen.py", "tests/test_datagen_augment.py"]
+    },
+    {
+      "id": "CAD-041", "statement": "Benchmark execution, editability, geometry validity, dimensions, assembly and time to feasibility.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 63400-65000 CAD GLUE gap"}, {"ref": "P2", "locator": "lines 10568-10571, 19245+"}],
+      "code": ["bench/metrics.py", "bench/feasibility.py"], "tests": ["tests/test_bench.py", "tests/test_feasibility_metrics.py"]
+    },
+    {
+      "id": "CAD-042", "statement": "Track spans, token/cost/latency, confidence intervals, failure taxonomy and replay.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 19245+"}],
+      "code": ["observe.py", "trace.py"], "tests": ["tests/test_observe.py", "tests/test_trace.py"]
+    },
+    {
+      "id": "CAD-043", "statement": "Report mass, cost, carbon, energy and BOM deltas between design revisions.",
+      "disposition": "implemented", "sources": [{"ref": "P2", "locator": "lines 11599-11638"}],
+      "code": ["quality/revision_delta.py"], "tests": ["tests/test_revision_delta.py"]
+    },
+    {
+      "id": "CAD-044", "statement": "Coordinate specialized designer, modeler, verifier, DFM, red-team and reviewer roles with halt authority.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 34211-34470 and 53000-53300"}, {"ref": "SK02", "locator": "six-agent debate"}],
+      "code": ["agents/roles.py", "agents/supervisor.py", "agents/overseer.py"], "tests": ["tests/test_agents.py"]
+    },
+    {
+      "id": "CAD-045", "statement": "Expose typed CAD operations through MCP-style tool schemas, approval tiers and an event stream.",
+      "disposition": "implemented", "sources": [{"ref": "GAUDI", "locator": "pages 1-8 modular MCP architecture"}, {"ref": "P1", "locator": "lines 53300-55500"}],
+      "code": ["surfaces/mcp/tools.py", "surfaces/ui/approval.py", "surfaces/ui/events.py"], "tests": ["tests/test_mcp.py", "tests/test_ui.py"]
+    },
+    {
+      "id": "CAD-046", "statement": "Gate research claims on source evidence, result consistency, reproducibility and independent reviewer ensembles.",
+      "disposition": "implemented", "sources": [{"ref": "SK05", "locator": "quality review protocols"}, {"ref": "SK14", "locator": "reviewer ensemble and reliability levers"}],
+      "code": ["research/governance.py"], "tests": ["tests/test_research_governance.py"]
+    },
+    {
+      "id": "CAD-047", "statement": "Checkpoint research stages and rollback failed literature, experiment-design or quality gates.",
+      "disposition": "implemented", "sources": [{"ref": "SK13", "locator": "gate stages 5, 9 and 20"}],
+      "code": ["research/governance.py"], "tests": ["tests/test_research_governance.py"]
+    },
+    {
+      "id": "CAD-048", "statement": "Run a trained program head, B-rep diffusion head and assembly head with learned solver recycling.",
+      "disposition": "research-heavy", "rationale": "Requires curated training corpora, GPU training, model evaluation and learned weights; deterministic runtime seams are already present.",
+      "sources": [{"ref": "P2", "locator": "lines 10800-11440"}]
+    },
+    {
+      "id": "CAD-049", "statement": "Train editable T-spline generation with topology, continuity and parametric-intent heads.",
+      "disposition": "research-heavy", "rationale": "Requires a T-spline representation, scarce labeled corpus, differentiable constraints and substantial model training.",
+      "sources": [{"ref": "P2", "locator": "lines 16278-17504"}]
+    },
+    {
+      "id": "CAD-050", "statement": "Reconstruct editable features from video, scans and point clouds.",
+      "disposition": "research-heavy", "rationale": "Requires aligned multimodal datasets and trained perception/reconstruction models; session-event capture is implemented separately.",
+      "sources": [{"ref": "P1", "locator": "lines 21284-21964 and ~63658"}, {"ref": "P2", "locator": "lines 11599-11698"}]
+    },
+    {
+      "id": "CAD-051", "statement": "Run production finite-element meshing and solve through CalculiX or Elmer.",
+      "disposition": "external", "rationale": "Requires an installed external solver, mesher, validated material/load models and numerical correlation; analytic checks and the solver/job protocol are implemented.",
+      "sources": [{"ref": "P1", "locator": "physics/simulation sections"}]
+    },
+    {
+      "id": "CAD-052", "statement": "Generate production CAM toolpaths and machine simulation.",
+      "disposition": "external", "rationale": "Requires machine/postprocessor definitions, tooling libraries and collision-validated CAM infrastructure outside this repository.",
+      "sources": [{"ref": "P1", "locator": "CAD/CAM/CAE data and manufacturing sections"}]
+    },
+    {
+      "id": "CAD-053", "statement": "Perform federated model training or secure clean-room computation over proprietary CAD.",
+      "disposition": "external", "rationale": "Requires multi-party infrastructure, cryptographic/security controls, partner environments and trained models; local policy/redaction boundaries are implemented.",
+      "sources": [{"ref": "P2", "locator": "lines 11458-11482"}]
+    },
+    {
+      "id": "CAD-054", "statement": "Ship native writeback connectors for proprietary Revit, SolidWorks, Fusion or Onshape hosts.",
+      "disposition": "external", "rationale": "Requires licensed host installations, vendor SDK credentials and integration environments; the transactional adapter contract and fake host are implemented.",
+      "sources": [{"ref": "GAUDI", "locator": "pages 4-8"}, {"ref": "P2", "locator": "lines 2843-2851"}]
+    },
+    {
+      "id": "CAD-055", "statement": "Ship a browser-based interactive solid-modeling canvas and confidence/constraint overlays.",
+      "disposition": "external", "rationale": "Requires a separate frontend application and rendering/editor stack; stable SSE, approval, command and graph-view contracts are implemented.",
+      "sources": [{"ref": "P1", "locator": "lines 28557-29244, 45760-47230"}, {"ref": "GAUDI", "locator": "pages 5-7"}]
+    },
+    {
+      "id": "CAD-056", "statement": "Train a learned next-operation model from modeling-session data.",
+      "disposition": "research-heavy", "rationale": "Requires a sufficiently large consented session corpus, model selection and offline evaluation; heuristic ranking, metrics and capture are implemented.",
+      "sources": [{"ref": "P1", "locator": "lines 58700-59180"}, {"ref": "P2", "locator": "lines 15192, 15571"}]
+    },
+    {
+      "id": "CAD-057", "statement": "Build an automated literature citation graph that discovers sparse novelty regions.",
+      "disposition": "external", "rationale": "Requires live Semantic Scholar/arXiv indexing and citation data; evidence gates are implemented but network literature harvesting is a separate tool.",
+      "sources": [{"ref": "SK15", "locator": "innovation graph section"}]
+    },
+    {
+      "id": "CAD-058", "statement": "Treat speculative market domination, financing, off-planet construction and investor portal proposals as CAD runtime requirements.",
+      "disposition": "rejected", "rationale": "These are business narratives without a distinct testable text-to-CAD mechanism.",
+      "sources": [{"ref": "P1", "locator": "lines 33001-42340 and repeated roadmap/pitch sections"}]
+    },
+    {
+      "id": "CAD-059", "statement": "Run heavyweight autonomous research pipelines that fabricate or substitute unverified experiments.",
+      "disposition": "rejected", "rationale": "The skills explicitly warn against fake experiments and heavyweight pipelines; only evidence-grounded governance components were adopted.",
+      "sources": [{"ref": "SK15", "locator": "anti-pattern and component disposition table"}]
+    },
+    {
+      "id": "CAD-060", "statement": "Replace the current geometry kernel with a new Rust-native B-rep kernel.",
+      "disposition": "research-heavy", "rationale": "A kernel rewrite is a separate multi-year geometry project; the existing backend protocol preserves the option without pretending it is implemented.",
+      "sources": [{"ref": "P1", "locator": "lines 26231-27858"}, {"ref": "P2", "locator": "Rust/CAD infrastructure sections"}]
+    },
+    {
+      "id": "CAD-061", "statement": "Represent design intent with explicit causal, spatial, functional and reference relations.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 59180-62555 intent-node schema"}],
+      "code": ["quality/intentgraph.py"], "tests": ["tests/test_intentgraph.py"]
+    },
+    {
+      "id": "CAD-062", "statement": "Expose calibrated confidence and evidence reasons as frontend-neutral feature overlays.",
+      "disposition": "implemented", "sources": [{"ref": "P1", "locator": "lines 28557-29244 confidence overlays"}],
+      "code": ["surfaces/confidence.py"], "tests": ["tests/test_confidence_overlay.py"]
+    },
+    {
+      "id": "CAD-063", "statement": "Decompose CAD annotation into scoped expert and non-expert tasks tied to available evidence.",
+      "disposition": "implemented", "sources": [{"ref": "SCALE", "locator": "lines 643-711"}],
+      "code": ["dataengine/annotation_tasks.py"], "tests": ["tests/test_annotation_tasks.py"]
+    },
+    {
+      "id": "CAD-064", "statement": "Report effect sizes and uncertainty intervals rather than significance claims alone.",
+      "disposition": "implemented", "sources": [{"ref": "SK06", "locator": "reporting checklist and effect-size protocol"}],
+      "code": ["research/statistics.py"], "tests": ["tests/test_research_statistics.py"]
+    },
+    {
+      "id": "CAD-065", "statement": "Parse and spatially index arbitrary DXF files for native rule verification.",
+      "disposition": "external", "rationale": "Robust DXF parsing and indexing require ezdxf or another maintained format implementation; generic rules, anomaly checks and reports are implemented without pretending to cover the format.",
+      "sources": [{"ref": "P1", "locator": "lines 18457-19528"}]
+    },
+    {
+      "id": "CAD-066", "statement": "Perform true topology optimization against structural objectives.",
+      "disposition": "research-heavy", "rationale": "A defensible topology optimizer requires meshing, repeated validated physics solves and manufacturing constraints; parameter/Pareto exploration exists but is not mislabeled topology optimization.",
+      "sources": [{"ref": "KINTH", "locator": "lines 3457-3485"}]
+    },
+    {
+      "id": "CAD-067", "statement": "Convert bidirectionally between editable parametric histories and arbitrary meshes.",
+      "disposition": "research-heavy", "rationale": "Mesh-to-feature inference is an unsolved reconstruction problem requiring learned/geometric decomposition; import and best-effort decompile cover only recognizable structured cases.",
+      "sources": [{"ref": "P2", "locator": "lines 3499-3726 parametric-mesh bridge"}]
+    }
+  ]
 }
