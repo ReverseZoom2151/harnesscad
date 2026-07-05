@@ -1301,3 +1301,57 @@ All deterministic and in-scope findings from papers 81-85 are implemented
 (paper 83 is a near-duplicate of 82 -- only its appendix-only circle-repr
 and PV-sampling ideas were new). Per the no-README-during-campaign policy,
 the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 86. From Idea to CAD — A Language Model-Driven Multi-Agent System for Collaborative Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Shared design-state blackboard + design-feedback composition rule | **implemented** | `agents/idea2cad_blackboard.py` |
+| V-model role set + handoff DAG (forward + feedback back-edges) + ast static-check gate | **implemented** | `agents/idea2cad_roles.py` |
+| Artifact parsers (SUMMARY addendum, seven-view enum, bounded QA feedback, ambiguity detector) | **implemented** | `agents/idea2cad_artifacts.py` |
+| Four nested empty-feedback loops (validation/verification/design/codegen) | **implemented** | `agents/idea2cad_workflow.py` |
+| VLM codegen + doc scraping + rendering | **research-heavy/external** | learned VLM / web / kernel |
+
+### 87. From Intent to Execution — Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Gated CAD-RL total reward (exec gate x geometric/eval combo, misalignment deductions) | **implemented** | `dataengine/intent2exec_reward.py` |
+| Trust Region Stretch (asymmetric relaxed-bound PPO surrogate) | **implemented** | `dataengine/intent2exec_trs.py` |
+| Precision token loss (up-weight numeric/geometry tokens) | **implemented** | `dataengine/intent2exec_precision_token_loss.py` |
+| Overlong filtering (exclude truncated sequences from RL loss) | **implemented** | `dataengine/intent2exec_overlong_filter.py` |
+| Two-part <Think>/code CoT trace schema + format checker | **implemented** | `dataengine/intent2exec_cot_schema.py` |
+| VLM cold-start SFT + RL training; ExeCAD dataset | **research-heavy/external** | trained VLM / proprietary data |
+
+### 88. Future Prospects of Computer-Aided Design (CAD)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| AI-in-CAD vision, MBR desiderata, VR/AR/MR narrative, 3D-printing survey | **out-of-scope** | survey/vision essay -- no deterministic buildable artifact (nothing built) |
+
+### 89. GaussianCAD — Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Single 3D Gaussian forward math (covariance from scale+quaternion, projection/splatting, density, footprint) | **implemented** | `geometry/gaussiancad_splatting.py` |
+| ZYX-Euler camera + pinhole intrinsics/extrinsics + three-orthographic-view pose localization + Blender<->COLMAP | **implemented** | `geometry/gaussiancad_camera.py` |
+| Visual-hull space-carving Gaussian init from silhouette masks | **implemented** | `reconstruction/gaussiancad_visual_hull.py` |
+| Exact-Hungarian Earth Mover's Distance metric | **implemented** | `reconstruction/gaussiancad_emd.py` |
+| Sketch image-processing pipeline; 3DGS optimization + diffusion | **research-heavy/external** | image ops / learned optimization |
+
+### 90. GenCAD — Image-Conditioned CAD Generation with Transformer-Based Contrastive Representation and Diffusion Priors
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Gaussian FID latent-alignment metric (stdlib Jacobi matrix-sqrt) | **implemented** | `bench/gencad_fid.py` |
+| Batched R_B image-to-CAD retrieval-accuracy protocol | **implemented** | `bench/gencad_retrieval.py` |
+| Command spec / recon accuracy / COV-MMD-JSD / InfoNCE / cosine retrieval / DDPM schedule | **already in repo** | earlier-batch modules |
+| Learned transformer/CNN/diffusion encoders + training | **research-heavy/external** | trained models |
+
+## Batch-18 implementation result
+
+All deterministic and in-scope findings from papers 86-90 are implemented
+(paper 88 is a survey/vision essay -- correctly no buildable content;
+GenCAD built modestly since most machinery already existed). Per the
+no-README-during-campaign policy, the suite count is tracked in
+audit/text_to_cad_progress.json.

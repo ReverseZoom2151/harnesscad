@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 85,
-  "next_manifest_index": 86,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-85 implemented (83 is a near-duplicate of 82; only its appendix-only ideas were new)",
+  "reviewed_count": 90,
+  "next_manifest_index": 91,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-90 implemented (88 is a survey -- no buildable content)",
   "reviewed": [
     {
       "index": 1,
@@ -429,6 +429,31 @@
     {
       "index": 85,
       "paper": "From Concept to Manufacturing - Evaluating Vision-Language Models for Engineering Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 86,
+      "paper": "From Idea to CAD - A Language Model-Driven Multi-Agent System for Collaborative Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 87,
+      "paper": "From Intent to Execution - Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 88,
+      "paper": "Future Prospects of Computer-Aided Design (CAD).md",
+      "status": "reviewed"
+    },
+    {
+      "index": 89,
+      "paper": "GaussianCAD - Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 90,
+      "paper": "GenCAD - Image-Conditioned Computer-Aided Design Generation with Transformer-Based Contrastive Representation and Diffusion Priors.md",
       "status": "reviewed"
     }
   ],
