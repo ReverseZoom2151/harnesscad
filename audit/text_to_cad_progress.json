@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 45,
-  "next_manifest_index": 46,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-45 implemented",
+  "reviewed_count": 50,
+  "next_manifest_index": 51,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-50 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -229,6 +229,31 @@
     {
       "index": 45,
       "paper": "CADKnitter - Compositional CAD Generation from Text and Geometry Guidance.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 46,
+      "paper": "CADmium - Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 47,
+      "paper": "CADMorph - Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 48,
+      "paper": "CADParser - A Learning Approach of Sequence Modeling for B-Rep CAD.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 49,
+      "paper": "CADReasoner - Iterative Program Editing for CAD Reverse Engineering.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 50,
+      "paper": "CADReview - Automatically Reviewing CAD Programs with Error Detection and Correction.md",
       "status": "reviewed"
     }
   ]

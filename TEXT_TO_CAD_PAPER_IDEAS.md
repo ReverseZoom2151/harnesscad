@@ -839,3 +839,59 @@ recorded as an unrelated acronym collision.
 
 All deterministic and locally testable findings from papers 41–45 are
 implemented.
+
+### 46. CADmium — Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Sphericity discrepancy, discrete mean-curvature difference, exact Euler-characteristic match, mesh-derived watertightness gating, mesh area/volume primitives | **implemented** | `bench/cadmium_mesh_metrics.py` |
+| Corpus annotation statistics (conciseness band, unique-word ratio, Heaps vocabulary growth, decimal-precision distribution, head-to-head corpus comparison) | **implemented** | `dataengine/cadmium_annotation_stats.py` |
+| GPT-4.1 multimodal annotation, Qwen2.5-Coder LoRA SFT, LLM-as-a-judge, Onshape-FeatureScript JSON normalization | **research-heavy/external** | learned models / proprietary tooling |
+
+### 47. CADMorph — Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Voxelised truncated-SDF grid with analytic Boolean algebra + dissimilarity proxies (tSDF distance, voxel IoU, occupancy Hamming) | **implemented** | `geometry/cadmorph_tsdf.py` |
+| Relative-contribution planning with top-K masking (leave-one-out proxy for cross-attention read-out) | **implemented** | `editing/cadmorph_plan.py` |
+| Distance-to-target verification with a cross-iteration priority queue + structure-preservation objective | **implemented** | `editing/cadmorph_verify.py` |
+| Plan-generate-verify orchestrator (queue-seeded, deterministic) | **implemented** | `editing/cadmorph_loop.py` |
+| P2S latent-diffusion model, MPP LLM infiller, cross-attention contribution map | **research-heavy/external** | learned models; injected as callables |
+
+### 48. CADParser — A Learning Approach of Sequence Modeling for B-Rep CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Fixed-width command/token schema (13-symbol vocab, 19-slot param vector, DeepCAD quantization + 257-dim one-hot, NC=32 packing) | **implemented** | `reconstruction/cadparser_schema.py` |
+| Sequence-validity grammar/FSA with decode-time legal-continuation masking | **implemented** | `reconstruction/cadparser_grammar.py` |
+| B-rep -> coedge graph (faces/edges/coedges, typed adjacency, geometry node features) | **implemented** | `reconstruction/cadparser_brep_graph.py` |
+| Dataset statistics + back-to-front truncation augmentation | **implemented** | `reconstruction/cadparser_sequence_stats.py` |
+| Learned graph-encoder/Transformer-decoder parser; 40k SolidWorks dataset | **research-heavy/external** | model training / proprietary data |
+
+### 49. CADReasoner — Iterative Program Editing for CAD Reverse Engineering
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Directional geometry-discrepancy field (nearest-surface offsets + farthest-point selection; t=1 null encoding) | **implemented** | `editing/cadreasoner_discrepancy.py` |
+| Closed-loop render-compare-refine reverse-engineering harness (best-so-far by residual; selection-vs-reporting split) | **implemented** | `editing/cadreasoner_edit_loop.py` |
+| Geometry-guided beam over edit iterations with render-budget bounds | **implemented** | `editing/cadreasoner_beam.py` |
+| Occlusion-based scan-simulation defect pipeline (spherical depth buffer, seeded noise, hole punching) | **implemented** | `datagen/cadreasoner_scansim.py` |
+| Qwen2-VL editor + SFT curriculum, multi-view RGB overlay backbone, Poisson reconstruction | **research-heavy/external** | learned VLM / external mesh kernel |
+
+### 50. CADReview — Automatically Reviewing CAD Programs with Error Detection and Correction
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Eight-scenario CAD-program error taxonomy | **implemented** | `cadreview_taxonomy.py` |
+| Brace-aware OpenSCAD block segmenter | **implemented** | `cadreview_blocks.py` |
+| Reference-grounded error detector (type + offending block id) | **implemented** | `cadreview_detect.py` |
+| Seeded error injector (one error per sample, 8 types) | **implemented** | `cadreview_errorgen.py` |
+| Automated corrector with re-detect round-trip guarantee | **implemented** | `cadreview_correct.py` |
+| Structured review report + V_d diagnostic reward + Acc scorer | **implemented** | `cadreview_review.py` |
+| 8-bit spatial quantization + SGO numeric-token reweighting | **implemented** | `cadreview_quantize.py` |
+| Learned feedback generator / code editor (GCR, SGO), RL/DPO with V_v/V_p rewards, multiview rendering | **research-heavy/external** | learned MLLMs / rendering pipeline |
+
+## Batch-10 implementation result
+
+All deterministic and locally testable findings from papers 46-50 are
+implemented. Suite: 1791 tests, all passing.
