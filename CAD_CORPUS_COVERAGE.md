@@ -4,6 +4,11 @@ This ledger makes the research pass auditable. It separates source coverage from
 implementation status; “covered” means the source was inspected for build ideas,
 not that every cited research result was reimplemented.
 
+> This high-level ledger has been superseded for idea-level completeness by the
+> independent [CAD_CORPUS_AUDIT.md](CAD_CORPUS_AUDIT.md). The independent pass
+> found additional partial and net-new ideas; therefore the corpus must not be
+> described as exhausted.
+
 ## Inventory
 
 | Source group | Files | Coverage | Evidence / disposition |
