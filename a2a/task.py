@@ -49,31 +49,51 @@ class TaskState(str, Enum):
 
     SUBMITTED = "submitted"
     WORKING = "working"
-    INPUT_REQUIRED = "input_required"
+    # NOTE: spec wire value is hyphenated "input-required" (was "input_required",
+    # a real wire bug that broke interop with conformant A2A peers).
+    INPUT_REQUIRED = "input-required"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELED = "canceled"
+    REJECTED = "rejected"
+    AUTH_REQUIRED = "auth-required"
+    UNKNOWN = "unknown"
 
 
-# Terminal states have no outgoing transitions.
-TERMINAL_STATES = frozenset({TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED})
+# Terminal states have no outgoing transitions. REJECTED is terminal (the agent
+# declined the task outright).
+TERMINAL_STATES = frozenset({
+    TaskState.COMPLETED,
+    TaskState.FAILED,
+    TaskState.CANCELED,
+    TaskState.REJECTED,
+})
 
 # The legal transition graph. ``None`` is the pre-submission origin so ``submit()``
 # is itself guard-driven (nothing -> submitted). Every other edge is an explicit,
 # validated move; anything not listed raises IllegalTransition.
 LEGAL_TRANSITIONS: Dict[Optional[TaskState], frozenset] = {
     None: frozenset({TaskState.SUBMITTED}),
-    TaskState.SUBMITTED: frozenset({TaskState.WORKING, TaskState.CANCELED, TaskState.FAILED}),
+    TaskState.SUBMITTED: frozenset({
+        TaskState.WORKING,
+        TaskState.CANCELED,
+        TaskState.FAILED,
+        TaskState.REJECTED,
+    }),
     TaskState.WORKING: frozenset({
         TaskState.INPUT_REQUIRED,
+        TaskState.AUTH_REQUIRED,
         TaskState.COMPLETED,
         TaskState.FAILED,
         TaskState.CANCELED,
     }),
     TaskState.INPUT_REQUIRED: frozenset({TaskState.WORKING, TaskState.CANCELED, TaskState.FAILED}),
+    TaskState.AUTH_REQUIRED: frozenset({TaskState.WORKING, TaskState.CANCELED, TaskState.FAILED}),
     TaskState.COMPLETED: frozenset(),
     TaskState.FAILED: frozenset(),
     TaskState.CANCELED: frozenset(),
+    TaskState.REJECTED: frozenset(),
+    TaskState.UNKNOWN: frozenset(),
 }
 
 
@@ -112,6 +132,22 @@ class TaskStatus:
 # protocol in the blueprint (sec.14) and trace.py's event-dict shape.
 EVENT_STATUS_UPDATE = "status_update"
 EVENT_ARTIFACT_UPDATE = "artifact_update"
+
+# Wire-level (spec) event kinds are hyphenated: "status-update"/"artifact-update"
+# (TaskStatusUpdateEvent / TaskArtifactUpdateEvent). We keep the internal
+# underscore names above for back-compat with existing subscribers and map to the
+# spec strings only at the network seam via ``to_wire_event``.
+WIRE_EVENT_KINDS = {
+    EVENT_STATUS_UPDATE: "status-update",
+    EVENT_ARTIFACT_UPDATE: "artifact-update",
+}
+
+
+def to_wire_event(event: Dict[str, Any]) -> Dict[str, Any]:
+    """Map an internal event dict to its spec wire shape (hyphenated ``kind``)."""
+    wire = dict(event)
+    wire["kind"] = WIRE_EVENT_KINDS.get(event.get("kind"), event.get("kind"))
+    return wire
 
 # A subscriber is any callable that receives one event dict. This is the
 # in-process stand-in for an SSE stream / webhook POST — no real network.
@@ -211,6 +247,14 @@ class Task:
         """Abort: -> CANCELED (terminal)."""
         return self._transition(TaskState.CANCELED, message)
 
+    def reject(self, message: Optional[A2AMessage] = None) -> "Task":
+        """Decline the task outright: SUBMITTED -> REJECTED (terminal)."""
+        return self._transition(TaskState.REJECTED, message)
+
+    def require_auth(self, message: Optional[A2AMessage] = None) -> "Task":
+        """Pause for authentication: WORKING -> AUTH_REQUIRED."""
+        return self._transition(TaskState.AUTH_REQUIRED, message)
+
     # --- artifacts ------------------------------------------------------
     def add_artifact(self, artifact: Part) -> "Task":
         """Attach a produced artefact and emit an artifact_update event."""
@@ -229,6 +273,11 @@ class Task:
         return self.state in TERMINAL_STATES
 
     def to_dict(self) -> Dict[str, Any]:
+        """Internal serialisation (unchanged): flat ``taskId``/``state``/``history``.
+
+        Kept intact for existing in-process callers/tests. For the on-the-wire
+        A2A ``Task`` object shape use ``to_a2a`` instead.
+        """
         return {
             "taskId": self.taskId,
             "contextId": self.contextId,
@@ -236,6 +285,34 @@ class Task:
             "history": [h.to_dict() for h in self.history],
             "artifacts": [a.to_dict() for a in self.artifacts],
             "metadata": dict(self.metadata),
+        }
+
+    def to_a2a(self) -> Dict[str, Any]:
+        """Emit the spec A2A ``Task`` object shape.
+
+        Differs from ``to_dict`` per a2a-protocol.org: top-level ``id`` (not
+        ``taskId``); a nested ``status:{state, message?, timestamp?}`` holding the
+        CURRENT status; ``history`` as the Message[] conversation (the messages
+        attached to status changes, in order); ``artifacts`` as Artifact[]; and a
+        ``kind:"task"`` discriminator.
+        """
+        current = self.history[-1] if self.history else None
+        status: Dict[str, Any] = {
+            "state": self.state.value if self.state is not None else TaskState.UNKNOWN.value,
+        }
+        if current is not None:
+            if current.message is not None:
+                status["message"] = current.message.to_dict()
+            if current.ts is not None:
+                status["timestamp"] = current.ts
+        return {
+            "id": self.taskId,
+            "contextId": self.contextId,
+            "status": status,
+            "history": [h.message.to_dict() for h in self.history if h.message is not None],
+            "artifacts": [a.to_dict() for a in self.artifacts],
+            "metadata": dict(self.metadata),
+            "kind": "task",
         }
 
 

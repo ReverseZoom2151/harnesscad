@@ -203,7 +203,8 @@ class TestSubscribers(unittest.TestCase):
         t.subscribe(events.append)
         prompt = A2AMessage(role=ROLE_AGENT, parts=(Part.from_text("need a fillet radius"),))
         t.submit().start().require_input(message=prompt)
-        self.assertEqual(events[-1]["data"]["state"], "input_required")
+        # spec wire value is hyphenated "input-required" (see TaskState.INPUT_REQUIRED)
+        self.assertEqual(events[-1]["data"]["state"], "input-required")
         self.assertEqual(events[-1]["data"]["message"]["parts"][0]["text"], "need a fillet radius")
 
 
@@ -238,6 +239,38 @@ class TestTaskStore(unittest.TestCase):
         t = store.create(contextId="c1")
         store.put(t)  # re-register same task
         self.assertEqual(store.by_context("c1"), [t])
+
+
+class TestNewLifecycleTransitions(unittest.TestCase):
+    def test_submitted_to_rejected_terminal(self):
+        t = Task()
+        t.submit().reject()
+        self.assertEqual(t.state, TaskState.REJECTED)
+        self.assertTrue(t.is_terminal)
+        with self.assertRaises(IllegalTransition):
+            t.start()
+
+    def test_working_to_auth_required_cycle(self):
+        t = Task()
+        t.submit().start().require_auth().start().complete()
+        self.assertEqual(t.state, TaskState.COMPLETED)
+
+    def test_reject_from_working_illegal(self):
+        t = Task()
+        t.submit().start()
+        with self.assertRaises(IllegalTransition):
+            t.reject()
+
+    def test_to_dict_still_flat_internal_shape(self):
+        # to_dict keeps its legacy flat shape (taskId/state), unchanged by the
+        # spec work; the spec shape lives in to_a2a (see conformance tests).
+        t = Task(taskId="t1", contextId="c1", clock=monotonic_counter())
+        t.submit().start().complete()
+        d = _roundtrip(t.to_dict())
+        self.assertEqual(d["taskId"], "t1")
+        self.assertEqual(d["state"], "completed")
+        self.assertNotIn("id", d)
+        self.assertNotIn("kind", d)
 
 
 if __name__ == "__main__":
