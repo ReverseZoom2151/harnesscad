@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 25,
-  "next_manifest_index": 26,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-25 implemented",
+  "reviewed_count": 30,
+  "next_manifest_index": 31,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-30 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -129,6 +129,31 @@
     {
       "index": 25,
       "paper": "CAD-Coder - Text-Guided CAD Files Code Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 26,
+      "paper": "CAD-Coder - Text-to-CAD Generation with Chain-of-Thought and Geometric Reward.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 27,
+      "paper": "CAD-Editor - A Locate-then-Infill Framework with Automated Training Data Synthesis for Text-Based CAD Editing.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 28,
+      "paper": "CAD-Editor - Text-Based CAD Editing Through Adapting Large Language Models with Synthetic Data.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 29,
+      "paper": "CAD-GPT - Synthesising CAD Construction Sequence with Spatial Reasoning-Enhanced Multimodal LLMs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 30,
+      "paper": "CAD-Judge - Toward Efficient Morphological Grading and Verification for Text-to-CAD Generation.md",
       "status": "reviewed"
     }
   ]

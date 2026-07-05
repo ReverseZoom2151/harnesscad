@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 25 / 186 papers reviewed.
+Status: 30 / 186 papers reviewed.
 
 Classifications:
 
@@ -602,3 +602,67 @@ cross-platform evidence.
 All deterministic and locally testable findings from papers 21–25 are
 implemented. Unsafe arbitrary code execution is explicitly rejected, and
 external/model-dependent claims remain behind typed seams.
+
+## Batch 6 — papers 26–30
+
+### 26. CAD-Coder — Text-to-CAD Generation with Chain-of-Thought and Geometric Reward
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Five-stage CAD plan and strict reasoning/code envelope | **implemented** | `agent/cad_plan.py` |
+| Execution-first piecewise geometry/format reward | **implemented** | `quality/cad_reward.py` |
+| Best-candidate geometry triplets, quality tiers and lineage | **implemented** | `datagen/geometry_triplets.py` |
+| Versioned normalization, squared Chamfer and invalidity protocol | **implemented** | `bench/cad_geometry_protocol.py` |
+| Thin/interior/multiresolution sampling guard | **implemented** | `quality/sampling_guard.py` |
+| CoT/code/geometry/review provenance and leakage | **implemented** | `dataengine/cot_records.py` |
+| Qwen SFT/GRPO and DeepSeek annotation | **research-heavy** | requires datasets and A800-class training |
+
+### 27. CAD-Editor — Locate-then-Infill Framework
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Canonical LCS locate masks, infill and immutable-context guard | **implemented** | `editing/locate_infill.py` |
+| Base/reverse/cross-variant triplet synthesis | **implemented** | `datagen/edit_triplets.py` |
+| Staged visual/sequence/difference edit captions and filters | **implemented** | `dataengine/edit_caption.py`, `dataengine/edit_filters.py` |
+| Candidate/render/verifier/human-selection records | **implemented** | `dataengine/selective_edits.py` |
+| Directional/JSD/VR/CD edit metrics and lineage-safe splits | **implemented** | `bench/edit_alignment.py`, `bench/edit_splits.py` |
+| Append-only iterative edit/rollback provenance | **implemented** | `editing/iterative_session.py` |
+| Locator/infiller LoRA, CLIP and crowd evaluation | **research-heavy** | requires models, datasets, GPUs and human raters |
+
+### 28. CAD-Editor — Text-Based CAD Editing Through Synthetic Data
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Visible/executable 1–3 edit triplet contract | **implemented** | `dataengine/edit_triplets.py` |
+| Directional image/text edit alignment | **implemented** | `quality/directional_edit_alignment.py` |
+| Intended-vs-actual edit locality and collateral diagnostics | **implemented** | `quality/edit_locality.py` |
+| Monotonic iterative edit policy with rollback/oscillation stop | **implemented** | `agent/iterative_edit_policy.py` |
+| LoRA, MLLM captions, CLIP and human preference collection | **external/research-heavy** | deterministic orchestration exists; learned services do not |
+
+### 29. CAD-GPT — Spatial Reasoning-Enhanced Multimodal CAD Sequences
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Reversible global-frame/local-sketch spatial tokens | **implemented** | `ingest/sketch_frame_tokens.py` |
+| Separate command/scalar/origin/orientation/local-coordinate accuracy | **implemented** | `quality/spatial_sequence_accuracy.py` |
+| Frame, extrusion-normal and cumulative-drift coherence | **implemented** | `quality/frame_coherence.py` |
+| Deterministic spatial challenge fixtures/report | **implemented** | `bench/spatial_challenge_set.py` |
+| LLaVA encoders and learned spatial embeddings | **research-heavy** | requires multimodal data and GPU training |
+
+### 30. CAD-Judge — Efficient Morphological Grading and Verification
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Cached stage-aware compiler/morphology judge and honest verification levels | **implemented** | `bench/compiler_judge.py` |
+| Area-weighted deterministic mesh sampling | **implemented** | `geometry/mesh_sampling.py` |
+| Binary preference records/sampling and KTO utility rows | **implemented** | `dataengine/binary_preferences.py`, `binary_sampling.py`, `kto.py` |
+| Threshold calibration and compiler diagnostics | **implemented** | `bench/judge_calibration.py`, `reliability/compiler_diagnostics.py` |
+| Review plateau, command F1 and failure-aware morphology reports | **implemented** | `bench/review_iterations.py`, `command_metrics.py`, `morphology_report.py` |
+| Reward-hacking, efficiency and controlled judge ablations | **implemented** | `bench/reward_hacking.py`, `judge_efficiency.py`, `research/judge_ablation.py` |
+| KTO/LoRA model training | **research-heavy** | data rows/math exist; optimization requires models and GPUs |
+
+## Batch-6 implementation result
+
+All deterministic and locally testable findings from papers 26–30 are
+implemented. Compiler success, morphology and requirements evidence remain
+separate so validity cannot be misreported as semantic correctness.
