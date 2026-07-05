@@ -28,10 +28,12 @@ py-modules = [
     "verify", "loop", "trace", "server", "cli", "checks_geometry",
     "pipeline", "contract", "constraints", "checks_dfm", "loopdetect",
     "guardrails", "routing", "render", "checks_vision", "observe", "grammar",
-    "executor", "harness",
+    "executor", "harness", "repair", "checks_assembly", "checks_interference",
+    "estimate", "fitness", "checks_standards", "checks_compliance",
+    "checks_requirements",
 ]
 packages = [
     "cisp", "state", "backends", "llm", "agent", "memory", "bench",
     "context", "rag", "strategies", "agents", "a2a", "ui", "mcp",
-    "dataengine", "datagen", "exploration",
+    "dataengine", "datagen", "exploration", "spec", "skeleton", "sizing",
 ]
