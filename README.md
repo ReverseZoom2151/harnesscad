@@ -4,8 +4,8 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-159%20passing-brightgreen?style=flat-square)
-![Phase](https://img.shields.io/badge/phase-1%20minimal%20harness-blue?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-520%20passing-brightgreen?style=flat-square)
+![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 ![Core: stdlib](https://img.shields.io/badge/core-stdlib--only-informational?style=flat-square)
@@ -105,8 +105,22 @@ otherwise. The from-scratch core is the middle band.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
+│  Cost routing    routing.RoutingLLM — classify -> cheapest capable │  wraps the LLM seam
+│                  model -> fallback chain · running cost/usage tally │
+├──────────────────────────────────────────────────────────────────┤
 │  LLM seam        llm/  — Message · ToolSpec · CompletionResult    │  provider-neutral
 │                  LiteLLMClient (~100 providers)  ·  Instructor     │
+│  Constrained     grammar.py — op JSON Schema + GBNF/EBNF grammar   │  derived from the
+│  decoding        + GrammarConstraint post-hoc validator            │  op registry
+├──────────────────────────────────────────────────────────────────┤
+│  Multi-agent     agents/ — Designer·Modeler·Verifier·DFMCritic·   │  supervisor loop
+│                  RedTeam·Reviewer + Supervisor + AsyncOverseer      │  + halt authority
+│                  a2a/ — AgentCard · A2AMessage · Task lifecycle     │  inter-agent bus
+├──────────────────────────────────────────────────────────────────┤
+│  Reliability     strategies/ — best_of_n (draw N, verifier picks)  │  spend compute to
+│                  · ReflexionLoop (act -> reflect -> retry)          │  raise success
+│                  guardrails.py — GuardrailGate (before-tool) ·      │  block bad ops
+│                  ErrorRecovery ladder · loopdetect.LoopDetector     │  before they apply
 ├──────────────────────────────────────────────────────────────────┤
 │  Build pipeline  pipeline.build — brief -> planner -> session ->  │  one-call end-to-end
 │                  verified geometry -> STEP  ·  cli.py build        │
@@ -114,16 +128,17 @@ otherwise. The from-scratch core is the middle band.
 │  Agent           agent/  — Planner (NL brief -> validated ops)    │
 │                  runner.run (plan -> apply -> observe -> replan)   │
 ├──────────────────────────────────────────────────────────────────┤
-│  Grounding       memory/  — MemoryStore (working/episodic/        │  skills grow only when
-│                  semantic/procedural) · Voyager-style SkillLibrary │  their geometry verifies
+│  Grounding       context/ — ContextManager (token budget) +        │  skills grow only when
+│                  StagingArea · rag/ — hybrid BM25+vector retriever  │  their geometry verifies
+│                  memory/ — MemoryStore + Voyager-style SkillLibrary │
 ├──────────────────────────────────────────────────────────────────┤
 │  Harness loop    loop.HarnessSession                              │  ← the from-scratch core
 │                  applyOps -> regen -> verify -> checkpoint         │
 │                  block-and-correct · transactional rollback        │
 ├──────────────────────────────────────────────────────────────────┤
-│  Plural verifier verify.py — SketchConstraintCheck (DOF) ·        │  diagnostics feed
-│                  SolidPresenceCheck · BRepValidityCheck (topology) │  back into the loop
-│                  contract.ContractCheck · constraints.py (solver)  │
+│  Plural verifier verify.py (DOF · solid-presence · BRep validity) │  diagnostics feed
+│                  constraints.py (solver) · contract.ContractCheck  │  back into the loop
+│                  checks_dfm.DFMCheck · checks_vision.VLMJudgeCheck  │
 ├──────────────────────────────────────────────────────────────────┤
 │  Ops-DAG         state/opdag.py  — append-only, content-hashed    │  "git for CAD"
 │                  checkpoint · rollback · deterministic replay      │
@@ -131,8 +146,15 @@ otherwise. The from-scratch core is the middle band.
 │  GeometryBackend backends/base.py  (swappable kernel seam)        │
 │    StubBackend (stdlib) · CadQueryBackend (OCCT) · future Rust    │
 ├──────────────────────────────────────────────────────────────────┤
-│  CISP surface    cisp/ (typed ops + protocol) · server.py (stdio) │  LSP-inspired
-│                  cli.py · trace.py (event stream)                 │  JSON methods
+│  Surfaces        cisp/ (typed ops + protocol) · server.py (stdio) │  LSP-inspired
+│                  mcp/ (ToolCatalog + CADGymEnv) · ui/ (SSE +       │  JSON methods
+│                  three-tier approval) · render.py (multi-view)     │
+├──────────────────────────────────────────────────────────────────┤
+│  Observability   observe.py (spans · KPI metrics · failure         │  cross-cutting
+│                  taxonomy · replay) · trace.py (event stream)       │
+├──────────────────────────────────────────────────────────────────┤
+│  Data engine     dataengine/ (Trajectory + GRPO/DPO/STaR export)  │  offline flywheel
+│                  datagen/ (synthetic generators + solver-in-loop)  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -140,19 +162,58 @@ otherwise. The from-scratch core is the middle band.
 (`initialize` / `applyOps` / `query` / `verify` / `export`) over line-delimited JSON,
 so the same harness drops into an MCP server, a subprocess, or a stdio pipe unchanged.
 
-Four newer layers wrap that spine. **`pipeline.build`** (and `cli.py build`) is the
-single end-to-end entry point: brief -> planner -> `HarnessSession` -> verified
-geometry -> STEP. The **plural verifier** now runs three independent checks in the
-default set — `SketchConstraintCheck` (DOF), `SolidPresenceCheck`, and the real
-`BRepValidityCheck` (OCCT topology / manifold / watertight) — while `constraints.py`
-adds a genuine DOF model (`ConstraintGraph` rank analysis, plus an optional
-SolveSpace-backed `SolveSpaceSketch` real 2D solver) and `contract.py` adds an
-opt-in **Contract** acceptance spec (required dims + tolerances, volume/mass,
-feature counts, manifold/validity, named predicates) verified by `ContractCheck`.
-The **`memory/`** grounding layer holds the four memory types and a Voyager-style
-`SkillLibrary` that admits a skill only when its expanded ops verify. And
-**`bench/`** is CADBench-Verified — a SWE-bench-style eval that runs tasks through
-the same spine and scores editability, program execution, B-rep validity, and
+**The plural verifier.** The default set runs three independent checks —
+`SketchConstraintCheck` (DOF), `SolidPresenceCheck`, and the real `BRepValidityCheck`
+(OCCT topology / manifold / watertight) — where `constraints.py` supplies a genuine
+DOF model (`ConstraintGraph` rank analysis plus an optional SolveSpace-backed real 2D
+solver) and `contract.ContractCheck` adds an opt-in acceptance spec (required dims +
+tolerances, volume/mass, feature counts, manifold/validity, named predicates). Two
+opt-in critics broaden it beyond geometry: `checks_dfm.DFMCheck` is a Design-for-
+Manufacturing critic (aspect-ratio, thin/small-part) that only ever emits
+WARNING/INFO, and `checks_vision.VLMJudgeCheck` is the VLM-as-judge for the subjective
+slice (design intent, cleanliness), advisory-only with a 0..1 score. Both are additive
+by design — neither can flip a passing report to failing.
+
+**Grounding.** `context/` manages the finite token window explicitly — `ContextManager`
+budgets `C >= system + memory + tools + history + reserved`, guards overflow pre-flight,
+and assembles a prefix-cache-friendly prompt, while `StagingArea` is the file-based
+per-task "anti-RAG". `rag/` is a dependency-free hybrid retriever — structure-aware
+chunking feeds a BM25 lexical index and an embedding-free hashed-vector index fused by
+reciprocal-rank fusion. `memory/` holds the four memory types and a Voyager-style
+`SkillLibrary` that admits a skill only when its expanded ops verify.
+
+**Reliability.** `strategies/best_of_n` draws N seeded candidate plans through fresh
+sessions and lets the deterministic verifier pick the winner; `strategies/reflexion`
+runs a Read-Act-Reflect-Write loop that writes failure insights to semantic memory and
+retries. Before any op applies, `guardrails.GuardrailGate` (the `before_tool_callback`
+hard gate) rejects obviously invalid ops without mutating kernel state,
+`loopdetect.LoopDetector` catches an agent retrying the identical op, and
+`guardrails.ErrorRecovery` enumerates the detect -> handle -> recover ladder.
+
+**Multi-agent + surfaces.** `agents/` wraps the single-agent baseline with six role
+personas (Designer, Modeler, Verifier, DFMCritic, RedTeam, Reviewer), a `Supervisor`
+that chains them and feeds diagnostics back each round, and an `AsyncOverseer` with
+halt authority; `a2a/` is the inter-agent wire format (`AgentCard`, `A2AMessage`, and a
+guarded `Task` lifecycle with SSE-style events). `mcp/` exposes the environment as an
+MCP-style server (`ToolCatalog` — one tool per op plus `measure`/`query`/`verify`/
+`export`/`render` — with behavioural `annotations`) and a `CADGymEnv` Gym environment
+(`reset`/`step` -> obs, verifier-derived reward, done, info). `ui/` is the outward SSE
+event contract (`UIEvent`/`EventStream`) plus a three-tier approval gate (AUTO /
+NOTIFY / REQUIRE) with dry-run previews. `render.py` renders the current solid to
+multi-view SVG/PNG bytes as the observation half of a render -> judge loop.
+
+**Cross-cutting.** `routing.RoutingLLM` is a drop-in `LLM` that classifies each request
+and routes it to the cheapest capable model with a fallback chain and a running cost
+tally. `grammar.py` derives an op JSON Schema and a GBNF/EBNF grammar from the op
+registry (so they cannot drift) plus a stdlib post-hoc `GrammarConstraint` validator.
+`observe.py` computes the blueprint's KPIs from a run trajectory with confidence
+intervals, classifies failures into a taxonomy, and replays runs. And the offline
+**data engine** folds each run into a canonical `Trajectory` and exports GRPO / DPO /
+STaR training rows (`dataengine/`), while `datagen/` bootstraps cold-start data with
+seeded synthetic generators kept honest by solver-in-the-loop verification.
+
+Finally, **`bench/`** is CADBench-Verified — a SWE-bench-style eval that runs tasks
+through the same spine and scores editability, program execution, B-rep validity, and
 dimension match per difficulty.
 
 ## Quickstart
@@ -162,7 +223,7 @@ The core spine has **no dependencies** — clone and run. Python 3.10+.
 ```sh
 git clone <repo> && cd harnesscad
 python cli.py demo                             # built-in constrained-plate -> extrude sample
-python -m unittest discover -s tests -t . -v   # the full suite (159 tests)
+python -m unittest discover -s tests -t . -v   # the full suite (520 tests)
 ```
 
 ### Drive a session directly
@@ -366,9 +427,17 @@ harnesscad/
 ├── loop.py                 # HarnessSession — the applyOps->regen->verify->checkpoint spine
 ├── verify.py               # plural verifier: SketchConstraintCheck, SolidPresenceCheck, BRepValidity
 ├── checks_geometry.py      # BRepValidityCheck — real OCCT topology check (manifold/watertight)
+├── checks_dfm.py           # DFMCheck — opt-in Design-for-Manufacturing critic (WARNING/INFO only)
+├── checks_vision.py        # VLMJudgeCheck — VLM-as-judge for the subjective slice (advisory 0..1 score)
 ├── constraints.py          # 2D DOF: ConstraintGraph (rank analysis) + SolveSpaceSketch (real solver)
 ├── contract.py             # Contract acceptance spec + ContractCheck verifier (dims/mass/topology)
-├── trace.py                # observability: typed event stream (Null/InMemory/Jsonl tracers)
+├── guardrails.py           # GuardrailGate (before-tool hard gate) + ErrorRecovery ladder
+├── loopdetect.py           # LoopDetector — pre-apply sliding-window oscillation detector
+├── routing.py              # RoutingLLM — classify -> cheapest capable model -> fallback + cost tally
+├── grammar.py              # op JSON Schema + GBNF/EBNF grammar + GrammarConstraint (from op registry)
+├── render.py               # multi-view render of the current solid to SVG/PNG bytes
+├── observe.py              # observability: spans, KPI metrics + CIs, failure taxonomy, run replay
+├── trace.py                # typed event stream (Null/InMemory/Jsonl tracers)
 ├── cisp/
 │   ├── ops.py              #   the v0 CISP op set (frozen dataclasses) + parse/canonical JSON
 │   └── protocol.py         #   ApplyOpsResult — the shape the agent sees back
@@ -389,6 +458,36 @@ harnesscad/
 ├── memory/
 │   ├── store.py            #   MemoryStore — working/episodic/semantic/procedural memory
 │   └── skills.py           #   SkillLibrary — Voyager-style, execution-verified skill templates
+├── context/
+│   ├── manager.py          #   ContextManager — token-window budget + overflow-guarded assembly
+│   └── staging.py          #   StagingArea — file-based per-task task-context/ ("anti-RAG")
+├── rag/
+│   ├── chunk.py            #   structure-aware Markdown chunking (fenced code kept atomic)
+│   ├── index.py            #   BM25Index + embedding-free HashedVectorIndex
+│   └── retriever.py        #   HybridRetriever — RRF/weighted fusion + build_from_docs()
+├── strategies/
+│   ├── best_of_n.py        #   best_of_n — draw N seeded plans, verifier picks the winner
+│   └── reflexion.py        #   ReflexionLoop — Read-Act-Reflect-Write, learns within a run
+├── agents/
+│   ├── roles.py            #   Designer/Modeler/Verifier/DFMCritic/RedTeam/Reviewer personas
+│   ├── supervisor.py       #   Supervisor — chains the roles, feeds diagnostics back each round
+│   └── overseer.py         #   AsyncOverseer — event-stream monitor with halt authority
+├── a2a/
+│   ├── messages.py         #   AgentCard, A2AMessage, Part — inter-agent wire vocabulary
+│   └── task.py             #   Task lifecycle state machine + TaskStore (SSE-style events)
+├── ui/
+│   ├── events.py           #   UIEvent / EventStream — typed SSE wire protocol (+ parsers)
+│   └── approval.py         #   ApprovalGate — three-tier AUTO/NOTIFY/REQUIRE + dry-run preview
+├── mcp/
+│   ├── tools.py            #   ToolCatalog — one tool per op + to_mcp() schema, verifier reward
+│   ├── annotations.py      #   MCP behavioural hints (readOnly/destructive) -> approval tier
+│   └── gym.py              #   CADGymEnv — reset/step(obs, reward, done, info) RL environment
+├── dataengine/
+│   ├── trajectory.py       #   Trajectory — canonical training record (steps + dense rewards)
+│   └── export.py           #   to_grpo / to_dpo / to_star + flywheel_metrics
+├── datagen/
+│   ├── generators.py       #   seeded synthetic (brief, ops, params) generators
+│   └── pipeline.py         #   solver-in-the-loop: keep only parts that verifiably build
 ├── bench/
 │   ├── task.py             #   CADBench-Verified Task schema (spec + reference ops + acceptance)
 │   ├── runner.py           #   run_task / run_suite over the HarnessSession spine
@@ -396,7 +495,7 @@ harnesscad/
 ├── examples/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
-├── tests/                  # 159 unittest tests across every module
+├── tests/                  # 520 unittest tests across every module
 ├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
@@ -404,32 +503,47 @@ harnesscad/
 Research and reference material lives under a gitignored `resources/` directory and is
 never committed — it is not part of the product.
 
+### Module map
+
+The same ~35 modules grouped by blueprint layer, for navigation:
+
+- **Core spine** — `loop.py`, `state/opdag.py`, `cisp/`, `backends/`
+- **Plural verifier** — `verify.py`, `checks_geometry.py`, `constraints.py`, `contract.py`, `checks_dfm.py`, `checks_vision.py`
+- **Agent + pipeline** — `agent/`, `pipeline.py`, `cli.py`
+- **Grounding** — `context/`, `rag/`, `memory/`
+- **Reliability** — `strategies/`, `guardrails.py`, `loopdetect.py`
+- **Multi-agent** — `agents/`, `a2a/`
+- **LLM + decoding** — `llm/`, `routing.py`, `grammar.py`
+- **Surfaces** — `server.py`, `mcp/`, `ui/`, `render.py`
+- **Observability** — `observe.py`, `trace.py`
+- **Data engine** — `dataengine/`, `datagen/`
+- **Measurement** — `bench/`
+
 ## Roadmap
 
-The staged plan from [HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md). Phase 0/1 and the
-first slices of the kernel and LLM layers are in place; the rest is sequenced behind
-them.
+The staged plan from [HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md). Phases 0-5 are now
+substantially implemented and tested against the same spine; what remains under
+**Planned / future** is deliberately the parts that need a real external backend,
+real training runs, or a shipped UI — not new harness logic.
 
 **Done**
 
-- Phase 0 — the deterministic verifier and the result/diagnostic schema (reward + eval + ceiling).
-- Phase 1 — the minimal harness: typed ops, kernel regen, plural verification, checkpoint/rollback, an event-sourced op-DAG, and the single-agent plan/apply/observe/replan loop.
-- The `GeometryBackend` seam with a dependency-free stub **and** a real CadQuery/OCCT backend (real B-rep solids, validity checks, STEP/STL export).
-- The vendor-neutral LLM layer (LiteLLM backend + structured-output funnel) and the CISP stdio server + CLI.
-- The **end-to-end build pipeline** (`pipeline.build`) and its `cli.py build` front door: brief -> planner -> session -> verified geometry -> STEP.
-- The **Contract** layer — a machine-verifiable acceptance spec (required dims + tolerances, volume/mass, feature counts, manifold/validity, named predicates) verified by `ContractCheck`.
-- A real **2D constraint solver**: the stdlib `ConstraintGraph` rank-based DOF analysis plus the optional SolveSpace-backed `SolveSpaceSketch`, replacing the nominal DOF placeholder. B-rep validity is now in the default verifier set.
-- Phase 2 grounding (first slice): `MemoryStore` (working/episodic/semantic/procedural) and a Voyager-style, execution-verified **skill library**.
-- **CADBench-Verified**: a SWE-bench-style, programmatically-checked eval harness (sketch editability, program execution, B-rep validity, dimension match) over the harness spine, with easy/medium/hard task files.
+- **Phase 0 — foundations.** The deterministic verifier and the result/diagnostic schema (reward + eval + ceiling); the machine-verifiable **Contract** acceptance spec (required dims + tolerances, volume/mass, feature counts, manifold/validity, named predicates) via `ContractCheck`.
+- **Phase 1 — the minimal harness.** Typed ops, kernel regen, plural verification, checkpoint/rollback, an event-sourced op-DAG, and the single-agent plan/apply/observe/replan loop. Plus the `GeometryBackend` seam (dependency-free stub **and** real CadQuery/OCCT backend), the vendor-neutral LLM layer, the CISP stdio server + CLI, and the end-to-end `pipeline.build`. A real **2D constraint solver** (stdlib `ConstraintGraph` rank DOF analysis + optional SolveSpace) with B-rep validity in the default verifier set.
+- **Phase 2 — grounding.** The `context/` manager (token-budget assembly + overflow guard) and file-based `StagingArea`; the dependency-free hybrid **RAG** layer (`rag/` — BM25 + hashed-vector, RRF fusion); the four-type `MemoryStore` and a Voyager-style, execution-verified **skill library**.
+- **Phase 3 — reliability.** `strategies/` best-of-N + a Reflexion loop; `guardrails.GuardrailGate` (`before_tool_callback`), the `ErrorRecovery` ladder, and `loopdetect.LoopDetector`.
+- **Phase 4 — measurement.** **CADBench-Verified** (SWE-bench-style, programmatically-checked: editability, program execution, B-rep validity, dimension match, easy/medium/hard tasks) and the `observe.py` observability layer (spans, KPI metrics with confidence intervals, failure taxonomy, run replay). The plural verifier now also spans an opt-in **DFM critic** (`checks_dfm`) and a **VLM-judge** (`checks_vision`).
+- **Phase 5 — scale.** The multi-agent `Supervisor` + role personas (Designer / Modeler / Verifier / DFMCritic / RedTeam / Reviewer) and the `AsyncOverseer` with halt authority; the `a2a/` inter-agent message bus + task lifecycle; the `mcp/` tool server + `CADGymEnv` Gym environment; the `ui/` SSE event contract + three-tier approval; and grammar-constrained decoding artefacts (`grammar.py`). The data-engine exporters (`dataengine/` — GRPO / DPO / STaR) and synthetic `datagen/` (solver-in-the-loop) are in place, and `routing.RoutingLLM` adds cost-aware model routing.
 
-**In progress / planned**
+**Planned / future**
 
-- Phase 2 (remainder) — hybrid **RAG grounding** over standards and API docs, and a richer context manager.
-- Phase 3 — reliability: Best-of-N + verifier, a Reflexion loop, `before_tool_callback` guardrails, and the full error-recovery ladder.
-- A **VLM-judge** verifier and assembly-mate checks to broaden the plural verifier beyond geometry/topology.
-- Phase 5 — scale: **multi-agent orchestration** (Designer / Verifier / DFM Critic / Red Team), variant exploration with Elo ranking, and the canvas UI.
-- A **data flywheel** — trajectory logging turned into a curated dataset for training/fine-tuning.
 - A **Rust-native kernel** (Fornjot / Truck / Cadmium) dropped in behind the existing `GeometryBackend` seam.
+- A **real constrained-decoding backend** (XGrammar / Outlines) wired to decode time — today `grammar.py` produces the schema/GBNF and validates post-hoc, but does not constrain the sampler.
+- **Training runs.** The GRPO / DPO / STaR exporters exist; actually fine-tuning a model on the flywheel data is future.
+- The **canvas UI** implementation on top of the SSE + approval contract (the contract is done; the front end is not).
+- A **real embedder** behind the RAG / memory seams (today's vectors are embedding-free hashed n-grams).
+- A **live MCP transport** (FastMCP) and remote A2A (HTTP + SSE / webhooks) — the schemas and value objects are ready; the wire transport is not.
+- The **data flywheel at scale** — turning logged trajectories into a large curated training corpus.
 
 ## Design doc
 
