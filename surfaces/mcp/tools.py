@@ -24,6 +24,7 @@ Stdlib only; no MCP SDK. Everything is plain dataclasses / JSON.
 from __future__ import annotations
 
 import dataclasses
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
@@ -249,6 +250,19 @@ class ToolResult:
             "content": self.content,
             "reward": self.reward,
             "diagnostics": self.diagnostics,
+            "isError": self.is_error,
+        }
+
+    def to_call_result(self) -> dict:
+        """Adapt to an MCP ``CallToolResult`` (spec ``tools/call`` response shape).
+
+        The content is emitted both as a JSON ``text`` block (for models that read
+        only text) and as ``structuredContent`` (machine-readable), with the
+        ``isError`` flag mirrored through.
+        """
+        return {
+            "content": [{"type": "text", "text": json.dumps(self.content)}],
+            "structuredContent": self.content,
             "isError": self.is_error,
         }
 
