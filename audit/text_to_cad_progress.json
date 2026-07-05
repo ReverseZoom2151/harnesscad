@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 15,
-  "next_manifest_index": 16,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-15 implemented",
+  "reviewed_count": 20,
+  "next_manifest_index": 21,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-20 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -79,6 +79,31 @@
     {
       "index": 15,
       "paper": "BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 16,
+      "paper": "BRep Boundary and Junction Detection for CAD Reverse Engineering.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 17,
+      "paper": "BrepGen - A B-rep Generative Diffusion Model with Structured Latent Geometry.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 18,
+      "paper": "Bringing Attention to CAD - Boundary Representation Learning via Transformer.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 19,
+      "paper": "CAD - Memory Efficient Convolutional Adapter.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 20,
+      "paper": "CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md",
       "status": "reviewed"
     }
   ]

@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 15 / 186 papers reviewed.
+Status: 20 / 186 papers reviewed.
 
 Classifications:
 
@@ -400,3 +400,105 @@ Core mechanism:
 All deterministic and locally testable ideas from papers 11–15 are implemented.
 External kernel/application seams remain explicit, and model-training or
 physical-validation claims are not simulated with unusable placeholders.
+
+## Batch 4 — papers 16–20
+
+### 16. BRep Boundary and Junction Detection for CAD Reverse Engineering
+
+Source: `BRep Boundary and Junction Detection for CAD Reverse Engineering.md`
+
+Core mechanism: classify noisy scan points as face, boundary and junction
+evidence; suppress spatial duplicates; enforce chain-complex consistency; audit
+severe label imbalance and error cascades.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Confidence NMS and boundary-first junction eligibility | **implemented** | `reconstruction/point_labels.py` |
+| Pointwise scan↔B-rep chain labels and integrity checks | **implemented** | `ingest/scan_brep_labels.py` |
+| Density/class prevalence, coverage and weighting audit | **implemented** | `quality/scan_label_audit.py` |
+| Wireframe reconstruction and boundary/face metrics | **implemented** | existing `reconstruction/` pipeline |
+| DGCNN boundary/junction inference and focal-loss training | **research-heavy** | requires scan datasets, learned models and GPUs |
+| ABC/CC3D data and physical scanners | **external** | dataset and capture dependencies |
+
+### 17. BrepGen — A B-rep Generative Diffusion Model with Structured Latent Geometry
+
+Source: `BrepGen - A B-rep Generative Diffusion Model with Structured Latent Geometry.md`
+
+Core mechanism: encode face→edge→vertex sampled geometry with duplicated mating
+entities, recover associations through geometric clustering, align and stitch
+decoded geometry, and evaluate validity, novelty, coverage and distribution.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Structured sampled B-rep tree, duplication/padding and decode validation | **implemented** | `reconstruction/structured_brep.py` |
+| Bbox+sample duplicate clustering and mate recovery | **implemented** | `reconstruction/brep_merge.py` |
+| Vertex averaging, edge orientation/alignment and consistency seam | **implemented** | `reconstruction/geometry_stitch.py` |
+| Valid/unique/novel, COV/MMD and voxel-JSD metrics | **implemented** | `bench/generative_brep_metrics.py` |
+| Missing-face, self-intersection, inconsistency and overmerge taxonomy | **implemented** | `reconstruction/failure_audit.py` |
+| VAE/DDPM/Transformer B-rep generation | **research-heavy** | requires large geometry corpora and GPU training |
+| OCCT B-spline fitting/sewing | **external** | retained as an injected kernel seam |
+
+### 18. Bringing Attention to CAD — Boundary Representation Learning via Transformer
+
+Source: `Bringing Attention to CAD - Boundary Representation Learning via Transformer.md`
+
+Core mechanism: preserve the directed shell→face→loop→coedge→edge→vertex
+hierarchy, continuously tokenize Bezier geometry, aggregate local topology
+before global attention, and test masking robustness and per-face segmentation.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Directed B-rep hierarchy and referential/manifold validation | **implemented** | `ingest/brep_hierarchy.py` |
+| Canonical directed cyclic-loop tokens | **implemented** | `ingest/brep_tokens.py` |
+| Deterministic hierarchical topology descriptors | **implemented** | `quality/brep_descriptors.py` |
+| Morton patch ordering and tokenization fidelity/overflow gates | **implemented** | `ingest/spatial_order.py`, `ingest/tokenization_audit.py` |
+| Honest Bezier evaluation and trim/extractor contracts | **implemented** | `ingest/bezier_contracts.py` |
+| Seeded B-rep masking robustness and face segmentation metrics | **implemented** | `bench/brep_robustness.py`, `bench/segmentation_metrics.py` |
+| Complexity-stratified leakage-safe splits | **implemented** | `bench/brep_splits.py` |
+| Learned BRT encoder/classifier/segmenter | **research-heavy** | requires labeled continuous-geometry data and GPU training |
+
+### 19. CAD — Memory Efficient Convolutional Adapter
+
+Source: `CAD - Memory Efficient Convolutional Adapter.md`
+
+Scope note: this is an acronym collision; CAD means convolutional adapter, not
+computer-aided design. Only generally useful resource/safety principles were
+transferred.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Measure actual peak memory, latency and failures rather than parameter count | **implemented** | `research/resource_profile.py` |
+| Quality/memory/latency Pareto comparison | **implemented** | `bench/resource_tradeoff.py` |
+| Content-addressed frozen embedding cache | **implemented** | `vision/embedding_cache.py` |
+| Finite, shape-compatible bounded residual guard | **implemented** | `vision/residual_guard.py` |
+| Evidence/resource-aware model promotion gate | **implemented** | `research/model_promotion.py` |
+| SAM convolutional-adapter reproduction | **research-heavy** | unrelated to core CAD and requires PyTorch/CUDA/vision data |
+
+### 20. CAD 100K — A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection
+
+Source:
+`CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md`
+
+Core transferable mechanism: link hierarchical class, box and mask annotations;
+enforce cross-task consistency; create group-safe real/synthetic/open-set
+splits; audit long tails; gate privacy and human QC; compare single-task and
+multi-task behavior.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Generic hierarchy/task-linked anomaly asset schema | **implemented** | `dataengine/anomaly_schema.py` |
+| Cross-task box/mask/class integrity | **implemented** | `dataengine/cross_task_consistency.py` |
+| Classification, detection and segmentation metrics with slicing | **implemented** | `bench/vision_metrics.py` |
+| Group-safe real/synthetic/normal/few-shot/open-set splits | **implemented** | `bench/anomaly_splits.py` |
+| Cross-tab rarity and source-ratio audit | **implemented** | `dataengine/anomaly_distribution.py` |
+| Deterministic paired anomaly compositor seam and provenance | **implemented** | `datagen/anomaly_pairs.py` |
+| Visual QC, privacy release gate and task suitability routing | **implemented** | `dataengine/visual_qc.py`, `security/image_privacy.py`, `dataengine/task_suitability.py` |
+| Single/multi-task interaction and negative-transfer reporting | **implemented** | `bench/task_interaction.py` |
+| Learned visual detectors/segmenters and diffusion defect synthesis | **research-heavy** | require image corpora, trained models and GPUs |
+| Automotive capture, labels and privacy detectors | **external** | domain profile and collection infrastructure |
+
+## Batch-4 implementation result
+
+All deterministic and locally testable ideas from papers 16–20 are implemented.
+Paper 19 is retained as an audited acronym false positive with only defensible
+cross-domain infrastructure transferred.
