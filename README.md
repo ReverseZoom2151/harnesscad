@@ -10,10 +10,19 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 ![Core: stdlib](https://img.shields.io/badge/core-stdlib--only-informational?style=flat-square)
 
-![LiteLLM](https://img.shields.io/badge/LLM-LiteLLM-1A1A1A?style=flat-square)
-![CadQuery](https://img.shields.io/badge/kernel-CadQuery-F7A800?style=flat-square)
-![OpenCASCADE](https://img.shields.io/badge/geometry-OpenCASCADE-EE3524?style=flat-square)
-![Instructor](https://img.shields.io/badge/structured-Instructor-4B8BBE?style=flat-square)
+<p>
+  <a href="https://www.python.org"><img src="https://github.com/python.png?size=64" width="46" height="46" alt="Python" title="Python 3.10+" /></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/CadQuery/cadquery"><img src="https://github.com/CadQuery.png?size=64" width="46" height="46" alt="CadQuery" title="CadQuery" /></a>
+  &nbsp;&nbsp;
+  <a href="https://dev.opencascade.org"><img src="https://github.com/Open-Cascade-SAS.png?size=64" width="46" height="46" alt="OpenCASCADE" title="OpenCASCADE (OCCT)" /></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/BerriAI/litellm"><img src="https://github.com/BerriAI.png?size=64" width="46" height="46" alt="LiteLLM" title="LiteLLM" /></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/567-labs/instructor"><img src="https://github.com/567-labs.png?size=64" width="46" height="46" alt="Instructor" title="Instructor" /></a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/KmolYuan/solvespace"><img src="https://github.com/solvespace.png?size=64" width="46" height="46" alt="SolveSpace" title="python-solvespace (SolveSpace)" /></a>
+</p>
 
 </div>
 
@@ -334,14 +343,14 @@ pip install -e .[constraints]           # + real 2D constraint solver (SolveSpac
 pip install -e .[cadquery,llm,constraints]   # everything
 ```
 
-| Dependency | Extra | How it's resolved / notes |
-|------------|-------|---------------------------|
-| [Python](https://www.python.org) 3.10+ | core | The whole spine is stdlib-only — zero required runtime dependencies |
-| [CadQuery](https://github.com/CadQuery/cadquery) | `cadquery` | The real-geometry `GeometryBackend`; imported lazily, so the module loads without it |
-| [OpenCASCADE](https://dev.opencascade.org) (OCCT) | `cadquery` | The B-rep kernel under CadQuery (via `cadquery-ocp`); powers real solids, validity checks, and STEP/STL export |
-| [LiteLLM](https://github.com/BerriAI/litellm) | `llm` | One call shape across ~100 providers behind the vendor-neutral `LLM` seam; lazy import |
-| [Instructor](https://github.com/jxnl/instructor) | `llm` | Optional structured-output coaxing; the harness falls back to plain JSON + `parse_op` when absent |
-| [python-solvespace](https://github.com/KmolYuan/solvespace) | `constraints` | Real 2D sketch constraint solver (SolveSpace) behind `constraints.SolveSpaceSketch`; imported lazily. The stdlib `ConstraintGraph` rank-based DOF analysis needs nothing installed |
+| | Dependency | Extra | How it's resolved / notes |
+|---|------------|-------|---------------------------|
+| <img src="https://github.com/python.png?size=40" width="24" height="24" alt="Python" /> | [Python](https://www.python.org) 3.10+ | core | The whole spine is stdlib-only — zero required runtime dependencies |
+| <img src="https://github.com/CadQuery.png?size=40" width="24" height="24" alt="CadQuery" /> | [CadQuery](https://github.com/CadQuery/cadquery) | `cadquery` | The real-geometry `GeometryBackend`; imported lazily, so the module loads without it |
+| <img src="https://github.com/Open-Cascade-SAS.png?size=40" width="24" height="24" alt="OpenCASCADE" /> | [OpenCASCADE](https://dev.opencascade.org) (OCCT) | `cadquery` | The B-rep kernel under CadQuery (via `cadquery-ocp`); powers real solids, validity checks, and STEP/STL export |
+| <img src="https://github.com/BerriAI.png?size=40" width="24" height="24" alt="LiteLLM" /> | [LiteLLM](https://github.com/BerriAI/litellm) | `llm` | One call shape across ~100 providers behind the vendor-neutral `LLM` seam; lazy import |
+| <img src="https://github.com/567-labs.png?size=40" width="24" height="24" alt="Instructor" /> | [Instructor](https://github.com/567-labs/instructor) | `llm` | Optional structured-output coaxing; the harness falls back to plain JSON + `parse_op` when absent |
+| <img src="https://github.com/solvespace.png?size=40" width="24" height="24" alt="SolveSpace" /> | [python-solvespace](https://github.com/KmolYuan/solvespace) | `constraints` | Real 2D sketch constraint solver (SolveSpace) behind `constraints.SolveSpaceSketch`; imported lazily. The stdlib `ConstraintGraph` rank-based DOF analysis needs nothing installed |
 
 The kernel is deliberately behind a seam (`backends/base.py`): the same op stream runs
 on the stub, on CadQuery/OCCT, or on a future Rust-native kernel (Fornjot / Truck /
