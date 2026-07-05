@@ -4,7 +4,7 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-1298%20passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-1311%20passing-brightgreen?style=flat-square)
 ![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
@@ -637,13 +637,17 @@ harnesscad/
 ├── examples/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
-├── tests/                  # 1298 unittest tests across every module
+├── tests/                  # 1311 unittest tests across every module
 ├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
 
 Research and reference material lives under a gitignored `resources/` directory and is
 never committed — it is not part of the product.
+
+The corpus-to-code accounting is documented in
+[CAD_CORPUS_AUDIT.md](CAD_CORPUS_AUDIT.md), with a machine-checkable 67-item
+atomic register in `audit/cad_idea_register.json`.
 
 ### Module map
 

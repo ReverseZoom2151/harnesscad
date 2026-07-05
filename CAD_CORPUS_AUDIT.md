@@ -2,6 +2,30 @@
 
 Status: complete independent pass
 
+## Atomic closure result
+
+The narrative audit is backed by the machine-readable
+[`audit/cad_idea_register.json`](audit/cad_idea_register.json) and validator in
+`audit/closure.py`.
+
+Current validated result:
+
+- 63/63 physical corpus files covered;
+- 67 atomic ideas with source locators;
+- 51 implemented ideas with existing code and test evidence;
+- 7 external-system ideas with explicit dependency rationale;
+- 7 research-heavy ideas with explicit data/compute rationale;
+- 2 rejected non-engineering proposals with rationale;
+- zero partial, open or undecomposed ideas;
+- every major repository layer reverse-mapped to source ideas;
+- closure validator: passing.
+
+Closure is defined operationally, not metaphysically: every idea found by the
+sequential, adversarial-search, variant-diff and visual passes has a validated
+disposition, and no partial item retains an unclassified feasible slice. Adding
+a corpus file, deleting evidence, introducing an open disposition or breaking a
+reverse-map reference makes validation fail.
+
 This document records an independent source-by-source audit of the 63 files in
 `resources/cad`. It does not treat a prior conversation summary as evidence.
 
