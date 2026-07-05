@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 30 / 186 papers reviewed.
+Status: 35 / 186 papers reviewed.
 
 Classifications:
 
@@ -666,3 +666,59 @@ external/model-dependent claims remain behind typed seams.
 All deterministic and locally testable findings from papers 26–30 are
 implemented. Compiler success, morphology and requirements evidence remain
 separate so validity cannot be misreported as semantic correctness.
+
+## Batch 7 — papers 31–35
+
+### 31. CAD-Llama — Parametric 3D Model Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Lossless Loop/Component structural abstraction and repeated macros | **implemented** | `quality/spcc_structure.py` |
+| Evidence-backed five-level CAD complexity | **implemented** | `quality/cad_complexity.py` |
+| Hierarchical component/global annotation coverage | **implemented** | `dataengine/hierarchical_cad_annotation.py` |
+| Cross-domain structural vocabulary/complexity shift | **implemented** | `bench/cad_domain_shift.py` |
+| LLaMA pretraining, LoRA and GPT/CLIP annotation | **research-heavy** | requires models, corpora and GPUs |
+
+### 32. CAD-LLM — Large Language Model for CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Prefix-ratio completion curves and AUC | **implemented** | `bench/prefix_completion.py` |
+| Entity accuracy, strict sketch accuracy and macro/micro CAD F1 | **implemented** | `bench/sketch_sequence_metrics.py` |
+| GPT/PEFT training on SketchGraphs | **research-heavy** | requires weights, dataset and training |
+
+### 33. CAD-MLLM — Unifying Multimodality-Conditioned CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Aligned command/text/view/point-normal records | **implemented** | `dataengine/omnicad_record.py` |
+| Split-safe command prefixes and topology-gated modifier ablation | **implemented** | `datagen/command_prefixes.py`, `modifier_ablation.py` |
+| Reproducible multiview/point capture and modality curriculum | **implemented** | `datagen/multimodal_capture.py`, `dataengine/modality_schedule.py` |
+| SegE/DangEL/SIR/FluxEE mesh metrics | **implemented** | `bench/mesh_topology.py` |
+| Modality robustness, complementarity, splits and fusion policy | **implemented** | `bench/modality_robustness.py`, `omnicad_splits.py`, `quality/modality_fusion.py` |
+| DINO/Michelangelo/Vicuna multimodal training | **research-heavy** | requires the 453K corpus and H800-class compute |
+
+### 34. CAD-Prompted Generative Models — A Pathway to Feasible and Novel Engineering Designs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Verified-feasible CAD render retrieval | **implemented** | `rag/cad_render_retrieval.py` |
+| Provider-neutral image-weight/seed sweep | **implemented** | `exploration/image_prompt_sweep.py` |
+| Blinded rating QC, Spearman, Mann–Whitney and Pareto analysis | **implemented** | `bench/feasibility_novelty.py` |
+| Per-setting prompt similarity and off-diagonal handling | **implemented** | `bench/prompt_similarity.py` |
+| Evidence-calibrated design-stage policy without extrapolation | **implemented** | `quality/design_stage_policy.py` |
+| Prompt/render/output/rater lineage and perceived-vs-actual claims | **implemented** | `dataengine/cad_prompt_record.py`, `bench/perceived_actual_gap.py` |
+| T2I models, BIKED data and human study | **external/research-heavy** | requires services, licensed data and participants |
+
+### 35. CAD-Prompted Generative Models — A Pathway To Feasible And Novel Engineering
+
+**Duplicate alias.** From `## Page 1` through EOF this paper is byte-identical
+to paper 34 (SHA-256
+`27c8e91207290d7d87f363c4b9a3cc30653500e3e88b4a729b7f180c14ac0d4d`).
+Only extraction metadata and the title differ. It contributes no independent
+mechanism or evidence and is intentionally implemented once.
+
+## Batch-7 implementation result
+
+All deterministic findings from papers 31–35 are implemented. Exact duplicate
+paper 35 is recorded as an alias rather than double-counted.

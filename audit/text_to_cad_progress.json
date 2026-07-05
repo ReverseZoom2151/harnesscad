@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 30,
-  "next_manifest_index": 31,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-30 implemented",
+  "reviewed_count": 35,
+  "next_manifest_index": 36,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-35 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -155,6 +155,31 @@
       "index": 30,
       "paper": "CAD-Judge - Toward Efficient Morphological Grading and Verification for Text-to-CAD Generation.md",
       "status": "reviewed"
+    },
+    {
+      "index": 31,
+      "paper": "CAD-Llama - Leveraging Large Language Models for Computer-Aided Design Parametric 3D Model Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 32,
+      "paper": "CAD-LLM - Large Language Model for CAD Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 33,
+      "paper": "CAD-MLLM - Unifying Multimodality-Conditioned CAD Generation With MLLM.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 34,
+      "paper": "CAD-Prompted Generative Models - A Pathway to Feasible and Novel Engineering Designs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 35,
+      "paper": "CAD-Prompted Generative Models - A Pathway To Feasible And Novel Engineering.md",
+      "status": "duplicate_of_34"
     }
   ]
 }
