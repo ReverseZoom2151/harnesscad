@@ -26,6 +26,11 @@ constraints = ["python-solvespace"]
 [tool.setuptools]
 py-modules = [
     "verify", "loop", "trace", "server", "cli", "checks_geometry",
-    "pipeline", "contract", "constraints",
+    "pipeline", "contract", "constraints", "checks_dfm", "loopdetect",
+    "guardrails", "routing", "render", "checks_vision", "observe", "grammar",
 ]
-packages = ["cisp", "state", "backends", "llm", "agent", "memory", "bench"]
+packages = [
+    "cisp", "state", "backends", "llm", "agent", "memory", "bench",
+    "context", "rag", "strategies", "agents", "a2a", "ui", "mcp",
+    "dataengine", "datagen",
+]
