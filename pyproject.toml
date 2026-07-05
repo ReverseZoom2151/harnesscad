@@ -28,7 +28,10 @@ constraints = ["python-solvespace"]
 [tool.setuptools]
 py-modules = [
     "loop", "harness", "pipeline", "cli", "trace", "observe",
-    "contract", "constraints", "grammar", "routing",
+    "contract", "constraints", "grammar", "grammar_fsa", "routing",
+    "cadreview_taxonomy", "cadreview_blocks", "cadreview_detect",
+    "cadreview_errorgen", "cadreview_correct", "cadreview_review",
+    "cadreview_quantize",
 ]
 packages = [
     # core spine + foundations
