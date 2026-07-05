@@ -895,3 +895,68 @@ implemented.
 
 All deterministic and locally testable findings from papers 46-50 are
 implemented. Suite: 1791 tests, all passing.
+
+### 51. cadrille — Multi-modal CAD Reconstruction with Reinforcement Learning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Verifiable reward shaping (IoU + invalidity) + hard-example mining | **implemented** | `dataengine/cadrille_reward.py` |
+| Dr.CPPO (std-free Dr.GRPO advantages + top-\|A\| CPPO selection + clipped PPO surrogate) | **implemented** | `dataengine/cadrille_drcppo.py` |
+| DPO preference-pair construction from K samples | **implemented** | `dataengine/cadrille_preference_pairs.py` |
+| Point-cloud adapter (unit-cube + furthest-point sampling) | **implemented** | `reconstruction/cadrille_pointcloud_adapter.py` |
+| 2x2 multi-view image grid adapter | **implemented** | `vision/cadrille_multiview_grid.py` |
+| Reconstruction eval (median Chamfer, IoU%, invalidity ratio) | **implemented** | `bench/cadrille_metrics.py` |
+| Orientation-invariant discrete-ICP over 24 axis rotations | **implemented** | `bench/cadrille_orientation_align.py` |
+| Learned Qwen2-VL policy + SFT/RL training + LLM caption pipeline | **research-heavy/external** | learned VLM / GPU training |
+
+### 52. CADSmith — Multi-Agent CAD Generation with Programmatic Geometric Validation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Dual nested correction loops (execution-error inner + geometric-refinement outer, agents injected) | **implemented** | `cadsmith_dual_loop.py` |
+| Structured design-plan schema + JSON handoff + convention checker | **implemented** | `cadsmith_design_plan.py` |
+| Error-solution pattern KB over CadQuery/OCCT failure modes | **implemented** | `cadsmith_error_patterns.py` |
+| Kernel-metrics record + hard validity gate + plan-discrepancy feedback | **implemented** | `cadsmith_kernel_metrics.py` |
+| Three-view render camera spec | **implemented** | `cadsmith_three_view.py` |
+| Absolute-mm metrics (Kabsch + ICP, F1@1mm, voxel IoU, Chamfer) | **implemented** | `cadsmith_abs_metrics.py` |
+| Judge escalation / anti-oscillation policy | **implemented** | `cadsmith_escalation.py` |
+| T1/T2/T3 benchmark difficulty tiers | **implemented** | `cadsmith_tiers.py` |
+| VLM-as-Judge (Claude Opus); RAG-over-API-docs generation | **research-heavy/external** | learned VLM / LLM |
+
+### 53. CADTalk — An Algorithm and Benchmark for Semantic Commenting of CAD Programs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Hierarchical commentable-block parser (nested OpenSCAD tree, irreducible marking, ancestor collection) | **implemented** | `cadtalk_parser.py` |
+| Benchmark metrics (block accuracy + semantic IoU with synonym normalization) | **implemented** | `cadtalk_metrics.py` |
+| Multi-view part-label voting with progressive confidence thresholds | **implemented** | `cadtalk_voting.py` |
+| Machine-made labelled-primitive program synthesis (round-trips through the parser) | **implemented** | `cadtalk_primitive_program.py` |
+| Point-cloud label transfer (max-vote / multi-label / IoU) | **implemented** | `cadtalk_label_transfer.py` |
+| ControlNet image translation; Grounding-DINO + SAM; ChatGPT commenting | **research-heavy/external** | learned foundation models |
+
+### 54. CadVLM — Bridging Language and Vision in the Generation of Parametric CAD Sketches
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Sketch-to-pixel rasteriser (Bresenham lines, midpoint circles, circumcircle arcs) | **implemented** | `vision/cadvlm_sketch_raster.py` |
+| ViT-MAE patch-masking pipeline (patchify, 75% masking, image-decoding MSE) | **implemented** | `vision/cadvlm_patch_mask.py` |
+| <ENTITY>/<TOKEN> entity-level sequence layout with reversible parse | **implemented** | `ingest/cadvlm_entity_sequence.py` |
+| Whole-sketch primitive/constraint validity checker | **implemented** | `ingest/cadvlm_sketch_validity.py` |
+| Sketch codec, constraint ontology, Entity/Sketch-Accuracy/CAD-F1, prefix pairs, crossmodal, ablation | **already in repo (prior near-duplicate paper)** | `ingest/cadvlm_codec.py`, `bench/cadvlm_metrics.py`, etc. |
+| CadVLM two-stream ViT-MAE + CodeT5+ encoder-decoder training | **research-heavy/external** | learned models / GPU |
+
+### 55. CAM — CAD Point Cloud Part Segmentation via Few-Shot Learning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Deterministic geometric point features (local-PCA linearity/planarity/scattering/curvature + max-pooled edge feature) | **implemented** | `reconstruction/fewshot_partseg_features.py` |
+| Multi-prototype nearest-prototype segmenter (FPS anchors + bucketed prototypes) | **implemented** | `reconstruction/fewshot_partseg_prototypes.py` |
+| C-way K-shot episode construction with background-aware remapping | **implemented** | `reconstruction/fewshot_partseg_episodes.py` |
+| Part-seg IoU/mIoU/instance-mIoU metrics | **implemented** | `reconstruction/fewshot_partseg_metrics.py` |
+| Transductive label-propagation head (Gaussian kNN affinity, iterative + closed-form) | **implemented** | `reconstruction/fewshot_partseg_labelprop.py` |
+| DGCNN backbone training, T-Net, center-loss training strategy | **research-heavy/external** | neural training objectives |
+
+## Batch-11 implementation result
+
+All deterministic and locally testable findings from papers 51-55 are
+implemented. Suite: 2106 tests, all passing.

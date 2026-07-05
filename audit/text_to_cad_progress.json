@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 50,
-  "next_manifest_index": 51,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-50 implemented",
+  "reviewed_count": 55,
+  "next_manifest_index": 56,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-55 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -254,6 +254,31 @@
     {
       "index": 50,
       "paper": "CADReview - Automatically Reviewing CAD Programs with Error Detection and Correction.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 51,
+      "paper": "cadrille - Multi-modal CAD Reconstruction with Reinforcement Learning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 52,
+      "paper": "CADSmith - Multi-Agent CAD Generation with Programmatic Geometric Validation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 53,
+      "paper": "CADTalk - An Algorithm and Benchmark for Semantic Commenting of CAD Programs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 54,
+      "paper": "CadVLM - Bridging Language and Vision in the.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 55,
+      "paper": "CAM, CAD Point Cloud Part Segmentation via Few-Shot Learning.md",
       "status": "reviewed"
     }
   ]
