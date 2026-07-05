@@ -246,4 +246,4 @@ class ModelTagGraph:
             if len(models) >= threshold
         ]
         motifs.sort(key=lambda item: (-item.support, -len(item.tags), item.tags))
-    return tuple(motifs)
+        return tuple(motifs)
