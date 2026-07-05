@@ -1,7 +1,7 @@
 import unittest
 
-import cadreview_taxonomy as tax
-from cadreview_detect import detect
+import programs.cadreview_taxonomy as tax
+from programs.cadreview_detect import detect
 
 PROGRAM = """
 $fn = 32;

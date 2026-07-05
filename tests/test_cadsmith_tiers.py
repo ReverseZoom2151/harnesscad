@@ -1,6 +1,6 @@
 import unittest
 
-from cadsmith_tiers import (
+from generation.cadsmith_tiers import (
     classify, tier_spec, op_count_tier, TIERS, T1, T2, T3,
 )
 

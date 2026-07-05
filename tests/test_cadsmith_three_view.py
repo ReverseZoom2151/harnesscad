@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from cadsmith_three_view import (
+from generation.cadsmith_three_view import (
     ViewSpec, ISOMETRIC, HIGH_ANGLE_REAR, FRONT_PROFILE, THREE_VIEWS,
     view_by_name, all_directions, render_resolution, fit_distance,
     RENDER_WIDTH, RENDER_HEIGHT,

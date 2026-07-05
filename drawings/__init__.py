@@ -1,0 +1,1 @@
+"""HarnessCAD drawings package."""

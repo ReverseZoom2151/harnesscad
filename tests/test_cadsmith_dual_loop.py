@@ -1,6 +1,6 @@
 import unittest
 
-from cadsmith_dual_loop import (
+from generation.cadsmith_dual_loop import (
     ExecResult, ValidationResult, run_inner_loop, run_dual_loop, Stop,
 )
 

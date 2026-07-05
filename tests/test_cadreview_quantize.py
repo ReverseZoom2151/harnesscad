@@ -1,6 +1,6 @@
 import unittest
 
-import cadreview_quantize as q
+import programs.cadreview_quantize as q
 
 
 class TestQuantize(unittest.TestCase):

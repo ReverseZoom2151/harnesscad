@@ -1,6 +1,6 @@
 import unittest
 
-from cadtalk_voting import (
+from programs.cadtalk_voting import (
     Evidence,
     accumulate,
     assign_labels,

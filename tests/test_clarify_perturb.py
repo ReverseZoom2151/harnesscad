@@ -1,8 +1,8 @@
 import unittest
 
-from clarify_ambiguity import CADSpec, Feature, AmbiguityDetector, CONFLICTING
-from clarify_perturb import AmbiguityGenerator, keep_sample, UNDER, CONFLICT
-from clarify_dialogue import run_dialogue
+from spec.clarify_ambiguity import CADSpec, Feature, AmbiguityDetector, CONFLICTING
+from spec.clarify_perturb import AmbiguityGenerator, keep_sample, UNDER, CONFLICT
+from spec.clarify_dialogue import run_dialogue
 
 
 def spec():

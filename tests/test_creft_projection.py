@@ -2,7 +2,7 @@
 
 import unittest
 
-from creft_projection import (
+from drawings.creft_projection import (
     Box,
     Rect,
     View,

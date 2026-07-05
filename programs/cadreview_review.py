@@ -30,9 +30,9 @@ import random
 from dataclasses import dataclass, field
 from typing import List, Optional, Sequence, Tuple
 
-from cadreview_correct import Correction, correct
-from cadreview_detect import Detection, Review, detect
-from cadreview_taxonomy import ErrorType, NO_ERROR
+from programs.cadreview_correct import Correction, correct
+from programs.cadreview_detect import Detection, Review, detect
+from programs.cadreview_taxonomy import ErrorType, NO_ERROR
 
 #: The paper's ten predefined feedback lines for a correct program (Table 8).
 PREDEFINED_FEEDBACK: Tuple[str, ...] = (
@@ -146,7 +146,7 @@ def _norm_type(t) -> Optional[str]:
         return None
     if isinstance(t, ErrorType):
         return t.id
-    from cadreview_taxonomy import by_id, from_label
+    from programs.cadreview_taxonomy import by_id, from_label
     s = str(t)
     return (by_id(s) or from_label(s)).id if (by_id(s) or from_label(s)) else s
 

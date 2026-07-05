@@ -7,9 +7,9 @@ Design Reasoning" / CAMeleon). Stdlib unittest, deterministic.
 
 import unittest
 
-import fabworkflow_taxonomy as tax
-import fabworkflow_feasibility as feas
-import fabworkflow_compare as comp
+import fabrication.fabworkflow_taxonomy as tax
+import fabrication.fabworkflow_feasibility as feas
+import fabrication.fabworkflow_compare as comp
 
 
 # --------------------------------------------------------------------------- #

@@ -26,21 +26,12 @@ constraints = ["python-solvespace"]
 # quality/ (analysis), with the core spine (loop/harness/pipeline/cli/...) and
 # the foundational packages (cisp/backends/state/...) alongside them.
 [tool.setuptools]
+# Only the core spine stays as root modules; paper-implementation modules
+# live in topical sub-domain packages (programs/generation/fabrication/
+# drawings/numeric and the existing spec/rag/quality/... packages).
 py-modules = [
     "loop", "harness", "pipeline", "cli", "trace", "observe",
     "contract", "constraints", "grammar", "grammar_fsa", "routing",
-    "cadreview_taxonomy", "cadreview_blocks", "cadreview_detect",
-    "cadreview_errorgen", "cadreview_correct", "cadreview_review",
-    "cadreview_quantize",
-    "cadtalk_parser", "cadtalk_metrics", "cadtalk_voting",
-    "cadtalk_primitive_program", "cadtalk_label_transfer",
-    "cadsmith_design_plan", "cadsmith_error_patterns", "cadsmith_kernel_metrics",
-    "cadsmith_three_view", "cadsmith_abs_metrics", "cadsmith_escalation",
-    "cadsmith_tiers", "cadsmith_dual_loop",
-    "chatcadplus_prob2text", "chatcadplus_sphere_retrieval",
-    "clarify_ambiguity", "clarify_dialogue", "clarify_perturb",
-    "clarify_metrics", "clarify_leakage", "clarify_scaling",
-    "fabworkflow_taxonomy", "fabworkflow_feasibility", "fabworkflow_compare",
 ]
 packages = [
     # core spine + foundations
@@ -62,4 +53,6 @@ packages = [
     "editing", "reconstruction",
     # security and research governance
     "security", "research", "audit", "vision", "procedural", "formats", "geometry",
+    # topical paper-implementation sub-domains
+    "programs", "generation", "fabrication", "drawings", "numeric",
 ]

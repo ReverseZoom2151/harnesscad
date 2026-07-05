@@ -1,6 +1,6 @@
 import unittest
 
-from cadtalk_metrics import (
+from programs.cadtalk_metrics import (
     apply_synonyms,
     block_accuracy,
     semantic_iou,

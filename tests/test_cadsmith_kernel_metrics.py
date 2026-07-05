@@ -1,9 +1,9 @@
 import unittest
 
-from cadsmith_kernel_metrics import (
+from generation.cadsmith_kernel_metrics import (
     KernelMetrics, hard_kernel_gate, compare_to_plan, discrepancy_feedback,
 )
-from cadsmith_design_plan import DesignPlan, Component, GeometricConstraints
+from generation.cadsmith_design_plan import DesignPlan, Component, GeometricConstraints
 
 
 def _metrics(**kw):

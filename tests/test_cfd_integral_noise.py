@@ -4,7 +4,7 @@ import math
 import random
 import unittest
 
-import cfd_integral_noise as n
+import numeric.cfd_integral_noise as n
 
 
 class TestAggregation(unittest.TestCase):

@@ -35,7 +35,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from fabworkflow_taxonomy import (
+from fabrication.fabworkflow_taxonomy import (
     MATERIALS,
     WORKFLOWS,
     Workflow,

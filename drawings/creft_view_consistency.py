@@ -30,7 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Sequence, Tuple
 
-from creft_projection import FRONT, SIDE, TOP, Rect, View
+from drawings.creft_projection import FRONT, SIDE, TOP, Rect, View
 
 # Which 3D axis each (view, 2D-axis) pair measures.
 _AXIS = {

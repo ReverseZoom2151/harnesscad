@@ -6,7 +6,7 @@ import math
 import random
 import unittest
 
-from chatcadplus_sphere_retrieval import SphereKDTree, normalise
+from rag.chatcadplus_sphere_retrieval import SphereKDTree, normalise
 
 
 def _cos(a, b):

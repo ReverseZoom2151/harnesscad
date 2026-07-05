@@ -1,6 +1,6 @@
 import unittest
 
-from cadtalk_parser import (
+from programs.cadtalk_parser import (
     parse,
     identify_blocks,
     commentable_blocks,

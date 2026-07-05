@@ -1,6 +1,6 @@
 import unittest
 
-from cadtalk_label_transfer import (
+from programs.cadtalk_label_transfer import (
     majority_label,
     multi_labels,
     iou_label,

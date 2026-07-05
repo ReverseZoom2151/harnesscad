@@ -3,7 +3,7 @@
 import random
 import unittest
 
-import cfd_gradient_variance as gv
+import numeric.cfd_gradient_variance as gv
 
 
 class TestScaledGradientVariance(unittest.TestCase):

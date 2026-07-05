@@ -1,8 +1,8 @@
 import unittest
 
-from annomap_parser import CADFeature, parse_callout
-from annomap_scoring import assign_features
-from annomap_spec import (
+from drawings.annomap_parser import CADFeature, parse_callout
+from drawings.annomap_scoring import assign_features
+from drawings.annomap_spec import (
     METHOD_DETERMINISTIC,
     METHOD_HUMAN,
     MappingMetrics,

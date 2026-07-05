@@ -3,7 +3,7 @@
 import math
 import unittest
 
-import cfd_sphere_square_map as m
+import numeric.cfd_sphere_square_map as m
 
 
 class TestRoundTrip(unittest.TestCase):

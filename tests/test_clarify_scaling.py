@@ -1,6 +1,6 @@
 import unittest
 
-from clarify_scaling import (
+from spec.clarify_scaling import (
     BuildStep, parse_step, parse_steps, detect_scaling, rewrite_steps,
     SKETCH, SCALE, EXTRUDE,
 )

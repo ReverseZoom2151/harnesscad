@@ -32,8 +32,8 @@ import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from cadreview_blocks import Block, segment
-from cadreview_taxonomy import (
+from programs.cadreview_blocks import Block, segment
+from programs.cadreview_taxonomy import (
     CONSTANT_ERROR, ErrorType, LOGIC_ERROR, MISSING_BLOCK, NO_ERROR,
     POSITION_ERROR, PRIMITIVE_ERROR, REDUNDANT_BLOCK, ROTATION_ERROR,
     SIZE_ERROR,

@@ -1,6 +1,6 @@
 import unittest
 
-from annomap_parser import (
+from drawings.annomap_parser import (
     CADFeature,
     DrawingEntity,
     ENTITY_ANGLE,

@@ -1,6 +1,6 @@
 import unittest
 
-from clarify_leakage import check_leakage, style_warnings
+from spec.clarify_leakage import check_leakage, style_warnings
 
 
 class TestHardFails(unittest.TestCase):

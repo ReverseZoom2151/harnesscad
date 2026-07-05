@@ -1,12 +1,12 @@
 import unittest
 
-from cadtalk_primitive_program import (
+from programs.cadtalk_primitive_program import (
     Cuboid,
     Ellipsoid,
     synthesize,
     ProgramEntry,
 )
-import cadtalk_parser as parser
+import programs.cadtalk_parser as parser
 
 
 class TestPrimitives(unittest.TestCase):

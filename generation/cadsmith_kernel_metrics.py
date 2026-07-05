@@ -27,7 +27,7 @@ import json
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-from cadsmith_design_plan import DesignPlan
+from generation.cadsmith_design_plan import DesignPlan
 
 
 # --------------------------------------------------------------------------- #

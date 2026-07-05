@@ -27,8 +27,8 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-from cadreview_blocks import Block, segment
-from cadreview_taxonomy import (
+from programs.cadreview_blocks import Block, segment
+from programs.cadreview_taxonomy import (
     CONSTANT_ERROR, ErrorType, LOGIC_ERROR, MISSING_BLOCK, POSITION_ERROR,
     PRIMITIVE_ERROR, REDUNDANT_BLOCK, ROTATION_ERROR, SIZE_ERROR,
 )

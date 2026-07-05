@@ -1,6 +1,6 @@
 import unittest
 
-from cadsmith_error_patterns import (
+from generation.cadsmith_error_patterns import (
     ErrorPattern, ErrorSolutionKB, default_kb, default_error_patterns,
 )
 

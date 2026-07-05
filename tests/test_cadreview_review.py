@@ -1,9 +1,9 @@
 import unittest
 
-import cadreview_errorgen as eg
-import cadreview_review as rv
-import cadreview_taxonomy as tax
-from cadreview_detect import detect
+import programs.cadreview_errorgen as eg
+import programs.cadreview_review as rv
+import programs.cadreview_taxonomy as tax
+from programs.cadreview_detect import detect
 
 PROGRAM = """
 $fn = 32;

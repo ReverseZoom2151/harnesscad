@@ -40,7 +40,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from fabworkflow_taxonomy import MACHINES, MATERIALS, WORKFLOWS, get_workflow
+from fabrication.fabworkflow_taxonomy import MACHINES, MATERIALS, WORKFLOWS, get_workflow
 
 
 # --------------------------------------------------------------------------- #

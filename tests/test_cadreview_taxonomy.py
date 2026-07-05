@@ -1,6 +1,6 @@
 import unittest
 
-import cadreview_taxonomy as tax
+import programs.cadreview_taxonomy as tax
 
 
 class TestTaxonomy(unittest.TestCase):

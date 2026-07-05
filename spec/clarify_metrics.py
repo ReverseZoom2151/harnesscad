@@ -26,8 +26,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-from clarify_ambiguity import CADSpec, AmbiguityDetector
-from clarify_dialogue import _lookup
+from spec.clarify_ambiguity import CADSpec, AmbiguityDetector
+from spec.clarify_dialogue import _lookup
 
 
 # --------------------------------------------------------------------------- #

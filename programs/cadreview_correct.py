@@ -24,9 +24,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from cadreview_blocks import Block, segment
-from cadreview_detect import Detection, Review
-from cadreview_taxonomy import MISSING_BLOCK, REDUNDANT_BLOCK
+from programs.cadreview_blocks import Block, segment
+from programs.cadreview_detect import Detection, Review
+from programs.cadreview_taxonomy import MISSING_BLOCK, REDUNDANT_BLOCK
 
 _INPLACE = {
     "primitive_error", "rotation_error", "position_error",

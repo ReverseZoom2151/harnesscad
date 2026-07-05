@@ -1,6 +1,6 @@
 import unittest
 
-from cadsmith_escalation import (
+from generation.cadsmith_escalation import (
     EscalationPolicy, Strategy, fingerprint_code,
 )
 

@@ -23,7 +23,7 @@ import random
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-from clarify_ambiguity import (
+from spec.clarify_ambiguity import (
     CADSpec,
     Feature,
     UNDER_SPECIFIED,

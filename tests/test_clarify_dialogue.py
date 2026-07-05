@@ -1,7 +1,7 @@
 import unittest
 
-from clarify_ambiguity import CADSpec, Feature, audit
-from clarify_dialogue import (
+from spec.clarify_ambiguity import CADSpec, Feature, audit
+from spec.clarify_dialogue import (
     ClarificationDialogue, run_dialogue, oracle_from_truth,
     ACCEPT, ASK, DONE, AWAIT_ANSWERS,
 )

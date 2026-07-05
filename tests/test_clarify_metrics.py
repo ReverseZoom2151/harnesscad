@@ -1,7 +1,7 @@
 import unittest
 
-from clarify_ambiguity import CADSpec, Feature
-from clarify_metrics import (
+from spec.clarify_ambiguity import CADSpec, Feature
+from spec.clarify_metrics import (
     efficiency, resolution, score_interaction, aggregate, ClarifierScore,
 )
 

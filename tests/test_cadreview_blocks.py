@@ -1,6 +1,6 @@
 import unittest
 
-import cadreview_blocks as cb
+import programs.cadreview_blocks as cb
 
 PROGRAM = """
 $fn = 32;

@@ -1,7 +1,7 @@
 import unittest
 
-from annomap_parser import CADFeature, parse_callout
-from annomap_scoring import (
+from drawings.annomap_parser import CADFeature, parse_callout
+from drawings.annomap_scoring import (
     EPSILON,
     RHO,
     THETA_CAND,
