@@ -159,10 +159,10 @@ Core mechanism:
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Seeded, replayable procedural generation with provenance | **implemented** | `datagen/generators.py`, `datagen/pipeline.py` and `exploration/tournament.py` |
-| Bounded multi-start search that retains the winning child seed and timeout reason | **partial** | exploration is seeded and ranked, but does not expose a reusable trial/seed replay record for arbitrary procedural solvers |
-| Constraint-aware modular placement with adjacency, clustering and obstacle rules | **partial** | assembly sequencing and interference checks exist; no general placement-rule generator exists |
-| Procedural-technique applicability registry with precision, repeatability and compute-cost tradeoffs | **net-new** | no decision layer selects stochastic, tessellation, path or pattern techniques by engineering requirements |
-| Solution-space coverage and diversity metrics for procedural generators | **partial** | exploration clusters variants, but generation coverage is not measured against declared configuration dimensions |
+| Bounded multi-start search that retains the winning child seed and timeout reason | **implemented** | replayable trial records in `exploration/procedural.py` |
+| Constraint-aware modular placement with adjacency, clustering and obstacle rules | **implemented** | placement-rule validation in `exploration/procedural.py` |
+| Procedural-technique applicability registry with precision, repeatability and compute-cost tradeoffs | **implemented** | engineering-requirement selector in `exploration/procedural.py` |
+| Solution-space coverage and diversity metrics for procedural generators | **implemented** | declared-dimension coverage and diversity in `exploration/procedural.py` |
 | Unconstrained game-style terrain/content generation | **research-heavy** | not central to mechanical text-to-CAD and would not improve verified part generation directly |
 
 ### 7. Aligning Constraint Generation with Design Intent in Parametric CAD
@@ -183,11 +183,11 @@ Core mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Unified five-condition sketch design-alignment scorecard | **partial** | constraint analysis exposes under/well/over and diagnostics, but not one scorecard including unsolvable and edit stability |
-| Parameter-perturbation stability test with configurable spatial bins/tolerance | **net-new** | local editability exists, but sketch geometry is not actively perturbed and compared for intent-preserving deformation |
-| Constraint-economy score and dimension-to-geometric-constraint ratio | **net-new** | redundancy is detected, but over-dimensioning and semantic constraint economy are not scored |
-| Constraint-by-constraint solver blame and drop trace | **partial** | relaxation suggests drops; it does not retain the full incremental outcome trace |
-| Solver-verified pass-at-K metric for generated constraint candidates | **net-new** | best-of-N exists, but benchmark metrics do not report probability of at least one aligned sketch within K attempts |
+| Unified five-condition sketch design-alignment scorecard | **implemented** | `quality/design_alignment.py` |
+| Parameter-perturbation stability test with configurable spatial bins/tolerance | **implemented** | injected perturb-and-solve stability evaluation in `quality/design_alignment.py` |
+| Constraint-economy score and dimension-to-geometric-constraint ratio | **implemented** | economy and reward-hacking diagnostics in `quality/design_alignment.py` |
+| Constraint-by-constraint solver blame and drop trace | **implemented** | incremental prefix and leave-one-out traces in `quality/design_alignment.py` |
+| Solver-verified pass-at-K metric for generated constraint candidates | **implemented** | unbiased solver-verified pass-at-K in `quality/design_alignment.py` |
 | Solver-normalized sketch dataset preparation | **partial** | generated samples are solver-filtered; imported sketch corpora are not normalized into solved geometry before use |
 | DPO/GRPO/RLOO post-training of a constraint model | **research-heavy** | requires a trained constraint policy, millions of sketches and substantial compute |
 
@@ -208,11 +208,11 @@ Transferable mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Symmetry-aware, multi-modal orientation hypothesis distribution | **net-new** | ingestion supports local frames and annotations but forces no explicit distribution over equivalent poses |
-| Injectable product-of-experts fusion for shape/correspondence orientation scores | **net-new** | no orientation evidence fusion layer exists |
-| Coarse-to-fine mode-focused orientation sampler with deterministic replay | **net-new** | generic exploration does not operate on rotation-space modes |
-| Reference-cube rotation encoding and angular-distance utilities | **net-new** | invariance contracts transform points but do not provide a collision-resistant rotation descriptor |
-| Confidence/entropy diagnostics that preserve pose ambiguity for downstream assembly | **net-new** | annotation scorecards handle labels, not orientation posterior uncertainty |
+| Symmetry-aware, multi-modal orientation hypothesis distribution | **implemented** | `ingest/orientation.py` |
+| Injectable product-of-experts fusion for shape/correspondence orientation scores | **implemented** | named expert fusion in `ingest/orientation.py` |
+| Coarse-to-fine mode-focused orientation sampler with deterministic replay | **implemented** | seeded sampler and replay provenance in `ingest/orientation.py` |
+| Reference-cube rotation encoding and angular-distance utilities | **implemented** | quaternion and reference-cube utilities in `ingest/orientation.py` |
+| Confidence/entropy diagnostics that preserve pose ambiguity for downstream assembly | **implemented** | normalized posterior diagnostics in `ingest/orientation.py` |
 | Neural SDF/SurfEmb training and image-conditioned pose inference | **research-heavy** | requires pretrained vision/geometry models and pose datasets |
 
 ### 9. Applications of Artificial Intelligence in Computer-Aided Design
@@ -251,25 +251,17 @@ Core mechanism and empirical findings:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Assembly requirement completeness profile for D/L/N/G/F prompt fields | **partial** | requirement formalization captures dimensions, counts and function, but does not explicitly score all five assembly fields |
-| Correction-attempt ledger classifying prompt, code and direct-CAD interventions | **partial** | edit sessions retain proposals, but not intervention mode, effort or outcome |
-| Cost/attempt-based handoff policy from prompting to code or manual CAD editing | **net-new** | approval tiers exist, but no diminishing-return escalation policy exists |
-| Parameter-sweep standard-part family generator with naming, validation and manifest | **net-new** | the part catalog contains verified exemplars; it does not generate and validate complete dimensional families |
-| Separate gross-shape, dimension, placement, detailed-feature and function readiness scorecard | **partial** | these checks exist across modules but are not consolidated into an assembly readiness report |
+| Assembly requirement completeness profile for D/L/N/G/F prompt fields | **implemented** | `quality/assembly_readiness.py` |
+| Correction-attempt ledger classifying prompt, code and direct-CAD interventions | **implemented** | intervention records in `quality/assembly_readiness.py` |
+| Cost/attempt-based handoff policy from prompting to code or manual CAD editing | **implemented** | diminishing-return handoff policy in `quality/assembly_readiness.py` |
+| Parameter-sweep standard-part family generator with naming, validation and manifest | **implemented** | `library/family.py` |
+| Separate gross-shape, dimension, placement, detailed-feature and function readiness scorecard | **implemented** | production-readiness gate in `quality/assembly_readiness.py` |
 | Compare outputs from multiple generators before intervention | **implemented** | best-of-N, tournament ranking and plural verification |
 | Direct FreeCAD Python-console execution | **external** | requires a FreeCAD installation/host adapter; the backend seam can accommodate it |
 
-## Batch-2 candidate backlog
+## Batch-2 implementation result
 
-Immediately buildable candidates, excluding model training and hosted services:
-
-1. sketch design-alignment scorecard, perturbation stability and constraint
-   economy;
-2. solver-verified pass-at-K and incremental constraint blame traces;
-3. symmetry-aware orientation hypotheses, expert fusion and mode-focused
-   sampling;
-4. procedural-technique selection, bounded child-seed trials and solution-space
-   coverage;
-5. assembly prompt completeness, intervention/handoff policy and readiness
-   scorecard;
-6. validated parameter-sweep generation for standard-part families.
+All deterministic, locally testable candidates from papers 6–10 are now
+implemented. Remaining partial items require corpus-wide dataset conversion;
+remaining external or research-heavy items require hosted infrastructure,
+FreeCAD, proprietary datasets, trained neural models, or substantial compute.

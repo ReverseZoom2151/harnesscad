@@ -4,7 +4,7 @@
   "total_papers": 186,
   "reviewed_count": 10,
   "next_manifest_index": 11,
-  "implementation_status": "papers 1-5 implemented; deterministic candidates from papers 6-10 identified",
+  "implementation_status": "all deterministic ideas from reviewed papers 1-10 implemented",
   "reviewed": [
     {
       "index": 1,
