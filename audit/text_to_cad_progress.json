@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 40,
-  "next_manifest_index": 41,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-40 implemented",
+  "reviewed_count": 45,
+  "next_manifest_index": 46,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-45 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -204,6 +204,31 @@
     {
       "index": 40,
       "paper": "CAD-VLM - Bridging Language and Vision in the Generation of Parametric CAD Sketches.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 41,
+      "paper": "CADDesigner - Conceptual Design of CAD Models Based on General-Purpose Agent.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 42,
+      "paper": "CADDreamer - CAD Object Generation from Single-view Images.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 43,
+      "paper": "CADEvolve - Creating Realistic CAD via Program Evolution.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 44,
+      "paper": "CADgpt - Harnessing Natural Language Processing for 3D Modelling to Enhance Computer-Aided Design Workflows.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 45,
+      "paper": "CADKnitter - Compositional CAD Generation from Text and Geometry Guidance.md",
       "status": "reviewed"
     }
   ]

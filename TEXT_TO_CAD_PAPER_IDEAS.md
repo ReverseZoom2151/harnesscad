@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 40 / 186 papers reviewed.
+Status: 45 / 186 papers reviewed.
 
 Classifications:
 
@@ -779,3 +779,63 @@ its learned architecture is intentionally excluded.
 
 All deterministic findings from papers 36–40 are implemented. Paper 39 is
 recorded as an unrelated acronym collision.
+
+## Batch 9 — papers 41–45
+
+### 41. CADDesigner — Conceptual Design Based on a General-Purpose Agent
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Explicit typed operation bindings, snapshots and stale-handle checks | **implemented** | `cisp/explicit_context.py` |
+| Structured parser/runtime/kernel/type error envelopes | **implemented** | `reliability/code_error.py` |
+| CAD API knowledge/example coherence and safe chunking | **implemented** | `rag/cad_api_knowledge.py` |
+| Correction convergence/recovery/oscillation metrics | **implemented** | `bench/correction_trajectory.py` |
+| Hosted LLM/VLM and shell CAD execution | **external** | typed agent seams exist; services/hosts are not bundled |
+
+### 42. CADDreamer — CAD Object Generation from Single-view Images
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Analytic primitive relation inference/projection | **implemented** | `reconstruction/primitive_relations.py` |
+| Adjacency-restricted pair/triple primitive intersections | **implemented** | `reconstruction/primitive_intersections.py` |
+| Iterative primitive seam projection with regression rollback | **implemented** | `reconstruction/primitive_stitch.py` |
+| View observability/thin-feature audit and view recommendations | **implemented** | `quality/view_coverage.py` |
+| Primitive relation, normal and hanging-face metrics | **implemented** | `bench/primitive_reconstruction_metrics.py` |
+| Cross-view diffusion, NeuS and segmentation models | **research-heavy** | require image corpora, neural models and GPUs |
+
+### 43. CADEvolve — Creating Realistic CAD via Program Evolution
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Immutable evolutionary generator lineage and saturation budgets | **implemented** | `datagen/evolution.py` |
+| Quality-diversity parameter archive and admission gates | **implemented** | `datagen/parameter_qd.py` |
+| Trace slicing and exact 24 cube-rotation rewrites | **implemented** | `datagen/trace_slice.py`, `cube_rotations.py` |
+| Template-collapse and operator-distribution audits | **implemented** | `dataengine/template_collapse.py`, `bench/operator_profile.py` |
+| Evolution dynamics and ordered admission validation | **implemented** | `bench/evolution_dynamics.py`, `datagen/evolution_validation.py` |
+| LLM/VLM proposal, CMA-ES and training corpora | **research-heavy/external** | deterministic orchestration exists; learned proposal systems do not |
+
+### 44. CADgpt — NLP for Enhanced CAD Workflows
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Host-neutral intent/assumption/clarification envelope | **implemented** | `agent/intent_resolution.py` |
+| Safe Rhino/Grasshopper capability DTO/protocol | **implemented** | `adapters/rhino_contract.py` |
+| Preview-confirm-execute-refine host lineage | **implemented** | `agent/host_feedback.py` |
+| Executable NL-CAD scenario casebook | **implemented** | `bench/nl_cad_casebook.py` |
+| Rhino/Grasshopper plugins and hosted GPT | **external** | require proprietary host installation and services |
+
+### 45. CADKnitter — Compositional CAD Generation from Text and Geometry Guidance
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Directed assembly-pair records and shared normalization | **implemented** | `dataengine/assembly_pair_record.py`, `ingest/assembly_normalization.py` |
+| Bidirectional sampled contact evidence and correspondence | **implemented** | `ingest/contact_faces.py`, `quality/contact_correspondence.py` |
+| Scheduled contact objectives and guided candidate search | **implemented** | `quality/contact_objective.py`, `exploration/guided_contact_search.py` |
+| CD/IV/PR/VR metrics, interaction policy and heatmaps | **implemented** | `bench/compositional_metrics.py`, `quality/assembly_interaction.py`, `bench/contact_heatmap.py` |
+| Dataset filters and directional caption workflow | **implemented** | `dataengine/knitcad_filters.py`, `assembly_caption_workflow.py` |
+| B-rep diffusion, FGW/ULA guidance and Fusion datasets | **research-heavy/external** | require learned models, optimal-transport tooling and licensed data |
+
+## Batch-9 implementation result
+
+All deterministic and locally testable findings from papers 41–45 are
+implemented.
