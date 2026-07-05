@@ -960,3 +960,60 @@ implemented. Suite: 1791 tests, all passing.
 
 All deterministic and locally testable findings from papers 51-55 are
 implemented. Suite: 2106 tests, all passing.
+
+### 56. ChatCAD+ — Towards a Universal and Reliable Interactive CAD using LLMs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| prob2text graded numeric-score verbaliser (calibrated language bands) | **implemented** | `chatcadplus_prob2text.py` |
+| Spherical-projection KD-tree for exact O(log n) cosine top-k | **implemented** | `chatcadplus_sphere_retrieval.py` |
+| Hierarchical in-context retrieval, DFS knowledge traversal, domain-argmax routing, medical report NLG | **out-of-scope / research-heavy** | medical computer-aided diagnosis; LLM/CLIP-driven |
+
+### 57. Clarify Before You Draw — Proactive Agents for Robust Text-to-CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Geometric ambiguity taxonomy + rule classifier + under-specification scorer | **implemented** | `clarify_ambiguity.py` |
+| Two-round proactive-clarification MDP state machine | **implemented** | `clarify_dialogue.py` |
+| Deterministic ambiguity-synthesis perturbation generator + curation rules | **implemented** | `clarify_perturb.py` |
+| Efficiency-F1 + Resolution clarifier metrics | **implemented** | `clarify_metrics.py` |
+| Data-leakage auditor | **implemented** | `clarify_leakage.py` |
+| Scaling-operation failure detector/rewriter | **implemented** | `clarify_scaling.py` |
+| ProCAD SFT, VLM description + LLM-judge + user simulator | **research-heavy/external** | learned models |
+
+### 58. CME-CAD — Heterogeneous Collaborative Multi-Expert Reinforcement Learning for CAD Code Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Gated multi-objective reward with dedicated work-plane term (IoU + origin/axis deviation, multiplicative gating) | **implemented** | `dataengine/cmecad_reward.py` |
+| Expert-internal group-relative advantage with non-negative truncation | **implemented** | `dataengine/cmecad_advantage.py` |
+| Multi-expert collaborative learning (best/worst expert, directional-KL credit, routing) | **implemented** | `dataengine/cmecad_collab.py` |
+| Hard-negative sample buffering (partitioned rotating split + probabilistic admission) | **implemented** | `dataengine/cmecad_hardneg_buffer.py` |
+| MEFT multi-expert CoT training, CADExpert dataset construction | **research-heavy/external** | learned VLM experts / annotation |
+
+### 59. CMT — A Cascade MAR with Topology Predictor for Multimodal Conditional CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Continuous B-rep tokenization (surface/edge tokens, ascending order, uniform quantization) | **implemented** | `reconstruction/cmt_tokenization.py` |
+| Cascade edge-then-surface stage schema + MAR cosine masked-reveal schedule | **implemented** | `reconstruction/cmt_cascade_schedule.py` |
+| Geometry-inferred topology predictor (edge-surface incidence, tau=0.5) | **implemented** | `reconstruction/cmt_topology_predictor.py` |
+| Topological-validity checker (unbounded regions, non-manifold edges, degenerate edges) | **implemented** | `reconstruction/cmt_topology_validity.py` |
+| mmABC curation (quantized-hash dedup + union-find multi-body decomposition) | **implemented** | `reconstruction/cmt_mmabc_dedup.py` |
+| Neural MAR sampler + VAEs + multimodal condition encoder + learned cross-attention head | **research-heavy/external** | trained models |
+
+### 60. Comparing Fabrication Workflows in CAD to Support Design Reasoning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Fabrication-workflow taxonomy + machine registry + material-stock presets + workflow selector | **implemented** | `fabworkflow_taxonomy.py` |
+| Per-workflow feasibility dispatch (machine-fit, FDM time, stock snap, wire-form, mold draft) | **implemented** | `fabworkflow_feasibility.py` |
+| Comparison table + intent-based workflow ranker + reflection checklist + exploration trace | **implemented** | `fabworkflow_compare.py` |
+| STL voxel/Poisson recovery; React/Three.js UI + N=12 user study | **research-heavy/external / out-of-scope** | mesh kernels / HCI study |
+
+## Batch-12 implementation result
+
+All deterministic and in-scope findings from papers 56-60 are implemented
+(ChatCAD+ is medical CAD -- only two domain-agnostic primitives kept;
+Fabrication Workflows is an HCI study -- only its workflow artifacts
+kept). Suite: 2391 tests, all passing.
