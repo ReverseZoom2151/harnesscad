@@ -33,11 +33,11 @@ Core mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Structured tool knowledge card containing documentation, required information and examples | **net-new** | MCP tool descriptions exist, but do not model required contextual facts and worked examples as a reusable card |
-| Pre-plan tool-subset retrieval/dispatch | **partial** | `quality/nextop.py` ranks state-valid operations; it does not retrieve a minimal task-specific tool set from knowledge cards |
-| Per-tool conceptualization that enriches missing parameter context | **partial** | `spec/interview.py` asks general missing questions, but enrichment is not conditioned on selected tool requirements |
+| Structured tool knowledge card containing documentation, required information and examples | **implemented** | `agent/tool_knowledge.py` |
+| Pre-plan tool-subset retrieval/dispatch | **implemented** | deterministic minimal retrieval in `agent/tool_knowledge.py` |
+| Per-tool conceptualization that enriches missing parameter context | **implemented** | context requirements and missing-context questions in `agent/tool_knowledge.py` |
 | Context-preserving sequential edits | **implemented** | `agent/edit_session.py` |
-| Agent-role ablation reporting | **partial** | research governance and metrics exist; no role-specific ablation helper |
+| Agent-role ablation reporting | **implemented** | `research/role_ablation.py` |
 | Advanced curve/material/shading and multimodal modeling | **research-heavy** | requires richer procedural tools and multimodal models |
 
 ### 2. A Geometric Foundation Model for Crystalline Material Discovery
@@ -54,8 +54,8 @@ principles:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Declare transformation invariants/equivariants as representation metadata and test them | **net-new** | geometry checks exist, but representation contracts do not state expected invariance |
-| Generate paired perturbation views for consistency testing | **partial** | `datagen/augment.py` augments samples but does not emit invariant-consistency cases |
+| Declare transformation invariants/equivariants as representation metadata and test them | **implemented** | `quality/invariance.py` |
+| Generate paired perturbation views for consistency testing | **implemented** | perturbation cases and consistency reports in `quality/invariance.py` |
 | Multi-task pretrained geometric foundation model | **research-heavy** | requires large geometric datasets and training |
 | Flow-matching/self-supervised coordinate pretraining | **research-heavy** | model-training contribution |
 
@@ -74,10 +74,10 @@ Core mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Two-level attributed B-rep adjacency graph (TAAG) | **net-new** | `quality/featuregraph.py` reflects operation history, not native face-edge-vertex topology |
-| Convexity attributes for faces/edges/vertices | **net-new** | anomaly/DFM modules do not expose this topology annotation |
-| Set-valued, overlapping feature hypotheses with provenance | **net-new** | current feature narration assumes recognized operation-derived features |
-| Separate extraction candidates from semantic recognition | **net-new** | no reverse-engineering candidate/recognizer boundary |
+| Two-level attributed B-rep adjacency graph (TAAG) | **implemented** | `quality/taag.py` |
+| Convexity attributes for faces/edges/vertices | **implemented** | attributed topology records in `quality/taag.py` |
+| Set-valued, overlapping feature hypotheses with provenance | **implemented** | `HypothesisSet` in `quality/taag.py` |
+| Separate extraction candidates from semantic recognition | **implemented** | extractor/recognizer boundary in `quality/taag.py` |
 | General-surface support beyond planes and ruled surfaces | **research-heavy** | paper itself leaves this for future work |
 
 ### 4. A Solver-Aided Hierarchical Language for LLM-Driven CAD Design
@@ -97,11 +97,11 @@ Core mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Hierarchical semantic part scopes with local coordinate frames | **net-new** | op-DAG and skeleton exist but lack nested solver scopes |
-| Recursive local-to-global constraint solving | **net-new** | `ConstraintGraph` is flat |
-| Explicit local-editability metric | **net-new** | editability metrics do not measure unaffected sibling/subtree stability |
-| Branch-pruned non-smooth constraint solving with original-expression revalidation | **net-new** | constraint relaxation exists but not this solver strategy |
-| Solver-aided hierarchical DSL generation | **partial** | CISP is typed and solver-backed but not hierarchical |
+| Hierarchical semantic part scopes with local coordinate frames | **implemented** | `state/constraint_hierarchy.py` |
+| Recursive local-to-global constraint solving | **implemented** | child-before-parent solver in `state/constraint_hierarchy.py` |
+| Explicit local-editability metric | **implemented** | subtree stability metric in `state/constraint_hierarchy.py` |
+| Branch-pruned non-smooth constraint solving with original-expression revalidation | **implemented** | pruned solve and original constraint validation in `state/constraint_hierarchy.py` |
+| Solver-aided hierarchical DSL generation | **implemented** | typed hierarchical scope representation in `state/constraint_hierarchy.py` |
 
 ### 5. A2Z-10M+: A-to-Z BRep Annotations
 
@@ -121,25 +121,19 @@ Core mechanism:
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Persistent scan/sketch↔B-rep entity annotation schema | **net-new** | reconciliation has correspondence IDs but no face/co-edge/junction annotation vocabulary |
-| Proximity-aware multi-threshold assignment with local geometric frames | **net-new** | no scan-to-B-rep label assignment |
-| Staged sensor-artifact augmentation profiles | **net-new** | generic augmentation lacks calibrated capture stages |
-| Multi-level sketch skill/style augmentation | **net-new** | no sketch-style hierarchy |
-| Multi-view caption/tag job with confidence/filtering constraints | **partial** | description and VLM checks exist separately |
-| Hierarchical semantic tag ontology and heterogeneous retrieval graph | **net-new** | intent graph and RAG exist, but not model/tag/category ontology mining |
-| Human/model annotation-consensus scorecards | **partial** | `dataengine/consensus.py` exists without annotation-type scorecards |
+| Persistent scan/sketch↔B-rep entity annotation schema | **implemented** | `ingest/brep_annotations.py` |
+| Proximity-aware multi-threshold assignment with local geometric frames | **implemented** | assignment diagnostics in `ingest/brep_annotations.py` |
+| Staged sensor-artifact augmentation profiles | **implemented** | `datagen/capture_augment.py` |
+| Multi-level sketch skill/style augmentation | **implemented** | separate geometry-skill and render-style transforms in `datagen/capture_augment.py` |
+| Multi-view caption/tag job with confidence/filtering constraints | **implemented** | `dataengine/annotation_scorecard.py` |
+| Hierarchical semantic tag ontology and heterogeneous retrieval graph | **implemented** | `quality/tag_ontology.py` |
+| Human/model annotation-consensus scorecards | **implemented** | type-specific quality policies in `dataengine/annotation_scorecard.py` |
 | Boundary/junction foundation-model training | **research-heavy** | requires the A2Z-scale dataset and GPUs |
 
-## Batch-1 candidate backlog
+## Batch-1 implementation result
 
-Highest-value deterministic candidates for a later implementation wave:
-
-1. tool knowledge cards + minimal tool-set dispatch;
-2. geometric invariance contracts and perturbation consistency tests;
-3. native B-rep TAAG plus set-valued feature hypotheses;
-4. hierarchical constraint scopes and local-editability metrics;
-5. B-rep entity annotation/correspondence schema;
-6. staged scan/sketch augmentation profiles;
-7. hierarchical CAD tag ontology and retrieval graph.
-
-No implementation claim is made yet; this phase is paper mining.
+All deterministic, locally testable ideas extracted from papers 1–5 are now
+implemented. The remaining ideas are explicitly classified as research-heavy:
+large-model training, A2Z-scale dataset construction, and advanced multimodal
+geometry generation. Those require external data, models, and compute and were
+not represented by unusable stubs.
