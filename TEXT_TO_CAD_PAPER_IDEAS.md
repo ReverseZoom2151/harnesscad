@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 5 / 186 papers reviewed.
+Status: 10 / 186 papers reviewed.
 
 Classifications:
 
@@ -137,3 +137,139 @@ implemented. The remaining ideas are explicitly classified as research-heavy:
 large-model training, A2Z-scale dataset construction, and advanced multimodal
 geometry generation. Those require external data, models, and compute and were
 not represented by unusable stubs.
+
+## Batch 2 — papers 6–10
+
+### 6. Advancements in Computer-Aided Design Automation using Large-Scale Procedural Content Generation from the Video Game Industry
+
+Source:
+`Advancements in Computer-Aided Design Automation using Large-Scale Procedural Content Generation from the Video Game Industry.md`
+
+Core mechanism:
+
+- Transfer seeded procedural-content generation into engineering CAD while
+  preserving repeatability and real-world constraints.
+- Compose reusable assets with terrain/surface mapping, obstacle-aware
+  placement and procedural connection routing.
+- Run bounded trials derived from a master seed, retain the best result and its
+  replay seed, and expose configuration controls to the user.
+- Use procedural rules to expand a solution space, while acknowledging that
+  manufacturing, tolerance and structural requirements must gate novelty.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Seeded, replayable procedural generation with provenance | **implemented** | `datagen/generators.py`, `datagen/pipeline.py` and `exploration/tournament.py` |
+| Bounded multi-start search that retains the winning child seed and timeout reason | **partial** | exploration is seeded and ranked, but does not expose a reusable trial/seed replay record for arbitrary procedural solvers |
+| Constraint-aware modular placement with adjacency, clustering and obstacle rules | **partial** | assembly sequencing and interference checks exist; no general placement-rule generator exists |
+| Procedural-technique applicability registry with precision, repeatability and compute-cost tradeoffs | **net-new** | no decision layer selects stochastic, tessellation, path or pattern techniques by engineering requirements |
+| Solution-space coverage and diversity metrics for procedural generators | **partial** | exploration clusters variants, but generation coverage is not measured against declared configuration dimensions |
+| Unconstrained game-style terrain/content generation | **research-heavy** | not central to mechanical text-to-CAD and would not improve verified part generation directly |
+
+### 7. Aligning Constraint Generation with Design Intent in Parametric CAD
+
+Source: `Aligning Constraint Generation with Design Intent in Parametric CAD.md`
+
+Core mechanism:
+
+- Treat design intent as expected behavior under parameter edits, not merely a
+  visually matching initial sketch.
+- Score generated constraints with a solver using five outcomes:
+  fully-constrained, under-constrained, over-constrained, unsolvable and stable.
+- Measure stability by comparing geometry before and after solving or parameter
+  edits at configurable spatial sensitivity.
+- Prevent reward hacking by penalizing excessive constraint count and excessive
+  use of dimensions instead of semantic geometric constraints.
+- Evaluate candidate generation with pass-at-K, not only single-sample accuracy.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Unified five-condition sketch design-alignment scorecard | **partial** | constraint analysis exposes under/well/over and diagnostics, but not one scorecard including unsolvable and edit stability |
+| Parameter-perturbation stability test with configurable spatial bins/tolerance | **net-new** | local editability exists, but sketch geometry is not actively perturbed and compared for intent-preserving deformation |
+| Constraint-economy score and dimension-to-geometric-constraint ratio | **net-new** | redundancy is detected, but over-dimensioning and semantic constraint economy are not scored |
+| Constraint-by-constraint solver blame and drop trace | **partial** | relaxation suggests drops; it does not retain the full incremental outcome trace |
+| Solver-verified pass-at-K metric for generated constraint candidates | **net-new** | best-of-N exists, but benchmark metrics do not report probability of at least one aligned sketch within K attempts |
+| Solver-normalized sketch dataset preparation | **partial** | generated samples are solver-filtered; imported sketch corpora are not normalized into solved geometry before use |
+| DPO/GRPO/RLOO post-training of a constraint model | **research-heavy** | requires a trained constraint policy, millions of sketches and substantial compute |
+
+### 8. Alignist — CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences
+
+Source:
+`Alignist - CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences.md`
+
+Transferable mechanism:
+
+- Represent uncertain orientation as a multi-modal distribution rather than a
+  single pose, especially for symmetric or partially occluded parts.
+- Fuse independent shape and correspondence evidence as a product of experts.
+- Precompute CAD-derived orientation priors and focus subsequent sampling near
+  plausible modes while retaining ambiguity.
+- Encode rotations through transformed reference-cube corners to avoid
+  element-wise rotation-matrix encoding collisions.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Symmetry-aware, multi-modal orientation hypothesis distribution | **net-new** | ingestion supports local frames and annotations but forces no explicit distribution over equivalent poses |
+| Injectable product-of-experts fusion for shape/correspondence orientation scores | **net-new** | no orientation evidence fusion layer exists |
+| Coarse-to-fine mode-focused orientation sampler with deterministic replay | **net-new** | generic exploration does not operate on rotation-space modes |
+| Reference-cube rotation encoding and angular-distance utilities | **net-new** | invariance contracts transform points but do not provide a collision-resistant rotation descriptor |
+| Confidence/entropy diagnostics that preserve pose ambiguity for downstream assembly | **net-new** | annotation scorecards handle labels, not orientation posterior uncertainty |
+| Neural SDF/SurfEmb training and image-conditioned pose inference | **research-heavy** | requires pretrained vision/geometry models and pose datasets |
+
+### 9. Applications of Artificial Intelligence in Computer-Aided Design
+
+Source: `Applications of Artificial Intelligence in Computer-Aided Design.md`
+
+This short survey proposes broad capabilities rather than a new technical
+method: automated modeling, material/layout recommendations, simulation,
+multidisciplinary optimization, cloud collaboration, privacy and explainable
+decisions.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Automated modeling, assembly, drawings and simulation checks | **implemented** | CISP/backends, assembly verifier, `quality/drawing.py`, and simulation verifiers |
+| Material, cost, energy and sustainability optimization | **implemented** | estimate, fitness, Pareto and embodied-carbon layers |
+| Real-time collaboration and cloud execution | **external** | local event/A2A contracts exist; a hosted collaborative product requires deployment infrastructure |
+| Sensitive-design privacy and metadata redaction | **implemented** | `security/policy.py` and session-capture redaction |
+| Explainable, auditable AI decisions | **implemented** | verifier evidence, provenance reports, traces and tool knowledge cards |
+| Learned cross-industry recommendation and performance-prediction models | **research-heavy** | requires proprietary historical datasets and trained predictors |
+
+### 10. Artificial Intelligence-Based Design of Assemblies in the FreeCAD Software
+
+Source: `Artificial Intelligence-Based Design of Assemblies in the FreeCAD Software.md`
+
+Core mechanism and empirical findings:
+
+- Structure assembly prompts around dimensions, layout/constraints, element
+  count, element geometry and function.
+- Treat text correction, direct code editing and manual CAD editing as distinct
+  intervention modes; repeated prompting becomes inefficient for detailed
+  features and should trigger a handoff.
+- Generate validated families of simple standard parts across parameter ranges
+  and persist them as reusable libraries.
+- Validate dimensions, placement, detailed features and function separately;
+  plausible gross shape is not production readiness.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Assembly requirement completeness profile for D/L/N/G/F prompt fields | **partial** | requirement formalization captures dimensions, counts and function, but does not explicitly score all five assembly fields |
+| Correction-attempt ledger classifying prompt, code and direct-CAD interventions | **partial** | edit sessions retain proposals, but not intervention mode, effort or outcome |
+| Cost/attempt-based handoff policy from prompting to code or manual CAD editing | **net-new** | approval tiers exist, but no diminishing-return escalation policy exists |
+| Parameter-sweep standard-part family generator with naming, validation and manifest | **net-new** | the part catalog contains verified exemplars; it does not generate and validate complete dimensional families |
+| Separate gross-shape, dimension, placement, detailed-feature and function readiness scorecard | **partial** | these checks exist across modules but are not consolidated into an assembly readiness report |
+| Compare outputs from multiple generators before intervention | **implemented** | best-of-N, tournament ranking and plural verification |
+| Direct FreeCAD Python-console execution | **external** | requires a FreeCAD installation/host adapter; the backend seam can accommodate it |
+
+## Batch-2 candidate backlog
+
+Immediately buildable candidates, excluding model training and hosted services:
+
+1. sketch design-alignment scorecard, perturbation stability and constraint
+   economy;
+2. solver-verified pass-at-K and incremental constraint blame traces;
+3. symmetry-aware orientation hypotheses, expert fusion and mode-focused
+   sampling;
+4. procedural-technique selection, bounded child-seed trials and solution-space
+   coverage;
+5. assembly prompt completeness, intervention/handoff policy and readiness
+   scorecard;
+6. validated parameter-sweep generation for standard-part families.
