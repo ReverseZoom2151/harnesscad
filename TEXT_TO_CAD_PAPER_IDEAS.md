@@ -1243,3 +1243,61 @@ All deterministic and in-scope findings from papers 76-80 are implemented.
 Also this session: four agent-protocol integrations (MCP server, A2A
 server + a2a/ spec conformance, Zed ACP agent). All modules in packages,
 not root.
+
+### 81. FlatCAD — Fast Curvature Regularization of Neural SDFs for CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Weingarten shape operator + closed-form implicit-surface Gaussian/mean/principal curvature (validated vs analytic SDFs) | **implemented** | `geometry/flatcad_weingarten.py` |
+| Off-diagonal-Weingarten curvature-gap term + ODW L1/L2 loss + closed-form expectations + curvature-regime classification | **implemented** | `geometry/flatcad_weingarten.py` |
+| Finite-difference SDF gradient/Hessian + FlatCAD symmetric mixed stencil (O(h^2)) | **implemented** | `numeric/flatcad_sdf_derivatives.py` |
+| SIREN network + training pipeline; autodiff HVP route | **research-heavy/external** | learned neural SDF |
+
+### 82. FlexCAD — Unified and Versatile Controllable CAD Generation with Fine-Tuned Large Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Hierarchy-aware CAD<->structured-text serializer + round-trip parser + field masker/infill | **implemented** | `reconstruction/flexcad_text.py` |
+| 7-level masking scheme (typed curve/loop/face/sketch/extrusion masks) + uniform per-epoch sampling | **implemented** | `dataengine/flexcad_masking.py` |
+| Masked-infill training-pair constructor + unconditional template | **implemented** | `dataengine/flexcad_infill_pairs.py` |
+| Prediction-validity + controllability metrics | **implemented** | `bench/flexcad_controllability.py` |
+| Llama-3 LoRA fine-tuning; COV/MMD/JSD (learned-embedding); Realism study | **research-heavy/external** | learned models / crowd |
+
+### 83. FlexCAD (near-duplicate extraction of paper 82)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Serialization / masking / infill / controllability metrics | **covered by paper 82** | `flexcad_*` modules |
+| Circle-representation variants (center-radius / diameter / four-points) with round-trip codecs; PV-constrained sampling-config selector + Pareto frontier | **implemented** | `generation/flexcad2_appendix.py` |
+
+### 84. From 2D CAD Drawings to 3D Parametric Models — A Vision-Language Approach
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Text-based parametric shape-program IR (Python/YAML codecs) + first-octant pose normalization | **implemented** | `reconstruction/cad2program_shape_program.py` |
+| 3D box IoU + Hungarian primitive matching + reconstruction/retrieval/param-estimation metrics | **implemented** | `reconstruction/cad2program_metrics.py` |
+| Command-template codec + position/size/rotation quantization + quantization-error metric | **implemented** | `reconstruction/cad2program_command_template.py` |
+| Orthographic-view-to-3D lifting (constructs prismatic solids) + 2D view parser | **implemented** | `drawings/cad2program_view_lifting.py` |
+| Three-view fixed-canvas layout | **implemented** | `drawings/cad2program_canvas_layout.py` |
+| ViT/InternVL vision-language model + CLIP model-id token | **research-heavy/external** | trained VLM/CLIP |
+
+### 85. From Concept to Manufacturing — Evaluating Vision-Language Models for Engineering Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Four-area task taxonomy + cross-model scorecard | **implemented** | `bench/engdesign_taxonomy.py` |
+| Design-similarity triplet metrics (self-consistency, transitive-violation) | **implemented** | `bench/engdesign_similarity_triplets.py` |
+| Multiple-choice description-matching scorer | **implemented** | `bench/engdesign_description_match.py` |
+| CAD-generation rubric (description/dimension/feature/non-improvement) | **implemented** | `bench/engdesign_cad_rubric.py` |
+| Topology-optimization metrics (volume-fraction / floating-material error) | **implemented** | `bench/engdesign_topopt_metrics.py` |
+| DFM scorers (manufacturability + machining-feature recognition) | **implemented** | `bench/engdesign_dfm_scoring.py` |
+| Defect-inspection confusion metrics | **implemented** | `bench/engdesign_defect_confusion.py` |
+| Textbook + spatial QA scorers | **implemented** | `bench/engdesign_qa_scoring.py` |
+| GPT-4V/LLaVA inference; GNMDS embedding; CAT human ratings | **research-heavy/external** | VLMs / human eval |
+
+## Batch-17 implementation result
+
+All deterministic and in-scope findings from papers 81-85 are implemented
+(paper 83 is a near-duplicate of 82 -- only its appendix-only circle-repr
+and PV-sampling ideas were new). Per the no-README-during-campaign policy,
+the suite count is tracked in audit/text_to_cad_progress.json.

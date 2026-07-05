@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 80,
-  "next_manifest_index": 81,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-80 implemented",
+  "reviewed_count": 85,
+  "next_manifest_index": 86,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-85 implemented (83 is a near-duplicate of 82; only its appendix-only ideas were new)",
   "reviewed": [
     {
       "index": 1,
@@ -404,6 +404,31 @@
     {
       "index": 80,
       "paper": "Fine-Tuning 3D Foundation Models for Geometric Object Retrieval.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 81,
+      "paper": "FlatCAD - Fast Curvature Regularization of Neural SDFs for CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 82,
+      "paper": "FlexCAD - Unified and Versatile Control-Lable CAD Generation with Fine-Tuned Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 83,
+      "paper": "FlexCAD - Unified and Versatile Controllable CAD Generation with Fine-tuned Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 84,
+      "paper": "From 2D CAD Drawings to 3D Parametric Models - A Vision-Language Approach.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 85,
+      "paper": "From Concept to Manufacturing - Evaluating Vision-Language Models for Engineering Design.md",
       "status": "reviewed"
     }
   ],
