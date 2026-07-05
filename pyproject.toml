@@ -32,7 +32,7 @@ py-modules = [
 ]
 packages = [
     # core spine + foundations
-    "cisp", "state", "backends", "llm", "agent", "agents", "a2a",
+    "cisp", "state", "backends", "adapters", "llm", "agent", "agents", "a2a",
     # grounding
     "context", "rag", "memory",
     # the plural verifier
@@ -47,4 +47,6 @@ packages = [
     "dataengine", "datagen", "exploration", "bench",
     # front-of-pipeline + ingestion + parts
     "spec", "skeleton", "sizing", "ingest", "library", "standards",
+    # security and research governance
+    "security", "research",
 ]
