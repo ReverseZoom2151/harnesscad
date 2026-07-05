@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "harnesscad"
+version = "0.0.1"
+description = "Native agentic harness for engineering/mechanical text-to-CAD"
+requires-python = ">=3.10"
+# Core spine is stdlib-only — no required runtime dependencies (yet).
+dependencies = []
+
+[project.optional-dependencies]
+# Future OCCT-backed geometry backend (CadQuery / OpenCascade).
+cadquery = ["cadquery>=2.4"]
+
+# The product code lives FLAT at the repo root. harnesscad is an application
+# repo, not a pip library, so the layout is intentional: top-level packages and
+# modules are the project itself rather than being nested under a src/ package.
+[tool.setuptools]
+py-modules = ["verify", "loop"]
+packages = ["cisp", "state", "backends"]

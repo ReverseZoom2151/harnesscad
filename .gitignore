@@ -1,0 +1,14 @@
+# Research / reference material — not part of the product.
+# All reference PDFs and research folders live under resources/ (never committed).
+resources/
+
+# Python cruft
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.DS_Store
