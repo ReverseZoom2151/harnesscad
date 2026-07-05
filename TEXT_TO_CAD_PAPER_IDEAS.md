@@ -1186,3 +1186,60 @@ All deterministic and in-scope findings from papers 71-75 are implemented
 (EnzymeCAGE is biochemistry -- only its ranked-retrieval metrics kept;
 the text-to-3D/mesh/foundation-model papers kept only their deterministic
 geometry/metric primitives). Suite: 3124 tests, all passing.
+
+### 76. Evaluating Deep Clustering Algorithms on Non-Categorical 3D CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Partition-comparison metrics (NMI, Rand/Adjusted Rand, clustering accuracy via Hungarian, purity) | **implemented** | `bench/deepclustering_partition_metrics.py` |
+| Internal validity indices (Davies-Bouldin, Calinski-Harabasz, Dunn) | **implemented** | `bench/deepclustering_internal_indices.py` |
+| Pairwise-edge similarity protocol (edge accuracy, balanced accuracy) | **implemented** | `bench/deepclustering_edge_protocol.py` |
+| Ensemble evaluation + ranking consistency (Kendall tau) | **implemented** | `bench/deepclustering_ensemble.py` |
+| Classic clustering algorithms (k-means++, agglomerative, spectral-lite) | **implemented** | `bench/deepclustering_algorithms.py` |
+| Oversegmentation init/annotation protocol | **implemented** | `bench/deepclustering_init_protocol.py` |
+| CAD-model distance protocol (Chamfer + voxel-Jaccard, thin-object rule) | **implemented** | `reconstruction/cadcluster_model_distances.py` |
+| Learned deep-clustering encoders + human annotation | **research-heavy/external** | trained models / data labor |
+
+### 77. EvoCAD — Evolutionary CAD Code Generation with Vision Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Generational evolutionary loop over CAD programs (rank->probability selection, elitism) | **implemented** | `exploration/evocad_evolution.py` |
+| Deterministic CAD-program crossover/mutation operators | **implemented** | `exploration/evocad_variation.py` |
+| Euler-characteristic topology metrics (T_err/T_corr/genus, dataset aggregation) | **implemented** | `bench/evocad_topology_metrics.py` |
+| VLM description + reasoning-model ranking | **research-heavy/external** | learned VLM |
+
+### 78. Exploring the Usability of AI-Generated 3D Models in CAD Workflows and the Metaverse
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Loop-size CV variability bands + quad-topology fraction + VR/AR polygon budgets + mesh-defect readiness + combined usability verdict | **implemented** | `quality/ai_model_usability_standard.py` |
+| UV-layout / animation-topology criteria (expert judgment); NeRF/DreamFusion generation | **out-of-scope / research-heavy** | qualitative / trained models |
+
+### 79. Facilitating the Parametric Definition of Geometric Properties in Programming-Based CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Linear-form algebra + arithmetic-expression parser/AST + affine reducer | **implemented** | `programs/paramgeom_linform.py` |
+| C1..C5 expression classifier + cross-tabulation | **implemented** | `programs/paramgeom_classify.py` |
+| Parametric handle grids for primitives + handle-role classifier | **implemented** | `programs/paramgeom_handles.py` |
+| Position/delta-vector features via CSG-tree walking | **implemented** | `programs/paramgeom_position.py` |
+| Interactive UI + user study | **research-heavy/external** | UI / human subjects |
+
+### 80. Fine-Tuning 3D Foundation Models for Geometric Object Retrieval
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Geometric-object retrieval eval protocol (NN accuracy/F1, NDCG@N, per-category/macro/micro mAP) | **implemented** | `bench/geomretr_eval.py` |
+| Rotation/translation-invariant descriptors (Osada D2, spherical-harmonic-lite, PCA bounding-volume) | **implemented** | `reconstruction/geomretr_descriptors.py` |
+| Embedding post-processing (L2 norm, PCA whitening, query expansion) | **implemented** | `bench/geomretr_embedding.py` |
+| VICReg + multi-modal contrastive losses | **implemented** | `bench/geomretr_losses.py` |
+| VICReg positive-pair augmentation pipeline | **implemented** | `reconstruction/geomretr_augment.py` |
+| ULIP-2 foundation-model encoder + fine-tuning | **research-heavy/external** | trained 3D encoder |
+
+## Batch-16 implementation result
+
+All deterministic and in-scope findings from papers 76-80 are implemented.
+Also this session: four agent-protocol integrations (MCP server, A2A
+server + a2a/ spec conformance, Zed ACP agent). All modules in packages,
+not root.

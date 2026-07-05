@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 75,
-  "next_manifest_index": 76,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-75 implemented",
+  "reviewed_count": 80,
+  "next_manifest_index": 81,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-80 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -379,6 +379,31 @@
     {
       "index": 75,
       "paper": "Error Notebook-Guided, Training-Free Part Retrieval in 3D CAD Assemblies via Vision-Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 76,
+      "paper": "Evaluating Deep Clustering Algorithms on Non-Categorical 3D CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 77,
+      "paper": "EvoCAD - Evolutionary CAD Code Generation with Vision Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 78,
+      "paper": "Exploring the Usability and Future Development of AI-Generated 3D Models in CAD Workflows and the Metaverse Based on 3D Model Standards.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 79,
+      "paper": "Facilitating the Parametric Definition of Geometric Properties in Programming-Based CAD.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 80,
+      "paper": "Fine-Tuning 3D Foundation Models for Geometric Object Retrieval.md",
       "status": "reviewed"
     }
   ]
