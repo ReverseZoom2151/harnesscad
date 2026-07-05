@@ -1,0 +1,188 @@
+"""End-to-end build pipeline: brief -> planner (LLM) -> session -> STEP.
+
+`build` is the single entry point that wires the whole harness together:
+
+    natural-language brief
+        -> Planner (LLM turns the brief into validated CISP ops)
+        -> HarnessSession over a geometry backend (apply -> verify -> checkpoint)
+        -> verified real geometry
+        -> STEP export
+
+It is deliberately thin: every hard part already lives in a tested module
+(`agent.runner.run` drives the correction loop, `HarnessSession` owns the
+transactional spine, the backends produce geometry + digests). This module just
+assembles those pieces and normalises the outcome into a plain result dict.
+
+Provider keys are never read or hardcoded here beyond passing a model name to
+`LiteLLMClient`. When no `llm` is injected and no API key is present in the
+environment, `build` raises a clear, actionable error instead of failing deep
+inside a provider call.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Any, Dict, List, Optional
+
+from agent.planner import Planner
+from agent.runner import run
+from backends.stub import StubBackend
+from llm.base import LLM
+from loop import HarnessSession
+from trace import Tracer
+
+
+# The default model used only when the caller injects no `llm`. Kept as a
+# module constant so it is obvious and easy to override via `model=`.
+DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
+
+# Env vars we consider proof that a live provider call can succeed. We only
+# *check* for their presence; we never read their values (litellm does that).
+_API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY")
+
+
+class BuildError(RuntimeError):
+    """Raised when the pipeline cannot even start (e.g. no LLM and no API key)."""
+
+
+class _LazyLiteLLM(LLM):
+    """An `LLM` that constructs its `LiteLLMClient` on first use.
+
+    Constructing this costs nothing and imports no provider SDK; the real
+    `LiteLLMClient` (and litellm itself) is built only if/when the planner
+    actually calls `complete`/`stream`. That keeps `build` cheap and import-safe
+    right up to the first live model call.
+    """
+
+    def __init__(self, model: str) -> None:
+        self._model = model
+        self._client: Optional[LLM] = None
+
+    def _ensure(self) -> LLM:
+        if self._client is None:
+            from llm.litellm_backend import LiteLLMClient  # lazy import
+            self._client = LiteLLMClient(self._model)
+        return self._client
+
+    def complete(self, messages, tools=None, response_schema=None, **opts):
+        return self._ensure().complete(
+            messages, tools=tools, response_schema=response_schema, **opts)
+
+    def stream(self, messages, tools=None, response_schema=None, **opts):
+        return self._ensure().stream(
+            messages, tools=tools, response_schema=response_schema, **opts)
+
+
+def _make_backend(backend: str):
+    """Return (backend_instance, resolved_name, note).
+
+    `cadquery` is used when requested *and* importable; otherwise we fall back to
+    the dependency-free stub and report why in `note`.
+    """
+    if backend == "cadquery":
+        try:
+            from backends.cadquery_backend import CadQueryBackend  # type: ignore
+            return CadQueryBackend(), "cadquery", None
+        except Exception as exc:  # pragma: no cover - depends on optional dep
+            return (StubBackend(), "stub",
+                    f"cadquery backend unavailable ({exc}); fell back to stub")
+    return StubBackend(), "stub", None
+
+
+def _resolve_llm(llm: Optional[LLM], model: Optional[str]) -> LLM:
+    """Pick the LLM to plan with: the injected one, or a lazy LiteLLM client.
+
+    Raises `BuildError` if no `llm` is given and no provider API key is set —
+    failing fast with a clear message instead of deep inside a provider call.
+    """
+    if llm is not None:
+        return llm
+    if not any(os.environ.get(name) for name in _API_KEY_ENV_VARS):
+        raise BuildError(
+            "no LLM was provided and no provider API key is set. Set one of "
+            + " or ".join(_API_KEY_ENV_VARS)
+            + " in the environment, or pass an `llm=` implementing llm.base.LLM."
+        )
+    return _LazyLiteLLM(model or DEFAULT_MODEL)
+
+
+def _export_step(backend, ok: bool) -> Optional[str]:
+    """Best-effort STEP export. Returns the STEP text, or None if unavailable."""
+    if not ok:
+        return None
+    export = getattr(backend, "export", None)
+    if export is None:
+        return None
+    try:
+        return export("step")
+    except Exception:  # noqa: BLE001 - export must never break the result dict
+        return None
+
+
+def build(
+    brief: str,
+    *,
+    llm: Optional[LLM] = None,
+    backend: str = "cadquery",
+    model: Optional[str] = None,
+    max_iters: int = 5,
+    tracer: Optional[Tracer] = None,
+) -> Dict[str, Any]:
+    """Build a part from a natural-language `brief`.
+
+    Wires planner -> HarnessSession -> backend -> STEP export and returns a
+    plain result dict:
+
+        {
+          "ok":          bool,   # did the loop reach a verified state?
+          "applied":     int,    # number of ops accepted+verified
+          "digest":      str,    # deterministic model hash
+          "diagnostics": [dict], # verifier/backend diagnostics (last batch)
+          "summary":     dict,   # backend `query("summary")` projection
+          "step":        str|None,  # exported STEP text when ok (else None)
+          "backend":     str,    # resolved backend ("cadquery" | "stub")
+          "backend_note":str|None,  # e.g. why cadquery fell back to stub
+        }
+
+    Parameters
+    ----------
+    brief:
+        The design request in natural language.
+    llm:
+        An `llm.base.LLM` to plan with. If omitted, a lazy `LiteLLMClient` is
+        used (built only on first model call) and a provider API key must be set.
+    backend:
+        "cadquery" (real OCCT geometry when installed) or "stub".
+    model:
+        Model name for the default LiteLLM client (ignored when `llm` is given).
+    max_iters:
+        Max plan -> apply -> replan correction iterations.
+    tracer:
+        Optional `trace.Tracer` for structured loop events.
+
+    Raises
+    ------
+    BuildError:
+        If no `llm` is provided and no provider API key is present.
+    """
+    resolved_llm = _resolve_llm(llm, model)
+
+    backend_instance, backend_name, backend_note = _make_backend(backend)
+    session = HarnessSession(backend_instance, tracer=tracer)
+    planner = Planner(resolved_llm)
+
+    result = run(session, planner, brief, max_iters=max_iters)
+
+    diagnostics: List[dict] = [d.to_dict() for d in result.diagnostics]
+    step = _export_step(backend_instance, result.ok)
+
+    return {
+        "ok": result.ok,
+        "applied": result.applied,
+        "digest": result.digest,
+        "diagnostics": diagnostics,
+        "summary": session.summary(),
+        "step": step,
+        "backend": backend_name,
+        "backend_note": backend_note,
+    }

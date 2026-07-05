@@ -8,6 +8,11 @@
         Run a built-in sample (constrained plate -> extrude) and print the
         result plus a model summary.
 
+    python cli.py build "<brief>" [--backend stub|cadquery] [--model NAME]
+                                   [--out part.step] [--trace run.jsonl]
+        Turn a natural-language brief into verified geometry via the LLM planner
+        and the correction loop, then optionally write the exported STEP.
+
 Exit code is non-zero when the resulting model is not ok, so the CLI composes
 in scripts / CI (`cli.py apply plan.json && next-step`).
 """
@@ -78,6 +83,46 @@ def cmd_demo(args: argparse.Namespace) -> int:
     return 0 if result["ok"] else 1
 
 
+def cmd_build(args: argparse.Namespace) -> int:
+    # Imported here so `apply`/`demo` keep working even if the pipeline module's
+    # optional dependencies are missing.
+    from pipeline import build, BuildError
+    from trace import JsonlTracer
+
+    tracer = JsonlTracer(args.trace) if args.trace else None
+    try:
+        result = build(
+            args.brief,
+            backend=args.backend,
+            model=args.model,
+            max_iters=args.max_iters,
+            tracer=tracer,
+        )
+    except BuildError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    _print_result(result)
+    print("summary:", json.dumps(result.get("summary") or {}, sort_keys=True))
+    if result.get("backend_note"):
+        print(f"note:     {result['backend_note']}")
+
+    if args.out and result["ok"]:
+        step = result.get("step")
+        if step is None:
+            print("error: build ok but no STEP was produced to write", file=sys.stderr)
+            return 1
+        try:
+            with open(args.out, "w", encoding="utf-8") as fh:
+                fh.write(step)
+        except OSError as exc:
+            print(f"error: could not write STEP to {args.out!r}: {exc}", file=sys.stderr)
+            return 2
+        print(f"wrote:    {args.out}")
+
+    return 0 if result["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cli.py", description="harnesscad CISP CLI")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -90,6 +135,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_demo = sub.add_parser("demo", help="run the built-in constrained-plate sample")
     p_demo.add_argument("--backend", default="stub", choices=["stub", "cadquery"])
     p_demo.set_defaults(func=cmd_demo)
+
+    p_build = sub.add_parser(
+        "build", help="build a part from a natural-language brief via the LLM planner")
+    p_build.add_argument("brief", help="natural-language design brief")
+    p_build.add_argument("--backend", default="cadquery", choices=["stub", "cadquery"])
+    p_build.add_argument("--model", default=None, help="model name for the default LLM client")
+    p_build.add_argument("--out", default=None, help="write the exported STEP to this path")
+    p_build.add_argument("--trace", default=None, help="write JSONL trace events to this path")
+    p_build.add_argument("--max-iters", type=int, default=5, dest="max_iters",
+                         help="max plan->apply->replan iterations (default 5)")
+    p_build.set_defaults(func=cmd_build)
 
     return parser
 
