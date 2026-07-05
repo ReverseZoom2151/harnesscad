@@ -4,7 +4,7 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-1536%20passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-1556%20passing-brightgreen?style=flat-square)
 ![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
@@ -272,7 +272,7 @@ The core spine has **no dependencies** — clone and run. Python 3.10+.
 ```sh
 git clone <repo> && cd harnesscad
 python cli.py demo                             # built-in constrained-plate -> extrude sample
-python -m unittest discover -s tests -t . -v   # the full suite (1536 tests)
+python -m unittest discover -s tests -t . -v   # the full suite (1556 tests)
 ```
 
 ### Drive a session directly
@@ -637,7 +637,7 @@ harnesscad/
 ├── examples/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
-├── tests/                  # 1536 unittest tests across every module
+├── tests/                  # 1556 unittest tests across every module
 ├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
