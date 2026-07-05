@@ -24,5 +24,8 @@ constraints = ["python-solvespace"]
 # repo, not a pip library, so the layout is intentional: top-level packages and
 # modules are the project itself rather than being nested under a src/ package.
 [tool.setuptools]
-py-modules = ["verify", "loop"]
-packages = ["cisp", "state", "backends"]
+py-modules = [
+    "verify", "loop", "trace", "server", "cli", "checks_geometry",
+    "pipeline", "contract", "constraints",
+]
+packages = ["cisp", "state", "backends", "llm", "agent", "memory", "bench"]
