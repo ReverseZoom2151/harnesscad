@@ -43,6 +43,8 @@ _METRICS = {
     "cost": lambda e: e.total_cost,
     "material_cost": lambda e: e.material_cost,
     "machining_cost": lambda e: e.rough_machining_cost,
+    "embodied_carbon": lambda e: getattr(e, "embodied_carbon", None),
+    "embodied_energy": lambda e: getattr(e, "embodied_energy", None),
     "surface_area": lambda e: e.surface_area,
     "bbox_x": lambda e: e.bbox[0] if e.bbox else None,
     "bbox_y": lambda e: e.bbox[1] if e.bbox else None,
@@ -214,24 +216,45 @@ def cost_objective(weight: float = 1.0, material: str = "aluminium",
                      material=material, table=table)
 
 
+def carbon_objective(weight: float = 1.0, material: str = "aluminium",
+                     table: Optional[MaterialTable] = None) -> Objective:
+    """Minimise embodied carbon (kg CO2e). Lower carbon -> higher score.
+
+    Environmental footprint is a first-class objective alongside mass and cost:
+    it rolls up from the same BOM/PartEstimate as ``mass_objective`` /
+    ``cost_objective``, so a lower-carbon material or lighter part scores higher.
+    """
+    return Objective([Term("embodied_carbon", "min", weight)],
+                     material=material, table=table)
+
+
 def multi_objective(mass_weight: float = 1.0, cost_weight: float = 1.0,
                     violation_weight: float = 100.0,
-                    *, material: str = "aluminium",
+                    *, carbon_weight: float = 0.0,
+                    material: str = "aluminium",
                     table: Optional[MaterialTable] = None,
                     mass_scale: float = 1.0,
-                    cost_scale: float = 1.0) -> Objective:
-    """Minimise mass + cost while penalising constraint violations.
+                    cost_scale: float = 1.0,
+                    carbon_scale: float = 1.0) -> Objective:
+    """Minimise mass + cost (+ optional carbon) while penalising violations.
 
     ``violation_weight`` scales the count of ERROR-severity diagnostics from a
     verify report, so a valid-but-heavier part can still beat a lighter but
-    broken one. ``*_scale`` normalise mass (g) and cost so their weights are
-    comparable when both are 1.0.
+    broken one. ``*_scale`` normalise mass (g), cost and carbon (kg CO2e) so
+    their weights are comparable when both are 1.0.
+
+    Embodied carbon is included as an optional weighted term: it is only added
+    when ``carbon_weight`` is non-zero, so the default vector length/behaviour
+    (mass, cost, violations) is unchanged for existing callers.
     """
     terms = [
         Term("mass", "min", mass_weight, scale=mass_scale),
         Term("cost", "min", cost_weight, scale=cost_scale),
         Term("violations", "min", violation_weight),
     ]
+    if carbon_weight:
+        terms.append(
+            Term("embodied_carbon", "min", carbon_weight, scale=carbon_scale))
     return Objective(terms, material=material, table=table)
 
 

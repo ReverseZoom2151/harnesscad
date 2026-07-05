@@ -101,6 +101,30 @@ class TestMaterialTable(unittest.TestCase):
         self.assertEqual(m.density, 3.0)
         self.assertEqual(m.cost_per_kg, 0.0)
 
+    def test_material_footprint_defaults_present(self):
+        # Real representative footprint values ship for the stock materials.
+        t = MaterialTable()
+        self.assertGreater(t.get("aluminium").embodied_carbon, 0.0)
+        self.assertGreater(t.get("titanium").embodied_carbon,
+                           t.get("steel").embodied_carbon)
+        self.assertGreater(t.get("aluminium").embodied_energy, 0.0)
+
+    def test_material_from_dict_backcompat_no_footprint(self):
+        # A pre-footprint dict (no embodied_* keys) still loads, defaulting
+        # the new fields to 0.0 rather than crashing.
+        m = Material.from_dict({"density": 2.7, "cost_per_kg": 4.0,
+                                "machining_cost_per_cm3": 0.8})
+        self.assertEqual(m.density, 2.7)
+        self.assertEqual(m.embodied_carbon, 0.0)
+        self.assertEqual(m.embodied_energy, 0.0)
+
+    def test_material_footprint_round_trip(self):
+        # to_dict/from_dict preserve the new fields.
+        m = Material(2.7, 4.0, 0.8, embodied_carbon=12.0, embodied_energy=200.0)
+        m2 = Material.from_dict(m.to_dict())
+        self.assertEqual(m.to_dict(), m2.to_dict())
+        self.assertAlmostEqual(m2.embodied_carbon, 12.0)
+
 
 # --------------------------------------------------------------------------- #
 # estimate_part
@@ -121,6 +145,26 @@ class TestEstimatePart(unittest.TestCase):
         self.assertGreater(est.rough_machining_cost, 0.0)
         self.assertAlmostEqual(
             est.total_cost, est.material_cost + est.rough_machining_cost)
+
+    def test_known_part_embodied_carbon(self):
+        # 1000 mm^3 aluminium cube -> 2.70 g -> 0.0027 kg.
+        # Aluminium embodied_carbon = 12.0 kg CO2e/kg -> 0.0324 kg CO2e.
+        b = MetricsBackend(volume=1000.0, bbox=[10.0, 10.0, 10.0])
+        est = estimate_part(b, material="aluminium")
+        table = MaterialTable()
+        factor = table.get("aluminium").embodied_carbon
+        self.assertAlmostEqual(est.embodied_carbon, est.mass_kg * factor,
+                               places=9)
+        self.assertAlmostEqual(est.embodied_carbon, 0.0027 * 12.0, places=9)
+        # Energy tracks mass * energy factor too.
+        efactor = table.get("aluminium").embodied_energy
+        self.assertAlmostEqual(est.embodied_energy, est.mass_kg * efactor,
+                               places=9)
+
+    def test_embodied_carbon_none_when_unmeasured(self):
+        est = estimate_part(BlindBackend(), material="aluminium")
+        self.assertIsNone(est.embodied_carbon)
+        self.assertIsNone(est.embodied_energy)
 
     def test_material_changes_mass(self):
         b = MetricsBackend(volume=1000.0, bbox=[10.0, 10.0, 10.0])
@@ -193,6 +237,27 @@ class TestBOM(unittest.TestCase):
         self.assertAlmostEqual(bom.total_cost, line_cost)
         self.assertTrue(bom.fully_measured)
 
+    def test_total_carbon_sums(self):
+        parts = [
+            {"name": "bracket", "material": "aluminium", "qty": 2,
+             "metrics": {"volume": 1000.0, "bbox": [10, 10, 10]}},
+            {"name": "pin", "material": "steel", "qty": 4,
+             "metrics": {"volume": 500.0, "bbox": [5, 5, 20]}},
+        ]
+        bom = BOMEstimator().estimate(AssemblyBackend(parts))
+        t = MaterialTable()
+        # bracket: 2.70 g -> 0.0027 kg * alu factor, x2
+        alu = 0.0027 * t.get("aluminium").embodied_carbon
+        # pin: 0.5 cm^3 * 7.85 = 3.925 g -> 0.003925 kg * steel factor, x4
+        steel = 0.003925 * t.get("steel").embodied_carbon
+        expected = 2 * alu + 4 * steel
+        self.assertAlmostEqual(bom.total_carbon, expected, places=9)
+        # Rolled-up total equals the sum of the per-line extended carbons.
+        line_carbon = sum(l.total_carbon for l in bom.lines
+                          if l.total_carbon is not None)
+        self.assertAlmostEqual(bom.total_carbon, line_carbon, places=12)
+        self.assertIn("carbon", bom.to_dict()["totals"])
+
     def test_render_csv_and_markdown(self):
         parts = [
             {"name": "bracket", "material": "aluminium", "qty": 2,
@@ -214,6 +279,18 @@ class TestBOM(unittest.TestCase):
         self.assertIn("| Part |", md)
         self.assertIn("bracket", md)
         self.assertIn("**Total**", md)
+
+    def test_carbon_renders_in_csv_and_markdown(self):
+        parts = [
+            {"name": "bracket", "material": "aluminium", "qty": 2,
+             "metrics": {"volume": 1000.0, "bbox": [10, 10, 10]}},
+        ]
+        bom = BOMEstimator().estimate(AssemblyBackend(parts))
+        csv_text = bom.to_csv()
+        self.assertIn("total_carbon_kgco2e", csv_text)
+        self.assertIn("unit_carbon_kgco2e", csv_text)
+        md = bom.to_markdown()
+        self.assertIn("Total carbon (kg CO2e)", md)
 
     def test_bom_to_dict_totals(self):
         b = MetricsBackend(volume=1000.0, bbox=[10, 10, 10])

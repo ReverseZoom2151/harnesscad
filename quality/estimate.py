@@ -52,12 +52,22 @@ class Material:
     density: float                       # g/cm^3
     cost_per_kg: float                   # currency / kg of raw stock
     machining_cost_per_cm3: float = 0.5  # currency / cm^3 of material removed
+    # Environmental footprint of the raw stock, "cradle-to-gate" per kg of
+    # material. ``embodied_carbon`` is kg CO2e / kg and ``embodied_energy`` is
+    # MJ / kg. Both are APPROXIMATE published-range midpoints (see
+    # _DEFAULT_MATERIALS for per-material ranges + sources) and default to 0.0
+    # so an unpriced/custom material simply contributes no footprint rather
+    # than crashing or inventing numbers.
+    embodied_carbon: float = 0.0         # kg CO2e / kg of stock (approx)
+    embodied_energy: float = 0.0         # MJ / kg of stock (approx)
 
     def to_dict(self) -> dict:
         return {
             "density": self.density,
             "cost_per_kg": self.cost_per_kg,
             "machining_cost_per_cm3": self.machining_cost_per_cm3,
+            "embodied_carbon": self.embodied_carbon,
+            "embodied_energy": self.embodied_energy,
         }
 
     @classmethod
@@ -68,19 +78,41 @@ class Material:
             cost_per_kg=float(d.get("cost_per_kg", defaults.cost_per_kg)),
             machining_cost_per_cm3=float(
                 d.get("machining_cost_per_cm3", defaults.machining_cost_per_cm3)),
+            # New fields default so pre-footprint dicts still load (back-compat).
+            embodied_carbon=float(
+                d.get("embodied_carbon", defaults.embodied_carbon)),
+            embodied_energy=float(
+                d.get("embodied_energy", defaults.embodied_energy)),
         )
 
 
-# Sane, conservative defaults (g/cm^3, currency/kg, currency/cm^3-removed).
+# Sane, conservative defaults.
+# Columns: density (g/cm^3), cost_per_kg (currency/kg),
+# machining_cost_per_cm3 (currency/cm^3-removed), embodied_carbon (kg CO2e/kg),
+# embodied_energy (MJ/kg).
+#
+# Embodied-carbon / embodied-energy figures are APPROXIMATE cradle-to-gate,
+# primary-production midpoints of published ranges. Sources / ranges (kg CO2e
+# per kg unless noted; energy MJ/kg in brackets) — Inventory of Carbon & Energy
+# (ICE v3, Hammond & Jones), Granta/CES EduPack embodied-energy tables, and
+# Ashby "Materials and the Environment":
+#   aluminium (primary):  ~9-18   [~155-215] -> 12.0 / 200.0
+#   steel (virgin):       ~1.5-2.5 [~25-35]  ->  2.0 /  30.0
+#   stainless steel:      ~5-7    [~50-56]   ->  6.0 /  53.0
+#   titanium:             ~30-50  [~450-750] -> 40.0 / 600.0
+#   brass:                ~3-4    [~40-50]   ->  3.5 /  45.0
+#   ABS:                  ~3-4    [~90-95]   ->  3.5 /  92.0
+#   PLA (bio-polyester):  ~2-3    [~50-55]   ->  2.5 /  52.0
+#   nylon (PA6/66):       ~7-9    [~110-140] ->  8.0 / 120.0
 _DEFAULT_MATERIALS: Dict[str, Material] = {
-    "aluminium": Material(2.70, 4.0, 0.8),
-    "steel": Material(7.85, 1.2, 1.5),
-    "stainless": Material(8.00, 5.0, 3.0),
-    "titanium": Material(4.43, 35.0, 6.0),
-    "brass": Material(8.50, 8.0, 1.2),
-    "abs": Material(1.05, 3.5, 0.2),
-    "pla": Material(1.24, 25.0, 0.15),
-    "nylon": Material(1.14, 6.0, 0.3),
+    "aluminium": Material(2.70, 4.0, 0.8, embodied_carbon=12.0, embodied_energy=200.0),
+    "steel": Material(7.85, 1.2, 1.5, embodied_carbon=2.0, embodied_energy=30.0),
+    "stainless": Material(8.00, 5.0, 3.0, embodied_carbon=6.0, embodied_energy=53.0),
+    "titanium": Material(4.43, 35.0, 6.0, embodied_carbon=40.0, embodied_energy=600.0),
+    "brass": Material(8.50, 8.0, 1.2, embodied_carbon=3.5, embodied_energy=45.0),
+    "abs": Material(1.05, 3.5, 0.2, embodied_carbon=3.5, embodied_energy=92.0),
+    "pla": Material(1.24, 25.0, 0.15, embodied_carbon=2.5, embodied_energy=52.0),
+    "nylon": Material(1.14, 6.0, 0.3, embodied_carbon=8.0, embodied_energy=120.0),
 }
 
 # Common spelling aliases so 'aluminum' / 'ss' / 'al' resolve.
@@ -249,6 +281,10 @@ class PartEstimate:
     stock_size: Optional[List[float]] = None  # [x, y, z] mm (bbox + allowance)
     material_cost: Optional[float] = None   # currency (raw stock block)
     rough_machining_cost: Optional[float] = None  # currency (removal)
+    # Environmental footprint of the part's own mass (mass_kg * material factor),
+    # None when mass is unknown. Approximate cradle-to-gate; see Material.
+    embodied_carbon: Optional[float] = None  # kg CO2e
+    embodied_energy: Optional[float] = None  # MJ
     measured: bool = True
     volume_estimated: bool = False
 
@@ -274,6 +310,8 @@ class PartEstimate:
             "material_cost": self.material_cost,
             "rough_machining_cost": self.rough_machining_cost,
             "total_cost": self.total_cost,
+            "embodied_carbon": self.embodied_carbon,
+            "embodied_energy": self.embodied_energy,
             "measured": self.measured,
             "volume_estimated": self.volume_estimated,
         }
@@ -344,6 +382,11 @@ def estimate_part(
         measured=True,
     )
 
+    # Embodied footprint follows the part's own mass (not the stock block).
+    mass_kg = mass_g / G_PER_KG
+    est.embodied_carbon = mass_kg * mat.embodied_carbon
+    est.embodied_energy = mass_kg * mat.embodied_energy
+
     if _usable_bbox(bbox):
         stock = [float(d) + 2.0 * machining_allowance for d in bbox[:3]]
         est.stock_size = stock
@@ -384,6 +427,7 @@ class BOMLine:
     material: str
     unit_mass: Optional[float] = None       # grams, per unit
     unit_cost: Optional[float] = None        # currency, per unit
+    unit_carbon: Optional[float] = None      # kg CO2e, per unit
     estimate: Optional[PartEstimate] = None  # the underlying per-unit estimate
 
     @property
@@ -394,6 +438,10 @@ class BOMLine:
     def total_cost(self) -> Optional[float]:
         return None if self.unit_cost is None else self.unit_cost * self.qty
 
+    @property
+    def total_carbon(self) -> Optional[float]:
+        return None if self.unit_carbon is None else self.unit_carbon * self.qty
+
     def to_dict(self) -> dict:
         return {
             "part": self.part,
@@ -401,8 +449,10 @@ class BOMLine:
             "material": self.material,
             "unit_mass": self.unit_mass,
             "unit_cost": self.unit_cost,
+            "unit_carbon": self.unit_carbon,
             "total_mass": self.total_mass,
             "total_cost": self.total_cost,
+            "total_carbon": self.total_carbon,
         }
 
 
@@ -419,6 +469,12 @@ class BOM:
     @property
     def total_cost(self) -> float:
         return sum(l.total_cost for l in self.lines if l.total_cost is not None)
+
+    @property
+    def total_carbon(self) -> float:
+        """Rolled-up embodied carbon (kg CO2e) over all measured lines."""
+        return sum(l.total_carbon for l in self.lines
+                   if l.total_carbon is not None)
 
     @property
     def part_count(self) -> int:
@@ -440,6 +496,7 @@ class BOM:
             "totals": {
                 "mass": self.total_mass,
                 "cost": self.total_cost,
+                "carbon": self.total_carbon,
                 "part_count": self.part_count,
                 "line_count": self.line_count,
                 "fully_measured": self.fully_measured,
@@ -451,30 +508,38 @@ class BOM:
         buf = io.StringIO()
         w = csv.writer(buf, lineterminator="\n")
         w.writerow(["part", "qty", "material", "unit_mass_g",
-                    "unit_cost", "total_mass_g", "total_cost"])
+                    "unit_cost", "unit_carbon_kgco2e", "total_mass_g",
+                    "total_cost", "total_carbon_kgco2e"])
         for l in self.lines:
             w.writerow([
                 l.part, l.qty, l.material,
                 _csv_num(l.unit_mass), _csv_num(l.unit_cost),
+                _csv_num(l.unit_carbon),
                 _csv_num(l.total_mass), _csv_num(l.total_cost),
+                _csv_num(l.total_carbon),
             ])
         w.writerow(["TOTAL", self.part_count, "",
-                    "", "", _csv_num(self.total_mass), _csv_num(self.total_cost)])
+                    "", "", "", _csv_num(self.total_mass),
+                    _csv_num(self.total_cost), _csv_num(self.total_carbon)])
         return buf.getvalue()
 
     def to_markdown(self) -> str:
         header = ("| Part | Qty | Material | Unit mass (g) | Unit cost | "
-                  "Total mass (g) | Total cost |")
-        sep = "| --- | ---: | --- | ---: | ---: | ---: | ---: |"
+                  "Unit carbon (kg CO2e) | Total mass (g) | Total cost | "
+                  "Total carbon (kg CO2e) |")
+        sep = "| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |"
         rows = [header, sep]
         for l in self.lines:
             rows.append(
                 f"| {l.part} | {l.qty} | {l.material} | "
                 f"{_md_num(l.unit_mass)} | {_md_num(l.unit_cost)} | "
-                f"{_md_num(l.total_mass)} | {_md_num(l.total_cost)} |")
+                f"{_md_num(l.unit_carbon)} | "
+                f"{_md_num(l.total_mass)} | {_md_num(l.total_cost)} | "
+                f"{_md_num(l.total_carbon)} |")
         rows.append(
-            f"| **Total** | **{self.part_count}** | | | | "
-            f"**{_md_num(self.total_mass)}** | **{_md_num(self.total_cost)}** |")
+            f"| **Total** | **{self.part_count}** | | | | | "
+            f"**{_md_num(self.total_mass)}** | **{_md_num(self.total_cost)}** | "
+            f"**{_md_num(self.total_carbon)}** |")
         return "\n".join(rows)
 
 
@@ -576,7 +641,8 @@ class BOMEstimator:
             machining_allowance=self.machining_allowance)
         return BOMLine(
             part=name, qty=qty, material=est.material,
-            unit_mass=est.mass, unit_cost=est.total_cost, estimate=est)
+            unit_mass=est.mass, unit_cost=est.total_cost,
+            unit_carbon=est.embodied_carbon, estimate=est)
 
 
 def _as_int(v: Any, default: int = 1) -> int:

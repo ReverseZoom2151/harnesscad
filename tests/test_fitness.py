@@ -6,8 +6,8 @@ import unittest
 
 from quality.estimate import PartEstimate
 from quality.fitness import (
-    Objective, PENALTY, Term, cost_objective, dominates, mass_objective,
-    multi_objective, target_dims_objective,
+    Objective, PENALTY, Term, carbon_objective, cost_objective, dominates,
+    mass_objective, multi_objective, target_dims_objective,
 )
 from verifiers.verify import Diagnostic, Severity, VerifyReport
 
@@ -102,6 +102,48 @@ class TestMultiObjective(unittest.TestCase):
         blind = PartEstimate(material="aluminium", mass=None)  # unmeasured
         self.assertGreater(obj.score(good), obj.score(blind))
         self.assertLessEqual(obj.score(blind), -PENALTY + 1)
+
+
+# --------------------------------------------------------------------------- #
+# Embodied carbon objective
+# --------------------------------------------------------------------------- #
+class TestCarbonObjective(unittest.TestCase):
+    def test_lower_carbon_scores_higher(self):
+        obj = carbon_objective()
+        green = PartEstimate(material="x", mass=10.0, embodied_carbon=0.03)
+        dirty = PartEstimate(material="x", mass=10.0, embodied_carbon=0.30)
+        self.assertGreater(obj.score(green), obj.score(dirty))
+
+    def test_carbon_from_backend(self):
+        # A real backend flows through estimate_part; lighter part -> less
+        # carbon -> higher score (same material).
+        obj = carbon_objective(material="aluminium")
+        light = MetricsBackend(volume=500.0, bbox=[10, 10, 5])
+        heavy = MetricsBackend(volume=2000.0, bbox=[10, 10, 20])
+        self.assertGreater(obj.score(light), obj.score(heavy))
+
+    def test_unmeasurable_carbon_penalised(self):
+        obj = carbon_objective()
+        good = PartEstimate(material="x", mass=1.0, embodied_carbon=0.01)
+        blind = PartEstimate(material="x", mass=1.0, embodied_carbon=None)
+        self.assertGreater(obj.score(good), obj.score(blind))
+        self.assertLessEqual(obj.score(blind), -PENALTY + 1)
+
+    def test_multi_objective_carbon_optional(self):
+        # Default (carbon_weight=0) keeps the 3-term vector.
+        base = multi_objective(violation_weight=1.0)
+        b = MetricsBackend(volume=1000.0, bbox=[10, 10, 10])
+        self.assertEqual(len(base.vector(b, VerifyReport([]))), 3)
+        # With a carbon weight a 4th term appears and shifts preference toward
+        # the lower-carbon part.
+        with_carbon = multi_objective(mass_weight=0.0, cost_weight=0.0,
+                                      violation_weight=0.0, carbon_weight=1.0)
+        self.assertEqual(len(with_carbon.vector(b, VerifyReport([]))), 4)
+        green = PartEstimate(material="x", mass=5.0, material_cost=1.0,
+                             rough_machining_cost=0.0, embodied_carbon=0.02)
+        dirty = PartEstimate(material="x", mass=5.0, material_cost=1.0,
+                             rough_machining_cost=0.0, embodied_carbon=0.50)
+        self.assertGreater(with_carbon.score(green), with_carbon.score(dirty))
 
 
 # --------------------------------------------------------------------------- #
