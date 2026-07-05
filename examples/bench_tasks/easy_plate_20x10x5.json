@@ -1,0 +1,20 @@
+{
+  "id": "easy_plate_20x10x5",
+  "difficulty": "easy",
+  "brief": "Model a rectangular plate 20 mm long, 10 mm wide and 5 mm thick. Fully constrain the sketch.",
+  "ops": [
+    {"op": "new_sketch", "plane": "XY"},
+    {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0, "w": 20.0, "h": 10.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 20.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 10.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 20.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 10.0},
+    {"op": "extrude", "sketch": "sk1", "distance": 5.0}
+  ],
+  "acceptance": {
+    "summary": {"feature_count": 1, "solid_present": true},
+    "validity": {"is_valid": true},
+    "measure": {"bbox": [20.0, 10.0, 5.0], "volume": 1000.0},
+    "tolerance": 0.02
+  }
+}

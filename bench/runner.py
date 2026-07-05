@@ -1,0 +1,185 @@
+"""CADBench-Verified runner (HARNESS_BLUEPRINT.md sec.16).
+
+Executes a Task through the HarnessSession spine (applyOps -> regen -> verify ->
+checkpoint) and scores it with the blueprint metrics, then aggregates a suite
+into a task-success-rate + per-difficulty + mean-trajectory-efficiency report.
+
+Solver plug point
+-----------------
+``run_task`` accepts an optional ``solver: Callable[[Task], List[Op]]``. Today
+the default is :func:`reference_solver` — it replays the task's own reference op
+stream, so the harness is exercised end-to-end without a model in the loop. A
+real NL->ops planner (LLM/agent) is a drop-in: give it the same signature
+(receive the Task, return an op list) and pass it as ``solver``. Everything
+downstream — the session, the metrics, the report — is unchanged.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Callable, List, Optional
+
+from cisp.ops import Op
+from loop import HarnessSession
+from bench.task import DIFFICULTIES, Task
+from bench.metrics import (
+    brep_validity, dimension_match, program_execution,
+    sketch_editability, trajectory_efficiency,
+)
+
+# A solver maps a task's brief to a CISP op stream (the NL->ops planner slot).
+Solver = Callable[[Task], List[Op]]
+# A backend_factory returns a fresh GeometryBackend per task (isolated state).
+BackendFactory = Callable[[], object]
+# A session_factory wraps a backend into a HarnessSession (override for tracing).
+SessionFactory = Callable[[object], HarnessSession]
+
+
+def reference_solver(task: Task) -> List[Op]:
+    """The default solver: replay the task's ground-truth reference ops."""
+    return task.reference_ops()
+
+
+@dataclass
+class TaskResult:
+    """The scored outcome of one task."""
+
+    task_id: str
+    difficulty: str
+    success: bool
+    program_execution: bool
+    brep_validity: bool
+    sketch_editability: float
+    dimension_match: bool
+    trajectory_efficiency: float
+    applied: int
+    emitted: int
+    dimension_details: dict = field(default_factory=dict)
+
+    def to_dict(self) -> dict:
+        return {
+            "task_id": self.task_id,
+            "difficulty": self.difficulty,
+            "success": self.success,
+            "program_execution": self.program_execution,
+            "brep_validity": self.brep_validity,
+            "sketch_editability": self.sketch_editability,
+            "dimension_match": self.dimension_match,
+            "trajectory_efficiency": self.trajectory_efficiency,
+            "applied": self.applied,
+            "emitted": self.emitted,
+            "dimension_details": self.dimension_details,
+        }
+
+
+def run_task(task: Task,
+             backend_factory: BackendFactory,
+             session_factory: Optional[SessionFactory] = None,
+             solver: Optional[Solver] = None) -> TaskResult:
+    """Build ``task``'s part on a fresh backend and score it.
+
+    Success (the SWE-bench-style pass) = the program rebuilt (program_execution)
+    AND the B-rep is valid (brep_validity) AND the geometry matches the spec
+    (dimension_match). sketch_editability and trajectory_efficiency are reported
+    quality metrics, not pass/fail gates.
+    """
+    backend = backend_factory()
+    session = (session_factory or HarnessSession)(backend)
+    solve = solver or reference_solver
+
+    ops = solve(task)
+    result = session.apply_ops(ops)
+
+    pe = program_execution(result)
+    valid = brep_validity(backend)
+    editability = sketch_editability(backend)
+    dim_ok, dim_details = dimension_match(backend, task.acceptance)
+
+    emitted = len(ops)
+    efficiency = trajectory_efficiency(task.optimal_len(), emitted)
+    success = pe and valid and dim_ok
+
+    return TaskResult(
+        task_id=task.id,
+        difficulty=task.difficulty,
+        success=success,
+        program_execution=pe,
+        brep_validity=valid,
+        sketch_editability=editability,
+        dimension_match=dim_ok,
+        trajectory_efficiency=efficiency,
+        applied=result.applied,
+        emitted=emitted,
+        dimension_details=dim_details,
+    )
+
+
+@dataclass
+class DifficultyReport:
+    n_tasks: int
+    success_rate: float
+    mean_trajectory_efficiency: float
+
+    def to_dict(self) -> dict:
+        return {
+            "n_tasks": self.n_tasks,
+            "success_rate": self.success_rate,
+            "mean_trajectory_efficiency": self.mean_trajectory_efficiency,
+        }
+
+
+@dataclass
+class SuiteReport:
+    """Aggregate scores across a task suite (sec.16 reporting)."""
+
+    n_tasks: int
+    task_success_rate: float
+    mean_trajectory_efficiency: float
+    mean_sketch_editability: float
+    per_difficulty: dict  # difficulty -> DifficultyReport
+    results: List[TaskResult] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "n_tasks": self.n_tasks,
+            "task_success_rate": self.task_success_rate,
+            "mean_trajectory_efficiency": self.mean_trajectory_efficiency,
+            "mean_sketch_editability": self.mean_sketch_editability,
+            "per_difficulty": {
+                d: r.to_dict() for d, r in self.per_difficulty.items()},
+            "results": [r.to_dict() for r in self.results],
+        }
+
+
+def _mean(values: List[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
+
+
+def run_suite(tasks: List[Task],
+              backend_factory: BackendFactory,
+              session_factory: Optional[SessionFactory] = None,
+              solver: Optional[Solver] = None) -> SuiteReport:
+    """Run every task and aggregate a suite report with per-difficulty buckets."""
+    results = [run_task(t, backend_factory, session_factory, solver) for t in tasks]
+
+    per_difficulty: dict = {}
+    for difficulty in DIFFICULTIES:
+        bucket = [r for r in results if r.difficulty == difficulty]
+        if not bucket:
+            continue
+        per_difficulty[difficulty] = DifficultyReport(
+            n_tasks=len(bucket),
+            success_rate=_mean([1.0 if r.success else 0.0 for r in bucket]),
+            mean_trajectory_efficiency=_mean(
+                [r.trajectory_efficiency for r in bucket]),
+        )
+
+    return SuiteReport(
+        n_tasks=len(results),
+        task_success_rate=_mean([1.0 if r.success else 0.0 for r in results]),
+        mean_trajectory_efficiency=_mean(
+            [r.trajectory_efficiency for r in results]),
+        mean_sketch_editability=_mean([r.sketch_editability for r in results]),
+        per_difficulty=per_difficulty,
+        results=results,
+    )

@@ -1,0 +1,21 @@
+{
+  "id": "medium_plate_fillet",
+  "difficulty": "medium",
+  "brief": "Model a 20x10x5 mm plate, then round all its edges with a 2 mm fillet.",
+  "ops": [
+    {"op": "new_sketch", "plane": "XY"},
+    {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0, "w": 20.0, "h": 10.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 20.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 10.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 20.0},
+    {"op": "constrain", "kind": "distance", "a": "e1", "value": 10.0},
+    {"op": "extrude", "sketch": "sk1", "distance": 5.0},
+    {"op": "fillet", "edges": [], "radius": 2.0}
+  ],
+  "acceptance": {
+    "summary": {"feature_count": 2, "solid_present": true},
+    "validity": {"is_valid": true},
+    "measure": {"bbox": [20.0, 10.0, 5.0]},
+    "tolerance": 0.02
+  }
+}
