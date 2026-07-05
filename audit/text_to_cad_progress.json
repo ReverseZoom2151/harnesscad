@@ -1,0 +1,34 @@
+{
+  "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
+  "manifest": "_manifest.md",
+  "total_papers": 186,
+  "reviewed_count": 5,
+  "next_manifest_index": 6,
+  "reviewed": [
+    {
+      "index": 1,
+      "paper": "3D-GPT Procedural 3D Modeling with Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 2,
+      "paper": "A Geometric Foundation Model for Crystalline Material Discovery.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 3,
+      "paper": "A Set-based Approach for Feature Extraction of 3D CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 4,
+      "paper": "A Solver-Aided Hierarchical Language for LLM-Driven CAD Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 5,
+      "paper": "A2Z-10M+ Geometric Deep Learning with A-to-Z BRep Annotations for AI-Assisted CAD Modeling and Reverse Engineering.md",
+      "status": "reviewed"
+    }
+  ]
+}
