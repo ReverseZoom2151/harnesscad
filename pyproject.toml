@@ -33,5 +33,5 @@ py-modules = [
 packages = [
     "cisp", "state", "backends", "llm", "agent", "memory", "bench",
     "context", "rag", "strategies", "agents", "a2a", "ui", "mcp",
-    "dataengine", "datagen",
+    "dataengine", "datagen", "exploration",
 ]
