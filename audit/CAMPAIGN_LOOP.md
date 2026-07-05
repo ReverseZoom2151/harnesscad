@@ -46,10 +46,14 @@ with a `| Build idea | Status | Repository comparison |` table. Status is
    - `feat: <idea>` per module group,
    - `build: register <packages>` if new packages,
    - `docs: close papers N through N+4`,
-   - `docs: update suite count after <k>th paper batch` (bump README badge to
-     the real per-module test total; a monolithic `unittest discover` segfaults
-     at OCCT teardown — count per module).
+   - `docs: update suite count after <k>th paper batch`.
    Push after each batch.
+   NOTE (2026-07-06 decision): do NOT edit README.md during the campaign. The
+   README has drifted badly and will be fully rewritten once the campaign
+   settles. Record the authoritative test total in
+   `audit/text_to_cad_progress.json` (field `suite_tests`) each batch instead of
+   bumping the README badge. Count per module (`python -m unittest tests.<mod>`
+   summed) because a monolithic `unittest discover` segfaults at OCCT teardown.
 5. Update `audit/text_to_cad_progress.json` (`reviewed_count += 5`,
    `next_manifest_index += 5`, append `reviewed[]` entries) and append the
    idea-tables to `TEXT_TO_CAD_PAPER_IDEAS.md` with a
