@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 65,
-  "next_manifest_index": 66,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-65 implemented",
+  "reviewed_count": 70,
+  "next_manifest_index": 71,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-70 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -329,6 +329,31 @@
     {
       "index": 65,
       "paper": "CReFT-CAD - Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 66,
+      "paper": "DAVINCI - A Single-Stage Architecture for Constrained CAD Sketch Inference.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 67,
+      "paper": "DeepCAD - A Deep Generative Network for Computer-Aided Design Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 68,
+      "paper": "Design-Specification Tiling for ICL-based CAD Code Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 69,
+      "paper": "Diffusion-CAD - Controllable Diffusion Model for Generating CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 70,
+      "paper": "Don't Mesh with Me - Generating Constructive Solid Geometry Instead of Meshes by Fine-Tuning a Code-Generation LLM.md",
       "status": "reviewed"
     }
   ]

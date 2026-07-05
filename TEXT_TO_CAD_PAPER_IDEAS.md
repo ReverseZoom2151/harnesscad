@@ -1073,3 +1073,60 @@ All deterministic and in-scope findings from papers 61-65 are implemented
 (text-to-3D and mesh-generation papers are mostly learned -- only their
 deterministic numeric/geometry primitives kept). Suite: 2680 tests, all
 passing.
+
+### 66. DAVINCI — A Single-Stage Architecture for Constrained CAD Sketch Inference
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 8-token primitive parametrization codec (type + params + construction flag) | **implemented** | `ingest/davinci_primitive_tokens.py` |
+| Valid-subreference combination set + constraint-graph consistency filter | **implemented** | `ingest/davinci_subreference_validity.py` |
+| Constraint-preserving transformations (permutation + index remapping + proof) | **implemented** | `ingest/davinci_cpt.py` |
+| Set-based eval suite (Hungarian matcher, token accuracy, primitive/constraint F1, Chamfer) | **implemented** | `bench/davinci_inference_metrics.py` |
+| Learned transformer + FreeCAD-solver CPT generation | **research-heavy/external** | trained model / proprietary solver |
+
+### 67. DeepCAD — A Deep Generative Network for Computer-Aided Design Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact DeepCAD command spec (6 types, 16-dim param vector, 256-level quant, invertible vector conversion) | **implemented** | `reconstruction/deepcad_command_spec.py` |
+| Sketch-plane orientation + extrusion 3D decode ((theta,phi,gamma) ZYZ, Euler inverse, local<->world) | **implemented** | `reconstruction/deepcad_sketch_plane.py` |
+| Loop/profile assembly (SOL-split loops, implicit chaining, canonical CCW ordering) | **implemented** | `reconstruction/deepcad_profile_assembly.py` |
+| Command/param accuracy, Chamfer, COV/MMD/JSD, invalid-ratio, F1, quantization, RRE augmentation | **already in repo** | `bench/contrastcad_recon_accuracy.py`, `bench/generative_brep_metrics.py`, etc. |
+| Transformer autoencoder + latent-GAN + PointNet++ | **research-heavy/external** | trained models |
+
+### 68. Design-Specification Tiling for ICL-based CAD Code Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Multi-granular n-gram component tiling + weighted tiling ratio | **implemented** | `context/spectiling_components.py` |
+| Greedy submodular exemplar selection ((1-1/e) guarantee) | **implemented** | `rag/spectiling_greedy.py` |
+| Spec decomposition into dependency-ordered tiles + coverage metric | **implemented** | `spec/spectiling_decompose.py`, `spec/spectiling_coverage.py` |
+| Per-tile ICL prompt assembly | **implemented** | `context/spectiling_prompt.py` |
+| Tile-composition/merge of generated fragments | **implemented** | `generation/spectiling_compose.py` |
+| Complexity-based corpus stratification | **implemented** | `dataengine/spectiling_complexity.py` |
+| LLM CAD-code inference + learned-embedding baselines | **research-heavy/external** | frozen LLM / neural embeddings |
+
+### 69. Diffusion-CAD — Controllable Diffusion Model for Generating CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Sqrt DDPM schedule + forward diffusion + CFG conditional seeding + 256-level quantization | **implemented** | `numeric/diffusioncad_sqrt_schedule.py` |
+| Table-II structure-constraint equations as integer-coordinate projection/repair | **implemented** | `geometry/diffusioncad_structure_constraints.py` |
+| Unique/novel/sequence-validity generation metrics | **implemented** | `bench/diffusioncad_generation_metrics.py` |
+| BERT denoiser + GPT-2 classifier guidance + point-cloud metrics + training | **research-heavy/external** | trained models |
+
+### 70. Don't Mesh with Me — Generating CSG Instead of Meshes by Fine-Tuning a Code-Generation LLM
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Surface-based CSG (half-spaces + cylinders, cells, union) + membership/occupancy/IoU/validity/overlap | **implemented** | `geometry/dontmesh_halfspace_csg.py` |
+| Cell adjacency graph + plausible connected build-ordering enumeration | **implemented** | `reconstruction/dontmesh_cell_graph.py` |
+| OpenMC-style script (de)serializer + input-output splitting + augmentation + plausibility metrics | **implemented** | `programs/dontmesh_csg_script.py` |
+| DeepSeek-Coder fine-tuning + GPT-4o annotation + GEOUNED decomposition | **research-heavy/external** | trained LLM / proprietary tooling |
+
+## Batch-14 implementation result
+
+All deterministic and in-scope findings from papers 66-70 are implemented
+(DeepCAD built modestly since earlier batches covered its metrics; the
+diffusion/generation papers kept only their deterministic scaffolding).
+Suite: 2929 tests, all passing. All modules placed in packages, not root.
