@@ -5,7 +5,7 @@ This ledger tracks the 186 papers under
 Each paper is read individually and cross-referenced against the current
 HarnessCAD implementation.
 
-Status: 35 / 186 papers reviewed.
+Status: 40 / 186 papers reviewed.
 
 Classifications:
 
@@ -722,3 +722,60 @@ mechanism or evidence and is intentionally implemented once.
 
 All deterministic findings from papers 31–35 are implemented. Exact duplicate
 paper 35 is recorded as an alias rather than double-counted.
+
+## Batch 8 — papers 36–40
+
+### 36. CAD-Prompted SAM3 — Geometry-Conditioned Instance Segmentation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Canonical 12-view geometry prompt and foreground-point bundles | **implemented** | `surfaces/canonical_views.py`, `vision/geometry_prompt.py`, `mask_sampling.py` |
+| Seeded domain-randomization manifests and shortcut audit | **implemented** | `datagen/domain_randomization.py` |
+| One-to-many matching, mask NMS, PQ and instance F1 | **implemented** | `vision/instance_matching.py`, `bench/instance_segmentation.py` |
+| Prompt-conditioned split/leakage and appearance invariance | **implemented** | `bench/geometry_prompted_segmentation.py`, `appearance_invariance.py` |
+| SAM3 fusion and Isaac/Blender synthetic training | **research-heavy/external** | requires models, simulators, assets and GPUs |
+
+### 37. CAD-Recode — Reverse Engineering CAD Code from Point Clouds
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Canonical point-cloud normalization/order and Fourier features | **implemented** | `ingest/point_cloud.py`, `fourier_features.py` |
+| Validity-first pointcloud candidate selection and K scaling | **implemented** | `reconstruction/pointcloud_candidates.py`, `bench/candidate_scaling.py` |
+| Sketch-boolean recipe and verified reverse-engineering records | **implemented** | `datagen/sketch_boolean.py`, `reverse_engineering.py` |
+| Code modularity and morphology-gated high-level abstraction | **implemented** | `dataengine/code_modularity.py`, `quality/cad_abstraction.py` |
+| Quantization/expressivity risk and point-cloud robustness/budget | **implemented** | `quality/quantization_risk.py`, `reconstruction/expressivity.py`, `bench/pointcloud_robustness.py`, `point_budget.py` |
+| Safe semantic parameter exposure | **implemented** | `quality/parameter_exposure.py` |
+| Qwen point projector, 1M corpus and real scans | **research-heavy/external** | requires models, data, kernels and H100 training |
+
+### 38. CAD-Tokenizer — Modality-Specific Tokenization
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Incremental decoder legality FSA | **implemented** | `grammar_fsa.py` |
+| Exact-coverage primitive semantic pooling | **implemented** | `quality/primitive_pooling.py` |
+| Reconstruction/compression/invalidity Pareto frontier | **implemented** | `bench/tokenizer_frontier.py` |
+| Tokenizer/backbone nested exposure split audit | **implemented** | `bench/tokenizer_split_audit.py` |
+| VQ-VAE/codebook and LLaMA training | **research-heavy** | requires datasets, learned tokenizer and GPUs |
+
+### 39. CAD-VAE — Correlation-Aware Latents for Fair Disentanglement
+
+**Unrelated acronym collision.** CAD denotes a correlation-aware
+disentanglement VAE for fairness-focused image datasets, not computer-aided
+design. It contributes no geometry, sketch, B-rep or manufacturing mechanism;
+its learned architecture is intentionally excluded.
+
+### 40. CAD-VLM — Language and Vision for Parametric CAD Sketches
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Versioned 1m/[1,64] primitive and constraint codec | **implemented** | `ingest/cadvlm_codec.py` |
+| Full/partial sequence-render records and paired prefix generation | **implemented** | `dataengine/sketch_modal_record.py`, `datagen/paired_sketch_prefix.py` |
+| Exact/tolerance entity, sketch, CAD-F1 and sliced metrics | **implemented** | `bench/cadvlm_metrics.py` |
+| Crossmodal sketch consistency and precise/handdrawn/noisy conditions | **implemented** | `quality/sketch_crossmodal.py`, `datagen/sketch_image_conditions.py` |
+| Constraint-label stability, modality ablations and 13-kind ontology | **implemented** | `quality/constraint_label_stability.py`, `bench/task_modality_ablation.py`, `dataengine/sketch_constraint_ontology.py` |
+| ViT-MAE/CodeT5 contrastive multimodal training | **research-heavy** | requires SketchGraphs and week-scale A100 training |
+
+## Batch-8 implementation result
+
+All deterministic findings from papers 36–40 are implemented. Paper 39 is
+recorded as an unrelated acronym collision.

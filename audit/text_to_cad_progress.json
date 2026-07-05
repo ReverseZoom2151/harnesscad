@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 35,
-  "next_manifest_index": 36,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-35 implemented",
+  "reviewed_count": 40,
+  "next_manifest_index": 41,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-40 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -180,6 +180,31 @@
       "index": 35,
       "paper": "CAD-Prompted Generative Models - A Pathway To Feasible And Novel Engineering.md",
       "status": "duplicate_of_34"
+    },
+    {
+      "index": 36,
+      "paper": "CAD-Prompted SAM3 - Geometry-Conditioned Instance Segmentation for Industrial Objects.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 37,
+      "paper": "CAD-Recode - Reverse Engineering CAD Code from Point Clouds.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 38,
+      "paper": "CAD-Tokenizer - Towards Text-based CAD Prototyping via Modality-Specific Tokenization.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 39,
+      "paper": "CAD-VAE - Leveraging Correlation-Aware Latents for Comprehensive Fair Disentanglement.md",
+      "status": "unrelated_acronym"
+    },
+    {
+      "index": 40,
+      "paper": "CAD-VLM - Bridging Language and Vision in the Generation of Parametric CAD Sketches.md",
+      "status": "reviewed"
     }
   ]
 }
