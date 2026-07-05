@@ -214,6 +214,30 @@ These belong in research tooling or a plugin, not in the geometry runtime.
 Interfaces may be added in advance, but these items must not be reported as
 implemented without the external systems, datasets and validation they require.
 
+## Feasible-gap implementation status
+
+The immediately usable subset was implemented after this audit:
+
+| Audit item | Implementation |
+|---|---|
+| Adapter/writeback contract | `adapters/` transactional protocol and deterministic in-memory host; proprietary host connectors remain external |
+| Local enterprise boundary | `security/policy.py` file policy, root confinement, redaction, hashes and audit provenance |
+| Next-operation baseline | `quality/nextop.py` deterministic ranked suggestions and ranking metrics |
+| Simulation orchestration | `quality/simjobs.py` state machine, cache, retry/timeout/cancel and solver provenance |
+| Cross-source reconciliation | `ingest/reconcile.py` persistent correspondences and discrepancy reports |
+| Graph/history/debug model | `surfaces/graphview.py` deterministic JSON/SVG |
+| Multi-turn semantic editing | `agent/edit_session.py` preview, approval, stale-base protection and atomic rollback |
+| Prompt/tool security | `security/tool_gate.py` injection indicators, allowlist, trust tiers and audit decisions |
+| Keyboard command surface | `surfaces/commands.py` mode-aware, shell-free typed intents |
+| Attachment seam | `agent/attachments.py` provenance, MIME/hash/root validation and provider-neutral encoder protocol |
+| Modeling-session capture | `dataengine/session_capture.py` consented event/operation alignment and redaction hook |
+| Bias/coverage audit | `dataengine/bias_audit.py` provenance-dimension imbalance reporting |
+| Time to feasibility | `bench/feasibility.py` first-valid attempts/solver calls/elapsed and p50/p95 |
+| Revision deltas | `quality/revision_delta.py` mass/cost/carbon/energy/BOM changes |
+| Research governance | `research/governance.py` evidence consistency, reproducibility gates, reviewer ensemble and rollback |
+
+The long-horizon/external list above remains deliberately unimplemented.
+
 ## Completion statement
 
 The independent pass covered:
