@@ -345,12 +345,12 @@ pip install -e .[cadquery,llm,constraints]   # everything
 
 | | Dependency | Extra | How it's resolved / notes |
 |:---:|------------|-------|---------------------------|
-| <img src="assets/logos/python.svg" height="26" alt="Python"> | [Python](https://www.python.org) 3.10+ | core | The whole spine is stdlib-only — zero required runtime dependencies |
-| <img src="assets/logos/cadquery.svg" height="24" alt="CadQuery"> | [CadQuery](https://github.com/CadQuery/cadquery) | `cadquery` | The real-geometry `GeometryBackend`; imported lazily, so the module loads without it |
-| <img src="assets/logos/occt.png" height="20" alt="OpenCASCADE"> | [OpenCASCADE](https://dev.opencascade.org) (OCCT) | `cadquery` | The B-rep kernel under CadQuery (via `cadquery-ocp`); powers real solids, validity checks, and STEP/STL export |
-| <img src="assets/logos/litellm.svg" height="22" alt="LiteLLM"> | [LiteLLM](https://github.com/BerriAI/litellm) | `llm` | One call shape across ~100 providers behind the vendor-neutral `LLM` seam; lazy import |
-| <img src="assets/logos/instructor.png" height="24" alt="Instructor"> | [Instructor](https://github.com/567-labs/instructor) | `llm` | Optional structured-output coaxing; the harness falls back to plain JSON + `parse_op` when absent |
-| <img src="assets/logos/solvespace.svg" height="26" alt="SolveSpace"> | [python-solvespace](https://github.com/KmolYuan/solvespace) | `constraints` | Real 2D sketch constraint solver (SolveSpace) behind `constraints.SolveSpaceSketch`; imported lazily. The stdlib `ConstraintGraph` rank-based DOF analysis needs nothing installed |
+| <img src="assets/logos/python.svg" height="40" alt="Python"> | [Python](https://www.python.org) 3.10+ | core | The whole spine is stdlib-only — zero required runtime dependencies |
+| <img src="assets/logos/cadquery.svg" height="34" alt="CadQuery"> | [CadQuery](https://github.com/CadQuery/cadquery) | `cadquery` | The real-geometry `GeometryBackend`; imported lazily, so the module loads without it |
+| <img src="assets/logos/occt.png" height="30" alt="OpenCASCADE"> | [OpenCASCADE](https://dev.opencascade.org) (OCCT) | `cadquery` | The B-rep kernel under CadQuery (via `cadquery-ocp`); powers real solids, validity checks, and STEP/STL export |
+| <img src="assets/logos/litellm.svg" height="32" alt="LiteLLM"> | [LiteLLM](https://github.com/BerriAI/litellm) | `llm` | One call shape across ~100 providers behind the vendor-neutral `LLM` seam; lazy import |
+| <img src="assets/logos/instructor.png" height="36" alt="Instructor"> | [Instructor](https://github.com/567-labs/instructor) | `llm` | Optional structured-output coaxing; the harness falls back to plain JSON + `parse_op` when absent |
+| <img src="assets/logos/solvespace.svg" height="40" alt="SolveSpace"> | [python-solvespace](https://github.com/KmolYuan/solvespace) | `constraints` | Real 2D sketch constraint solver (SolveSpace) behind `constraints.SolveSpaceSketch`; imported lazily. The stdlib `ConstraintGraph` rank-based DOF analysis needs nothing installed |
 
 The kernel is deliberately behind a seam (`backends/base.py`): the same op stream runs
 on the stub, on CadQuery/OCCT, or on a future Rust-native kernel (Fornjot / Truck /
