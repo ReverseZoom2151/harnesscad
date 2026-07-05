@@ -68,9 +68,9 @@ class CISPServer:
             "note": self.backend_note,
             "capabilities": {
                 "applyOps": True,
-                "query": ["summary", "sketch_dof", "validity"],
+                "query": ["summary", "sketch_dof", "validity", "measure", "metrics"],
                 "verify": True,
-                "export": ["step", "stl", "json"],
+                "export": ["step", "stl", "iges", "json"],
                 "transactional": True,   # block-and-correct + rollback
                 "deterministic": True,   # replay -> identical digest
             },

@@ -112,6 +112,129 @@ class Boolean(Op):
     tool: str = ""
 
 
+# --- extended mechanical features -----------------------------------------
+@dataclass(frozen=True)
+class Revolve(Op):
+    """Revolve a sketch profile about an axis (OCCT BRepPrimAPI_MakeRevol).
+
+    ``axis`` is a 6-tuple (ax, ay, az, bx, by, bz) giving two points that define
+    the revolution axis in the sketch plane's local frame; ``angle`` is in
+    degrees (360 = full solid of revolution).
+    """
+
+    OP: ClassVar[str] = "revolve"
+    sketch: str = ""
+    axis: tuple = (0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    angle: float = 360.0
+
+
+@dataclass(frozen=True)
+class Chamfer(Op):
+    """A straight chamfer on solid edges (BRepFilletAPI_MakeChamfer).
+
+    Distinct from :class:`Fillet` (which rounds); ``distance`` is the setback.
+    """
+
+    OP: ClassVar[str] = "chamfer"
+    edges: tuple = ()
+    distance: float = 1.0
+
+
+@dataclass(frozen=True)
+class Hole(Op):
+    """A semantic, DFM-legible hole: cut a cylinder into a face/sketch datum.
+
+    ``kind`` is a manufacturing intent tag ("simple" | "counterbore" |
+    "countersink"); only "simple" is realised geometrically today. ``through``
+    selects a through-all cut; otherwise ``depth`` bounds a blind hole.
+    """
+
+    OP: ClassVar[str] = "hole"
+    face_or_sketch: str = ""
+    x: float = 0.0
+    y: float = 0.0
+    diameter: float = 1.0
+    depth: Optional[float] = None
+    through: bool = True
+    kind: str = "simple"
+
+
+@dataclass(frozen=True)
+class Shell(Op):
+    """Hollow a solid to a wall ``thickness`` (OCCT MakeThickSolid / cq.shell).
+
+    ``faces`` names the faces to remove (open); empty removes a default face.
+    """
+
+    OP: ClassVar[str] = "shell"
+    faces: tuple = ()
+    thickness: float = 1.0
+
+
+@dataclass(frozen=True)
+class Draft(Op):
+    """Apply a draft (taper) angle to faces relative to a neutral plane.
+
+    Real drafting is not yet wired on the current CadQuery/OCCT build, so the
+    cadquery backend returns a typed 'not-yet-supported' diagnostic rather than
+    fabricating geometry; the stub tracks it as a first-class feature.
+    """
+
+    OP: ClassVar[str] = "draft"
+    faces: tuple = ()
+    angle: float = 0.0
+    neutral_plane: str = ""
+
+
+@dataclass(frozen=True)
+class Loft(Op):
+    """Loft a solid through an ordered list of sketch profiles."""
+
+    OP: ClassVar[str] = "loft"
+    sketches: tuple = ()
+    ruled: bool = False
+
+
+@dataclass(frozen=True)
+class Sweep(Op):
+    """Sweep a sketch profile along a path sketch."""
+
+    OP: ClassVar[str] = "sweep"
+    sketch: str = ""
+    path: str = ""
+
+
+@dataclass(frozen=True)
+class LinearPattern(Op):
+    """Replicate a feature ``count`` times along ``direction`` at ``spacing``."""
+
+    OP: ClassVar[str] = "linear_pattern"
+    feature: str = ""
+    direction: tuple = (1.0, 0.0, 0.0)
+    count: int = 2
+    spacing: float = 1.0
+
+
+@dataclass(frozen=True)
+class CircularPattern(Op):
+    """Replicate a feature ``count`` times about ``axis`` spanning ``angle``."""
+
+    OP: ClassVar[str] = "circular_pattern"
+    feature: str = ""
+    axis: tuple = (0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+    count: int = 4
+    angle: float = 360.0
+
+
+@dataclass(frozen=True)
+class Mirror(Op):
+    """Mirror a feature/body across a named plane (XY | XZ | YZ)."""
+
+    OP: ClassVar[str] = "mirror"
+    feature_or_body: str = ""
+    plane: str = "XZ"
+
+
 # DOF removed per constraint kind (placeholder for a real constraint solver).
 CONSTRAINT_DOF = {
     "coincident": 2,
@@ -132,17 +255,31 @@ _REGISTRY = {
     for c in (
         NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
         Constrain, Extrude, Fillet, Boolean,
+        Revolve, Chamfer, Hole, Shell, Draft,
+        Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     )
 }
 
 
 def parse_op(d: dict) -> Op:
-    """Reconstruct an Op from its dict form (the inverse of Op.to_dict)."""
+    """Reconstruct an Op from its dict form (the inverse of Op.to_dict).
+
+    JSON has no tuples, so any dataclass field whose default is a tuple (edges,
+    axis, faces, sketches, direction, ...) is re-tupled from its list form to
+    round-trip cleanly and keep ops hashable.
+    """
+    import dataclasses
+
     d = dict(d)
     tag = d.pop("op")
     cls = _REGISTRY[tag]
-    if "edges" in d and isinstance(d["edges"], list):
-        d["edges"] = tuple(d["edges"])
+    tuple_fields = {
+        f.name for f in dataclasses.fields(cls)
+        if isinstance(f.default, tuple)
+    }
+    for k in tuple_fields:
+        if k in d and isinstance(d[k], list):
+            d[k] = tuple(d[k])
     return cls(**d)
 
 

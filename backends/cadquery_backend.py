@@ -41,6 +41,8 @@ from cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     Constrain, Extrude, Fillet, Boolean,
+    Revolve, Chamfer, Hole, Shell, Draft,
+    Loft, Sweep, LinearPattern, CircularPattern, Mirror,
 )
 from verify import Diagnostic, Severity
 from backends.base import ApplyResult
@@ -120,7 +122,32 @@ class CadQueryBackend:
             return self._fillet(op)
         if isinstance(op, Boolean):
             return self._boolean(op)
+        if isinstance(op, Revolve):
+            return self._revolve(op)
+        if isinstance(op, Chamfer):
+            return self._chamfer(op)
+        if isinstance(op, Hole):
+            return self._hole(op)
+        if isinstance(op, Shell):
+            return self._shell(op)
+        if isinstance(op, Draft):
+            return self._unsupported_feature(
+                "draft", faces_ok=True,
+                msg="draft angle is not yet wired on this CadQuery/OCCT build")
+        if isinstance(op, Loft):
+            return self._loft_unsupported(op)
+        if isinstance(op, Sweep):
+            return self._sweep_unsupported(op)
+        if isinstance(op, LinearPattern):
+            return self._linear_pattern(op)
+        if isinstance(op, CircularPattern):
+            return self._circular_pattern(op)
+        if isinstance(op, Mirror):
+            return self._mirror(op)
         return _err("unknown-op", f"unhandled op {type(op).__name__}")
+
+    def _feature_ids(self) -> set:
+        return {f["id"] for f in self.features}
 
     def _constrain(self, op: Constrain) -> ApplyResult:
         # Real DOF analysis via constraints.ConstraintGraph (rank-style, with
@@ -232,6 +259,209 @@ class CadQueryBackend:
         self._solids[-2:] = [result]
         return ApplyResult(True, [fid])
 
+    # -- extended mechanical features --------------------------------------
+    def _revolve(self, op: Revolve) -> ApplyResult:
+        if op.sketch not in self.sketches:
+            return _err("bad-ref", f"unknown sketch '{op.sketch}'", op.sketch)
+        if not self.sketches[op.sketch]["entities"]:
+            return _err("empty-sketch", f"sketch '{op.sketch}' has no profile", op.sketch)
+        if op.angle == 0:
+            return _err("bad-value", "revolve angle must be non-zero")
+        try:
+            cq = _cq()
+            profile = self._build_profile(cq, self.sketches[op.sketch])
+            if profile is None:
+                return _err("empty-sketch",
+                            f"sketch '{op.sketch}' has no closed profile to revolve",
+                            op.sketch)
+            a = op.axis
+            solid = profile.revolve(op.angle, (a[0], a[1], a[2]), (a[3], a[4], a[5]))
+            if not solid.solids().vals():
+                return _err("degenerate", "revolve produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"revolve failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "revolve", "id": fid, "sketch": op.sketch})
+        self._solids.append(solid)
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _chamfer(self, op: Chamfer) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "chamfer requires an existing solid")
+        if op.distance <= 0:
+            return _err("bad-value", f"chamfer distance must be > 0 (got {op.distance})")
+        try:
+            _cq()
+            target = self._solids[-1]
+            # Edge ids are opaque across backends; chamfer all edges (a real OCCT
+            # chamfer). Too-large a setback -> kernel exception -> block-and-correct.
+            chamfered = target.edges().chamfer(op.distance)
+            if not chamfered.solids().vals():
+                return _err("degenerate", "chamfer produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"chamfer failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "chamfer", "id": fid, "edges": list(op.edges)})
+        self._solids[-1] = chamfered
+        return ApplyResult(True, [fid])
+
+    def _hole(self, op: Hole) -> ApplyResult:
+        if op.diameter <= 0:
+            return _err("bad-value", f"hole diameter must be > 0 (got {op.diameter})")
+        if not op.through and (op.depth is None or op.depth <= 0):
+            return _err("bad-value", "blind hole requires depth > 0")
+        if op.kind != "simple":
+            return _err("not-yet-supported",
+                        f"hole kind '{op.kind}' is not yet realised (only 'simple')")
+        ref = op.face_or_sketch
+        if ref.startswith("sk") and ref not in self.sketches:
+            return _err("bad-ref", f"unknown sketch '{ref}'", ref)
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "hole requires an existing solid to cut")
+        try:
+            _cq()
+            target = self._solids[-1]
+            wp = (target.faces(">Z")
+                        .workplane(centerOption="ProjectedOrigin")
+                        .pushPoints([(op.x, op.y)]))
+            if op.through:
+                result = wp.hole(op.diameter)
+            else:
+                result = wp.hole(op.diameter, op.depth)
+            if not result.solids().vals():
+                return _err("degenerate", "hole produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"hole failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "hole", "id": fid, "ref": ref,
+                              "diameter": op.diameter, "kind": op.kind})
+        self._solids[-1] = result
+        return ApplyResult(True, [fid])
+
+    def _shell(self, op: Shell) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "shell requires an existing solid")
+        if op.thickness <= 0:
+            return _err("bad-value", f"shell thickness must be > 0 (got {op.thickness})")
+        try:
+            _cq()
+            target = self._solids[-1]
+            # Remove the top face and hollow inward by `thickness` (a real OCCT
+            # MakeThickSolid). Too-thick a wall -> kernel exception -> rollback.
+            shelled = target.faces(">Z").shell(-abs(op.thickness))
+            if not shelled.solids().vals():
+                return _err("degenerate", "shell produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"shell failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "shell", "id": fid,
+                              "faces": list(op.faces), "thickness": op.thickness})
+        self._solids[-1] = shelled
+        return ApplyResult(True, [fid])
+
+    def _linear_pattern(self, op: LinearPattern) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "linear_pattern requires an existing solid")
+        if op.count < 2:
+            return _err("bad-value", f"linear_pattern count must be >= 2 (got {op.count})")
+        if op.feature and op.feature not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        try:
+            _cq()
+            base = self._solids[-1]
+            d = op.direction
+            result = base
+            for i in range(1, op.count):
+                off = (d[0] * op.spacing * i, d[1] * op.spacing * i, d[2] * op.spacing * i)
+                result = result.union(base.translate(off))
+            if not result.solids().vals():
+                return _err("degenerate", "linear_pattern produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"linear_pattern failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "linear_pattern", "id": fid, "count": op.count})
+        self._solids[-1] = result
+        return ApplyResult(True, [fid])
+
+    def _circular_pattern(self, op: CircularPattern) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "circular_pattern requires an existing solid")
+        if op.count < 2:
+            return _err("bad-value", f"circular_pattern count must be >= 2 (got {op.count})")
+        if op.feature and op.feature not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        try:
+            _cq()
+            base = self._solids[-1]
+            a = op.axis
+            step = op.angle / op.count
+            result = base
+            for i in range(1, op.count):
+                rotated = base.rotate((a[0], a[1], a[2]), (a[3], a[4], a[5]), step * i)
+                result = result.union(rotated)
+            if not result.solids().vals():
+                return _err("degenerate", "circular_pattern produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"circular_pattern failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "circular_pattern", "id": fid, "count": op.count})
+        self._solids[-1] = result
+        return ApplyResult(True, [fid])
+
+    def _mirror(self, op: Mirror) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "mirror requires an existing solid")
+        if op.plane not in ("XY", "XZ", "YZ"):
+            return _err("bad-value", f"unknown mirror plane '{op.plane}'")
+        if op.feature_or_body and op.feature_or_body not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature_or_body}'",
+                        op.feature_or_body)
+        try:
+            _cq()
+            base = self._solids[-1]
+            mirrored = base.mirror(op.plane)
+            result = base.union(mirrored)
+            if not result.solids().vals():
+                return _err("degenerate", "mirror produced no solid")
+        except _err_types() as exc:
+            return _err("kernel-error", f"mirror failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "mirror", "id": fid, "plane": op.plane})
+        self._solids[-1] = result
+        return ApplyResult(True, [fid])
+
+    # -- honestly-unsupported features -------------------------------------
+    # These validate references (so a bad ref still reports 'bad-ref') but then
+    # return a typed 'not-yet-supported' diagnostic instead of fabricating
+    # geometry the current CadQuery/OCCT build cannot produce reliably.
+    def _unsupported_feature(self, name: str, faces_ok: bool, msg: str) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", f"{name} requires an existing solid")
+        return _err("not-yet-supported", msg)
+
+    def _loft_unsupported(self, op: Loft) -> ApplyResult:
+        if len(op.sketches) < 2:
+            return _err("bad-value", "loft requires at least two sketches")
+        for sid in op.sketches:
+            if sid not in self.sketches:
+                return _err("bad-ref", f"unknown sketch '{sid}'", sid)
+            if not self.sketches[sid]["entities"]:
+                return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
+        return _err("not-yet-supported",
+                    "loft over abstract coplanar profiles is not yet wired on this "
+                    "CadQuery/OCCT build")
+
+    def _sweep_unsupported(self, op: Sweep) -> ApplyResult:
+        for sid in (op.sketch, op.path):
+            if sid not in self.sketches:
+                return _err("bad-ref", f"unknown sketch '{sid}'", sid)
+            if not self.sketches[sid]["entities"]:
+                return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
+        return _err("not-yet-supported",
+                    "sweep along an abstract path sketch is not yet wired on this "
+                    "CadQuery/OCCT build")
+
     def regenerate(self) -> List[Diagnostic]:
         return []  # incremental backend; nothing to rebuild
 
@@ -297,6 +527,8 @@ class CadQueryBackend:
             return self._validity()
         if q == "measure":
             return self._measure()
+        if q == "metrics":
+            return self._metrics()
         return {}
 
     def _measure(self) -> dict:
@@ -315,6 +547,40 @@ class CadQueryBackend:
         except Exception:  # noqa: BLE001
             return {"volume": 0.0, "bbox": [0.0, 0.0, 0.0]}
 
+    def _metrics(self, density: float = 1.0) -> dict:
+        """Mass properties via OCCT GProp_GProps.
+
+        Returns volume, mass (= volume * density), surface_area, bbox and
+        center_of_mass. Returns {} when there is no solid (so callers INFO-skip,
+        matching the stub which always returns {}).
+        """
+        try:
+            shape = self._combined()
+        except Exception:  # noqa: BLE001
+            shape = None
+        if shape is None:
+            return {}
+        try:
+            from OCP.GProp import GProp_GProps
+            from OCP.BRepGProp import BRepGProp
+            vprops = GProp_GProps()
+            BRepGProp.VolumeProperties_s(shape.wrapped, vprops)
+            volume = float(vprops.Mass())
+            com = vprops.CentreOfMass()
+            sprops = GProp_GProps()
+            BRepGProp.SurfaceProperties_s(shape.wrapped, sprops)
+            surface_area = float(sprops.Mass())
+            bb = shape.BoundingBox()
+            return {
+                "volume": volume,
+                "mass": volume * density,
+                "surface_area": surface_area,
+                "bbox": [float(bb.xlen), float(bb.ylen), float(bb.zlen)],
+                "center_of_mass": [float(com.X()), float(com.Y()), float(com.Z())],
+            }
+        except Exception:  # noqa: BLE001
+            return {}
+
     # -- export -------------------------------------------------------------
     def export(self, fmt: str):
         fmt = fmt.lower()
@@ -328,7 +594,29 @@ class CadQueryBackend:
             return self._export_text(exporters, wp, "STEP", ".step")
         if fmt == "stl":
             return self._export_text(exporters, wp, "STL", ".stl")
+        if fmt == "iges":
+            return self._export_iges(shape)
         raise ValueError(f"unsupported export format '{fmt}'")
+
+    @staticmethod
+    def _export_iges(shape) -> str:
+        """IGES via the OCCT IGESControl_Writer (cq's exporters have no IGES)."""
+        from OCP.IGESControl import IGESControl_Writer
+        fd, path = tempfile.mkstemp(suffix=".iges")
+        os.close(fd)
+        try:
+            writer = IGESControl_Writer()
+            writer.AddShape(shape.wrapped)
+            writer.ComputeModel()
+            if not writer.Write(path):
+                raise ValueError("IGES writer reported failure")
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
     @staticmethod
     def _export_text(exporters, wp, export_type: str, suffix: str) -> str:

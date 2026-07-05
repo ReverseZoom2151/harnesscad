@@ -14,6 +14,8 @@ from cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     Constrain, Extrude, Fillet, Boolean,
+    Revolve, Chamfer, Hole, Shell, Draft,
+    Loft, Sweep, LinearPattern, CircularPattern, Mirror,
 )
 from verify import Diagnostic, Severity
 from backends.base import ApplyResult
@@ -93,7 +95,123 @@ class StubBackend:
             fid = self._new_id("f")
             self.features.append({"type": "boolean", "id": fid, "kind": op.kind})
             return ApplyResult(True, [fid])
+        if isinstance(op, Revolve):
+            return self._solid_from_sketch(op.sketch, "revolve",
+                                           bad_value=(op.angle == 0),
+                                           bad_value_msg="revolve angle must be non-zero")
+        if isinstance(op, Chamfer):
+            if not self.solid_present:
+                return _err("no-solid", "chamfer requires an existing solid")
+            if op.distance <= 0:
+                return _err("bad-value", f"chamfer distance must be > 0 (got {op.distance})")
+            fid = self._new_id("f")
+            self.features.append({"type": "chamfer", "id": fid, "edges": list(op.edges)})
+            return ApplyResult(True, [fid])
+        if isinstance(op, Hole):
+            return self._hole(op)
+        if isinstance(op, Shell):
+            if not self.solid_present:
+                return _err("no-solid", "shell requires an existing solid")
+            if op.thickness <= 0:
+                return _err("bad-value", f"shell thickness must be > 0 (got {op.thickness})")
+            fid = self._new_id("f")
+            self.features.append({"type": "shell", "id": fid,
+                                  "faces": list(op.faces), "thickness": op.thickness})
+            return ApplyResult(True, [fid])
+        if isinstance(op, Draft):
+            if not self.solid_present:
+                return _err("no-solid", "draft requires an existing solid")
+            if not op.neutral_plane:
+                return _err("bad-value", "draft requires a neutral_plane")
+            fid = self._new_id("f")
+            self.features.append({"type": "draft", "id": fid,
+                                  "faces": list(op.faces), "angle": op.angle,
+                                  "neutral_plane": op.neutral_plane})
+            return ApplyResult(True, [fid])
+        if isinstance(op, Loft):
+            if len(op.sketches) < 2:
+                return _err("bad-value", "loft requires at least two sketches")
+            for sid in op.sketches:
+                if sid not in self.sketches:
+                    return _err("bad-ref", f"unknown sketch '{sid}'", sid)
+                if not self.sketches[sid]["entities"]:
+                    return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
+            fid = self._new_id("f")
+            self.features.append({"type": "loft", "id": fid, "sketches": list(op.sketches)})
+            self.solid_present = True
+            return ApplyResult(True, [fid])
+        if isinstance(op, Sweep):
+            for sid in (op.sketch, op.path):
+                if sid not in self.sketches:
+                    return _err("bad-ref", f"unknown sketch '{sid}'", sid)
+                if not self.sketches[sid]["entities"]:
+                    return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
+            fid = self._new_id("f")
+            self.features.append({"type": "sweep", "id": fid,
+                                  "sketch": op.sketch, "path": op.path})
+            self.solid_present = True
+            return ApplyResult(True, [fid])
+        if isinstance(op, LinearPattern):
+            return self._pattern(op.feature, "linear_pattern", op.count)
+        if isinstance(op, CircularPattern):
+            return self._pattern(op.feature, "circular_pattern", op.count)
+        if isinstance(op, Mirror):
+            if not self.solid_present:
+                return _err("no-solid", "mirror requires an existing solid")
+            if op.feature_or_body and op.feature_or_body not in self._feature_ids():
+                return _err("bad-ref", f"unknown feature '{op.feature_or_body}'",
+                            op.feature_or_body)
+            fid = self._new_id("f")
+            self.features.append({"type": "mirror", "id": fid, "plane": op.plane})
+            return ApplyResult(True, [fid])
         return _err("unknown-op", f"unhandled op {type(op).__name__}")
+
+    def _feature_ids(self) -> set:
+        return {f["id"] for f in self.features}
+
+    def _solid_from_sketch(self, sketch: str, kind: str,
+                           bad_value: bool = False,
+                           bad_value_msg: str = "") -> ApplyResult:
+        if sketch not in self.sketches:
+            return _err("bad-ref", f"unknown sketch '{sketch}'", sketch)
+        if not self.sketches[sketch]["entities"]:
+            return _err("empty-sketch", f"sketch '{sketch}' has no profile", sketch)
+        if bad_value:
+            return _err("bad-value", bad_value_msg)
+        fid = self._new_id("f")
+        self.features.append({"type": kind, "id": fid, "sketch": sketch})
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _hole(self, op: Hole) -> ApplyResult:
+        if op.diameter <= 0:
+            return _err("bad-value", f"hole diameter must be > 0 (got {op.diameter})")
+        if not op.through and (op.depth is None or op.depth <= 0):
+            return _err("bad-value", "blind hole requires depth > 0")
+        if op.kind not in ("simple", "counterbore", "countersink"):
+            return _err("bad-value", f"unknown hole kind '{op.kind}'")
+        ref = op.face_or_sketch
+        if ref.startswith("sk"):
+            if ref not in self.sketches:
+                return _err("bad-ref", f"unknown sketch '{ref}'", ref)
+        elif not self.solid_present:
+            return _err("no-solid", "hole requires an existing solid")
+        fid = self._new_id("f")
+        self.features.append({"type": "hole", "id": fid, "ref": ref,
+                              "diameter": op.diameter, "kind": op.kind})
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _pattern(self, feature: str, kind: str, count: int) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", f"{kind} requires an existing solid")
+        if count < 2:
+            return _err("bad-value", f"{kind} count must be >= 2 (got {count})")
+        if feature and feature not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{feature}'", feature)
+        fid = self._new_id("f")
+        self.features.append({"type": kind, "id": fid, "count": count})
+        return ApplyResult(True, [fid])
 
     def _constrain(self, op: Constrain) -> ApplyResult:
         if op.kind not in CONSTRAINT_DOF:
