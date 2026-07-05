@@ -16,7 +16,10 @@ from cisp.ops import (
     Constrain, Extrude, Fillet, Boolean,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
+    AddInstance, Mate, SetParam,
+    canonical_json, edit_oplog,
 )
+from checks_assembly import mate_dof
 from verify import Diagnostic, Severity
 from backends.base import ApplyResult
 
@@ -33,12 +36,15 @@ class StubBackend:
         self.sketches: dict = {}      # sid -> {plane, entities:[eid], dof}
         self.entities: dict = {}      # eid -> {type, sketch}
         self.features: list = []      # [{type, ...}]
+        self.instances: list = []     # [{id, part, transform, bbox?}]
+        self.mates: list = []         # [{kind, a, b, value}]
         self.solid_present = False
-        self._n = {"sk": 0, "e": 0, "f": 0}
+        self._oplog: list = []        # successfully applied mutating ops (no SetParam)
+        self._n = {"sk": 0, "e": 0, "f": 0, "i": 0}
 
     def _new_id(self, kind: str) -> str:
         self._n[kind] += 1
-        return {"sk": "sk", "e": "e", "f": "f"}[kind] + str(self._n[kind])
+        return {"sk": "sk", "e": "e", "f": "f", "i": "i"}[kind] + str(self._n[kind])
 
     def _add_primitive(self, sketch: str, kind: str) -> ApplyResult:
         if sketch not in self.sketches:
@@ -50,6 +56,16 @@ class StubBackend:
         return ApplyResult(True, [eid])
 
     def apply(self, op: Op) -> ApplyResult:
+        # SetParam edits + replays the recorded op stream; it manages its own
+        # logging (and must never itself be logged, to keep replay finite).
+        if isinstance(op, SetParam):
+            return self._set_param(op)
+        result = self._dispatch(op)
+        if result.ok:
+            self._oplog.append(op)
+        return result
+
+    def _dispatch(self, op: Op) -> ApplyResult:
         if isinstance(op, NewSketch):
             sid = self._new_id("sk")
             self.sketches[sid] = {"plane": op.plane, "entities": [], "dof": 0}
@@ -164,10 +180,62 @@ class StubBackend:
             fid = self._new_id("f")
             self.features.append({"type": "mirror", "id": fid, "plane": op.plane})
             return ApplyResult(True, [fid])
+        if isinstance(op, AddInstance):
+            return self._add_instance(op)
+        if isinstance(op, Mate):
+            return self._mate(op)
         return _err("unknown-op", f"unhandled op {type(op).__name__}")
 
     def _feature_ids(self) -> set:
         return {f["id"] for f in self.features}
+
+    def _instance_ids(self) -> set:
+        return {inst["id"] for inst in self.instances}
+
+    def _known_part_refs(self) -> set:
+        refs = self._feature_ids() | self._instance_ids()
+        if self.solid_present:
+            refs |= {"solid", "body", "last"}
+        return refs
+
+    # -- assembly ----------------------------------------------------------
+    def _add_instance(self, op: AddInstance) -> ApplyResult:
+        if op.part not in self._known_part_refs():
+            return _err("bad-ref", f"unknown part '{op.part}'", op.part)
+        iid = self._new_id("i")
+        self.instances.append({
+            "id": iid,
+            "part": op.part,
+            "transform": {
+                "translate": [op.x, op.y, op.z],
+                "rotate_deg": [op.rx, op.ry, op.rz],
+            },
+        })
+        return ApplyResult(True, [iid])
+
+    def _mate(self, op: Mate) -> ApplyResult:
+        if mate_dof(op.kind) is None:
+            return _err("bad-value", f"unknown mate kind '{op.kind}'")
+        refs = self._instance_ids() | self._feature_ids()
+        for ref in (op.a, op.b):
+            if ref and ref not in refs:
+                return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        return ApplyResult(True, [])
+
+    def _set_param(self, op: SetParam) -> ApplyResult:
+        new_log, err = edit_oplog(self._oplog, op)
+        if err is not None:
+            return _err(*err)  # block-and-correct: self untouched
+        # Replay the edited op stream onto a fresh backend; only adopt it if the
+        # whole stream re-applies cleanly (block-and-correct, self untouched).
+        trial = type(self)()
+        for logged in new_log:
+            r = trial.apply(logged)
+            if not r.ok:
+                return ApplyResult(False, [], r.diagnostics)
+        self.__dict__.update(trial.__dict__)
+        return ApplyResult(True, [])
 
     def _solid_from_sketch(self, sketch: str, kind: str,
                            bad_value: bool = False,
@@ -240,7 +308,31 @@ class StubBackend:
                 "feature_count": len(self.features),
                 "solid_present": self.solid_present,
             }
+        if q == "assembly":
+            return self._assembly()
         return {}
+
+    def _assembly(self) -> dict:
+        """The parts + mates view consumed by AssemblyCheck / InterferenceCheck.
+
+        The stub has no geometry, so parts carry a placement ``transform`` (and a
+        ``bbox`` only if one was tracked for the body); a top-level
+        ``transforms`` map keyed by instance id drives mate-satisfaction, and
+        ``mates`` carry the DOF-bearing joints. Empty ({}) when no instance has
+        been placed, so verifiers INFO-skip exactly like before."""
+        if not self.instances and not self.mates:
+            return {}
+        parts = []
+        transforms = {}
+        for inst in self.instances:
+            part = {"id": inst["id"], "name": inst["part"],
+                    "transform": inst["transform"]}
+            if inst.get("bbox") is not None:
+                part["bbox"] = list(inst["bbox"])
+            parts.append(part)
+            transforms[inst["id"]] = inst["transform"]
+        return {"parts": parts, "mates": [dict(m) for m in self.mates],
+                "transforms": transforms}
 
     def export(self, fmt: str):
         s = self.query("summary")
@@ -251,7 +343,12 @@ class StubBackend:
             "sketches": self.sketches,
             "entities": self.entities,
             "features": self.features,
+            "instances": self.instances,
+            "mates": self.mates,
             "solid_present": self.solid_present,
+            # The canonical op stream makes any SetParam edit (even to a param the
+            # stub does not otherwise model) change the digest deterministically.
+            "oplog": [canonical_json(o) for o in self._oplog],
         }
         blob = json.dumps(model, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(blob.encode()).hexdigest()

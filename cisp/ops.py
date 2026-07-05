@@ -235,6 +235,63 @@ class Mirror(Op):
     plane: str = "XZ"
 
 
+# --- assembly --------------------------------------------------------------
+@dataclass(frozen=True)
+class AddInstance(Op):
+    """Place a part instance into the assembly with a rigid transform.
+
+    ``part`` names a prior body / sub-part (a feature id, a previously placed
+    instance id, or the ``solid``/``body``/``last`` alias for the current
+    combined solid). The instance is positioned by a translation
+    (``x``/``y``/``z``, model units) and an intrinsic X-Y-Z rotation
+    (``rx``/``ry``/``rz``, degrees). It becomes a *part* in ``query('assembly')``.
+    """
+
+    OP: ClassVar[str] = "add_instance"
+    part: str = ""
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+    rx: float = 0.0
+    ry: float = 0.0
+    rz: float = 0.0
+
+
+@dataclass(frozen=True)
+class Mate(Op):
+    """A joint (mate) coupling two placed instances / refs.
+
+    ``kind`` is one of the :data:`checks_assembly.MATE_DOF` names
+    (rigid/revolute/slider/cylindrical/planar and their aliases); it fixes how
+    many rigid-body DOF the mate removes. ``a``/``b`` reference the two
+    instances (or bodies) being coupled; ``value`` is an optional mate parameter
+    (e.g. a target angle / offset), unused by the pure DOF count.
+    """
+
+    OP: ClassVar[str] = "mate"
+    kind: str = "rigid"
+    a: str = ""
+    b: str = ""
+    value: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class SetParam(Op):
+    """Editability-first primitive: mutate a prior op's parameter, then rebuild.
+
+    ``target`` is the 0-based index of a previously applied op (in application
+    order); ``param`` is the name of one of that op's dataclass fields; ``value``
+    is the replacement (int / float / str). Applying a ``SetParam`` rewrites the
+    referenced op in the recorded model and deterministically replays the whole
+    op stream so every downstream feature is regenerated from the edited value.
+    """
+
+    OP: ClassVar[str] = "set_param"
+    target: int = 0
+    param: str = ""
+    value: Optional[object] = None
+
+
 # DOF removed per constraint kind (placeholder for a real constraint solver).
 CONSTRAINT_DOF = {
     "coincident": 2,
@@ -257,6 +314,7 @@ _REGISTRY = {
         Constrain, Extrude, Fillet, Boolean,
         Revolve, Chamfer, Hole, Shell, Draft,
         Loft, Sweep, LinearPattern, CircularPattern, Mirror,
+        AddInstance, Mate, SetParam,
     )
 }
 
@@ -286,3 +344,35 @@ def parse_op(d: dict) -> Op:
 def canonical_json(op: Op) -> str:
     """Deterministic serialisation of an op (sorted keys) for content hashing."""
     return json.dumps(op.to_dict(), sort_keys=True, separators=(",", ":"))
+
+
+def edit_oplog(oplog, op: "SetParam"):
+    """Apply a :class:`SetParam` edit to a recorded op log (pure, no side effects).
+
+    ``oplog`` is the list of previously applied (mutating) ops. Returns
+    ``(new_log, None)`` — a *copy* of ``oplog`` with the targeted op's ``param``
+    replaced by ``value`` — or ``(None, (code, msg, where))`` describing why the
+    edit is invalid (unknown target index or unknown param), so the caller can
+    block-and-correct. Tuple-valued fields re-tuple a list value to stay hashable.
+    """
+    import dataclasses
+
+    try:
+        idx = int(op.target)
+    except (TypeError, ValueError):
+        return None, ("bad-ref", f"invalid SetParam target {op.target!r}", None)
+    if idx < 0 or idx >= len(oplog):
+        return None, ("bad-ref",
+                      f"SetParam target index {idx} out of range "
+                      f"(0..{len(oplog) - 1})", None)
+    old = oplog[idx]
+    fields = {f.name: f for f in dataclasses.fields(old)}
+    if op.param not in fields:
+        return None, ("bad-param",
+                      f"op '{old.OP}' has no parameter '{op.param}'", op.param)
+    value = op.value
+    if isinstance(fields[op.param].default, tuple) and isinstance(value, list):
+        value = tuple(value)
+    new_log = list(oplog)
+    new_log[idx] = dataclasses.replace(old, **{op.param: value})
+    return new_log, None

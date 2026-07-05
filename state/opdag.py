@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Callable, Dict, List, Optional
 
 from cisp.ops import Op, canonical_json
 
@@ -61,3 +61,31 @@ class OpDAG:
 
     def rollback(self, label: str) -> None:
         self.truncate(self._checkpoints[label])
+
+    def bisect(self, predicate: Callable[[List[Op]], bool]) -> Optional[int]:
+        """Binary-search the op history for the first op that flips ``predicate``.
+
+        ``predicate(ops_prefix)`` receives the op list *up to and including* an
+        index and returns True while the history is still "good" and False once
+        it has gone "bad". Assuming the prefixes are monotone (good then bad),
+        this returns the index of the **first bad** op — the earliest op after
+        whose inclusion the predicate first returns False — or ``None`` when the
+        predicate never flips (every prefix is good, or the history is empty).
+
+        Pure and deterministic: it only reads the recorded op list (no replay,
+        no mutation) and evaluates ``predicate`` O(log n) times. Mirrors
+        ``git bisect``: predicate True == "good", the returned index == first
+        "bad" commit.
+        """
+        ops = self.ops()
+        n = len(ops)
+        # `lo` is always a known-good boundary (prefixes < lo are good), `hi` a
+        # known/assumed-bad boundary. Prefixes are ops[: i + 1].
+        lo, hi = 0, n
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if predicate(ops[: mid + 1]):
+                lo = mid + 1     # this prefix is good -> first bad is later
+            else:
+                hi = mid         # this prefix is bad -> first bad is at/earlier
+        return lo if lo < n else None

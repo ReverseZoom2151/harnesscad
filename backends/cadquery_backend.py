@@ -43,7 +43,10 @@ from cisp.ops import (
     Constrain, Extrude, Fillet, Boolean,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
+    AddInstance, Mate, SetParam,
+    canonical_json, edit_oplog,
 )
+from checks_assembly import mate_dof
 from verify import Diagnostic, Severity
 from backends.base import ApplyResult
 from constraints import ConstraintGraph
@@ -68,13 +71,16 @@ class CadQueryBackend:
         self.sketches: dict = {}      # sid -> {plane, entities:[eid], dof}
         self.entities: dict = {}      # eid -> {type, sketch, params}
         self.features: list = []      # [{type, id, ...}]
+        self.instances: list = []     # [{id, part, transform, shape, bbox}]
+        self.mates: list = []         # [{kind, a, b, value}]
         self.solid_present = False
         self._solids: list = []       # list of cq.Workplane, each a real solid
-        self._n = {"sk": 0, "e": 0, "f": 0}
+        self._oplog: list = []        # successfully applied mutating ops (no SetParam)
+        self._n = {"sk": 0, "e": 0, "f": 0, "i": 0}
 
     def _new_id(self, kind: str) -> str:
         self._n[kind] += 1
-        return {"sk": "sk", "e": "e", "f": "f"}[kind] + str(self._n[kind])
+        return {"sk": "sk", "e": "e", "f": "f", "i": "i"}[kind] + str(self._n[kind])
 
     # -- sketch primitives --------------------------------------------------
     def _add_primitive(self, sketch: str, kind: str, params: dict) -> ApplyResult:
@@ -90,6 +96,16 @@ class CadQueryBackend:
 
     # -- op dispatch --------------------------------------------------------
     def apply(self, op: Op) -> ApplyResult:
+        # SetParam edits + replays the recorded op stream; it manages its own
+        # logging (and must never itself be logged, to keep replay finite).
+        if isinstance(op, SetParam):
+            return self._set_param(op)
+        result = self._dispatch(op)
+        if result.ok:
+            self._oplog.append(op)
+        return result
+
+    def _dispatch(self, op: Op) -> ApplyResult:
         if isinstance(op, NewSketch):
             sid = self._new_id("sk")
             self.sketches[sid] = {
@@ -144,10 +160,85 @@ class CadQueryBackend:
             return self._circular_pattern(op)
         if isinstance(op, Mirror):
             return self._mirror(op)
+        if isinstance(op, AddInstance):
+            return self._add_instance(op)
+        if isinstance(op, Mate):
+            return self._mate(op)
         return _err("unknown-op", f"unhandled op {type(op).__name__}")
 
     def _feature_ids(self) -> set:
         return {f["id"] for f in self.features}
+
+    def _instance_ids(self) -> set:
+        return {inst["id"] for inst in self.instances}
+
+    def _known_part_refs(self) -> set:
+        refs = self._feature_ids() | self._instance_ids()
+        if self.solid_present:
+            refs |= {"solid", "body", "last"}
+        return refs
+
+    # -- assembly (real placed geometry) -----------------------------------
+    def _add_instance(self, op: AddInstance) -> ApplyResult:
+        if op.part not in self._known_part_refs():
+            return _err("bad-ref", f"unknown part '{op.part}'", op.part)
+        transform = {"translate": [op.x, op.y, op.z],
+                     "rotate_deg": [op.rx, op.ry, op.rz]}
+        shape = None
+        bbox = None
+        try:
+            base = self._combined()  # current body snapshot for this instance
+            if base is not None:
+                placed = self._place_shape(base, op)
+                shape = placed
+                b = placed.BoundingBox()
+                bbox = [float(b.xmin), float(b.ymin), float(b.zmin),
+                        float(b.xmax), float(b.ymax), float(b.zmax)]
+        except Exception as exc:  # noqa: BLE001 - placement issue -> block-and-correct
+            return _err("kernel-error", f"instance placement failed: {exc}")
+        iid = self._new_id("i")
+        self.instances.append({"id": iid, "part": op.part, "transform": transform,
+                               "shape": shape, "bbox": bbox})
+        return ApplyResult(True, [iid])
+
+    @staticmethod
+    def _place_shape(base, op: AddInstance):
+        """Apply the instance's intrinsic X-Y-Z rotation then translation to a
+        copy of ``base`` (a cq Shape), returning the placed shape."""
+        placed = base
+        if op.rx:
+            placed = placed.rotate((0, 0, 0), (1, 0, 0), op.rx)
+        if op.ry:
+            placed = placed.rotate((0, 0, 0), (0, 1, 0), op.ry)
+        if op.rz:
+            placed = placed.rotate((0, 0, 0), (0, 0, 1), op.rz)
+        if op.x or op.y or op.z:
+            placed = placed.translate((op.x, op.y, op.z))
+        return placed
+
+    def _mate(self, op: Mate) -> ApplyResult:
+        if mate_dof(op.kind) is None:
+            return _err("bad-value", f"unknown mate kind '{op.kind}'")
+        refs = self._instance_ids() | self._feature_ids()
+        for ref in (op.a, op.b):
+            if ref and ref not in refs:
+                return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        return ApplyResult(True, [])
+
+    def _set_param(self, op: SetParam) -> ApplyResult:
+        new_log, err = edit_oplog(self._oplog, op)
+        if err is not None:
+            return _err(*err)  # block-and-correct: self untouched
+        # Replay the edited op stream onto a fresh backend; only adopt it if the
+        # whole stream re-applies cleanly (block-and-correct, self untouched).
+        trial = type(self)()
+        for logged in new_log:
+            r = trial.apply(logged)
+            if not r.ok:
+                return ApplyResult(False, [], r.diagnostics)
+        self.__dict__.update(trial.__dict__)
+        return ApplyResult(True, [])
 
     def _constrain(self, op: Constrain) -> ApplyResult:
         # Real DOF analysis via constraints.ConstraintGraph (rank-style, with
@@ -529,7 +620,34 @@ class CadQueryBackend:
             return self._measure()
         if q == "metrics":
             return self._metrics()
+        if q == "assembly":
+            return self._assembly()
         return {}
+
+    def _assembly(self) -> dict:
+        """The parts + mates view consumed by AssemblyCheck / InterferenceCheck.
+
+        Each placed instance is a part carrying its placement ``transform``, a
+        real OCCT ``shape`` (the body snapshot, placed) and its axis-aligned
+        ``bbox`` — so InterferenceCheck can run the exact boolean-common narrow
+        phase and AssemblyCheck can count residual DOF. Empty ({}) when nothing
+        has been placed, so verifiers INFO-skip exactly like before."""
+        if not self.instances and not self.mates:
+            return {}
+        parts = []
+        transforms = {}
+        for inst in self.instances:
+            part = {"id": inst["id"], "name": inst["part"],
+                    "transform": inst["transform"]}
+            if inst.get("bbox") is not None:
+                part["bbox"] = list(inst["bbox"])
+            if inst.get("shape") is not None:
+                part["shape"] = inst["shape"].val() if hasattr(inst["shape"], "val") \
+                    else inst["shape"]
+            parts.append(part)
+            transforms[inst["id"]] = inst["transform"]
+        return {"parts": parts, "mates": [dict(m) for m in self.mates],
+                "transforms": transforms}
 
     def _measure(self) -> dict:
         try:
@@ -645,6 +763,16 @@ class CadQueryBackend:
             "entity_count": len(self.entities),
             "feature_count": len(self.features),
             "solid_present": self.solid_present,
+            # Assembly placements + joints, plus the canonical op stream so any
+            # SetParam edit changes the digest deterministically.
+            "instances": [
+                {"part": inst["part"], "transform": inst["transform"],
+                 "bbox": ([round(v, 6) for v in inst["bbox"]]
+                          if inst.get("bbox") is not None else None)}
+                for inst in self.instances
+            ],
+            "mates": self.mates,
+            "oplog": [canonical_json(o) for o in self._oplog],
         }
         shape = None
         try:
