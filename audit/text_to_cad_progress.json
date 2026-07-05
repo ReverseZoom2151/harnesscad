@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 60,
-  "next_manifest_index": 61,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-60 implemented",
+  "reviewed_count": 65,
+  "next_manifest_index": 66,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-65 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -304,6 +304,31 @@
     {
       "index": 60,
       "paper": "Comparing Fabrication Workflows in CAD to Support Design Reasoning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 61,
+      "paper": "Consistent Flow Distillation for Text-to-3D Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 62,
+      "paper": "Context-Aware Mapping of 2D Drawing Annotations to 3D CAD Features Using LLM-Assisted Reasoning for Manufacturing Automation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 63,
+      "paper": "ContrastCAD - Contrastive Learning-Based Representation Learning for Computer-Aided Design Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 64,
+      "paper": "CraftsMan - High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 65,
+      "paper": "CReFT-CAD - Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning.md",
       "status": "reviewed"
     }
   ]

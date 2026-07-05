@@ -1017,3 +1017,59 @@ All deterministic and in-scope findings from papers 56-60 are implemented
 (ChatCAD+ is medical CAD -- only two domain-agnostic primitives kept;
 Fabrication Workflows is an HCI study -- only its workflow artifacts
 kept). Suite: 2391 tests, all passing.
+
+### 61. Consistent Flow Distillation for Text-to-3D Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Equal-area sphere<->square parametrization for uniform viewpoint sampling | **implemented** | `cfd_sphere_square_map.py` |
+| Variance-preserving integral-noise transport + closed-form OU noise schedule | **implemented** | `cfd_integral_noise.py` |
+| Scaled gradient-variance consistency metric (Adam EMA moments) | **implemented** | `cfd_gradient_variance.py` |
+| Clean-flow ODE (Euler) + EDM 2nd-order Heun sampler | **implemented** | `cfd_clean_flow_ode.py` |
+| Score-distillation into NeRF/mesh; multi-view rasterized noise; 3D-FID/CLIP eval | **research-heavy/external** | learned diffusion + differentiable renderer |
+
+### 62. Context-Aware Mapping of 2D Drawing Annotations to 3D CAD Features
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 2D drawing-annotation schema + OCR-callout parser (diameters/threads/radii/counts/GD&T/tolerances) | **implemented** | `annomap_parser.py` |
+| Annotation<->feature correspondence scoring (type gate + dimensional agreement + heuristics + greedy assignment) | **implemented** | `annomap_scoring.py` |
+| GD&T feature-control-frame representation + ASME/ISO validity checker | **implemented** | `annomap_gdt.py` |
+| Manufacturing-spec builder with provenance + precision/recall/F1 link evaluation | **implemented** | `annomap_spec.py` |
+| VLM semantic enrichment + constrained-LLM escalation | **research-heavy/external** | learned VLM/LLM |
+
+### 63. ContrastCAD — Contrastive Learning-Based Representation Learning for Computer-Aided Design Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| RRE (Random Replace and Extrude) contrastive augmentation | **implemented** | `datagen/contrastcad_rre.py` |
+| Shape-preserving permutation augmentations | **implemented** | `datagen/contrastcad_permute.py` |
+| Contrastive maths (cosine sim, SimCSE dropout views, NT-Xent/InfoNCE) | **implemented** | `bench/contrastcad_contrastive.py` |
+| Latent representation-quality metrics (ED, silhouette, SSE, K-means) | **implemented** | `bench/contrastcad_latent_metrics.py` |
+| Position-aligned tolerant reconstruction accuracy | **implemented** | `bench/contrastcad_recon_accuracy.py` |
+| Learned Transformer autoencoder + latent-GAN generation | **research-heavy/external** | trained models |
+
+### 64. CraftsMan — High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Relative Laplacian smoothing (resists thin-feature collapse) + umbrella Laplacian/Taubin/displacement operators | **implemented** | `geometry/craftsman_relative_laplacian.py` |
+| Native-3D latent-set diffusion + learned normal-based geometry refiner + MV conditioning | **research-heavy/external** | trained diffusion/ControlNet |
+
+### 65. CReFT-CAD — Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Forward orthographic projection of a box solid to front/top/side silhouettes | **implemented** | `creft_projection.py` |
+| Third-angle inter-view consistency + view-matching + intra-view validity + paired-dimension evaluator | **implemented** | `creft_view_consistency.py` |
+| Curriculum reward functions (dichotomous / set-based / difficulty-aware) + attribute difficulty classification | **implemented** | `dataengine/creft_rewards.py` |
+| TriView2CAD ortho-reasoning scorer + composite-parameter formula evaluator | **implemented** | `bench/creft_ortho_reasoning.py` |
+| Curriculum data-engine (seeded negative sampling + CoT step builder) | **implemented** | `dataengine/creft_data_engine.py` |
+| GRPO/SFT fine-tuning of the ViT+Qwen VLM + TriView2CAD raster dataset | **research-heavy/external** | trained VLM / GPU |
+
+## Batch-13 implementation result
+
+All deterministic and in-scope findings from papers 61-65 are implemented
+(text-to-3D and mesh-generation papers are mostly learned -- only their
+deterministic numeric/geometry primitives kept). Suite: 2680 tests, all
+passing.
