@@ -1,0 +1,194 @@
+"""The A2A (agent-to-agent) message vocabulary — our *internal* wire format.
+
+Per HARNESS_BLUEPRINT.md sec.2 and sec.12, agents talk to each other in the A2A
+message format *even in-process*, so a remote transport (HTTP + SSE/webhooks) is
+a drop-in later without touching agent code. This module is that vocabulary as
+frozen, typed, JSON-serialisable dataclasses:
+
+  - ``AgentCard``  — how an agent advertises itself (name, description,
+    capabilities, skills, endpoints). The discovery/handshake artefact.
+  - ``Part``       — one piece of message content: ``text`` | ``data`` | ``artifact``.
+  - ``A2AMessage`` — one turn between agents: a ``role`` ('user' | 'agent'), an
+    ordered list of ``Part``s, plus ``contextId``/``taskId``/``metadata`` for
+    correlating turns with a task lifecycle (see a2a.task).
+
+Everything is a plain value object with ``to_dict``/``from_dict`` so the same
+shapes serialise straight to JSON on a real network hop. stdlib only; no vendor
+SDKs — this mirrors the vendor-neutral seam philosophy of llm/base.py.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
+
+# --- part kinds ------------------------------------------------------------
+# The canonical content kinds a Part may carry. Exposed so routing/validation
+# code never hard-codes string literals (cf. trace.EVENT_KINDS).
+PART_TEXT = "text"
+PART_DATA = "data"
+PART_ARTIFACT = "artifact"
+PART_KINDS = (PART_TEXT, PART_DATA, PART_ARTIFACT)
+
+# The two roles an A2A turn may take. 'user' is the requesting agent (or human
+# proxy); 'agent' is the responding agent.
+ROLE_USER = "user"
+ROLE_AGENT = "agent"
+
+
+@dataclass(frozen=True)
+class Part:
+    """One piece of A2A message content.
+
+    A ``Part`` is a tagged union over three variants, discriminated by ``kind``:
+
+      - ``text``     — free text in ``text``.
+      - ``data``     — a structured JSON object in ``data`` (e.g. ops, params).
+      - ``artifact`` — a produced artefact descriptor in ``artifact``
+        (e.g. ``{"name": "part.step", "mimeType": "model/step", "uri": ...}``),
+        which is how long solves hand back geometry/mesh/FEA results.
+
+    Use the ``Part.text``/``Part.data``/``Part.artifact`` constructors rather
+    than the raw initialiser so the invariant (exactly one payload set for the
+    kind) is upheld.
+    """
+
+    kind: str
+    text: Optional[str] = None
+    data: Optional[Dict[str, Any]] = None
+    artifact: Optional[Dict[str, Any]] = None
+
+    # --- variant constructors ------------------------------------------
+    @classmethod
+    def from_text(cls, text: str) -> "Part":
+        return cls(kind=PART_TEXT, text=text)
+
+    @classmethod
+    def from_data(cls, data: Dict[str, Any]) -> "Part":
+        return cls(kind=PART_DATA, data=dict(data))
+
+    @classmethod
+    def from_artifact(cls, artifact: Dict[str, Any]) -> "Part":
+        return cls(kind=PART_ARTIFACT, artifact=dict(artifact))
+
+    def to_dict(self) -> Dict[str, Any]:
+        d: Dict[str, Any] = {"kind": self.kind}
+        if self.kind == PART_TEXT:
+            d["text"] = self.text
+        elif self.kind == PART_DATA:
+            d["data"] = self.data
+        elif self.kind == PART_ARTIFACT:
+            d["artifact"] = self.artifact
+        else:  # pragma: no cover - defensive; unknown kinds serialise verbatim
+            if self.text is not None:
+                d["text"] = self.text
+            if self.data is not None:
+                d["data"] = self.data
+            if self.artifact is not None:
+                d["artifact"] = self.artifact
+        return d
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "Part":
+        return cls(
+            kind=d["kind"],
+            text=d.get("text"),
+            data=d.get("data"),
+            artifact=d.get("artifact"),
+        )
+
+
+@dataclass(frozen=True)
+class AgentCard:
+    """An agent's self-description — the A2A discovery/handshake artefact.
+
+    ``capabilities`` advertises transport features (e.g. ``{"streaming": True,
+    "pushNotifications": True}``) so a caller knows whether SSE/webhooks are
+    available. ``skills`` is an ordered list of skill descriptors (each a plain
+    dict, e.g. ``{"id": "extrude", "description": ...}``). ``endpoints`` maps
+    logical names to URLs (e.g. ``{"a2a": "https://.../a2a"}``); empty in-process.
+    """
+
+    name: str
+    description: str = ""
+    capabilities: Dict[str, Any] = field(default_factory=dict)
+    skills: Tuple[Dict[str, Any], ...] = ()
+    endpoints: Dict[str, Any] = field(default_factory=dict)
+    version: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "capabilities": dict(self.capabilities),
+            "skills": [dict(s) for s in self.skills],
+            "endpoints": dict(self.endpoints),
+            "version": self.version,
+        }
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "AgentCard":
+        return cls(
+            name=d["name"],
+            description=d.get("description", ""),
+            capabilities=dict(d.get("capabilities") or {}),
+            skills=tuple(dict(s) for s in (d.get("skills") or ())),
+            endpoints=dict(d.get("endpoints") or {}),
+            version=d.get("version"),
+        )
+
+
+@dataclass(frozen=True)
+class A2AMessage:
+    """One turn between two agents.
+
+    ``role`` is 'user' (requester) or 'agent' (responder). ``parts`` is the
+    ordered content of the turn. ``contextId`` groups all turns/tasks of one
+    logical conversation; ``taskId`` links the turn to a specific task in that
+    context (see a2a.task). ``metadata`` is an opaque dict for routing/telemetry
+    (tokens/cost/latency, trust-boundary tags, etc.), mirroring the opaque
+    ``data`` dict convention of trace.py.
+    """
+
+    role: str
+    parts: Tuple[Part, ...] = ()
+    contextId: Optional[str] = None
+    taskId: Optional[str] = None
+    messageId: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "role": self.role,
+            "parts": [p.to_dict() for p in self.parts],
+            "contextId": self.contextId,
+            "taskId": self.taskId,
+            "messageId": self.messageId,
+            "metadata": dict(self.metadata),
+        }
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "A2AMessage":
+        return cls(
+            role=d["role"],
+            parts=tuple(Part.from_dict(p) for p in (d.get("parts") or ())),
+            contextId=d.get("contextId"),
+            taskId=d.get("taskId"),
+            messageId=d.get("messageId"),
+            metadata=dict(d.get("metadata") or {}),
+        )
+
+    # --- convenience ----------------------------------------------------
+    def text(self) -> str:
+        """Concatenate all text parts (ignores data/artifact parts)."""
+        return "".join(p.text or "" for p in self.parts if p.kind == PART_TEXT)
+
+
+def user_message(*parts: Part, **kw: Any) -> A2AMessage:
+    """Build a 'user' (requesting-agent) turn from parts."""
+    return A2AMessage(role=ROLE_USER, parts=tuple(parts), **kw)
+
+
+def agent_message(*parts: Part, **kw: Any) -> A2AMessage:
+    """Build an 'agent' (responding-agent) turn from parts."""
+    return A2AMessage(role=ROLE_AGENT, parts=tuple(parts), **kw)
