@@ -7,6 +7,13 @@ from security.policy import (
     SecureIngestGate,
     redact_metadata,
 )
+from security.tool_gate import (
+    GateDecision,
+    ToolPolicy,
+    ToolTrustGate,
+    TrustTier,
+    prompt_risks,
+)
 
 __all__ = [
     "AuditEvent",
@@ -14,4 +21,9 @@ __all__ = [
     "PolicyDecision",
     "SecureIngestGate",
     "redact_metadata",
+    "GateDecision",
+    "ToolPolicy",
+    "ToolTrustGate",
+    "TrustTier",
+    "prompt_risks",
 ]
