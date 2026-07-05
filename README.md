@@ -4,7 +4,7 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-980%20passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-1178%20passing-brightgreen?style=flat-square)
 ![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
@@ -521,13 +521,20 @@ harnesscad/
 │   ├── standards.py        #   nearest_standard — snap dims to preferred (Renard) series
 │   ├── compliance.py       #   ComplianceCheck — enforce house/standard rule sets
 │   ├── requirements.py     #   RequirementsCheck — hold the model to a formalised RequirementSet
-│   └── reference.py        #   ReferenceMatchCheck — score the solid against a reference part
+│   ├── reference.py        #   ReferenceMatchCheck — score the solid against a reference part
+│   ├── simulation.py       #   analytic stress/buckling checks + external-FEA seam
+│   ├── access.py           #   tool-access and service-clearance envelopes
+│   ├── precheck.py         #   reject infeasible op plans before geometry execution
+│   ├── completeness.py     #   configurable model-completeness gate
+│   ├── functional.py       #   functional-behaviour acceptance oracle
+│   └── report.py           #   traceable conformance-certificate exporter
 │  # ── reliability/  (spend compute to raise success) ────────────────
 ├── reliability/
 │   ├── guardrails.py       #   GuardrailGate (before-tool hard gate) + ErrorRecovery ladder
 │   ├── loopdetect.py       #   LoopDetector — pre-apply sliding-window oscillation detector
 │   ├── executor.py         #   ToolExecutor — sandbox / retry / timeout / approval layer
 │   ├── repair.py           #   repair_solid — OCCT shape-healing + ranked repair suggestions
+│   ├── fallback.py         #   nearest-known-good retrieval fallback on failure/timeout
 │   └── strategies/
 │       ├── best_of_n.py    #     draw N seeded plans, verifier picks the winner
 │       ├── reflexion.py    #     ReflexionLoop — Read-Act-Reflect-Write, learns within a run
@@ -541,7 +548,13 @@ harnesscad/
 │   ├── diff.py             #   semantic op-level diff between two models
 │   ├── describe.py         #   narrate the part in prose from its facts
 │   ├── featuregraph.py     #   lift the op stream into a feature graph
-│   └── suggest_cots.py     #   match features to the nearest commercial-off-the-shelf part
+│   ├── suggest_cots.py     #   match features to the nearest commercial-off-the-shelf part
+│   ├── assemblyseq.py      #   collision-aware assembly/disassembly sequence planning
+│   ├── drawing.py          #   dimensioned 2D engineering drawing generation
+│   ├── pareto.py           #   non-dominated sorting and trade-off matrices
+│   ├── traceability.py     #   requirement-to-feature/operation traceability matrix
+│   ├── batch_edit.py       #   reviewable semantic multi-feature edits
+│   └── ask.py              #   grounded natural-language queries over model facts
 │  # ── surfaces/  (the outward faces) ────────────────────────────────
 ├── surfaces/
 │   ├── server.py           #   CISPServer: initialize/applyOps/query/verify/export over stdio (serve_stdio)
@@ -592,7 +605,12 @@ harnesscad/
 ├── ingest/
 │   ├── import_brep.py      #   read STEP / BREP into an ImportedPart
 │   ├── decompile.py        #   lift an imported solid back into a CISP op stream
-│   └── metadata.py         #   extract part metadata (units, bounds, provenance)
+│   ├── metadata.py         #   extract part metadata (units, bounds, provenance)
+│   └── fidelity.py         #   STEP -> op-DAG -> STEP round-trip fidelity metrics
+├── standards/
+│   ├── registry.py         #   versioned, machine-readable engineering rule packs
+│   ├── ingest.py           #   cited clause text -> typed rules
+│   └── conflict.py         #   incompatible-rule detection
 ├── library/
 │   ├── parts.py            #   parametric part op-templates + model cards
 │   └── catalog.py          #   PartCatalog — searchable default catalog
@@ -606,7 +624,8 @@ harnesscad/
 │   ├── distribution_audit.py #  coverage / distribution audit of the corpus
 │   ├── active_learning.py  #   pick the highest-information next tasks to label
 │   ├── consensus.py        #   multi-sample consensus / agreement scoring
-│   └── intent.py           #   infer design intent from a trajectory
+│   ├── intent.py           #   infer design intent from a trajectory
+│   └── edit_pairs.py       #   human edit deltas -> preference-training records
 ├── datagen/
 │   ├── generators.py       #   seeded synthetic (brief, ops, params) generators
 │   ├── pipeline.py         #   solver-in-the-loop: keep only parts that verifiably build
@@ -618,7 +637,7 @@ harnesscad/
 ├── examples/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
-├── tests/                  # 980 unittest tests across every module
+├── tests/                  # 1178 unittest tests across every module
 ├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
@@ -631,17 +650,17 @@ never committed — it is not part of the product.
 The modules grouped by layer package, for navigation:
 
 - **Core spine** — `loop.py`, `harness.py`, `pipeline.py`, `cli.py`, `state/opdag.py`, `cisp/`, `backends/`
-- **`verifiers/`** (plural verifier) — `verify.py`, `geometry.py`, `dfm.py`, `vision.py`, `assembly.py`, `interference.py`, `standards.py`, `compliance.py`, `requirements.py`, `reference.py` (+ root `constraints.py`, `contract.py`)
-- **`reliability/`** — `guardrails.py`, `loopdetect.py`, `executor.py`, `repair.py`, `strategies/` (`best_of_n`, `reflexion`, `mcts`)
-- **`quality/`** — `estimate.py`, `fitness.py`, `kinematics.py`, `anomaly.py`, `diff.py`, `describe.py`, `featuregraph.py`, `suggest_cots.py`
+- **`verifiers/`** (plural verifier) — core geometry/assembly checks plus opt-in DFM, vision, simulation, access, precheck, completeness, functional and conformance reporting (+ root `constraints.py`, `contract.py`)
+- **`reliability/`** — guardrails, loop detection, execution, repair, retrieval fallback and search strategies
+- **`quality/`** — estimation/fitness, kinematics/anomaly/diff, narration/feature graphs/COTS, assembly sequencing, drawings, Pareto analysis, traceability, batch edit and grounded Q&A
 - **`surfaces/`** — `server.py`, `render.py`, `mcp/` (`tools`, `annotations`, `gym`), `ui/` (`events`, `approval`)
 - **Agent + LLM + decoding** — `agent/`, `agents/`, `a2a/`, `llm/`, `routing.py`, `grammar.py`
 - **Grounding** — `context/`, `rag/`, `memory/`
 - **Front-of-pipeline** — `spec/` (formalize + interview), `skeleton/`, `sizing/`
-- **Ingestion + library** — `ingest/` (import_brep, decompile, metadata), `library/` (parts, catalog)
+- **Ingestion + library** — `ingest/` (import, decompile, metadata, round-trip fidelity), `library/` (parts, catalog)
 - **Design-space exploration** — `exploration/` (Co-Scientist + Elo tournament)
 - **Observability** — `observe.py`, `trace.py`
-- **Data engine** — `dataengine/` (export + distribution_audit / active_learning / consensus / intent), `datagen/` (generators, pipeline, augment)
+- **Data engine** — `dataengine/` (export, audit, active learning, consensus, intent and human edit-pairs), `datagen/` (generators, pipeline, augment)
 - **Measurement** — `bench/`
 
 ## Roadmap
@@ -660,6 +679,7 @@ real training runs, or a shipped UI — not new harness logic.
 - **Phase 4 — measurement.** **CADBench-Verified** (SWE-bench-style, programmatically-checked: editability, program execution, B-rep validity, dimension match, easy/medium/hard tasks) and the `observe.py` observability layer (spans, KPI metrics with confidence intervals, failure taxonomy, run replay). The plural verifier now also spans an opt-in **DFM critic** (`verifiers/dfm`) and a **VLM-judge** (`verifiers/vision`).
 - **Phase 5 — scale.** The multi-agent `Supervisor` + role personas (Designer / Modeler / Verifier / DFMCritic / RedTeam / Reviewer) and the `AsyncOverseer` with halt authority; the `a2a/` inter-agent message bus + task lifecycle; the `surfaces/mcp/` tool server + `CADGymEnv` Gym environment; the `surfaces/ui/` SSE event contract + three-tier approval; and grammar-constrained decoding artefacts (`grammar.py`). The data-engine exporters (`dataengine/` — GRPO / DPO / STaR) and synthetic `datagen/` (solver-in-the-loop) are in place; `exploration/` adds Co-Scientist generate-debate-evolve variant search with Elo-tournament ranking + clustering; and `routing.RoutingLLM` adds cost-aware model routing. `harness.AgentHarness` ties the ReAct loop together and `reliability.executor.ToolExecutor` adds the sandbox / retry / timeout / approval layer.
 - **Phase 6 — mechanical depth.** The op vocabulary now spans real machined and assembled geometry (`revolve`, `chamfer`, `hole`, `shell`, `draft`, `loft`, `sweep`, `linear_pattern`, `circular_pattern`, `mirror`, `add_instance`, `mate`, `set_param`), with `query('metrics')` mass properties and STL / IGES export alongside STEP, and `state/opdag.bisect()` for fault localisation. The plural verifier grew an **assembly / mate + residual-DOF** solver, an **interference / clash** detector, a **kinematics** motion validator, plus **standards** (preferred-series), **compliance**, **requirements**, and **reference-match** checks. `quality/` adds **mass / cost / BOM** estimation, a multi-objective **fitness** score, semantic diff, part narration, feature graphs, and nearest-COTS suggestion; `reliability/repair` adds OCCT shape-healing; and MCTS joins best-of-N / Reflexion. The front of the pipeline now runs **spec** (formalize + interview) -> **skeleton** (master-sketch) -> **sizing** (engineering calc), and `ingest/` (STEP import + decompile + metadata) with a parametric parts **library** closes the loop on existing geometry.
+- **Phase 7 — corpus-derived engineering depth.** Analytic stress/buckling verification with an external-FEA seam; tool-access, feasibility, completeness and functional checks; traceable conformance reports; assembly sequencing; dimensioned 2D drawings; versioned standards ingestion; embodied-carbon/energy objectives; op-DAG branching and three-way merge; Pareto trade-offs, traceability, batch semantic edits and grounded model Q&A; round-trip ingest fidelity; nearest-known-good recovery; and human-edit preference capture.
 
 **Planned / future**
 
