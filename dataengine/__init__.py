@@ -35,6 +35,12 @@ from dataengine.export import (
     to_star,
     write_jsonl,
 )
+from dataengine.edit_pairs import (
+    EditPair,
+    EditPairStore,
+    capture_edit_pair,
+    to_preference,
+)
 
 __all__ = [
     "Action",
@@ -50,4 +56,8 @@ __all__ = [
     "to_star",
     "flywheel_metrics",
     "write_jsonl",
+    "EditPair",
+    "EditPairStore",
+    "capture_edit_pair",
+    "to_preference",
 ]

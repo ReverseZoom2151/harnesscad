@@ -26,6 +26,7 @@ from ingest.import_brep import (
 )
 from ingest.decompile import DecompileResult, decompile
 from ingest.metadata import PartMetadata, extract_metadata
+from ingest.fidelity import FidelityReport, import_fidelity, roundtrip_fidelity
 
 __all__ = [
     "ImportedPart",
@@ -37,4 +38,7 @@ __all__ = [
     "decompile",
     "PartMetadata",
     "extract_metadata",
+    "FidelityReport",
+    "import_fidelity",
+    "roundtrip_fidelity",
 ]

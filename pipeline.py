@@ -81,6 +81,10 @@ def _make_backend(backend: str):
     """
     if backend == "cadquery":
         try:
+            # CadQueryBackend itself is intentionally import-safe without the
+            # optional kernel. Probe the dependency here so the pipeline does
+            # not select a backend that can construct but cannot execute.
+            import cadquery  # noqa: F401
             from backends.cadquery_backend import CadQueryBackend  # type: ignore
             return CadQueryBackend(), "cadquery", None
         except Exception as exc:  # pragma: no cover - depends on optional dep
