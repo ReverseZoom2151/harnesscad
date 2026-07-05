@@ -37,6 +37,10 @@ py-modules = [
     "cadsmith_design_plan", "cadsmith_error_patterns", "cadsmith_kernel_metrics",
     "cadsmith_three_view", "cadsmith_abs_metrics", "cadsmith_escalation",
     "cadsmith_tiers", "cadsmith_dual_loop",
+    "chatcadplus_prob2text", "chatcadplus_sphere_retrieval",
+    "clarify_ambiguity", "clarify_dialogue", "clarify_perturb",
+    "clarify_metrics", "clarify_leakage", "clarify_scaling",
+    "fabworkflow_taxonomy", "fabworkflow_feasibility", "fabworkflow_compare",
 ]
 packages = [
     # core spine + foundations
