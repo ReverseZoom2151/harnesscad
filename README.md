@@ -4,7 +4,7 @@
 
 **A native agentic harness for engineering/mechanical text-to-CAD — the harness, not the model, is the product.**
 
-![Tests](https://img.shields.io/badge/tests-3124%20passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-3497%20passing-brightgreen?style=flat-square)
 ![Phase](https://img.shields.io/badge/phases%200--5-implemented-blue?style=flat-square)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
@@ -233,7 +233,10 @@ environment as an MCP-style server (`ToolCatalog` — one tool per op plus
 info); `surfaces/ui/` is the outward SSE event contract (`UIEvent`/`EventStream`) plus a
 three-tier approval gate (AUTO / NOTIFY / REQUIRE) with dry-run previews; and
 `surfaces/render.py` renders the current solid to multi-view SVG/PNG bytes as the
-observation half of a render -> judge loop.
+observation half of a render -> judge loop. On top of these seams sit the agent-protocol
+adapters — `surfaces/mcp/` (an MCP server), `surfaces/a2a_server/` (an A2A server), and
+`surfaces/acp/` (an ACP agent) — described under
+[Protocol integrations](#protocol-integrations).
 
 **Cross-cutting.** `routing.RoutingLLM` is a drop-in `LLM` that classifies each request
 and routes it to the cheapest capable model with a fallback chain and a running cost
@@ -485,6 +488,11 @@ The kernel is deliberately behind a seam (`backends/base.py`): the same op strea
 on the stub, on CadQuery/OCCT, or on a future Rust-native kernel (Fornjot / Truck /
 Cadmium) with no change above the backend.
 
+The **agent protocols** (MCP, A2A, ACP) are supported the same way: the adapters under
+`surfaces/` are stdlib-only and need nothing installed, while the official SDKs
+(`mcp`, `a2a-sdk`, `agent-client-protocol`) are optional extras for richer interop. See
+[Protocol integrations](#protocol-integrations).
+
 ## Project structure
 
 ```
@@ -559,10 +567,25 @@ harnesscad/
 ├── surfaces/
 │   ├── server.py           #   CISPServer: initialize/applyOps/query/verify/export over stdio (serve_stdio)
 │   ├── render.py           #   multi-view render of the current solid to SVG/PNG bytes
-│   ├── mcp/
+│   ├── mcp/                #   MCP: agent-consumes-tools face over the ToolCatalog
+│   │   ├── server.py       #     MCPServer — tools/call+list, resources, prompts (MCP 2025-11-25)
+│   │   ├── jsonrpc.py      #     stdlib JSON-RPC 2.0 framing for the MCP channel
+│   │   ├── stdio.py        #     serve_stdio — the MCP stdio transport loop
+│   │   ├── __main__.py     #     `python -m surfaces.mcp` — launch the MCP stdio server
 │   │   ├── tools.py        #     ToolCatalog — one tool per op + to_mcp() schema, verifier reward
 │   │   ├── annotations.py  #     MCP behavioural hints (readOnly/destructive) -> approval tier
 │   │   └── gym.py          #     CADGymEnv — reset/step(obs, reward, done, info) RL environment
+│   ├── a2a_server/         #   A2A: agent<->agent peer face (HTTP + JSON-RPC)
+│   │   ├── app.py          #     serve() — HTTP transport; message/send+stream, tasks/get+cancel
+│   │   ├── card.py         #     AgentCard at /.well-known/agent-card.json (text-to-cad skill)
+│   │   ├── handler.py      #     JSON-RPC method dispatch -> AgentHarness; STEP as file Part
+│   │   ├── wire.py         #     A2A wire types (Message/Part/Artifact/Task) — stdlib
+│   │   └── __main__.py     #     `python -m surfaces.a2a_server --port 9100`
+│   ├── acp/                #   ACP: editor-drives-the-harness face (Zed Agent Client Protocol v1)
+│   │   ├── agent.py        #     ACPAgent — session/prompt -> AgentHarness.run, SSE -> session/update
+│   │   ├── bridge.py       #     approval gate -> session/request_permission; STEP -> fs/write_text_file
+│   │   ├── jsonrpc.py      #     newline-delimited JSON-RPC 2.0 stdio Connection
+│   │   └── __main__.py     #     `python -m surfaces.acp` — the ACP agent Zed spawns
 │   └── ui/
 │       ├── events.py       #     UIEvent / EventStream — typed SSE wire protocol (+ parsers)
 │       └── approval.py     #     ApprovalGate — three-tier AUTO/NOTIFY/REQUIRE + dry-run preview
@@ -658,7 +681,7 @@ The modules grouped by layer package, for navigation:
 - **`verifiers/`** (plural verifier) — core geometry/assembly checks plus opt-in DFM, vision, simulation, access, precheck, completeness, functional and conformance reporting (+ root `constraints.py`, `contract.py`)
 - **`reliability/`** — guardrails, loop detection, execution, repair, retrieval fallback and search strategies
 - **`quality/`** — estimation/fitness, kinematics/anomaly/diff, narration/feature graphs/COTS, assembly sequencing, drawings, Pareto analysis, traceability, batch edit, grounded Q&A, next-op ranking, simulation jobs and revision deltas
-- **`surfaces/`** — server/render, MCP/UI, keyboard commands and deterministic graph/history/debug views
+- **`surfaces/`** — server/render, MCP/UI, keyboard commands and deterministic graph/history/debug views, plus the agent-protocol adapters `surfaces/mcp/` (MCP server), `surfaces/a2a_server/` (A2A server) and `surfaces/acp/` (ACP agent)
 - **Agent + LLM + decoding** — `agent/`, `agents/`, `a2a/`, `llm/`, `routing.py`, `grammar.py`
 - **Grounding** — `context/`, `rag/`, `memory/`
 - **Front-of-pipeline** — `spec/` (formalize + interview), `skeleton/`, `sizing/`
@@ -669,6 +692,55 @@ The modules grouped by layer package, for navigation:
 - **Measurement** — `bench/`
 - **Security** — `security/` (ingest policy, redaction/audit provenance, prompt/tool trust gate)
 - **Research governance** — `research/` (evidence-linked claims, reproducibility gates, reviewer ensemble and rollback)
+
+## Protocol integrations
+
+The harness now speaks the four mainstream agent protocols, each a **thin adapter
+over an existing seam** — no new harness logic, just a new outward face. They sit on
+three complementary axes, so an integration is really a question of *direction*:
+
+- **MCP — downward.** The agent *consumes tools*: `surfaces/mcp/` is a real
+  [Model Context Protocol](https://modelcontextprotocol.io) 2025-11-25 stdio server
+  that exposes the CISP ops as MCP **tools** (`tools/list`, `tools/call` with
+  `isError` self-correction), the model state as MCP **resources**
+  (`resources/list` + `read`), and op-templates as MCP **prompts** (`prompts/list` +
+  `get`) — all over the existing `ToolCatalog`.
+- **A2A — sideways.** The harness is an *agent peer*: `surfaces/a2a_server/` serves a
+  [Google Agent2Agent](https://a2a-protocol.org) `AgentCard` at
+  `/.well-known/agent-card.json` with a text-to-cad skill and handles `message/send`,
+  `message/stream` (SSE), `tasks/get`, and `tasks/cancel` over HTTP + JSON-RPC,
+  returning the verified STEP as a file `Part` in an `Artifact`. (IBM's REST *Agent
+  Communication Protocol* merged into A2A under the Linux Foundation in Aug 2025, so
+  this one adapter covers both — there is no separate ACP-by-IBM adapter.)
+- **ACP — inward.** An *editor drives the harness*: `surfaces/acp/` is a
+  [Zed Agent Client Protocol](https://agentclientprotocol.com) v1 agent, so Zed (or any
+  ACP editor) runs text-to-CAD in-editor. `session/prompt` maps to `AgentHarness.run`,
+  our SSE events become `session/update`, the three-tier approval gate becomes
+  `session/request_permission` (allow / reject, once / always), and the STEP is written
+  back via `fs/write_text_file`. ACP reuses MCP's `ContentBlock` types.
+
+| Protocol | Role (axis) | Module | Entry point |
+|----------|-------------|--------|-------------|
+| MCP  | agent consumes tools (down)     | `surfaces/mcp/`        | `python -m surfaces.mcp` |
+| A2A  | agent ↔ agent peer (sideways)   | `surfaces/a2a_server/` | `python -m surfaces.a2a_server` |
+| ACP  | editor drives the harness (in)  | `surfaces/acp/`        | `python -m surfaces.acp` |
+
+Every adapter is **stdlib-first** — the JSON-RPC framing, stdio/HTTP transports, and
+wire types are hand-rolled on the standard library, so each runs with nothing installed.
+The official SDKs ([`mcp`](https://pypi.org/project/mcp/),
+[`a2a-sdk`](https://pypi.org/project/a2a-sdk/),
+[`agent-client-protocol`](https://pypi.org/project/agent-client-protocol/)) are optional
+extras for richer interop, not a requirement. These are functional adapters with passing
+tests, not battle-tested production servers.
+
+```sh
+python -m surfaces.mcp                          # MCP stdio server (CISP ops as MCP tools)
+python -m surfaces.a2a_server --port 9100       # A2A HTTP+JSON-RPC server + AgentCard
+python -m surfaces.acp                          # ACP v1 agent for Zed / any ACP editor
+```
+
+Each honours `--backend stub|cadquery` exactly like the CISP server, falling back to the
+stub (with a note on stderr) when CadQuery is absent, so all three always run.
 
 ## Roadmap
 
