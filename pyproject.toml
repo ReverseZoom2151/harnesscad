@@ -42,8 +42,9 @@ packages = [
     "verifiers",
     # reliability (includes the search/repair strategies)
     "reliability", "reliability.strategies",
-    # surfaces
+    # surfaces (incl. the MCP / A2A / ACP protocol adapters)
     "surfaces", "surfaces.mcp", "surfaces.ui",
+    "surfaces.acp", "surfaces.a2a_server",
     # quality / analysis
     "quality",
     # data engine + eval + generation
