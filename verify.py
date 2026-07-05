@@ -92,4 +92,9 @@ class SolidPresenceCheck:
 
 
 def default_verifiers() -> List[Verifier]:
-    return [SketchConstraintCheck(), SolidPresenceCheck()]
+    # Lazy local import: checks_geometry imports names from this module, so a
+    # top-level import here would be circular. BRepValidityCheck is a no-op when
+    # the backend reports no solid/validity (e.g. the stub backend), so adding it
+    # to the default set is safe for every backend.
+    from checks_geometry import BRepValidityCheck
+    return [SketchConstraintCheck(), SolidPresenceCheck(), BRepValidityCheck()]

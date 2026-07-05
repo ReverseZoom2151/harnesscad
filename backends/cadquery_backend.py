@@ -15,10 +15,15 @@ Block-and-correct: on an invalid reference *or* any kernel exception we return
 ``ApplyResult(ok=False, ...)`` WITHOUT mutating state — geometry is only
 committed to ``self`` after the kernel op succeeds.
 
-Constraints: CadQuery ships no full 2D constraint solver, so — exactly like the
-stub — we merely *record* constraints and reduce a nominal per-sketch DOF so
-``query('sketch_dof')`` keeps working. A real solver (planegcs / SolveSpace) is
-future work.
+Constraints: CadQuery ships no full 2D constraint solver, so per-sketch DOF is
+tracked by :class:`constraints.ConstraintGraph` — a genuine rank-style DOF
+analysis (per-entity DOF, per-constraint DOF removal, redundancy detection,
+under/well/over classification) over the CISP abstract sketch model, replacing
+the old inline additive heuristic. ``query('sketch_dof')`` reports the graph's
+signed residual DOF (so it stays consistent with the harness conventions and can
+still go negative when over-determined). A concrete geometric solve is available
+via :class:`constraints.SolveSpaceSketch` (the optional ``constraints`` extra,
+python-solvespace).
 
 CadQuery is imported LAZILY inside the methods that need it, so this module
 imports cleanly even when cadquery / cadquery-ocp (OCCT) is not installed.
@@ -39,6 +44,7 @@ from cisp.ops import (
 )
 from verify import Diagnostic, Severity
 from backends.base import ApplyResult
+from constraints import ConstraintGraph
 
 
 def _err(code: str, msg: str, where: Optional[str] = None) -> ApplyResult:
@@ -75,14 +81,19 @@ class CadQueryBackend:
         eid = self._new_id("e")
         self.entities[eid] = {"type": kind, "sketch": sketch, "params": params}
         self.sketches[sketch]["entities"].append(eid)
-        self.sketches[sketch]["dof"] += PRIMITIVE_DOF[kind]
+        graph = self.sketches[sketch]["graph"]
+        graph.add_entity(eid, kind)
+        self.sketches[sketch]["dof"] = graph.residual_dof()
         return ApplyResult(True, [eid])
 
     # -- op dispatch --------------------------------------------------------
     def apply(self, op: Op) -> ApplyResult:
         if isinstance(op, NewSketch):
             sid = self._new_id("sk")
-            self.sketches[sid] = {"plane": op.plane, "entities": [], "dof": 0}
+            self.sketches[sid] = {
+                "plane": op.plane, "entities": [], "dof": 0,
+                "graph": ConstraintGraph(),
+            }
             return ApplyResult(True, [sid])
         if isinstance(op, AddPoint):
             return self._add_primitive(op.sketch, "point", {"x": op.x, "y": op.y})
@@ -112,8 +123,8 @@ class CadQueryBackend:
         return _err("unknown-op", f"unhandled op {type(op).__name__}")
 
     def _constrain(self, op: Constrain) -> ApplyResult:
-        # No real 2D solver (planegcs is future work): mirror the stub's
-        # nominal DOF bookkeeping so query('sketch_dof') behaves identically.
+        # Real DOF analysis via constraints.ConstraintGraph (rank-style, with
+        # redundancy detection) rather than a bare additive heuristic.
         if op.kind not in CONSTRAINT_DOF:
             return _err("bad-value", f"unknown constraint kind '{op.kind}'")
         if op.kind in ("distance", "radius") and op.value is None:
@@ -123,7 +134,12 @@ class CadQueryBackend:
         if op.b is not None and op.b not in self.entities:
             return _err("bad-ref", f"unknown entity '{op.b}'", op.b)
         sid = self.entities[op.a]["sketch"]
-        self.sketches[sid]["dof"] -= CONSTRAINT_DOF[op.kind]
+        graph = self.sketches[sid]["graph"]
+        # Only couple a second entity when it lives in the same sketch's graph.
+        b = op.b if (op.b is not None
+                     and self.entities[op.b]["sketch"] == sid) else None
+        graph.add_constraint(op.kind, op.a, b, op.value)
+        self.sketches[sid]["dof"] = graph.residual_dof()
         self.sketches[sid].setdefault("constraints", []).append(op.kind)
         return ApplyResult(True, [])
 

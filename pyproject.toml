@@ -15,6 +15,10 @@ dependencies = []
 cadquery = ["cadquery>=2.4"]
 # Provider-agnostic LLM layer (LiteLLM) + structured op output (Instructor).
 llm = ["litellm>=1.0", "instructor>=1.0"]
+# Real 2D sketch constraint solver (SolveSpace). Optional: the ConstraintGraph
+# DOF analysis in constraints.py is stdlib-only; this extra adds the concrete
+# geometric solve via constraints.SolveSpaceSketch.
+constraints = ["python-solvespace"]
 
 # The product code lives FLAT at the repo root. harnesscad is an application
 # repo, not a pip library, so the layout is intentional: top-level packages and
