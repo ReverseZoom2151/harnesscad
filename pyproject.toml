@@ -49,5 +49,5 @@ packages = [
     "spec", "skeleton", "sizing", "ingest", "library", "standards",
     "editing", "reconstruction",
     # security and research governance
-    "security", "research", "audit", "vision",
+    "security", "research", "audit", "vision", "procedural", "formats",
 ]
