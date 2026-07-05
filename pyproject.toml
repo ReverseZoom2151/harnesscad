@@ -47,6 +47,7 @@ packages = [
     "dataengine", "datagen", "exploration", "bench",
     # front-of-pipeline + ingestion + parts
     "spec", "skeleton", "sizing", "ingest", "library", "standards",
+    "editing", "reconstruction",
     # security and research governance
     "security", "research", "audit",
 ]
