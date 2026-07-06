@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 95,
-  "next_manifest_index": 96,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-95 implemented (95 near-duplicate of 94)",
+  "reviewed_count": 100,
+  "next_manifest_index": 101,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-100 implemented (98 is a survey -- no buildable content)",
   "reviewed": [
     {
       "index": 1,
@@ -479,6 +479,31 @@
     {
       "index": 95,
       "paper": "Generating Physically Stable and Buildable LEGO Designs from Text.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 96,
+      "paper": "Generative AI and CAD Automation for Diverse and Novel Mechanical Component Designs Under Data Constraints.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 97,
+      "paper": "Generative AI for CAD Automation - Leveraging Large Language Models for 3D Modelling.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 98,
+      "paper": "Generative AI meets 3D - A Survey on Text-to-3D in AIGC Era.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 99,
+      "paper": "GeoCAD - Local Geometry-Controllable CAD Generation with Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 100,
+      "paper": "GeoFusion-CAD - Structure-Aware Diffusion with Geometric State Space for Parametric 3D Design.md",
       "status": "reviewed"
     }
   ],

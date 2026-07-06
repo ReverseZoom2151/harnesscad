@@ -1415,3 +1415,60 @@ library/legolization/coloring were new). Recovered from a mid-batch
 session-limit interruption by removing untested partials and re-running all
 5 papers fresh. Per the no-README-during-campaign policy, the suite count
 is tracked in audit/text_to_cad_progress.json.
+
+### 96. Generative AI and CAD Automation for Diverse and Novel Mechanical Component Designs Under Data Constraints
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Wheel-rim ISO spec-code parser + derived geometry | **implemented** | `spec/datacon_rim_spec.py` |
+| 2D-spoke geometric-feasibility validation (shoelace/centroid/rotational-symmetry) | **implemented** | `verifiers/datacon_rim_validation.py` |
+| Diversity/novelty/coverage metrics over component feature vectors | **implemented** | `bench/datacon_diversity.py` |
+| Few-shot contour augmentation enforcing rotational symmetry | **implemented** | `datagen/datacon_spoke_augment.py` |
+| Scale-invariant low-data dedup + farthest-point curation | **implemented** | `dataengine/datacon_lowdata_dedup.py` |
+| Latin-hypercube design-space sampler | **implemented** | `exploration/datacon_designspace_sampler.py` |
+| Diffusion/LoRA generator + image processing | **research-heavy/external** | trained models |
+
+### 97. Generative AI for CAD Automation - Leveraging Large Language Models for 3D Modelling
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Error-driven prompt-evolution loop (stateless rebuild + accumulating constraints) | **implemented** | `generation/llm3dmodel_prompt_evolution.py` |
+| Complexity-scaling taxonomy scorer | **implemented** | `bench/llm3dmodel_complexity_scale.py` |
+| FreeCAD execution-error taxonomy | **implemented** | `bench/llm3dmodel_freecad_errors.py` |
+| Convergence-outcome run-metrics protocol | **implemented** | `bench/llm3dmodel_run_metrics.py` |
+| LLM script generation + FreeCAD host | **research-heavy/external** | learned LLM / host |
+
+### 98. Generative AI meets 3D — A Survey on Text-to-3D in AIGC Era
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Method-taxonomy tables, 3D-representation comparison, cited NeRF/DDPM/SDS equations, future-agenda prose | **out-of-scope** | pure literature survey -- no self-contained algorithm (nothing built) |
+
+### 99. GeoCAD - Local Geometry-Controllable CAD Generation with Large Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Closed-form shape captioning (triangle/quad/arc taxonomy + key dims) | **implemented** | `geometry/geocad_vertex_caption.py` |
+| Simple/complex part routing from side types | **implemented** | `reconstruction/geocad_part_classifier.py` |
+| Closed + non-self-intersecting local-loop validity | **implemented** | `geometry/geocad_local_validity.py` |
+| Caption-invariant geometric augmentation | **implemented** | `dataengine/geocad_augment.py` |
+| Ver-score text-to-CAD consistency metric | **implemented** | `reconstruction/geocad_verscore.py` |
+| Geometry-constrained local-edit prompts (over FlexCAD masking) | **implemented** | `dataengine/geocad_prompt.py` |
+| Symmetry-axis reflection editing | **implemented** | `geometry/geocad_sketch_symmetry.py` |
+| VLLM captioner/score + LoRA training | **research-heavy/external** | learned VLLM |
+
+### 100. GeoFusion-CAD - Structure-Aware Diffusion with Geometric State Space for Parametric 3D Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Nested sketch-extrusion tree + reversible end-token serialization + 8-bit quantization | **implemented** | `reconstruction/geofusion_hierarchy.py` |
+| Geometric state-space selective-scan recurrence + curvature/PE/conv/FiLM fusion | **implemented** | `numeric/geofusion_state_space.py` |
+| Structure-consistency metrics (closure validity, structure-F1) | **implemented** | `bench/geofusion_structure_consistency.py` |
+| Learned G-Mamba denoiser + diffusion training | **research-heavy/external** | trained SSM/diffusion |
+
+## Batch-20 implementation result
+
+All deterministic and in-scope findings from papers 96-100 are implemented
+(98 is a text-to-3D survey -- correctly no buildable content). This closes
+the first 100 papers of the 186-paper corpus. Per the no-README-during-
+campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.
