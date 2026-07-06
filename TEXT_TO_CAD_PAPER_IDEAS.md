@@ -1355,3 +1355,63 @@ All deterministic and in-scope findings from papers 86-90 are implemented
 GenCAD built modestly since most machinery already existed). Per the
 no-README-during-campaign policy, the suite count is tracked in
 audit/text_to_cad_progress.json.
+
+### 91. GenCAD-3D — CAD Program Generation using Multimodal Latent Space Alignment and Synthetic Dataset Balancing
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| SynthBal complexity balancing + noise/replace-sketch augmentation + reduction-balancing + imbalance metrics | **implemented** | `datagen/gencad3d_synthbal.py` |
+| Sequence-length normalized metric + relative-improvement conventions | **implemented** | `bench/gencad3d_seqlen_norm.py` |
+| Deterministic linear cross-modal latent-alignment surrogate + alignment-quality diagnostics | **implemented** | `bench/gencad3d_latent_alignment.py` |
+| Learned encoders + latent diffusion training | **research-heavy/external** | trained models |
+
+### 92. GenCAD-Self-Repairing — Feasibility Enhancement for 3D CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Infeasibility taxonomy over generated command sequences (pre-kernel) | **implemented** | `reliability/gencadrepair_taxonomy.py` |
+| Sequence-level self-repair procedure (idempotent, guaranteed feasible) | **implemented** | `reliability/gencadrepair_sequence.py` |
+| Feasibility-rate + repair-success metrics | **implemented** | `reliability/gencadrepair_metrics.py` |
+| Detect->repair->re-check loop driver with stall guard | **implemented** | `reliability/gencadrepair_loop.py` |
+| Learned latent classifier/regressor + guided diffusion | **research-heavy/external** | trained nets |
+
+### 93. Generating CAD Code with Vision-Language Models for 3D Designs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| CADPrompt geometric eval protocol (normalization, point-cloud dist, Hausdorff, IoGT, compile penalty) | **implemented** | `bench/vlmcadcode_metrics.py` |
+| Geometric-solver feedback baseline (13 categories, paired diff -> NL) | **implemented** | `bench/vlmcadcode_geomsolver.py` |
+| CADPrompt data stratification | **implemented** | `bench/vlmcadcode_stratify.py` |
+| CADCodeVerify refinement loop | **implemented** | `generation/vlmcadcode_verify_loop.py` |
+| Feedback/error-type taxonomy classifiers | **implemented** | `generation/vlmcadcode_feedback_taxonomy.py` |
+| VLM question/answer/rewrite + ICP/render | **research-heavy/external** | trained VLMs / Open3D |
+
+### 94. Generating Physically Stable and Buildable Brick Structures from Text
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Brick representation + library + text format + voxel-overlap collision | **implemented** | `geometry/brick_structure.py` |
+| Stud-into-tube connectivity graph (components, grounded) | **implemented** | `geometry/brick_connectivity.py` |
+| Physical stability analysis (force/torque equilibrium, score) via two-phase simplex LP | **implemented** | `verifiers/brick_stability.py` |
+| Buildability / assembly-order + per-intermediate stability | **implemented** | `verifiers/brick_buildability.py` |
+| Stability-aware gate + physics-aware rollback | **implemented** | `verifiers/brick_validity.py` |
+| Learned brick LLM + training + mesh-to-brick + robotic assembly | **research-heavy/external** | trained models / hardware |
+
+### 95. Generating Physically Stable and Buildable LEGO Designs from Text
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Standard 8-brick LEGO library + LEGOGPT text codec + format FSA | **implemented** | `fabrication/lego_brick_library.py` |
+| Split-and-remerge legolization (voxel -> brick layout) | **implemented** | `fabrication/lego_legolization.py` |
+| Uniform brick-color assignment (nearest LEGO-palette snap) | **implemented** | `fabrication/lego_coloring.py` |
+| Shared brick mechanics (collision/connectivity/stability/rollback) | **covered by paper 94** | `brick_*` modules |
+| LLaMA fine-tuning + Gurobi + texturing | **research-heavy/external** | trained models / solver |
+
+## Batch-19 implementation result
+
+All deterministic and in-scope findings from papers 91-95 are implemented
+(95 LEGOGPT reuses paper 94's brick mechanics -- only its LEGO-specific
+library/legolization/coloring were new). Recovered from a mid-batch
+session-limit interruption by removing untested partials and re-running all
+5 papers fresh. Per the no-README-during-campaign policy, the suite count
+is tracked in audit/text_to_cad_progress.json.
