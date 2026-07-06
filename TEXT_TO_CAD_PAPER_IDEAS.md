@@ -1641,3 +1641,59 @@ All deterministic and in-scope findings from papers 111-115 are implemented
 Recovered from a mid-batch session-limit interruption: partials for 112/114/
 115 removed and those papers re-run fresh. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 116. Joint Neural SDF Reconstruction and Semantic Segmentation for CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| kNN label-smoothness consistency + SDF-band surface consistency | **implemented** | `reconstruction/jointsdf_consistency.py` |
+| NN label transfer + accuracy + palette-invariant matching | **implemented** | `reconstruction/jointsdf_label_transfer.py` |
+| Majority face-labelling + connected-component part segmentation | **implemented** | `geometry/jointsdf_mesh_segments.py` |
+| Boundary F-score with graph-hop tolerance | **implemented** | `bench/jointsdf_boundary_fscore.py` |
+| Recon<->seg correlation + part-count agreement + joint score | **implemented** | `bench/jointsdf_joint_metrics.py` |
+| SIREN/PartField training | **research-heavy/external** | trained nets |
+
+### 117. Large Language and Text-to-3D Models for Engineering Design Optimisation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Aerodynamic drag proxy (frontal area + least-squares surrogate) | **implemented** | `verifiers/llmdesopt_drag_proxy.py` |
+| Self-adaptive (mu,lambda) evolution strategy | **implemented** | `exploration/llmdesopt_es_optimizer.py` |
+| Wu-Palmer taxonomy similarity | **implemented** | `exploration/llmdesopt_wup_similarity.py` |
+| Reversible prompt design-variable encodings (bag-of-words + tokenisation) | **implemented** | `exploration/llmdesopt_prompt_encoding.py` |
+| Optimisation convergence/diversity metrics | **implemented** | `bench/llmdesopt_convergence.py` |
+| Shap-E/Point-E + GPT-4 BPE + OpenFOAM CFD | **research-heavy/external** | learned models / CFD |
+
+### 118. Large Language Models for Computer-Aided Design - A Survey
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Six-area LLM-in-CAD taxonomy; LLM/dataset/industry tables | **out-of-scope** | pure literature survey -- no self-contained algorithm (nothing built) |
+
+### 119. Learning From Design Procedure To Generate CAD Programs for Data Augmentation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| B-Spline reference-surface program generation (four families -> CadQuery scripts) | **implemented** | `datagen/designproc_reference_surface.py` |
+| Design-procedure step-grammar + prompt template + ablation modes | **implemented** | `datagen/designproc_procedure.py` |
+| Program-generation-by-procedure (grammar/template expansion) | **implemented** | `datagen/designproc_program_synthesis.py` |
+| B-Spline-ratio validity/diversity/augmentation metrics | **implemented** | `datagen/designproc_bspline_metrics.py` |
+| LLM prompting + OCC watertight check | **research-heavy/external** | learned LLM / kernel |
+
+### 120. Lessons on Datasets and Paradigms in Machine Learning for Symbolic Computation - A Case Study on CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Symmetry-group augmentation + class balancing (orbit/greedy relabel) | **implemented** | `datagen/symcad_symmetry_balance.py` |
+| Choice-heuristic evaluation metrics (time-markup, timeout-penalised) + rank-select | **implemented** | `bench/symcad_choice_metrics.py` |
+| Outcome-vector leakage dedup | **implemented** | `dataengine/symcad_outcome_dedup.py` |
+| Leakage-safe grouped k-fold CV + augment-within-fold | **implemented** | `bench/symcad_grouped_folds.py` |
+| Variable-ordering heuristics + trained classifiers (CAD = cylindrical algebraic decomposition) | **research-heavy/external** | symbolic-computation specific / trained models |
+
+## Batch-24 implementation result
+
+All deterministic and in-scope findings from papers 116-120 are implemented
+(118 LLMs-for-CAD survey is correctly no-build; 120's "CAD" is cylindrical
+algebraic decomposition -- only its transferable domain-agnostic ML dataset
+methodology was built). Per the no-README-during-campaign policy, the suite
+count is tracked in audit/text_to_cad_progress.json.

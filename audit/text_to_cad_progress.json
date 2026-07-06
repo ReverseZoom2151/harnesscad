@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 115,
-  "next_manifest_index": 116,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-115 implemented (113 is a vision/position paper -- no buildable content)",
+  "reviewed_count": 120,
+  "next_manifest_index": 121,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-120 implemented (118 is a survey; 120 is symbolic-computation CAD -- only transferable ML methodology built)",
   "reviewed": [
     {
       "index": 1,
@@ -579,6 +579,31 @@
     {
       "index": 115,
       "paper": "Introducing Bidirectional Programming in Constructive Solid Geometry-Based CAD.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 116,
+      "paper": "Joint Neural SDF Reconstruction and Semantic Segmentation for CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 117,
+      "paper": "Large Language and Text-to-3D Models for Engineering Design Optimisation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 118,
+      "paper": "Large Language Models for Computer-Aided Design - A Survey.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 119,
+      "paper": "Learning From Design Procedure To Generate CAD Programs for Data Augmentation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 120,
+      "paper": "Lessons on Datasets and Paradigms in Machine Learning for Symbolic Computation - A Case Study on CAD.md",
       "status": "reviewed"
     }
   ],
