@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 120,
-  "next_manifest_index": 121,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-120 implemented (118 is a survey; 120 is symbolic-computation CAD -- only transferable ML methodology built)",
+  "reviewed_count": 125,
+  "next_manifest_index": 126,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-125 implemented (122 near-duplicate of 121)",
   "reviewed": [
     {
       "index": 1,
@@ -604,6 +604,31 @@
     {
       "index": 120,
       "paper": "Lessons on Datasets and Paradigms in Machine Learning for Symbolic Computation - A Case Study on CAD.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 121,
+      "paper": "Leveraging Vision-Language Models for Manufacturing Feature Recognition in CAD Designs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 122,
+      "paper": "Leveraging Vision-Language Models for Manufacturing Feature.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 123,
+      "paper": "LION - Latent Point Diffusion Models for 3D Shape Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 124,
+      "paper": "LLaMA-Mesh - Unifying 3D Mesh Generation with Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 125,
+      "paper": "Locally Attentional SDF Diffusion for Controllable 3D Shape Generation.md",
       "status": "reviewed"
     }
   ],

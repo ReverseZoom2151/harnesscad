@@ -1697,3 +1697,55 @@ All deterministic and in-scope findings from papers 116-120 are implemented
 algebraic decomposition -- only its transferable domain-agnostic ML dataset
 methodology was built). Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
+
+### 121. Leveraging Vision-Language Models for Manufacturing Feature Recognition in CAD Designs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Hierarchical 5-process manufacturing-feature taxonomy + alias normalization + attribute schema | **implemented** | `fabrication/mfgfeat_taxonomy.py` |
+| Four count-sensitive AFR metrics (name accuracy, quantity accuracy, hallucination rate, MAE) | **implemented** | `bench/mfgfeat_afr_metrics.py` |
+| Rule-based machining-feature detector (hole subtypes/pocket/slot/step/chamfer/fillet/boss) | **implemented** | `reconstruction/mfgfeat_rule_detector.py` |
+| Dimensional-attribute extraction + subtype classification | **implemented** | `fabrication/mfgfeat_attributes.py` |
+| VLMs + prompt experiments + CAD2Image rendering | **research-heavy/external** | trained VLMs |
+
+### 122. Leveraging Vision-Language Models for Manufacturing Feature (duplicate of 121)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Taxonomy / detector / eval-metrics / attribute-extraction | **covered by paper 121** | `mfgfeat_*` modules |
+| Easy/medium/hard difficulty stratification + visually-confusable feature-pair swap diagnostic | **implemented** | `fabrication/mfgfeat2_difficulty.py` |
+
+### 123. LION - Latent Point Diffusion Models for 3D Shape Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 1-NNA two-sample generative metric + voxel-occupancy JSD | **implemented** | `bench/lion_one_nna.py` |
+| Dataset-level global [-1,1] normalization + per-shape variant | **implemented** | `geometry/lion_global_normalize.py` |
+| Deterministic DDIM sampler + diffuse-denoise | **implemented** | `numeric/lion_ddim_sampler.py` |
+| Chamfer/EMD/FPS/COV-MMD | **already in repo** | earlier modules |
+| Learned latent-point VAE + DDMs + SAP + CLIP | **research-heavy/external** | trained models |
+
+### 124. LLaMA-Mesh - Unifying 3D Mesh Generation with Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Mesh-as-text OBJ tokenization (quantize/dequantize vertices, serialize/parse round-trip, canonical z-y-x ordering, compression metric) | **implemented** | `formats/llamamesh_tokenization.py` |
+| SFT + LLaMA fine-tuning + Objaverse curation | **research-heavy/external** | trained LLM / data |
+
+### 125. Locally Attentional SDF Diffusion for Controllable 3D Shape Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Surface-occupancy shell + coarse-from-fine 8-subvoxel pooling | **implemented** | `geometry/lasdiff_surface_occupancy.py` |
+| Two-stage sparse-voxel subdivision bridge | **implemented** | `geometry/lasdiff_sparse_subdivision.py` |
+| View-aware local-attention mask geometry (patch grid + pinhole projection + local-neighbourhood mask) | **implemented** | `geometry/lasdiff_local_attention_mask.py` |
+| ViT patch-grid region partition + two-sketch stitch | **implemented** | `geometry/lasdiff_patch_stitch.py` |
+| Sketch-CD + 1-NNA + gap-to-50% metrics | **implemented** | `bench/lasdiff_sketch_metrics.py` |
+| Learned diffusion U-Net + ViT encoders | **research-heavy/external** | trained models |
+
+## Batch-25 implementation result
+
+All deterministic and in-scope findings from papers 121-125 are implemented
+(122 is a materially identical duplicate of 121 -- only its two extra
+diagnostics were new). Per the no-README-during-campaign policy, the suite
+count is tracked in audit/text_to_cad_progress.json.
