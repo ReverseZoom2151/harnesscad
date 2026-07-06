@@ -1520,3 +1520,64 @@ All deterministic and in-scope findings from papers 101-105 are implemented
 (101 GDL survey + 102 spatial-world-models interpretability proposal are
 correctly no-build). Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
+
+### 106. HistCAD - Geometrically Constrained Parametric History-based CAD Dataset
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Constraint-aware sequence schema (plane + Line/Circle/Arc + 10 constraints + rotated extrusion + booleans) + primitive dedup | **implemented** | `reconstruction/histcad_sequence.py` |
+| Ten-type constraint model (per-primitive DOF, net-DOF status, conflict/redundancy) | **implemented** | `state/histcad_constraint_model.py` |
+| Loop reconstruction + hierarchical outer/hole + 2D OBB + replay-validity | **implemented** | `reconstruction/histcad_replay.py` |
+| Inter-part spatial relations (3D OBB + SAT contact + directional labels) | **implemented** | `dataengine/histcad_spatial_relations.py` |
+| History-quality metrics | **implemented** | `bench/histcad_history_quality.py` |
+| Parametric-edit-consistency (residuals + propagation) | **implemented** | `verifiers/histcad_edit_consistency.py` |
+| LLM annotation + full proprietary dataset | **research-heavy/external** | learned model / licensed data |
+
+### 107. How Can Large Language Models Help Humans in Design and Manufacturing
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Global-coordinate sketch-and-extrude DSL interpreter | **implemented** | `geometry/llmdesign_sketch_extrude_dsl.py` |
+| Tri-state box-contact auditor | **implemented** | `geometry/llmdesign_box_contact.py` |
+| Analytic mass properties + assembly stability CoM | **implemented** | `quality/llmdesign_primitive_massprops.py` |
+| Flat-pack panel decomposition + laser-bed fit/split | **implemented** | `fabrication/llmdesign_flatpack_panels.py` |
+| First-order performance formulas (chair/cabinet/quadcopter) | **implemented** | `quality/llmdesign_first_order_performance.py` |
+| Constrained design-space enumeration | **implemented** | `exploration/llmdesign_constrained_designspace.py` |
+| Process selection / DfM advisor / inverse-design / FEA / CAM | **research-heavy/external** | LLM knowledge / non-stdlib libs |
+
+### 108. Image2CADSeq - Computer-Aided Design Sequence and Knowledge Inference from Product Images
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Sim-Gallery DSL + feature-matrix (start-point elision + arc-centre reconstruction) | **implemented** | `reconstruction/img2cadseq_gallery_dsl.py` |
+| Multi-level H1/H2/H3 evaluation framework (paper's exact equations) | **implemented** | `bench/img2cadseq_eval.py` |
+| Knowledge-inference schema (template shapes + parametric DesignRules) | **implemented** | `dataengine/img2cadseq_knowledge.py` |
+| TEVAE/ResNet encoder + Fusion 360 rendering | **research-heavy/external** | trained models / host |
+
+### 109. Img2CAD - Conditioned 3D CAD Model Generation from Single Image with Structured Visual Geometry
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Structured-visual-geometry wireframe schema (junctions/segments, validity, normalization) | **implemented** | `reconstruction/img2cadsvg_representation.py` |
+| HAT closed-form 4D attraction field (invertible encode/decode + dense field) | **implemented** | `geometry/img2cadsvg_hat_field.py` |
+| Line-endpoint binding + JD-LOI alignment | **implemented** | `reconstruction/img2cadsvg_binding.py`, `img2cadsvg_loi_align.py` |
+| Canny edge-extraction pipeline (Gaussian/Sobel/NMS/hysteresis) | **implemented** | `vision/img2cadsvg_edge_extract.py` |
+| ANOVA F-test multi-view consistency | **implemented** | `bench/img2cadsvg_multiview_consistency.py` |
+| Learned ViT/HAT regressor/decoder + datasets | **research-heavy/external** | trained models |
+
+### 110. Img2CAD - Reverse Engineering 3D CAD Models from Images through VLM-Assisted Conditional Factorization
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Two-stage conditional factorization (discrete structure / continuous attributes + lossless assembly) | **implemented** | `reconstruction/img2cadrev_factorization.py` |
+| Sketch-extrude schema with join/cut as distinct command types + CCW validity | **implemented** | `reconstruction/img2cadrev_schema.py` |
+| Sheaf-inspired shared attribute space (aggregate + shared-mean predictor) | **implemented** | `reconstruction/img2cadrev_shared_attributes.py` |
+| Reconstruction metrics (Chamfer, symmetry-Chamfer, #SCC, round-trip fidelity) | **implemented** | `bench/img2cadrev_metrics.py` |
+| VLM + TrAssembler/GMFlow | **research-heavy/external** | trained VLM/flow |
+
+## Batch-22 implementation result
+
+All deterministic and in-scope findings from papers 106-110 are implemented
+(the two distinct Img2CAD papers kept separate via img2cadsvg_/img2cadrev_
+prefixes). Per the no-README-during-campaign policy, the suite count is
+tracked in audit/text_to_cad_progress.json.

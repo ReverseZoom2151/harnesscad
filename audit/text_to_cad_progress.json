@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 105,
-  "next_manifest_index": 106,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-105 implemented (101 survey, 102 interpretability proposal -- no buildable content)",
+  "reviewed_count": 110,
+  "next_manifest_index": 111,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-110 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -529,6 +529,31 @@
     {
       "index": 105,
       "paper": "Hierarchical Neural Coding for Controllable CAD Model Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 106,
+      "paper": "HistCAD - Geometrically Constrained Parametric History-based CAD Dataset.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 107,
+      "paper": "How Can Large Language Models Help Humans in Design and Manufacturing.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 108,
+      "paper": "Image2CADSeq - Computer-Aided Design Sequence and Knowledge Inference from Product Images.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 109,
+      "paper": "Img2CAD - Conditioned 3D CAD Model Generation from Single Image with Structured Visual Geometry.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 110,
+      "paper": "Img2CAD - Reverse Engineering 3D CAD Models from Images through VLM-Assisted Conditional Factorization.md",
       "status": "reviewed"
     }
   ],
