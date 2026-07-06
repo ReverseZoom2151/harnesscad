@@ -1472,3 +1472,51 @@ All deterministic and in-scope findings from papers 96-100 are implemented
 (98 is a text-to-3D survey -- correctly no buildable content). This closes
 the first 100 papers of the 186-paper corpus. Per the no-README-during-
 campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 101. Geometric Deep Learning for Computer-Aided Design - A Survey
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| CAD terminology/format glossary, GDL method taxonomy, cited B-rep GNN encoders (UV-Net, Hierarchical CADNet, SB-GCN), generative pipelines | **out-of-scope / research-heavy** | pure literature survey -- cited external neural methods, no self-contained algorithm (nothing built) |
+
+### 102. Geometry of Spatial World Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Probe LLM residual activations for a spatial "world model"; fit geometric structure to activations; toy spatial-laws | **out-of-scope / research-heavy** | LLM-interpretability research proposal, no formalized geometry; SE(3)/frame algebra already in geometry/ (nothing built) |
+
+### 103. GIFT - Bootstrapping Image-to-CAD Program Synthesis via Geometric Feedback
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Geometric-agreement signal (render + IoU bands -> corrective categories) | **implemented** | `dataengine/gift_geometric_feedback.py` |
+| Soft-Rejection-Sampling + Failure-Driven-Augmentation dataset builders | **implemented** | `dataengine/gift_geometric_feedback.py` |
+| CDF-based empirical threshold selection | **implemented** | `dataengine/gift_threshold_selection.py` |
+| Bootstrapping self-training loop + amortization gap (pass@k - pass@1) + inverse-temp schedule | **implemented** | `dataengine/gift_bootstrap_loop.py` |
+| Learned image-to-CAD synthesizer + VLM rendering | **research-heavy/external** | trained VLM |
+
+### 104. GraphBrep - Learning B-Rep in Graph Structure for Efficient CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Surface-surface weighted adjacency graph (shared-edge counts) + matrix post-processing + edge-list recovery + validity | **implemented** | `reconstruction/graphbrep_surface_graph.py` |
+| Permutation-invariant canonicalization (WL refinement, canonical labelling, isomorphism) | **implemented** | `reconstruction/graphbrep_canonical.py` |
+| Efficiency/compactness metric (sequence vs graph length, attention-cost reduction) | **implemented** | `reconstruction/graphbrep_efficiency.py` |
+| Learned graph-diffusion denoiser + VAEs | **research-heavy/external** | trained models |
+
+### 105. Hierarchical Neural Coding for Controllable CAD Model Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Solid-Profile-Loop tree with bounding-box abstraction + 6-bit one-hot token encoding | **implemented** | `reconstruction/hnc_spl_tree.py` |
+| Nearest-codebook VQ code assignment (3 codebooks) + utilization/perplexity/compression metrics | **implemented** | `reconstruction/hnc_code_assignment.py` |
+| Code-tree serialization + three-level control masking | **implemented** | `generation/hnc_code_control.py` |
+| Controllability/consistency + edit-locality + diversity metrics | **implemented** | `bench/hnc_code_consistency.py` |
+| VQ-VAE + cascaded auto-regressive transformers | **research-heavy/external** | trained models |
+
+## Batch-21 implementation result
+
+All deterministic and in-scope findings from papers 101-105 are implemented
+(101 GDL survey + 102 spatial-world-models interpretability proposal are
+correctly no-build). Per the no-README-during-campaign policy, the suite
+count is tracked in audit/text_to_cad_progress.json.

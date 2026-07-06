@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 100,
-  "next_manifest_index": 101,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-100 implemented (98 is a survey -- no buildable content)",
+  "reviewed_count": 105,
+  "next_manifest_index": 106,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-105 implemented (101 survey, 102 interpretability proposal -- no buildable content)",
   "reviewed": [
     {
       "index": 1,
@@ -504,6 +504,31 @@
     {
       "index": 100,
       "paper": "GeoFusion-CAD - Structure-Aware Diffusion with Geometric State Space for Parametric 3D Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 101,
+      "paper": "Geometric Deep Learning for Computer-Aided Design - A Survey.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 102,
+      "paper": "Geometry of Spatial World Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 103,
+      "paper": "GIFT - Bootstrapping Image-to-CAD Program Synthesis via Geometric Feedback.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 104,
+      "paper": "GraphBrep - Learning B-Rep in Graph Structure for Efficient CAD Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 105,
+      "paper": "Hierarchical Neural Coding for Controllable CAD Model Generation.md",
       "status": "reviewed"
     }
   ],
