@@ -1581,3 +1581,63 @@ All deterministic and in-scope findings from papers 106-110 are implemented
 (the two distinct Img2CAD papers kept separate via img2cadsvg_/img2cadrev_
 prefixes). Per the no-README-during-campaign policy, the suite count is
 tracked in audit/text_to_cad_progress.json.
+
+### 111. Integrating Computer Vision and CAD for Precise Dimension Extraction and 3D Solid Model Regeneration for Enhanced Quality Assurance
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Pixel-to-metric calibration + metric measurement from contours | **implemented** | `vision/cvcad_pixel_calibration.py` |
+| Dimension-line/extension-line detection from segments | **implemented** | `drawings/dimext_dimension_lines.py` |
+| 3D solid regeneration by extrusion (mesh + mass properties) | **implemented** | `reconstruction/cvcad_solid_regeneration.py` |
+| Measured-vs-nominal tolerance QA + MAE/RMSE/MAPE accuracy | **implemented** | `verifiers/cvcad_qa_comparison.py` |
+| Learned detector / OCR / robotics / CATScript | **research-heavy/external** | learned/hardware |
+
+### 112. Integrating Deep Learning into CAD, CAE System - Generative Design and Evaluation of 3D Conceptual Wheel
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Analytic modal relation + inversion + rigid-body-mode count + stiffness-floor screening | **implemented** | `verifiers/dlwheel_modal.py` |
+| Surrogate label prep + min-max scaling + RMSE/MAPE + ensemble | **implemented** | `quality/dlwheel_surrogate_eval.py` |
+| First-derivative + Sobel edge extraction + edge->coordinate | **implemented** | `geometry/dlwheel_edge.py` |
+| Spoke point processing (NN ordering, grouping, reduction, scaling) | **implemented** | `geometry/dlwheel_spoke_points.py` |
+| Normal-distribution Latin-hypercube DoE (Acklam probit) | **implemented** | `exploration/dlwheel_lhs.py` |
+| Pixelwise L1 dedup + stiffness ranking + diversity score | **implemented** | `quality/dlwheel_design_rank.py` |
+| Seven-stage CAD/CAE integration workflow schema | **implemented** | `quality/dlwheel_workflow.py` |
+| CNN/surrogate/generative-topology training + real FEA | **research-heavy/external** | trained models / FEA |
+
+### 113. Intelligent CAD 2.0
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Intensional-vs-extensional ICAD role; 7-module ICAD 2.0 framework; design-phase taxonomy; five research challenges | **out-of-scope / research-heavy** | vision/position essay -- aspirational framework, no specified algorithm (nothing built) |
+
+### 114. Interactive Procedural Computer-Aided Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Procedural serpentine MEMS springs (boustrophedon + mirror + braces) | **implemented** | `geometry/proccad_serpentine.py` |
+| Symmetry/repetition operators + parameter reduction | **implemented** | `procedural/proccad_symmetry.py` |
+| Incremental dirty-cone re-evaluation of a procedural DAG | **implemented** | `procedural/proccad_incremental.py` |
+| Mark-intangible constraint freezing + preservation/projection | **implemented** | `procedural/proccad_constraint_freeze.py` |
+| Beauty functionals (arc-length / bending / minimum-variation) | **implemented** | `geometry/proccad_beauty_functionals.py` |
+| Key-decision design templates (dependent-parameter propagation) | **implemented** | `procedural/proccad_key_params.py` |
+| Narrow-focus finite-difference greedy refinement + multi-start | **implemented** | `exploration/proccad_greedy_refine.py` |
+| GA / surface-evolver / UI rendering | **research-heavy/external** | interactive UI / learned |
+
+### 115. Introducing Bidirectional Programming in Constructive Solid Geometry-Based CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Hierarchical CSG program AST (transforms/booleans/repeat, path identity, serialization) | **implemented** | `programs/bidircsg_ast.py` |
+| Forward evaluator get(program)->traced geometry tree + Affine | **implemented** | `programs/bidircsg_forward.py` |
+| Reverse/forward navigation + ghost operands + consistency | **implemented** | `editing/bidircsg_navigation.py` |
+| Backward put (reuse-or-insert, world->local frame) + GetPut/PutGet lens laws | **implemented** | `editing/bidircsg_backward.py` |
+| Variable-combination inference + gizmo UI | **research-heavy/external** | heuristics / UI host |
+
+## Batch-23 implementation result
+
+All deterministic and in-scope findings from papers 111-115 are implemented
+(113 Intelligent CAD 2.0 is a vision/position paper -- correctly no-build).
+Recovered from a mid-batch session-limit interruption: partials for 112/114/
+115 removed and those papers re-run fresh. Per the no-README-during-campaign
+policy, the suite count is tracked in audit/text_to_cad_progress.json.

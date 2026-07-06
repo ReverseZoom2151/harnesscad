@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 110,
-  "next_manifest_index": 111,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-110 implemented",
+  "reviewed_count": 115,
+  "next_manifest_index": 116,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-115 implemented (113 is a vision/position paper -- no buildable content)",
   "reviewed": [
     {
       "index": 1,
@@ -554,6 +554,31 @@
     {
       "index": 110,
       "paper": "Img2CAD - Reverse Engineering 3D CAD Models from Images through VLM-Assisted Conditional Factorization.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 111,
+      "paper": "Integrating Computer Vision and CAD for Precise Dimension Extraction and 3D Solid Model Regeneration for Enhanced Quality Assurance.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 112,
+      "paper": "Integrating Deep Learning into CAD, CAE System - Generative Design and Evaluation of 3D Conceptual Wheel.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 113,
+      "paper": "Intelligent CAD 2.0.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 114,
+      "paper": "Interactive Procedural Computer-Aided Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 115,
+      "paper": "Introducing Bidirectional Programming in Constructive Solid Geometry-Based CAD.md",
       "status": "reviewed"
     }
   ],
