@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 125,
-  "next_manifest_index": 126,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-125 implemented (122 near-duplicate of 121)",
+  "reviewed_count": 130,
+  "next_manifest_index": 131,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-130 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -629,6 +629,31 @@
     {
       "index": 125,
       "paper": "Locally Attentional SDF Diffusion for Controllable 3D Shape Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 126,
+      "paper": "Magic3DSketch - Create Colorful 3D Models From Sketch-Based 3D Modeling Guided by Text and Language-Image Pre-Training.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 127,
+      "paper": "Make-A-Shape - A Ten-Million-scale 3D Shape Model.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 128,
+      "paper": "Mamba-CAD - State Space Model For 3D Computer-Aided Design Generative Modeling.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 129,
+      "paper": "MamTiff-CAD - Multi-Scale Latent Diffusion with Mamba+ for Complex Parametric Sequence.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 130,
+      "paper": "MeshDiffusion - Score-Based Generative 3D Mesh Modeling.md",
       "status": "reviewed"
     }
   ],

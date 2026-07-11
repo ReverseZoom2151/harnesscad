@@ -1749,3 +1749,61 @@ All deterministic and in-scope findings from papers 121-125 are implemented
 (122 is a materially identical duplicate of 121 -- only its two extra
 diagnostics were new). Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
+
+### 126. Magic3DSketch - Create Colorful 3D Models From Sketch-Based 3D Modeling Guided by Text and Language-Image Pre-Training
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Soft silhouette-IoU loss + multi-scale mIoU | **implemented** | `bench/magic3d_silhouette_iou.py` |
+| Voxel-IoU + viewpoint MAE/MSE metrics | **implemented** | `bench/magic3d_voxel_metrics.py` |
+| Sphere-template deform + flatten loss | **implemented** | `geometry/magic3d_template_deform.py` |
+| Barycentric mesh colorization + text-word palette | **implemented** | `geometry/magic3d_mesh_colorize.py` |
+| CLIP discriminator + differentiable rendering | **research-heavy/external** | trained CLIP / renderer |
+
+### 127. Make-A-Shape - A Ten-Million-scale 3D Shape Model
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Separable 3D discrete wavelet transform (Haar + Le Gall 5/3, exact round-trip, multi-level tree) | **implemented** | `numeric/makeashape_wavelet_transform.py` |
+| Subband coefficient filtering + adaptive coordinate sets + diffusible packing | **implemented** | `numeric/makeashape_wavelet_tree.py` |
+| Wavelet-compression fidelity metrics | **implemented** | `numeric/makeashape_compression_metric.py` |
+| Learned U-ViT diffusion + condition encoders | **research-heavy/external** | trained model |
+
+### 128. Mamba-CAD - State Space Model For 3D Computer-Aided Design Generative Modeling
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| ZOH discretization of a continuous SSM (produces geofusion's discrete kernels) | **implemented** | `numeric/mambacad_zoh_discretization.py` |
+| Bidirectional/multi-directional scan ordering (reuses selective_scan) | **implemented** | `numeric/mambacad_bidirectional_scan.py` |
+| Long-sequence length statistics | **implemented** | `bench/mambacad_length_metrics.py` |
+| CAD-rep / Ac-Ap / selective scan | **already in repo** | deepcad / contrastcad / geofusion |
+| Learned Mamba model | **research-heavy/external** | trained model |
+
+### 129. MamTiff-CAD - Multi-Scale Latent Diffusion with Mamba+ for Complex Parametric Sequence
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Multi-scale/pyramid sequence encoding (Gaussian + Laplacian pyramid) | **implemented** | `numeric/mamtiff_pyramid.py` |
+| Cross-scale adaptive fusion + window-mask attention + scaled PE | **implemented** | `numeric/mamtiff_fusion.py` |
+| Complex-parametric-sequence complexity measure + ABC-256 filter | **implemented** | `numeric/mamtiff_complexity.py` |
+| Learned Mamba+ encoder + MST-D diffusion | **research-heavy/external** | trained model |
+
+### 130. MeshDiffusion - Score-Based Generative 3D Mesh Modeling
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Uniform tetrahedral grid (Kuhn/Freudenthal, positive-volume re-orientation) | **implemented** | `geometry/meshdiff_tet_grid.py` |
+| Marching tetrahedra (16-case DMTet table, validated vs analytic SDFs) | **implemented** | `geometry/meshdiff_marching_tets.py` |
+| DMTet deformable-tet encoding (SDF + deformation, sign-normalization) | **implemented** | `geometry/meshdiff_dmtet.py` |
+| Marching-tets edge-crossing noise-sensitivity metric | **implemented** | `geometry/meshdiff_edge_sensitivity.py` |
+| Learned score network + diffusion training | **research-heavy/external** | trained model |
+
+## Batch-26 implementation result
+
+All deterministic and in-scope findings from papers 126-130 are implemented.
+Recovered from a mid-batch WEEKLY-limit interruption (harder than the earlier
+session limits): all partials removed and the papers re-run fresh; 128's
+first retry returned empty (0 tool uses) and was re-run again. Notable new
+capabilities: a 3D wavelet transform (Make-A-Shape) and marching tetrahedra
+(MeshDiffusion), neither of which existed. Per the no-README-during-campaign
+policy, the suite count is tracked in audit/text_to_cad_progress.json.
