@@ -252,7 +252,7 @@
     "muse-main",
     "oce-oce-patches"
   ],
-  "suite_tests": 13402,
+  "suite_tests": 13630,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "Batch 11 (repos 51-55) complete -- strongest geometry batch: libfive (f-rep IR, interval arithmetic, forward-mode AD, dual contouring+QEF) and manifold (exact 3D predicates, half-edge mesh, 3D BVH, tri-tri intersection, winding-number inside) give the harness both implicit and explicit robust-geometry substrates; oce added Gauss-Legendre quadrature. suite_tests recount pending (/tmp/cb11.txt). Next: batch 12 = repos 56-60 (check os.listdir; starts pythonocc-core-master, a large OCCT binding -> likely little new). OPEN for user (do not action): (1) t2cq_ast CHAIN_METHODS subset scope; (2) muse_scorecard watertight/manifold double-count -- muse2_geometry_issue_flags.to_funnel_geometry() available to fix consistently; (3) deferred README rewrite. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler."
 }
