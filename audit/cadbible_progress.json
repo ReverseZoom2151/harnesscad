@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 25,
-  "next_repo_index": 26,
+  "reviewed_count": 30,
+  "next_repo_index": 31,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -199,6 +199,31 @@
     {
       "index": 25,
       "repo": "Sketch2CAD-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 26,
+      "repo": "SketchConcept-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 27,
+      "repo": "SketchGraphs-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 28,
+      "repo": "SkexGen-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 29,
+      "repo": "SolidPython-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 30,
+      "repo": "SymPoint-main",
       "status": "reviewed"
     }
   ],

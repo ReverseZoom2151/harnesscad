@@ -296,3 +296,74 @@ JoinABLe filled the joint axis/transform/motion gap (harness had only DOF
 counts); OCP -- a pure binding repo -- still gave a C++ header parser + OCCT
 API catalog that guards kernel-call hallucination. Per the no-README policy
 the suite count is tracked in audit/cadbible_progress.json.
+
+### 26. SketchConcept-main (NeurIPS 2022)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Concept template (parameterised sub-sketch, slots, interface, canonical signature) | **implemented** | `reconstruction/sketchconcept_template.py` |
+| Concept library (dedup, hierarchical flattening, usage) | **implemented** | `library/sketchconcept_library.py` |
+| Sketch -> concept decomposition + losslessness certificate | **implemented** | `reconstruction/sketchconcept_decompose.py` |
+| DETERMINISTIC concept induction (MDL compression-gain mining) | **implemented** | `library/sketchconcept_induction.py` |
+| Library compactness/coverage/compression metrics | **implemented** | `bench/sketchconcept_metrics.py` |
+| Trained transformer | **research-heavy/external** | GPU model |
+
+### 27. SketchGraphs-master (paper 165 reference impl)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Type-pair DOF table + autoconstrain validity mask (CORRECTNESS FIX: nominal scalar was wrong) | **implemented** | `reconstruction/sgraphs2_dof_mask.py` |
+| Onshape FeatureScript entity JSON schema + parser | **implemented** | `formats/sgraphs2_onshape_json.py` |
+| Entity geometry evaluation + polyline sampling (wrap-aware arc midpoint) | **implemented** | `drawings/sgraphs2_entity_render.py` |
+| Autoconstrain precision/recall metrics | **implemented** | `bench/sgraphs2_autoconstrain_metrics.py` |
+| Flat offset-indexed corpus container (pickle-free) | **implemented** | `formats/sgraphs2_flat_array.py` |
+| Taxonomy / graph / sequence | **already in repo (paper 165)** | sketchgraphs_* |
+
+### 28. SkexGen-main (ICML 2022)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| SkexGen token format (6-bit truncating quantization -- differs from BOTH DeepCAD and GenCAD) | **implemented** | `reconstruction/skexgen_token_format.py` |
+| 19-token extrude block (rotation MATRIX not Euler) | **implemented** | `reconstruction/skexgen_extrude_tokens.py` |
+| CADparser decode + validity oracle | **implemented** | `reconstruction/skexgen_sequence_decode.py` |
+| Canonical ordering by bbox + connectivity | **implemented** | `reconstruction/skexgen_canonical_order.py` |
+| Branch-wise dataset dedup by token hash | **implemented** | `bench/skexgen_dedup_hash.py` |
+| Disentangled code layout (topology/geometry/extrude books) | **implemented** | `reconstruction/skexgen_code_layout.py` |
+| COV/MMD/JSD | **already in repo** | generative_brep_metrics |
+
+### 29. SolidPython-master
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Python object model + SCAD emitter (CLOSES THE OPENSCAD LOOP with scadlm parse/eval) | **implemented** | `programs/solidpy_scad_emit.py` |
+| Sweep/loft a 2D section along a 3D path | **implemented** | `geometry/solidpy_extrude_along_path.py` |
+| 2D polygon offset + tangent-arc filleting | **implemented** | `geometry/solidpy_path_offset.py` |
+| Interpolating Catmull-Rom splines (all prior splines were approximating) | **implemented** | `geometry/solidpy_catmull_rom.py` |
+| Helical screw threads | **implemented** | `geometry/solidpy_screw_thread.py` |
+| Bbox algebra + planar body splitting with dowel pins | **implemented** | `geometry/solidpy_bounding_box.py` |
+| Bill of materials from the object tree | **implemented** | `programs/solidpy_bom.py` |
+| py_scadparser (PLY) | **already in repo** | scadlm_ast (dependency-free) |
+
+### 30. SymPoint-main (ECCV 2024)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Primitive-as-point 4-anchor representation | **implemented** | `drawings/sympoint_primitive_points.py` |
+| 6-D point feature + normalization | **implemented** | `drawings/sympoint_point_features.py` |
+| Score-gated GT-driven panoptic eval + thing/stuff split | **implemented** | `bench/sympoint_panoptic_thing_stuff.py` |
+| Point-wise semantic eval with ignore label + fwIoU | **implemented** | `bench/sympoint_pointwise_eval.py` |
+| Instance-queue CutMix augmentation | **implemented** | `drawings/sympoint_instance_cutmix.py` |
+| Winner-takes-all query decoding | **implemented** | `drawings/sympoint_query_grouping.py` |
+| Endpoint-KNN graph / FPS | **already in repo** | cadtransformer / cadrille |
+
+## Batch-6 implementation result
+
+Mined repos 26-30 (~660 new tests -- the biggest batch). SolidPython CLOSED THE
+OPENSCAD LOOP (emit -> parse -> evaluate offline) and added sweep/loft, 2D
+offset+fillet, interpolating splines, and screw threads -- all previously
+absent. SketchGraphs' reference impl exposed a CORRECTNESS FIX: constraint DOF
+depends on the entity type-pair, not a nominal scalar. SkexGen's quantization
+differs from both DeepCAD and GenCAD (three incompatible schemes now modeled).
+SketchConcept yielded a deterministic concept-induction miner the source repo
+lacks (it learns end-to-end). Per the no-README policy the suite count is
+tracked in audit/cadbible_progress.json.
