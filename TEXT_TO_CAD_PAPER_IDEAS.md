@@ -2151,3 +2151,61 @@ Papers 157/158 share a self-supervised theme (graph-retrieval vs general
 representation) and were split cleanly. SHAPE-IT (160) yielded a transferable
 2.5D heightfield-authoring core from an HCI paper. Per the no-README-during-
 campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 161. ShapeGraMM - On the Fly Procedural Generation of Massive Models for Real-Time Visualisation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Shape-grammar + Markov rule selection | **implemented** | `procedural/shapegramm_markov_grammar.py` |
+| Scope frustum-culling variable (4-valued) | **implemented** | `procedural/shapegramm_scope.py` |
+| LOD variable + rule selection | **implemented** | `procedural/shapegramm_lod.py` |
+| Seeded reproducible massive-model instantiation | **implemented** | `procedural/shapegramm_instantiate.py` |
+| Redundant-geometry sharing + transform compression | **implemented** | `geometry/shapegramm_geometry_sharing.py` |
+| GPU rendering + binary word format | **research-heavy/external** | renderer |
+
+### 162. Sketch2CAD - 3D CAD Model Reconstruction from 2D Sketch using Visual Transformer
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Scene-descriptor token codec (object rows + pose prefix + shared vocab) | **implemented** | `reconstruction/sketch2cad_scene_descriptor.py` |
+| Architectural shape geometry lifting (seven forms + roof solids) | **implemented** | `reconstruction/sketch2cad_shapes.py` |
+| Camera-pose ID grid (horizontal coordinate system) | **implemented** | `vision/sketch2cad_pose_grid.py` |
+| Scene-reconstruction eval (pose accuracy, shape F1, position/size/rotation MAE) | **implemented** | `bench/sketch2cad_scene_metrics.py` |
+| DeiT-III/Pix2Seq ViT | **research-heavy/external** | trained model |
+
+### 163. Sketch2Prototype - Rapid Conceptual Design Exploration and Prototyping with Generative AI
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Sketch->text->image->mesh pipeline schema (fan-out + framework classification) | **implemented** | `exploration/s2proto_pipeline.py` |
+| Concept-set evaluation from a similarity matrix | **implemented** | `bench/s2proto_conceptset.py` |
+| Prototyping-readiness gate over failure modes | **implemented** | `fabrication/s2proto_readiness.py` |
+| GPT-4V + DALL-E + Shap-E generators | **research-heavy/external** | trained models |
+
+### 164. SketchDNN - Joint Continuous-Discrete Diffusion for CAD Sketch Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| D3PM categorical/multinomial discrete diffusion (transition matrices, marginals, posterior) | **implemented** | `numeric/sketchdnn_categorical_diffusion.py` |
+| Gaussian-Softmax discrete diffusion (superposition, simplex projection) | **implemented** | `numeric/sketchdnn_gaussian_softmax.py` |
+| Variance-schedule augmentation | **implemented** | `numeric/sketchdnn_variance_augmentation.py` |
+| Superposition primitive encoding | **implemented** | `reconstruction/sketchdnn_primitive_representation.py` |
+| Joint continuous+discrete noising + permutation-equivariance | **implemented** | `numeric/sketchdnn_joint_diffusion.py` |
+| Learned DiT denoiser | **research-heavy/external** | trained model |
+
+### 165. SketchGraphs - Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Primitive + constraint taxonomy with DOF + parameter schemata (superset of cisp) | **implemented** | `reconstruction/sketchgraphs_taxonomy.py` |
+| Geometric-constraint multi-hypergraph + sub-primitive nodes + relational/DOF analysis | **implemented** | `reconstruction/sketchgraphs_graph.py` |
+| Construction-sequence representation (two canonicalizations + replay) | **implemented** | `reconstruction/sketchgraphs_sequence.py` |
+| Learned autoconstrain/generative models | **research-heavy/external** | trained models |
+
+## Batch-33 implementation result
+
+All deterministic and in-scope findings from papers 161-165 are implemented.
+Notable new capabilities: categorical/discrete diffusion (SketchDNN, all
+prior diffusion was Gaussian-only) and the SketchGraphs relational constraint
+hypergraph. Per the no-README-during-campaign policy, the suite count is
+tracked in audit/text_to_cad_progress.json.

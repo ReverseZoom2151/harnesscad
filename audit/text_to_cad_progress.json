@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 160,
-  "next_manifest_index": 161,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-160 implemented",
+  "reviewed_count": 165,
+  "next_manifest_index": 166,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-165 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -804,6 +804,31 @@
     {
       "index": 160,
       "paper": "SHAPE-IT - Exploring Text-to-Shape-Display for Generative Shape-Changing Behaviors with LLMs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 161,
+      "paper": "ShapeGraMM - On the Fly Procedural Generation of Massive Models for Real-Time Visualisation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 162,
+      "paper": "Sketch2CAD - 3D CAD Model Reconstruction from 2D Sketch using Visual Transformer.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 163,
+      "paper": "Sketch2Prototype - Rapid Conceptual Design Exploration and Prototyping with Generative AI.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 164,
+      "paper": "SketchDNN - Joint Continuous-Discrete Diffusion for CAD Sketch Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 165,
+      "paper": "SketchGraphs - Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design.md",
       "status": "reviewed"
     }
   ],
