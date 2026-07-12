@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 145,
-  "next_manifest_index": 146,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-145 implemented (141/142/143 share a sketch-primitive theme, split by method)",
+  "reviewed_count": 150,
+  "next_manifest_index": 151,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-150 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -729,6 +729,31 @@
     {
       "index": 145,
       "paper": "Pointer-CAD - Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 146,
+      "paper": "PS-CAD - Local Geometry Guidance via Prompting and Selection for CAD Reconstruction.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 147,
+      "paper": "Query2CAD - Generating CAD Models Using Natural Language Queries.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 148,
+      "paper": "QueryCAD - Grounded Question Answering for CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 149,
+      "paper": "RAG-6DPose - Retrieval-Augmented 6D Pose Estimation via Leveraging CAD as Knowledge Base.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 150,
+      "paper": "ReCAD - Reinforcement Learning Enhanced Parametric CAD Model Generation with Vision-Language Models.md",
       "status": "reviewed"
     }
   ],

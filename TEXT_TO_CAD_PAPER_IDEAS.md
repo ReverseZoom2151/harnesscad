@@ -1982,3 +1982,59 @@ the foundation (ppa_) and 142/143 built their distinct method contributions
 (progressive tuning; rendering self-supervision) without duplication. Per
 the no-README-during-campaign policy, the suite count is tracked in
 audit/text_to_cad_progress.json.
+
+### 146. PS-CAD - Local Geometry Guidance via Prompting and Selection for CAD Reconstruction
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Local-geometry-difference detector (bidirectional NN residual regions + radius-graph clustering) | **implemented** | `reconstruction/pscad_residual_regions.py` |
+| Planar-prompt representation (RANSAC plane + inlier prompts + hull boundary) | **implemented** | `geometry/pscad_planar_prompt.py` |
+| Multi-strategy candidate selection (bbox-IoU fitness) | **implemented** | `reconstruction/pscad_candidate_selection.py` |
+| Reconstruction metric suite (CD/HD/ECD/NC/IR) | **implemented** | `bench/pscad_reconstruction_metrics.py` |
+| Learned Point-MAE encoder + f-dec selection net | **research-heavy/external** | trained models |
+
+### 147. Query2CAD - Generating CAD Models Using Natural Language Queries
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| FreeCAD Part-macro representation (primitives + booleans + serialization) | **implemented** | `generation/query2cad_macro.py` |
+| VQAScore stopping criterion (continuous threshold gate) | **implemented** | `bench/query2cad_vqascore.py` |
+| Success/difficulty benchmark metrics + failure taxonomy | **implemented** | `bench/query2cad_metrics.py` |
+| Caption-vs-query feedback + human override | **implemented** | `generation/query2cad_feedback.py` |
+| LLM + BLIP2 + VQA models | **research-heavy/external** | trained models |
+
+### 148. QueryCAD - Grounded Question Answering for CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Typed CAD-QA query schema (count/measure/existence/position/comparison) | **implemented** | `bench/querycad_query_schema.py` |
+| Segmentation-to-answer grounding (mfgfeat taxonomy + coverage/view filters) | **implemented** | `rag/querycad_segmentation_grounding.py` |
+| Grounded answer engine (traceable part-id evidence) | **implemented** | `reconstruction/querycad_answer_engine.py` |
+| QA evaluation (numeric tolerance + partial credit + error taxonomy) | **implemented** | `bench/querycad_eval.py` |
+| SegCAD GroundingDINO/SAM + LLM | **research-heavy/external** | trained models |
+
+### 149. RAG-6DPose - Retrieval-Augmented 6D Pose Estimation via Leveraging CAD as Knowledge Base
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 6D pose error metrics (ADD/ADD-S, geodesic rotation, translation, 5cm-5deg) | **implemented** | `bench/rag6d_pose_metrics.py` |
+| PnP-RANSAC robust pose selection (reuses Umeyama) | **implemented** | `geometry/rag6d_ransac_pose.py` |
+| CAD-knowledge-base retrieval + pose-hypothesis ranking | **implemented** | `rag/rag6d_cad_retrieval.py` |
+| Learned DINOv2/ReSPC feature matching | **research-heavy/external** | trained model |
+
+### 150. ReCAD - Reinforcement Learning Enhanced Parametric CAD Model Generation with Vision-Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Unified reward (min of IoU + thresholded semantic sim + format reward) | **implemented** | `dataengine/recad_reward.py` |
+| Hard-question identification + objective routing | **implemented** | `dataengine/recad_hard_question.py` |
+| Hierarchical Primitive Learning curriculum | **implemented** | `dataengine/recad_hpl_curriculum.py` |
+| Inertia scale normalization | **already in repo** | `bench/solid_iou.py` |
+| VLM SFT/RL training + GRPO gradient | **research-heavy/external** | trained model |
+
+## Batch-30 implementation result
+
+All deterministic and in-scope findings from papers 146-150 are implemented.
+Papers 149 and 150 each returned empty (0 tool uses) on first launch -- flaky
+starts, not a limit; both re-ran cleanly. Per the no-README-during-campaign
+policy, the suite count is tracked in audit/text_to_cad_progress.json.
