@@ -2269,3 +2269,58 @@ paused the batch; all 5 papers re-run cleanly after capacity returned.
 Notable new capability: a full ISO 10303-21 STEP parser/serializer (STEP-LLM),
 none existed. Per the no-README-during-campaign policy, the suite count is
 tracked in audit/text_to_cad_progress.json.
+
+### 171. Text-to-CadQuery - A New Paradigm for CAD Generation with Scalable Large Model Capabilities
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| CadQuery-subset AST (serialize/parse/validate) | **implemented** | `programs/t2cq_ast.py` |
+| DeepCAD-command-sequence -> CadQuery-code translator | **implemented** | `reconstruction/t2cq_translate.py` |
+| AST-based static invalid-rate check | **implemented** | `programs/t2cq_validity.py` |
+| Execution-free static analysis (undefined-workplane, unstable arc) | **implemented** | `programs/t2cq_analysis.py` |
+| LLM fine-tuning + annotation loop | **research-heavy/external** | trained model |
+
+### 172. Text2CAD - Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Beginner-to-expert prompt-level taxonomy (L0-L3) + classifier | **implemented** | `dataengine/text2cad_prompt_levels.py` |
+| Minimal Metadata Generator (JSON restructuring/key canonicalization) | **implemented** | `dataengine/text2cad_minimal_metadata.py` |
+| Template-based multi-level prompt generator | **implemented** | `dataengine/text2cad_prompt_generator.py` |
+| CAD-sequence F1 via Hungarian loop-matching | **implemented** | `bench/text2cad_sequence_f1.py` |
+| Transformer + VLM/LLM annotation | **research-heavy/external** | trained models |
+
+### 173. Text2CAD - Generating Sequential CAD Models from Beginner-to-Expert Level Text Prompts
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Prompt-level taxonomy / annotation pipeline | **covered by paper 172** | `text2cad_*` modules |
+| Exact CAD-sequence token table (8-bit/offset-11 quantization) + Invalidity Ratio | **implemented** | `reconstruction/text2cad2_sequence_tokens.py`, `bench/text2cad2_invalidity_ratio.py` |
+
+### 174. Text2CAD - Text to 3D CAD Generation via Technical Drawings
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Isometric/axonometric projection (45/45, foreshortening, visible faces) | **implemented** | `drawings/t2cadtd_isometric_projection.py` |
+| Isometric<->orthographic dimensional consistency | **implemented** | `drawings/t2cadtd_iso_ortho_consistency.py` |
+| First/third-angle convention + view-sufficiency | **implemented** | `drawings/t2cadtd_projection_convention.py` |
+| Stable Diffusion / Zero-1-to-3 generators | **research-heavy/external** | trained models |
+
+### 175. Text2CAD-Bench - A Benchmark for LLM-based Text-to-Parametric CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| L1-L4 difficulty-tier taxonomy | **implemented** | `bench/t2cadbench_taxonomy.py` |
+| Parameter-level accuracy (graded match + validity) | **implemented** | `bench/t2cadbench_parametric_accuracy.py` |
+| CadQuery construction-sequence edit distance | **implemented** | `bench/t2cadbench_seq_edit_distance.py` |
+| L1-L3 scorecard + leaderboard aggregation | **implemented** | `bench/t2cadbench_scorecard.py` |
+| L4 VLM-rubric aggregation + capability decoupling | **implemented** | `bench/t2cadbench_l4_rubric.py` |
+| LLM + VLM judge | **research-heavy/external** | trained models |
+
+## Batch-35 implementation result
+
+All deterministic and in-scope findings from papers 171-175 are implemented.
+The Text2CAD cluster: 172 primary + 173 correctly deduped (only its token
+table + IR were new) + 174 distinct technical-drawings variant + 171 CadQuery
+target + 175 benchmark. Per the no-README-during-campaign policy, the suite
+count is tracked in audit/text_to_cad_progress.json.

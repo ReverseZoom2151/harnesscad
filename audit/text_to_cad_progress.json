@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 170,
-  "next_manifest_index": 171,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-170 implemented",
+  "reviewed_count": 175,
+  "next_manifest_index": 176,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-175 implemented (173 near-duplicate of 172)",
   "reviewed": [
     {
       "index": 1,
@@ -854,6 +854,31 @@
     {
       "index": 170,
       "paper": "Text-to-CAD Generation Through Infusing Visual Feedback in Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 171,
+      "paper": "Text-to-CadQuery - A New Paradigm for CAD Generation with Scalable Large Model Capabilities.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 172,
+      "paper": "Text2CAD - Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 173,
+      "paper": "Text2CAD - Generating Sequential CAD Models from Beginner-to-Expert Level Text Prompts.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 174,
+      "paper": "Text2CAD - Text to 3D CAD Generation via Technical Drawings.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 175,
+      "paper": "Text2CAD-Bench - A Benchmark for LLM-based Text-to-Parametric CAD Generation.md",
       "status": "reviewed"
     }
   ],
