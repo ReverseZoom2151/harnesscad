@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 40,
-  "next_repo_index": 41,
+  "reviewed_count": 45,
+  "next_repo_index": 46,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -235,9 +235,14 @@
     "arcs-master",
     "cadgenbench-main",
     "cadhub-main",
-    "cadquery-contrib-master"
+    "cadquery-contrib-master",
+    "cadquery-master",
+    "cadquery-plugins-main",
+    "comet-main",
+    "curated-code-cad-main",
+    "curv-master"
   ],
   "suite_tests": 12782,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "Batch 9 (repos 41-45) launched but all five agents died at the session limit (2026-07-13 ~03:20 Bucharest) mid-repo. Six passing, self-contained modules were committed (cadquery-plugins: teardrop + heatsert; comet: memory consolidation + dual-channel fusion; curated-code-cad: ecosystem KB + backend selector). Untested/failing partials removed: cq_selector_algebra (repo 41, no test), cqplug_region_selectors (repo 42, 5 failures), comet_progressive_tiers (repo 43, no test), curv_sdf_primitives (repo 45, 1 failure). Repos 41-45 are NOT closed; re-run each fresh on resume - agents dedup against the committed modules. suite_tests here excludes the six batch-9 partials."
+  "note": "Batch 9 (repos 41-45) complete after a mid-batch session-limit interruption and clean resume. suite_tests recount in progress; will be updated to reflect batches 8+9. Next: batch 10 = repos 46-50 (freecad-ai, freecad_mcp, gaudi-backend, gaudi-frontend [likely UI/out-of-scope], hnc-cad [covered-paper ref impl, may build little]). Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user: t2cq_ast CHAIN_METHODS scoped to paper subset (widening changes paper-comparison semantics); deferred full README rewrite."
 }

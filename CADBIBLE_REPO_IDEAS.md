@@ -574,3 +574,111 @@ early-campaign test files were written as bare pytest functions, which
 pass on first real execution (no module bug was hiding); 93 tests now run where 0
 did, and `tests/test_suite_collectable.py` fails loudly if a non-collectable test
 file is added again. Suite: 12,782 tests, zero failures.
+
+## Batch 9 (repos 41-45)
+
+This batch was interrupted once by a session limit and resumed after reset; the
+partial-then-clean recovery is documented in the batch-8 close note. Two of the
+corpus's heaviest repos land here (CadQuery itself and Curv).
+
+### 41. cadquery-master
+
+The CadQuery library. Geometry delegates to OCCT (external); the pure-Python
+selector/plane/state/assembly/export layers were mined. Profiling the real
+selector grammar against the harness's own DSL surfaced seven divergences.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Programmatic Selector object algebra (composable `&`/`+`/`-` operators; NearestToPoint, BoxSelector with XOR containment + bbox mode, Direction/Parallel/Perpendicular, TypeSelector, Nth-with-tolerance-clustering: Radius/Length/Area/CenterNth, DirectionMinMax, DirectionNth) | implemented `geometry/cq_selector_algebra.py` | harness had `geometry/cqcontrib_selector_dsl.py` (string parser only); the object algebra it lacked, with identity-based order-preserving set combiners |
+| Grammar-faithful selector-string compiler targeting the object algebra | implemented `geometry/cq_selector_grammar.py` | fixes 7 documented divergences of `cqcontrib_selector_dsl` from the real grammar (see finding) |
+| CadQuery `Plane` named-preset frame algebra (12 presets, toWorld/toLocalCoords, rotated via Rodrigues, setOrigin2d, tolerant equality) | implemented `geometry/cq_plane_frame.py` | `geometry/codetocad_transform_stack.py` is a generic 4x4 lib; new is the CAD-specific named-plane preset table + world/local convention |
+| Workplane pending-model state-transition validator (edges->wires->solids; catches extrude-with-no-wire, unfused-edges, close-empty-path, loft<2, boolean-no-base, cross-plane combine) + ast chain extractor | implemented `programs/cq_workplane_state.py` | `programs/t2cq_ast.py` does arity/varref only; new is the semantic pending-wire/edge state layer -- a validation advance beyond arity |
+| Assembly 6-DOF constraint algebra + Grubler mobility well-posedness (unary/binary kinds, DOF-removed table, under/well/over classification, redundant-constraint + no-anchor detection) | implemented `numeric/cq_assembly_dof.py` | `reconstruction/sgraphs2_dof_mask.py` / `opencad_constraint_jacobian` are 2D sketch DOF; new is 3D rigid-body assembly DOF |
+| Orthographic-projection SVG exporter (camera-basis projection, M/L path emission, exact getSVG bbox-fit unitScale/translate, visible/hidden styling) | implemented `formats/cq_svg_projector.py` | harness had AMF/DXF/STL/GLB but no SVG exporter; the OCCT HLR pass is external, the projection+fit+emission algebra is reproduced |
+| OCCT booleans/fillets/lofts, scipy constraint numerics | external | kernel / solver |
+
+**Correctness finding (7 divergences of `cqcontrib_selector_dsl` from CadQuery's
+real `_makeGrammar`), encoded in `GRAMMAR_FINDINGS`:**
+1. **`not` precedence inverted (real bug):** CadQuery lists `not` last in its
+   `infix_notation`, making it the *loosest* operator, so `not >X and #XY` means
+   `not(>X and #XY)`. The DSL parses `not` at tightest binding, giving
+   `(not >X) and #XY` -- different result sets. The new compiler reproduces the
+   correct loosest-`not` precedence.
+2. Center-Nth `>>`/`<<` missing (the DSL tokenizes only single `>`/`<`).
+3. Named views `front/back/left/right/top/bottom` missing.
+4. Bare direction (`X`, `(1,0,0)`) rejected though valid upstream.
+5. Compound axes `XY`/`XZ`/`YZ` rejected.
+6. `except` spelling unsupported (CadQuery accepts both `exc` and `except`).
+7. Phantom binary `+`/`-`/`*` advertised in the DSL docstring but absent from the
+   real grammar and unimplemented in the DSL itself.
+
+### 42. cadquery-plugins-main
+
+Community plugins. Two modules committed in the first (interrupted) pass
+(teardrop profile, heat-set bore schedule); two more after resume.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Overhang-safe teardrop hole profile (self-supporting, avoids >45deg unsupported arcs) | implemented `geometry/cqplug_teardrop_profile.py` | printability-aware variant of a plain hole; no equivalent existed |
+| Heat-set insert bore schedule keyed to screw designation | implemented `standards/cqplug_heatsert_schedule.py` | `library/parts.py` had only a bearing-pocket recipe |
+| Volumetric region selectors (infinite/finite cylinder, hollow cylinder, sphere, hollow sphere): keep shapes whose centre lies inside a solid via axis-projection `(h, rho)` test | implemented `geometry/cqplug_region_selectors.py` | `cqcontrib_selector_dsl` / `cascade_entity_selector` do direction/size intent; neither has a point-in-solid test. This is the `more_selectors` addition; re-mined correctly after the prior partial failed 5 tests |
+| Bevel-gear cone geometry + spherical involute + meshing-pair pitch cones (delta_b, face/root cones, delta_p1 from shaft angle, R from module) | implemented `geometry/cqplug_bevel_gear.py` | `geometry/cadgpt_involute_gear.py` is planar spur only; `cadgpt_gear_train.bevel_scale` is a linear-extrude taper approximation. The plugin's planar Gear class duplicates cadgpt_involute_gear -> skipped |
+| localselectors (named-view remap, centre-nth) | skipped -- low-value | thin remap over the existing DSL; centre-nth duplicates DirMinMax index grouping |
+| apply_to_each_face, fragment, freecad_import, cq_cache | external | OCCT-runtime iteration/boolean/import or a file cache |
+
+### 43. comet-main
+
+CoMeT (Cognitive Memory Tree): a lossless structured-memory substrate for LLM
+agents, deployed behind an autonomous-CAD stack -- in-domain for the harness's
+own memory layer. Two modules committed pre-interruption, three after resume.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Dedup/merge/tag-normalise/prune consolidation sweep | implemented `dataengine/comet_memory_consolidation.py` | new memory maintenance pass |
+| Dual-channel WHAT/WHEN fusion + graph 2-hop expansion | implemented `library/comet_dual_channel_fusion.py` | new retrieval fusion |
+| Token-budgeted progressive-tier reading (summary->detail->raw, pinned-first admission, risk-escalated deepening) | implemented `context/comet_progressive_tiers.py` | `context/manager.py` has count-based token budgeting but no per-node tier selection. Re-mined with tests after the prior no-test partial |
+| MemoryBank reinforced-decay salience (retention R = exp(-dt/(S*tau)), recall reinforcement, curve inversion, threshold sweep), clockless (day numbers as inputs) | implemented `memory/comet_reinforced_decay.py` | CoMeT's MemoryNode doc-strings state the formula but ship no arithmetic ("folded in by the dream pass"); `memory/store.py` has no forgetting curve |
+| Terse meta-tag rendering: one-tag-per-axis `(O: A: F: I:)` + consecutive same-origin bundling | implemented `context/comet_meta_tag_render.py` | pure-function extraction of orchestrator render helpers |
+| SLM sensor, QueryAnalyzer, compacter LLM, LanceDB index, MCP server | external | trained model / GPU / vector kernel |
+
+### 44. curated-code-cad-main
+
+A curated awesome-list of code-CAD systems + a birdhouse reference-part set.
+Documentation, not code -- correctly yields a knowledge base, not algorithms.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Catalogue of code-CAD systems (name/language/paradigm/kernel/formats/online-editor/maturity/niche) + representation taxonomy + B-rep recommendation + birdhouse set; queries; unstated attributes left UNKNOWN not fabricated | implemented `adapters/ccc_codecad_ecosystem.py` | complements `adapters/cadhub_language_registry.py` (which executes one language: extension/entry/diagnostics); this catalogues/selects a system |
+| Deterministic backend selection (explainable rubric) + harness coverage/gap report over the catalogue | implemented `adapters/ccc_backend_selector.py` | selection over the catalogue; no equivalent |
+| System-to-system interoperability matrix: format-handoff edges + list-stated transpile/embed bridges, fidelity-ranked interchange format, BFS handoff paths, reachability closure, interop-hub ranking, dense matrix | implemented `adapters/ccc_interop_matrix.py` | turns prose the list only states in English ("FreeCAD best at interoperability", transpilers emit .scad, AngelCAD runs OpenSCAD) into a queryable graph; reuses the ecosystem data, no catalogue duplication |
+| Birdhouse per-tool reference sources | not buildable | source code only; captured as a data list |
+
+### 45. curv-master
+
+Curv (Doug Moen): a functional language representing shapes as signed distance
+fields. The harness had SDF *consumers* (marching tets, TSDF, FD gradients) but
+no way to *author* an SDF -- this batch's biggest single capability.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact SDF primitives (sphere, box exact+mitred, rounded box, cylinder, cone, capped cone, capsule, torus, ellipsoid bound, plane; 2D circle/rect/regular-polygon/half-plane + extrude/revolve lifts) | implemented `geometry/curv_sdf_primitives.py` | no SDF primitive algebra existed (only FD derivatives / TSDF / marching-tets). Formulas from `lib/curv/std.curv` |
+| SDF combinators + smooth blends (hard min/max/diff/complement N-ary; polynomial/exponential/power smooth-min; smooth union/intersection/difference; chamfer) | implemented `geometry/curv_sdf_combinators.py` | no combinators/smooth-min existed; tests verify smin->min as k->0 and smooth_union <= hard union |
+| Distance-field & domain transforms (offset, shell, round, morph; translate/rotate/scale with `*s` compensation/stretch/mirror; infinite & finite repetition with cell clamp) | implemented `geometry/curv_sdf_transforms.py` | no offset/shell/domain-repetition; scale compensation preserves the Eikonal property |
+| TPMS (gyroid, Schwarz-P, Schwarz-D, Neovius), raw implicit + Lipschitz-normalised | implemented `geometry/curv_sdf_tpms.py` | no gyroid/TPMS anywhere. **Correctness finding:** Curv's docs recommend dividing the gyroid field by 4/3 to make it 1-Lipschitz, but the true sup\|grad F\| is sqrt(3) ~ 1.732 (and 7 for Neovius) -- 4/3 does not bound the gradient, so sphere-tracing can overstep. The module divides by the measured bound and documents it |
+| Sphere-tracing / raymarching (Lipschitz-safe stepping, hit/miss) + central-difference normals | implemented `numeric/curv_sphere_trace.py` | no sphere tracer; Hart-1996 stepping with Curv `lipschitz k` compensation |
+| C++/GLSL GPU compiler, OpenGL viewer, GLSL codegen | external | non-transferable host/GPU tooling |
+| FD gradient/Hessian | already in repo | `numeric/flatcad_sdf_derivatives.py` -- composed, not rebuilt |
+
+## Batch-9 implementation result
+
+Five repos, ~488 new tests. This batch turned the harness from an SDF *consumer*
+into an SDF *author* (Curv's full primitive/combinator/transform/TPMS/tracer
+algebra), added the programmatic CadQuery selector algebra and a semantic
+Workplane state validator (beyond the prior arity-only checks), a 3D assembly DOF
+analyser, an SVG exporter, and folded CoMeT's memory-substrate ideas into the
+harness's own memory/context layer. Two more reference-material corrections
+surfaced: seven grammar divergences in the harness's own selector DSL (including
+an inverted-`not`-precedence bug), and Curv's under-stated gyroid Lipschitz bound.
+The batch was interrupted mid-flight by a session limit and cleanly resumed;
+per the no-README policy the suite count is tracked in
+audit/cadbible_progress.json.
