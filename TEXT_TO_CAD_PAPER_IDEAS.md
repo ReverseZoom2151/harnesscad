@@ -2376,3 +2376,70 @@ consistent with paper 102). Notable new capability: persistent homology +
 voxel Betti numbers (Topology-Aware diffusion), none existed. Per the
 no-README-during-campaign policy, the suite count is tracked in
 audit/text_to_cad_progress.json.
+
+### 181. Towards High-Fidelity CAD Generation via LLM-Driven Program Generation and Text-Based B-Rep Primitive Grounding
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Text-to-B-Rep-primitive grounding (geometric-property filters + ranking) | **implemented** | `reconstruction/brepground_grounding.py` |
+| B-Rep primitive text-description generator (round-trips through grounder) | **implemented** | `reconstruction/brepground_describe.py` |
+| Grounding-accuracy metrics (Recall@k/mAP/F1) | **implemented** | `bench/brepground_metrics.py` |
+| Program+grounding consistency check | **implemented** | `reconstruction/brepground_consistency.py` |
+| LLM program gen + neural grounder | **research-heavy/external** | trained models |
+
+### 182. Training a Foundation Model for Materials on a Budget
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| E(3)-equivariant interatomic potential (Nequix) + Muon/RMSNorm training recipe + DFT atomistic properties | **out-of-scope** | materials-science ML -- no mechanical-CAD-transferable deterministic artifact (nothing built) |
+
+### 183. Turbo3D - Ultra-fast Text-to-3D Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Front-to-back alpha compositing + tile-binning splat rasterization | **implemented** | `geometry/turbo3d_splat_compositing.py` |
+| Few-step DMD distillation schedule + dual-teacher gradient | **implemented** | `numeric/turbo3d_dual_teacher_dmd.py` |
+| Latent GS-LRM efficiency model | **implemented** | `bench/turbo3d_efficiency.py` |
+| Learned MV diffusion + GS-LRM | **research-heavy/external** | trained models |
+
+### 184. VoxHammer - Training-Free Precise and Coherent 3D Editing in Native 3D Space
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 3D edit-region mask scheme (hard + soft Gaussian-falloff) | **implemented** | `editing/voxhammer_mask.py` |
+| Feature/latent preservation via masked blending (+ K/V replacement) | **implemented** | `editing/voxhammer_preserve.py` |
+| Inversion-preservation trajectory (cache + reinjection + rectified-flow step) | **implemented** | `editing/voxhammer_trajectory.py` |
+| Boundary-coherence + preservation metrics | **implemented** | `bench/voxhammer_coherence.py` |
+| Learned diffusion inversion | **research-heavy/external** | trained model |
+
+### 185. VQ-CAD - Computer-Aided Design Model Generation with Vector Quantized Diffusion
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Mask-and-replace hybrid discrete-diffusion transition (alpha/beta/gamma + closed-form cumulative) | **implemented** | `numeric/vqcad_mask_and_replace.py` |
+| Image symmetry metric (centroid flip mean-abs-diff) | **implemented** | `bench/vqcad_symmetry_metric.py` |
+| VQ assignment / categorical diffusion / perplexity / Novel-Unique | **already in repo** | hnc / sketchdnn / diffusioncad |
+| Learned VQ-VAE + transformer + CLIP | **research-heavy/external** | trained models |
+
+### 186. WorldCraft - Photo-Realistic 3D World Creation and Customization via LLM Agents
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Object-layout scene-composition representation (pose tree) | **implemented** | `reconstruction/worldcraft_layout_spec.py` |
+| Spatial-layout constraint solver (simulated-annealing placement) | **implemented** | `generation/worldcraft_layout_solver.py` |
+| Object-customization parameter schema | **implemented** | `generation/worldcraft_customization.py` |
+| Procedural scene instantiation | **implemented** | `generation/worldcraft_instantiation.py` |
+| Geometric scene-validity/collision check | **implemented** | `geometry/worldcraft_scene_collision.py` |
+| LLM agents + rendering | **research-heavy/external** | trained models |
+
+## Batch-37/38 implementation result -- CAMPAIGN COMPLETE
+
+All deterministic and in-scope findings from the final papers 181-186 are
+implemented (182 Materials-Foundation-Model is a correct out-of-scope
+no-build). This completes the entire 186-paper Text-to-CAD + Spatial
+Intelligence corpus: every paper reviewed, every deterministic locally-
+buildable idea implemented as a tested stdlib-only module in a topical
+package, with learned/proprietary/out-of-domain work honestly logged as
+research-heavy/external or out-of-scope. Per the no-README-during-campaign
+policy, the suite count is tracked in audit/text_to_cad_progress.json
+(README rewrite deferred to campaign end -- now due).

@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 180,
-  "next_manifest_index": 181,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-180 implemented (176 LLM-interpretability out-of-scope)",
+  "reviewed_count": 186,
+  "next_manifest_index": 187,
+  "implementation_status": "186/186 COMPLETE -- entire text-to-CAD + spatial-intelligence corpus reviewed and all deterministic ideas implemented",
   "reviewed": [
     {
       "index": 1,
@@ -905,8 +905,39 @@
       "index": 180,
       "paper": "Towards a Natural Language Interface for CAD.md",
       "status": "reviewed"
+    },
+    {
+      "index": 181,
+      "paper": "Towards High-Fidelity CAD Generation via LLM-Driven Program Generation and Text-Based B-Rep Primitive Grounding.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 182,
+      "paper": "Training a Foundation Model for Materials on a Budget.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 183,
+      "paper": "Turbo3D - Ultra-fast Text-to-3D Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 184,
+      "paper": "VoxHammer - Training-Free Precise and Coherent 3D Editing in Native 3D Space.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 185,
+      "paper": "VQ-CAD - Computer-Aided Design Model Generation with Vector Quantized Diffusion.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 186,
+      "paper": "WorldCraft - Photo-Realistic 3D World Creation and Customization via LLM Agents.md",
+      "status": "reviewed"
     }
   ],
   "suite_tests": 9030,
-  "readme_policy": "do not edit README during campaign; full rewrite pending; track suite_tests here"
+  "readme_policy": "do not edit README during campaign; full rewrite pending; track suite_tests here",
+  "campaign_complete": true
 }
