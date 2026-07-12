@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 30,
-  "next_repo_index": 31,
+  "reviewed_count": 35,
+  "next_repo_index": 36,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -225,7 +225,12 @@
       "index": 30,
       "repo": "SymPoint-main",
       "status": "reviewed"
-    }
+    },
+    "Text-to-CAD-dean",
+    "Text-to-CadQuery-main",
+    "Text2CAD-main",
+    "UV-Net-main",
+    "WhatsInAName-main"
   ],
   "suite_tests": 11752,
   "readme_policy": "do not edit README during campaign; track suite_tests here",

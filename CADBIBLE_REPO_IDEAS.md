@@ -367,3 +367,95 @@ differs from both DeepCAD and GenCAD (three incompatible schemes now modeled).
 SketchConcept yielded a deterministic concept-induction miner the source repo
 lacks (it learns end-to-end). Per the no-README policy the suite count is
 tracked in audit/cadbible_progress.json.
+
+## Batch 7 (repos 31-35)
+
+### 31. Text-to-CAD-dean
+
+A 137-line Streamlit app (prompt -> GPT-4 -> OpenSCAD -> STL -> GLB) with no
+geometry code of its own. Its value is the pipeline hops it *delegates*, three
+of which the harness had no stdlib coverage for.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Stdlib STL codec: binary+ASCII parse/write, format detection, normal recompute, volume/area/bounds | implemented `formats/t2cdean_stl_codec.py` | repo calls `trimesh.load()`; harness had only OCCT-backed STL import (`ingest/import_brep.py`) |
+| Binary glTF (.glb) writer: GLB 2.0 chunk container, 4-byte alignment, vertex welding, area-weighted normals, POSITION min/max, `parse_glb` inverse, base64 data-URI | implemented `formats/t2cdean_glb_writer.py` | repo delegates to trimesh; harness had ZERO glTF/GLB code |
+| OpenSCAD CLI export planner: format/extension table, 2D-vs-3D check, `-D` literal quoting, content-addressed artefact naming, cache key, stderr classifier catching exit-0 empty geometry | implemented `fabrication/t2cdean_openscad_export.py` | repo's `convert_openscad_code_to_stl` uses `uuid4` (cache-miss bug) + `check=True` (misses empty-geometry failure); harness had SCAD *language* tooling but no CLI/export layer |
+| LLM-reply -> compilable SCAD: fenced-block extraction (tolerating truncation), language-tag ranking, prose stripping, strict refusal guard | implemented `programs/t2cdean_scad_extract.py` | repo relies on prompt wording alone; harness had only a private `_strip_code_fences` |
+| Streamlit UI, PyVista render, model-viewer embed, OpenAI client | out-of-scope/external | UI + trained model |
+
+### 32. Text-to-CadQuery-main
+
+Reference impl of paper 171 (already covered by `programs/t2cq_*`). Yielded
+three implementation-level pieces the paper review missed.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Raw-generation -> runnable script cleaning (EOS truncation, `### Response:` de-prefix, fence strip, export canonicalisation) | implemented `programs/t2cq2_output_cleaning.py` | `inference/step2_clean_run_CadQuery`; nothing in the harness did this |
+| Exact eval protocol: centroid + max-bbox-extent normalisation, CD = mean(d^2)+mean(d^2) x1000, F1 @ 0.02, volumetric IoU @ pitch 0.02, judge Match-Yes gate, mean+median | implemented `bench/t2cq2_eval_protocol.py` | **differs from** `bench/cad_geometry_protocol.py`, which uses unit-sphere normalisation and has no F1/IoU/judge gate -- different numbers on the same meshes, so both now coexist |
+| Dataset layer: JSONL input/output schema, Instruction/Response template, 2-attempt execution-feedback retry (last-5-stderr-lines), DeepCAD UID bucketing | implemented `dataengine/t2cq2_dataset.py` | `data_annotation/gemini_pipeline.py`; no prior T2CQ record schema |
+| DeepCAD-JSON -> CadQuery translation; CadQuery API subset; Invalid-Rate | already in repo (paper 171) | `reconstruction/t2cq_translate.py`, `programs/t2cq_ast.py`, `programs/t2cq_validity.py` |
+| Finetuning six LLMs, Gemini annotator/judge, Blender render | research-heavy/external | trained model / GPU / renderer |
+
+### 33. Text2CAD-main
+
+Reference impl of papers 172/173 (already covered by `dataengine/text2cad_*`,
+`reconstruction/text2cad2_*`, `bench/text2cad_sequence_f1.py`). Four new pieces.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact `CADSequence.to_vec`/`from_vec` codec: chained closed loops (line = 1 token, arc = 2, circle = centre+pt1), 11-token extrusion block, START wrapper, pad to 272, `flag_vec`/`index_vec` | implemented `reconstruction/t2c3_cad_vec_codec.py` | `reconstruction/text2cad2_sequence_tokens.py` has the ids but serialises every curve point (2N tokens); the real codec is chained (N tokens) |
+| Exact eval protocol (`generate_report`): geometric bbox-L2 loop matching, curve re-matching, **Null 4th class**, per-primitive P/R/F1 from a 4x4 confusion matrix, macro/micro, extrusion count F1 + L1 parameter report rescaled by 1/0.75 | implemented `bench/t2c3_eval_protocol.py` | `bench/text2cad_sequence_f1.py` matches loops by primitive-multiset cost, has no Null class and no extrusion parameter report |
+| Minimal-JSON schema (LLM-facing doc: part_N/face_N/loop_N, Euler angles in degrees, negative-zero-normalised 4-decimal rounding) + inverse parser | implemented `dataengine/t2c3_minimal_json_schema.py` | `dataengine/text2cad_minimal_metadata.py` models the transformation, never the document schema/round-trip |
+| Training token accuracy (`AccuracyCalculator`: min-length truncation, target>6 mask, per-slot abs(pred-gt) < 3) | implemented `bench/t2c3_token_accuracy.py` | `bench/deepcad2_ae_accuracy.py` scores 17-column rows via `CMD_ARGS_MASK` -- different stream, different masking rule |
+| L0-L3 prompt taxonomy, prompt generator, minimal metadata, token id table, Invalidity Ratio, 8-bit quantisation | already in repo (papers 172/173) | Text2CAD reuses DeepCAD quantisation maps verbatim (unlike SkexGen/GenCAD) |
+| Trained Transformer, BERT encoder, OCC BRep/STEP/STL export, Chamfer | research-heavy/external | GPU / OCC |
+
+**Finding:** the Text2CAD sequence layout differs materially from the paper
+Table 3 -- loops are closed and chained, so curve token cost is N, not 2N, and a
+circle is identified structurally by being the only curve in its loop.
+
+### 34. UV-Net-main
+
+Reference impl of the UV-Net paper, but its core representation was genuinely
+absent: the harness could describe a B-rep topology but had no way to attach
+*sampled geometry* to it.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Face UV-grid: per-face regular sampling of the parametric domain -> 7-channel (x,y,z,nx,ny,nz,mask) tensor over plane/cylinder/cone/sphere/torus/NURBS | implemented `geometry/uvnet_uv_grid.py` | `process/solid_to_graph.py` calls occwl `uvgrid`; rebuilt closed-form and OCC-free, NURBS delegated to `geometry/nurbgen_surface.py` |
+| Trimming mask / OCC TopAbs_State in the parameter plane: even-odd point-in-loop with hole support -> IN/OUT/ON | implemented `geometry/uvnet_uv_grid.py` | mirrors `visibility_status`; no OCC |
+| Bridge from fitted primitives to sampleable surfaces (`surface_from_fit`) | implemented `geometry/uvnet_uv_grid.py` | not in the repo; composes `geometry/complexgen_surface_fit.py` (fit -> sample -> refit round-trips in tests) |
+| Edge U-grid: per-edge sampling -> 6-channel (x,y,z,tx,ty,tz) for line/circle/ellipse/polyline/NURBS, degenerate-edge filter, reversed-coedge grid, arc-length + tangent-turning | implemented `geometry/uvnet_u_grid.py` | occwl `ugrid` + the cone-apex has_curve filter |
+| Face-adjacency graph with UV-grid node features and U-grid edge features, seam self-loops, bidirectionalisation | implemented `reconstruction/uvnet_face_adjacency.py` | occwl `face_adjacency` + DGL; rebuilt without OCC/DGL. Existing `reconstruction/cadparser_brep_graph.py` uses categorical features, not sampled geometry |
+| Mask-aware normalisation: bbox over only in-face grid points, one isotropic solid-level 2/max(diag) transform across faces *and* edges, invertible | implemented `geometry/uvnet_normalize.py` | `datasets/util.py` normalises per-grid; solid-level keeps the graph geometrically consistent |
+| Deterministic axis-aligned quarter-turn frames: the 12 (axis, k*90deg) rotations enumerated instead of drawn at random | implemented `geometry/uvnet_normalize.py` | replaces `get_random_rotation` (scipy + random.choice) with a reproducible enumeration; integer-entry orthonormal matrices |
+| CNN/GNN encoders, DGL I/O, STEP loading, SolidLetters font pipeline | research-heavy/external | torch / dgl / occwl / OCC |
+
+### 35. WhatsInAName-main
+
+Not topological naming (despite the name): the code+data release for *What's In
+A Name? Evaluating Assembly-Part Semantic Knowledge in Language Models through
+User-Provided Names in CAD Files* (JCISE 2023). Zero overlap with
+`geometry/opencad_face_fingerprint.py` -- that solves persistent *entity*
+identity; this is the *natural-language semantics* of user-authored names.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Default-CAD-name detector + name normaliser (camelCase/snake/instance-suffix tokenizer, corpus dedup, 5 stratification flags) | implemented `library/wian_name_normalizer.py` | repo ships only the *filtered result*; the filter itself is absent. Rebuilt as a default-name grammar over Onshape/SolidWorks/Fusion/FreeCAD stems |
+| Two-Parts benchmark generator + metrics (token-disjoint positives, global co-occurrence table, non-co-occurring resampled negatives, class balancing; accuracy, threshold sweep, tie-aware ROC-AUC) | implemented `bench/wian_partname_pairs.py` | reimplements `generate_pairs.py` minus numpy/nltk/pandas; sklearn/torch metrics rewritten in stdlib |
+| Corpus templating + Missing-Part / Document-Name task builders + pure-Python stratified 3-way split (largest-remainder per stratum) + acc@k/MRR | implemented `bench/wian_partname_tasks.py` | replaces `generate_corpus.py` + `create_train_val_test_split.py` (sklearn StratifiedShuffleSplit) deterministically |
+| Training-free PPMI/SPPMI part-name vector space (token co-occurrence across assembly parts, mean-pooled embeddings, cosine pair scorer, candidate ranker, TF-IDF control) | implemented `library/wian_partname_ppmi.py` | **genuinely new**: every encoder in the paper (BOW, FastText, TechNet, DistilBERT) needs training or downloaded weights. This is the closed-form count-based baseline the paper lacks, and it makes all three tasks runnable locally with no model |
+| DistilBERT MLM finetuning, SetTransformer, FastText/word2vec, TechNet embeddings | research-heavy/external | trained models / GPU / downloaded weights |
+
+## Batch-7 implementation result
+
+Five repos, 416 new tests. Two reference-impl repos (32, 33) correctly yielded
+only implementation-level gaps -- but those gaps included two protocol
+*contradictions* worth keeping: the Text-to-CadQuery eval normalisation differs
+from the existing `bench/cad_geometry_protocol.py`, and the real Text2CAD
+sequence layout is chained (N tokens/loop), not the 2N its own paper implies.
+UV-Net contributed the largest genuinely-new capability (sampled-geometry B-rep
+graphs); Text-to-CAD-dean, despite being a hobby app, closed three format gaps
+(stdlib STL, GLB, OpenSCAD CLI export). Per the no-README policy the suite count
+is tracked in audit/cadbible_progress.json.
