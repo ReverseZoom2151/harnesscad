@@ -202,7 +202,7 @@
       "status": "reviewed"
     }
   ],
-  "suite_tests": 10565,
+  "suite_tests": 11089,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "harness already has 186-paper corpus implemented (see text_to_cad_progress.json); dedup strictly"
 }
