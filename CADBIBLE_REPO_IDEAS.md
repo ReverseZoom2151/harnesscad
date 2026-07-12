@@ -944,3 +944,82 @@ formula that governs all curved-primitive tessellation). pythonocc and scad-hs
 were correctly disciplined (one/two genuine deltas from otherwise-covered repos),
 and querycad yielded its two paper-omitted B-rep routines. Per the no-README
 policy the suite count is tracked in audit/cadbible_progress.json.
+
+## Batch 13 (repos 61-65)
+
+Two SDF libraries (both cleared the high dedup bar the Curv/libfive stack set), a
+web CAD app, a CADQuery RL reward system, and a UI frontend. Three repos whose
+names misled about their contents.
+
+### 61. sdf-csg-master
+
+A TypeScript SDF/CSG library (IQ primitives, isosurface mesher). Primitives,
+combinators, transforms, TPMS, and sphere tracing were all already covered; the
+genuine gaps were mesh extractors and six missing primitives.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Canonical Marching Cubes (Lorensen-Cline 256-case edge + triangle tables, welded vertices, SDF-convention winding) | implemented `geometry/sdfcsg_marching_cubes.py` | **absent from the harness** -- it had marching *tets* and dual contouring but not the standard MC. **Bug found+fixed:** Bourke's tables assume "inside = above isolevel" but SDF uses "inside = negative", so normals pointed inward until winding was reversed; a 256-case table-consistency test confirms correct transcription |
+| Naive Surface Nets isosurface extractor (one vertex per sign-changing cell = averaged edge crossings) + tiled grid sampling + ASCII STL | implemented `geometry/sdfcsg_surface_nets.py` | the repo's actual mesher; distinct from QEF dual contouring (2D-only) and marching tets. **Bug found+fixed:** watertightness required correct per-axis quad winding |
+| Six IQ primitives absent from curv: box_frame, capped_torus, link, hexagonal_prism, triangular_prism, solid_angle | implemented `geometry/sdfcsg_primitives.py` | extend `geometry/curv_sdf_primitives.py` |
+| User-data attribute interpolation across the surface (inverse-distance blend) | implemented `geometry/sdfcsg_surface_nets.py` | the repo's getUserData mechanism; no harness equivalent |
+| Primitives, CSG, smooth-min, transforms, sphere trace | already in repo | `curv_sdf_*`, `curv_sphere_trace` |
+
+### 62. sdfx-master
+
+deadsy/sdfx, a Go SDF CAD library. Distinctive from pure-SDF-art libraries in its
+manufacturing 2D-CAD layer: exact concave-polygon distance and fastener geometry.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact arbitrary-polygon 2D SDF (winding-number sign + min edge distance) + area/centroid/point-in-polygon | implemented `geometry/sdfx_polygon_sdf.py` | `curv_sdf_primitives.regular_polygon` is a mitred *regular* n-gon field only; `manifold_winding` is a 3D solid-angle mesh test. No exact concave arbitrary-polygon 2D SDF existed |
+| Fluent 2D sketch builder: relative/polar vertices, corner fillet (smooth), chamfer, segment->arc replacement, regular n-gon ring | implemented `geometry/sdfx_polygon_builder.py` | no polygon *geometry* builder in the harness; curv/libfive expose only fields |
+| Standard thread cross-section profiles: ISO/UTS 60 deg V (7/8 H ext, 1/4 H int truncation, rounded root/crest), 29 deg Acme, ANSI 45/7 buttress (period-wrap-continuous) | implemented `geometry/sdfx_thread_profile.py` | `geometry/solidpy_screw_thread.py` is a helical mesh sweep with a generic tooth section -- no standard ISO/Acme/buttress profile math |
+| Fastener standard dimension database: ISO metric coarse/fine (M1-M64), UNC/UNF, NPT (tapered), normalised to mm, + hex head radius/height | implemented `standards/sdfx_thread_database.py` | `standards/cqplug_heatsert_schedule.py` is heat-set inserts only; no thread/fastener table existed |
+| Cam profiles as exact SDFs (flat-flank + three-arc) with design-parameter solvers | implemented `geometry/sdfx_cam_profile.py` | no cam primitive in curv/libfive/sdf-csg |
+| Archimedean spiral exact 2D SDF (polar inversion + whole-turn shifting, thickness offset) | implemented `geometry/sdfx_spiral_sdf.py` | no spiral primitive anywhere in the SDF stack |
+| Go runtime, OpenGL, STL/DXF/3MF I/O, 3D helical Screw3D sweep, quadtree render accel | external / already in repo | `geometry/solidpy_screw_thread.py`; STL present |
+
+### 63. solidtype-main
+
+SolidType: a TypeScript/web parametric CAD app on OpenCascade.js. Its topological
+naming and constraint-graph DOF were already covered; one genuine delta.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Fixed-point integer geometry substrate with shared-grid vertex welding: mm<->nanometre quantisation, exact integer vector ops, division-free exact segment/line/plane intersection with compute-once-snap-once grid snapping, VertexRegistry interning coincident points to one canonical id | implemented `geometry/solidtype_integer_geometry.py` | complementary to `numeric/manifold_predicates.py` (exact-sign predicates *classify* a determinant; this *quantises inputs* so near-coincident vertices weld, eliminating the epsilon non-manifold problem). New |
+| Topological naming (fingerprint + evolution + split/merge/delete resolve) | already in repo | `geometry/opencad_face_fingerprint.py` |
+| Constraint-graph connected-component DOF (under/over/fully-constrained) | already in repo | the existing constraints module (union-find rank DOF) |
+| 2D curve intersection (tolerance-based) | already in repo | existing geometry |
+
+### 64. spatialhero-main
+
+Despite the name, not spatial reasoning: a multi-modal reward/verification system
+for RL-training LLMs to write CadQuery. Three deterministic reward modules.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Rule-based physical-plausibility gate + hard-constraint checker (fill-ratio/solidity, extreme aspect ratio, SA-to-volume, magnitude bounds -> issues/warnings; constraint-dict -> per-key pass/fail) | implemented `verifiers/spatialhero_plausibility.py` | `quality/anomaly.py` turns the same bbox ratios into a *feature vector* for statistical outlier scoring; `verifiers/cgb_validity_gate.py` gates triangle face aspect. Neither is a fixed-threshold acceptance gate, and fill-ratio/solidity was absent |
+| Bounding-box dimensional-accuracy metric (measure w/d/h/volume; bounded relative-error accuracy = max(0, 1-relerr), within-tolerance, average) | implemented `bench/spatialhero_dim_accuracy.py` | `reconstruction/pht_dimension_accuracy.py` matches dimension *annotations* with hard type/value/element; this scores realised solid *extents* continuously. `quality/cad_reward.py` is chamfer-based |
+| Gated weighted multi-component composite reward (validated weight-map summing to 1.0; hard gate keys collapse reward to 0) | implemented `quality/spatialhero_composite_reward.py` | `quality/cad_reward.py` is a fixed 2-term reward; this is a generic N-named-component aggregator with configurable hard gates |
+| AST static code-safety analysis; VLM eval, CadQuery executor, PPO trainer | already in repo / external | `programs/`, `quality/cad_code_normalize.py`; trained model / kernel |
+
+### 65. structural-frontend-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| (none) | out-of-scope, nothing built | The frontend twin of the Gaudi product (same gaudi_logo.png, same Railway backend): a Create-React-App SPA -- react-router auth-gated screens, a three.js `@react-three/fiber` BuildingViewer loading server-generated STL/GLB, a chat Assistant that POSTs prompts and polls. A grep of src/ for beam/truss/moment-of-inertia/section-modulus/centroid/deflection/buckling/euler/yield/shear/bending/load-combination/young's-modulus/I-beam/steel-section returned zero hits. All structural analysis is server-side; nothing deterministic is transferable |
+
+## Batch-13 implementation result
+
+Five repos, ~150 new tests. The two SDF libraries validated the dedup discipline:
+against the now-deep Curv/libfive SDF stack, sdf-csg still yielded the two
+standard mesh extractors the harness lacked (marching cubes, surface nets) plus
+six primitives, and sdfx yielded the entire manufacturing 2D-CAD layer (exact
+concave-polygon distance, ISO/Acme/buttress thread profiles, a fastener database,
+cam and spiral profiles) that pure-SDF-art libraries omit. solidtype added
+integer-geometry vertex welding (complementary to the manifold predicates).
+spatialhero -- a third name-misleads-content repo -- gave a plausibility gate and
+reward aggregator. structural-frontend was correctly a second UI no-build. Two
+marching-cubes/surface-nets winding bugs were found and fixed during testing. Per
+the no-README policy the suite count is tracked in audit/cadbible_progress.json.

@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 60,
-  "next_repo_index": 61,
+  "reviewed_count": 65,
+  "next_repo_index": 66,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -255,9 +255,14 @@
     "querycad-main",
     "ruststep-master",
     "scad-clj-master",
-    "scad-hs-master"
+    "scad-hs-master",
+    "sdf-csg-master",
+    "sdfx-master",
+    "solidtype-main",
+    "spatialhero-main",
+    "structural-frontend-main"
   ],
   "suite_tests": 13865,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "Batch 12 (repos 56-60) complete. ruststep gave the fullest STEP work: an EXPRESS schema-language parser (662/664 real ISO schemas) + inheritance flattener + X-string codec + header model + schema-driven validator, plus 3 characterised gaps in formats/stepllm_parser.py. scad-clj added the OpenSCAD $fn/$fa/$fs facet formula. suite_tests recount pending (/tmp/cb12.txt). Next: batch 13 = repos 61-65 (check os.listdir: sdf-csg-master, sdfx-master, solidtype, spatialhero, vitruvion likely). sdf-csg + sdfx are SDF repos -> dedup HARD vs the new curv_sdf_* AND libfive_* modules (harness now has extensive SDF: primitives, combinators, transforms, TPMS, sphere tracer, f-rep IR, interval arithmetic, dual contouring, forward-mode AD). Final batch 14 = repos 66-70; 'zip' #70 may be a junk archive -> skip if so. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user (do not action): (1) t2cq_ast subset scope; (2) muse_scorecard double-count; (3) deferred README rewrite -- now near due (campaign ~86% done)."
+  "note": "Batch 13 (repos 61-65) complete. sdf-csg added canonical marching cubes + surface nets (2 winding bugs fixed); sdfx added the manufacturing 2D-CAD layer (concave polygon SDF, ISO/Acme/buttress thread profiles, fastener DB, cam/spiral); solidtype added integer-geometry vertex welding; spatialhero (name misleads -- a CadQuery RL reward system) added plausibility gate + reward aggregator; structural-frontend was out-of-scope UI (nothing built). suite_tests recount pending (/tmp/cb13.txt). FINAL batch 14 = repos 66-70: text-to-cad-blender-addon-main + 4 more (check os.listdir). Last is likely 'zip' #70 -> inspect and SKIP if junk archive. After repo 70, CLOSE the campaign: campaign_complete=true, update memory cadbible file, REPORT full completion summary to user, and surface the now-due README rewrite (do NOT do it unprompted). Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user: (1) t2cq_ast subset scope; (2) muse_scorecard double-count."
 }
