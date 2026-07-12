@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 175,
-  "next_manifest_index": 176,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-175 implemented (173 near-duplicate of 172)",
+  "reviewed_count": 180,
+  "next_manifest_index": 181,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-180 implemented (176 LLM-interpretability out-of-scope)",
   "reviewed": [
     {
       "index": 1,
@@ -879,6 +879,31 @@
     {
       "index": 175,
       "paper": "Text2CAD-Bench - A Benchmark for LLM-based Text-to-Parametric CAD Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 176,
+      "paper": "The Geometry of Categorical and Hierarchical Concepts in Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 177,
+      "paper": "TOOLCAD - Exploring Tool-Using Large Language Models in Text-to-CAD Generation with Reinforcement Learning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 178,
+      "paper": "Topology-Aware Latent Diffusion for 3D Shape Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 179,
+      "paper": "Toward AI-driven Multimodal Interfaces for Industrial CAD Modeling.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 180,
+      "paper": "Towards a Natural Language Interface for CAD.md",
       "status": "reviewed"
     }
   ],

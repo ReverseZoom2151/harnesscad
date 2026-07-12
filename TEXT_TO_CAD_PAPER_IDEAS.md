@@ -2324,3 +2324,55 @@ The Text2CAD cluster: 172 primary + 173 correctly deduped (only its token
 table + IR were new) + 174 distinct technical-drawings variant + 171 CadQuery
 target + 175 benchmark. Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
+
+### 176. The Geometry of Categorical and Hierarchical Concepts in Large Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| LLM concept-vector geometry (LDA over unembeddings, causal inner product, simplices/polytopes, orthogonality) | **out-of-scope** | LLM-interpretability paper -- every transferable is LLM-specific machinery or a trivial existing primitive (nothing built) |
+
+### 177. TOOLCAD - Exploring Tool-Using Large Language Models in Text-to-CAD Generation with Reinforcement Learning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Typed CAD tool/action schema (TOOLLIBRARY + arg validation + geometry bookkeeper) | **implemented** | `agent/toolcad_tool_schema.py` |
+| ReAct tool-call trajectory (think/tool_call/tool_response + parser + rollout) | **implemented** | `agent/toolcad_trajectory.py` |
+| Tool-use reward (format + step-exec + ORM + tool-selection/argument accuracy) | **implemented** | `agent/toolcad_reward.py` |
+| Tool-use success/efficiency metrics | **implemented** | `agent/toolcad_metrics.py` |
+| LLM agent + GRPO RL + FreeCAD engine | **research-heavy/external** | trained models |
+
+### 178. Topology-Aware Latent Diffusion for 3D Shape Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Cubical Euler + full Betti vector + genus/cavity from voxels | **implemented** | `geometry/topodiff_betti_voxel.py` |
+| Sublevel-set 0-dim persistent homology + persistence diagram | **implemented** | `numeric/topodiff_cubical_persistence.py` |
+| Topology-consistency + persistence-diagram distance metrics | **implemented** | `bench/topodiff_topology_consistency.py` |
+| Learned latent diffusion | **research-heavy/external** | trained model |
+
+### 179. Toward AI-driven Multimodal Interfaces for Industrial CAD Modeling
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Multimodal modality fusion into one CAD intent | **implemented** | `surfaces/mmcad_modality_fusion.py` |
+| Bayesian workflow-graph next-command prediction | **implemented** | `surfaces/mmcad_bayesian_command.py` |
+| Adaptive-UX proficiency estimation + interaction state machine | **implemented** | `surfaces/mmcad_adaptive_ux.py` |
+| Speech/gesture/vision recognition | **research-heavy/external** | trained models |
+
+### 180. Towards a Natural Language Interface for CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Case-frame parser (verb semantic cases -> structured CAD op) | **implemented** | `spec/nlcad_case_frame.py` |
+| Parallel parse-states + confidence + word-sense disambiguation | **implemented** | `spec/nlcad_parse_states.py` |
+| Dialogue state + ellipsis/reference resolution | **implemented** | `spec/nlcad_dialogue.py` |
+| Redundancy-based error recovery | **implemented** | `spec/nlcad_error_recovery.py` |
+
+## Batch-36 implementation result
+
+All deterministic and in-scope findings from papers 176-180 are implemented
+(176 Geometry-of-Concepts is a correct no-build LLM-interpretability paper,
+consistent with paper 102). Notable new capability: persistent homology +
+voxel Betti numbers (Topology-Aware diffusion), none existed. Per the
+no-README-during-campaign policy, the suite count is tracked in
+audit/text_to_cad_progress.json.
