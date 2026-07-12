@@ -247,7 +247,7 @@
     "gaudi-frontend-main",
     "hnc-cad-main"
   ],
-  "suite_tests": 13210,
+  "suite_tests": 13402,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "Batch 10 (repos 46-50) complete. gaudi-frontend (49) correctly out-of-scope (React UI, nothing built). Two gaudi-backend test files were placed in package-local tests/ dirs by the agent and relocated to top-level tests/. suite_tests recount pending (/tmp/cb10.txt). Next: batch 11 = repos 51-55 starting with libfive-master (HIGH-VALUE geometry kernel: dual contouring, Tree/opcode IR, interval arithmetic -- dedup vs new curv_sdf_* and geometry/meshdiff_marching_tets.py). Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user: t2cq_ast subset-scope decision; deferred README rewrite. HALFWAY+: 50/70 repos."
 }
