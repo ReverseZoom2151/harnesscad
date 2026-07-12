@@ -135,5 +135,29 @@ class TestValidate(unittest.TestCase):
         self.assertTrue(any("ghost" in e for e in validate(prog)))
 
 
+class MoveToAritySignatureTest(unittest.TestCase):
+    """moveTo(x=0, y=0): nought, one and two positional args are all legal.
+
+    A (2, 2) arity here made validate() reject real CadQuery programs; the
+    corpus in resources/cadbible/cadquery-contrib calls moveTo with one arg.
+    """
+
+    def _validate(self, call):
+        code = 'import cadquery as cq\npart_1 = cq.Workplane("XY").%s.close().extrude(0.5)\n' % call
+        return validate(parse_program(code))
+
+    def test_two_positional_args_valid(self):
+        self.assertEqual(self._validate("moveTo(1.0, 2.0).lineTo(3.0, 4.0)"), [])
+
+    def test_one_positional_arg_valid(self):
+        self.assertEqual(self._validate("moveTo(1.0).lineTo(3.0, 4.0)"), [])
+
+    def test_no_positional_args_valid(self):
+        self.assertEqual(self._validate("moveTo().lineTo(3.0, 4.0)"), [])
+
+    def test_three_positional_args_still_rejected(self):
+        self.assertTrue(self._validate("moveTo(1.0, 2.0, 3.0).lineTo(3.0, 4.0)"))
+
+
 if __name__ == "__main__":
     unittest.main()

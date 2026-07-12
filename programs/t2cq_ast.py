@@ -58,7 +58,10 @@ CHAIN_METHODS: dict[str, tuple[int, int]] = {
     "sphere": (1, 2),
     "rect": (2, 3),
     "circle": (1, 1),
-    "moveTo": (2, 2),
+    # CadQuery's signature is moveTo(x=0, y=0), so nought/one/two positional
+    # args are all legal; the corpus in resources/cadbible/cadquery-contrib
+    # calls it with one. A (2, 2) arity here rejected valid programs.
+    "moveTo": (0, 2),
     "lineTo": (2, 2),
     "line": (2, 2),
     "vLine": (1, 1),
