@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 130,
-  "next_manifest_index": 131,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-130 implemented",
+  "reviewed_count": 135,
+  "next_manifest_index": 136,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-135 implemented (134 is a review -- no buildable content)",
   "reviewed": [
     {
       "index": 1,
@@ -654,6 +654,31 @@
     {
       "index": 130,
       "paper": "MeshDiffusion - Score-Based Generative 3D Mesh Modeling.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 131,
+      "paper": "Meshtron - High-Fidelity, Artist-Like 3D Mesh Generation At Scale.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 132,
+      "paper": "mrCAD - Multimodal Refinement of Computer-Aided Designs.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 133,
+      "paper": "MUSE - Benchmarking Manufacturable, Functional, and Assemblable Text-to-CAD Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 134,
+      "paper": "Neural Surrogate-Driven Modelling, Optimisation, and Generation of Engineering Designs - A Concise Review.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 135,
+      "paper": "NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature.md",
       "status": "reviewed"
     }
   ],

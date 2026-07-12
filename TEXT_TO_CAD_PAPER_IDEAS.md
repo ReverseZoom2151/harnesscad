@@ -1807,3 +1807,57 @@ first retry returned empty (0 tool uses) and was re-run again. Notable new
 capabilities: a 3D wavelet transform (Make-A-Shape) and marching tetrahedra
 (MeshDiffusion), neither of which existed. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 131. Meshtron - High-Fidelity, Artist-Like 3D Mesh Generation At Scale
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Meshtron y-z-x vertex ordering convention (distinct from LLaMA-Mesh z-y-x) | **implemented** | `formats/meshtron_ordering.py` |
+| Hourglass coarse-to-fine token layout + sliding-window inference | **implemented** | `formats/meshtron_windowing.py` |
+| Decoded-stream order-enforcement/validity checker | **implemented** | `formats/meshtron_order_enforcement.py` |
+| Artist-like mesh-quality metrics (aspect/valence/face-area) | **implemented** | `bench/meshtron_mesh_quality.py` |
+| Learned 1.1B Hourglass Transformer + Perceiver encoder | **research-heavy/external** | trained model |
+
+### 132. mrCAD - Multimodal Refinement of Computer-Aided Designs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 2D CAD-state grammar + typed edit-operation vocabulary + multimodal message/instruction parser | **implemented** | `editing/mrcad_schema.py` |
+| Refinement transition function + round/rollout state machine | **implemented** | `editing/mrcad_refinement.py` |
+| Refinement metrics (vector chamfer, Proportional-Improvement, edit accuracy, convergence) | **implemented** | `bench/mrcad_metrics.py` |
+| Learned designer/maker VLM + crowd pipeline | **research-heavy/external** | trained VLM |
+
+### 133. MUSE - Benchmarking Manufacturable, Functional, and Assemblable Text-to-CAD Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Manufacturability scorer (table-grounded feasibility) | **implemented** | `bench/muse_manufacturability.py` |
+| Functionality scorer (parameter space + support-polygon stability) | **implemented** | `bench/muse_functionality.py` |
+| Assemblability scorer (assembly-graph isomorphism + Table-7 joints) | **implemented** | `bench/muse_assemblability.py` |
+| Three-stage funnel scorecard | **implemented** | `bench/muse_scorecard.py` |
+| Rubric VLM judge + generator | **research-heavy/external** | trained VLM |
+
+### 134. Neural Surrogate-Driven Modelling, Optimisation, and Generation of Engineering Designs - A Concise Review
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Representation taxonomy, surrogate-modeling narrative, LHS/DoE + surrogate-assisted optimization | **out-of-scope** | pure literature review -- methodologies cited not specified, and already in the repo (nothing built) |
+
+### 135. NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Zero-Gaussian-curvature developability energy + double-trough quartic + annealing/projection | **implemented** | `geometry/neurcad_developability.py` |
+| Developable detector/classifier (shape-operator rank, tip detection) | **implemented** | `geometry/neurcad_developable_detect.py` |
+| Developability + Gauss-Bonnet metrics | **implemented** | `bench/neurcad_metrics.py` |
+| Reuses FlatCAD Goldman curvature | **already in repo** | `geometry/flatcad_weingarten.py` |
+| Neural SDF training | **research-heavy/external** | trained model |
+
+## Batch-27 implementation result
+
+All deterministic and in-scope findings from papers 131-135 are implemented
+(134 Neural-Surrogate review is correctly no-build). Recovered from two
+back-to-back limit interruptions (weekly then session) on this batch:
+partials removed and papers re-run fresh. Notable: NeurCADRecon reuses paper
+81's FlatCAD curvature. Per the no-README-during-campaign policy, the suite
+count is tracked in audit/text_to_cad_progress.json.
