@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 150,
-  "next_manifest_index": 151,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-150 implemented",
+  "reviewed_count": 155,
+  "next_manifest_index": 156,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-155 implemented (155 SIMA out-of-scope)",
   "reviewed": [
     {
       "index": 1,
@@ -754,6 +754,31 @@
     {
       "index": 150,
       "paper": "ReCAD - Reinforcement Learning Enhanced Parametric CAD Model Generation with Vision-Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 151,
+      "paper": "Regularized Diffusion Modeling for CAD Representation Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 152,
+      "paper": "Reinforcement Learning for Block Decomposition of CAD Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 153,
+      "paper": "Revisiting CAD Model Generation by Learning Raster Sketch.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 154,
+      "paper": "RLCAD - Reinforcement Learning Training Gym for Revolution Involved CAD Command Sequence Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 155,
+      "paper": "Scaling Instructable Agents Across Many Simulated Worlds.md",
       "status": "reviewed"
     }
   ],

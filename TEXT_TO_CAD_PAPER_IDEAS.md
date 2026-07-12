@@ -2038,3 +2038,56 @@ All deterministic and in-scope findings from papers 146-150 are implemented.
 Papers 149 and 150 each returned empty (0 tool uses) on first launch -- flaky
 starts, not a limit; both re-ran cleanly. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 151. Regularized Diffusion Modeling for CAD Representation Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| DDIM inversion + Gaussian perturbation (upward mirror of the denoise step) | **implemented** | `numeric/regdiff_ddim_inversion.py` |
+| Decoder distance-minimization regularizer (invert->perturb->regenerate->decode->L2) | **implemented** | `numeric/regdiff_decoder_regularizer.py` |
+| SPL-tree latent + generation metrics + schedules | **already in repo** | hnc/geofusion/diffusioncad |
+| Learned VQ-VAE + encoders | **research-heavy/external** | trained models |
+
+### 152. Reinforcement Learning for Block Decomposition of CAD Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Rectilinear block/domain representation (corner classification, quad terminal test) | **implemented** | `geometry/blockdecomp_domain.py` |
+| Decomposition operations (cut/refine/split/imprint-and-merge) | **implemented** | `geometry/blockdecomp_cut.py` |
+| Block/mesh-quality metrics (aspect, scaled Jacobian, orthogonality, quad fraction) | **implemented** | `geometry/blockdecomp_quality.py` |
+| MDP state + 9-D local observation | **implemented** | `exploration/blockdecomp_state.py` |
+| Deterministic quality-based reward | **implemented** | `exploration/blockdecomp_reward.py` |
+| Learned SAC policy + GNN | **research-heavy/external** | trained model |
+
+### 153. Revisiting CAD Model Generation by Learning Raster Sketch
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Raster->vector primitive extraction (stroke tracing + line/circle/arc fit) | **implemented** | `vision/rastercad_vectorize.py` |
+| Raster sketch codec (block quantization + lossless RLE tokens) | **implemented** | `drawings/rastercad_codec.py` |
+| Raster-based generation metrics (IoU, coverage, vectorization accuracy) | **implemented** | `bench/rastercad_metrics.py` |
+| Learned two-stage diffusion/VAE | **research-heavy/external** | trained model |
+
+### 154. RLCAD - Reinforcement Learning Training Gym for Revolution Involved CAD Command Sequence Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Revolve geometry via Pappus's theorems (solid of revolution, volume/area) | **implemented** | `geometry/rlcad_revolve.py` |
+| Extended command set with REVOLVE (distinct from extrude-only DeepCAD) | **implemented** | `reconstruction/rlcad_command_spec.py` |
+| Algorithm-1 valid-action generation | **implemented** | `reconstruction/rlcad_valid_actions.py` |
+| Deterministic gym env (voxel occupancy, boolean ops, composite reward, mark-and-revert) | **implemented** | `reconstruction/rlcad_gym_env.py` |
+| Learned UV-Net/GTrXL/PPO | **research-heavy/external** | trained model |
+
+### 155. Scaling Instructable Agents Across Many Simulated Worlds
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| SIMA embodied game-agent (pixels->keyboard/mouse), instruction eval, skill taxonomy | **out-of-scope** | DeepMind embodied game agents -- no deterministic mechanical-CAD content (nothing built) |
+
+## Batch-31 implementation result
+
+All deterministic and in-scope findings from papers 151-155 are implemented
+(155 SIMA is out-of-scope -- embodied game agents). Notable new capabilities:
+revolve geometry via Pappus (RLCAD) and block-decomposition geometry (paper
+152), neither of which existed. Per the no-README-during-campaign policy, the
+suite count is tracked in audit/text_to_cad_progress.json.
