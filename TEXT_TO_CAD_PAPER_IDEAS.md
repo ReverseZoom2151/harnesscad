@@ -2091,3 +2091,63 @@ All deterministic and in-scope findings from papers 151-155 are implemented
 revolve geometry via Pappus (RLCAD) and block-decomposition geometry (paper
 152), neither of which existed. Per the no-README-during-campaign policy, the
 suite count is tracked in audit/text_to_cad_progress.json.
+
+### 156. Seek-CAD - A Self-refined Generative Modeling for 3D Parametric CAD Using Local Inference via DeepSeek
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| SSR triple design paradigm (sketch-feature + refinements + boolean composition) | **implemented** | `geometry/seekcad_ssr.py` |
+| CapType topological-reference mechanism | **implemented** | `geometry/seekcad_captype.py` |
+| Step-wise visual-feedback plan (highlight/hide + CoT) | **implemented** | `generation/seekcad_stepwise_svf.py` |
+| Novel_Pn metric + complexity bands + G-Score | **implemented** | `bench/seekcad_metrics.py` |
+| Pattern-template syntax repair | **implemented** | `programs/seekcad_syntax_repair.py` |
+| DeepSeek-R1 + Gemini judge | **research-heavy/external** | trained models |
+
+### 157. Self-Supervised Graph Neural Network for Mechanical CAD Retrieval
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| GC-CAD graph + two-aspect augmentation (feature masking + structure schemes) | **implemented** | `reconstruction/ssgnn_graph_augment.py` |
+| Structural graph descriptors (degree histogram, WL kernel) | **implemented** | `reconstruction/ssgnn_graph_descriptors.py` |
+| Graph-level contrastive pretext objective | **implemented** | `bench/ssgnn_graph_contrastive.py` |
+| Graded Recall@k / NDCG@k retrieval eval | **implemented** | `bench/ssgnn_retrieval_eval.py` |
+| Learned GNN encoder | **research-heavy/external** | trained model |
+
+### 158. Self-Supervised Representation Learning for CAD
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Geometric-rasterization pretext (uv reparam + SDF clipping mask + surface evaluators) | **implemented** | `dataengine/ssrl_rasterization_pretext.py` |
+| Representation-quality metrics (alignment/uniformity + ridge probe + k-NN) | **implemented** | `bench/ssrl_representation_quality.py` |
+| Few-shot scaling-curve harness | **implemented** | `bench/ssrl_fewshot_scaling.py` |
+| Learned encoder/decoder | **research-heavy/external** | trained model |
+
+### 159. Semantic Enrichment of CAD-Based Industrial Environments via Scene Graphs for Simulation and Reasoning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Typed 3D scene-graph representation (inverse relations) | **implemented** | `reconstruction/scenegraph_model.py` |
+| Deterministic construction from AABB tests | **implemented** | `reconstruction/scenegraph_construction.py` |
+| Semantic enrichment (affordance/material + bbox disambiguation) | **implemented** | `reconstruction/scenegraph_enrichment.py` |
+| Query/reasoning engine (BFS paths, connectivity) | **implemented** | `reconstruction/scenegraph_query.py` |
+| Functional-relation extraction (Algorithm 1) | **implemented** | `reconstruction/scenegraph_functional.py` |
+| Scene-graph validity check | **implemented** | `reconstruction/scenegraph_validity.py` |
+| LVLM/GPT-4o labelling + DBSCAN | **research-heavy/external** | trained models |
+
+### 160. SHAPE-IT - Exploring Text-to-Shape-Display for Generative Shape-Changing Behaviors with LLMs
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Pin-grid height-field representation + comparison metrics | **implemented** | `geometry/shapeit_heightfield.py` |
+| Primitive height patterns (rectangle/disc/line/gradient/cone/wave) | **implemented** | `geometry/shapeit_primitives.py` |
+| Animation transforms (translate/scale/rotate/pulse) | **implemented** | `geometry/shapeit_transforms.py` |
+| Keyframe animation (lerp/easing/tween/loop) | **implemented** | `geometry/shapeit_keyframe.py` |
+| LLM behavior generation + hardware control | **research-heavy/external** | learned / hardware |
+
+## Batch-32 implementation result
+
+All deterministic and in-scope findings from papers 156-160 are implemented.
+Papers 157/158 share a self-supervised theme (graph-retrieval vs general
+representation) and were split cleanly. SHAPE-IT (160) yielded a transferable
+2.5D heightfield-authoring core from an HCI paper. Per the no-README-during-
+campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.

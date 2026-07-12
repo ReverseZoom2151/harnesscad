@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 155,
-  "next_manifest_index": 156,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-155 implemented (155 SIMA out-of-scope)",
+  "reviewed_count": 160,
+  "next_manifest_index": 161,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-160 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -779,6 +779,31 @@
     {
       "index": 155,
       "paper": "Scaling Instructable Agents Across Many Simulated Worlds.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 156,
+      "paper": "Seek-CAD - A Self-refined Generative Modeling for 3D Parametric CAD Using Local Inference via DeepSeek.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 157,
+      "paper": "Self-Supervised Graph Neural Network for Mechanical CAD Retrieval.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 158,
+      "paper": "Self-Supervised Representation Learning for CAD.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 159,
+      "paper": "Semantic Enrichment of CAD-Based Industrial Environments via Scene Graphs for Simulation and Reasoning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 160,
+      "paper": "SHAPE-IT - Exploring Text-to-Shape-Display for Generative Shape-Changing Behaviors with LLMs.md",
       "status": "reviewed"
     }
   ],
