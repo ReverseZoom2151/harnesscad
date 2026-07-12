@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 50,
-  "next_repo_index": 51,
+  "reviewed_count": 55,
+  "next_repo_index": 56,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -245,9 +245,14 @@
     "freecad_mcp-main",
     "gaudi-backend-main",
     "gaudi-frontend-main",
-    "hnc-cad-main"
+    "hnc-cad-main",
+    "libfive-master",
+    "manifold-master",
+    "mrCAD-main",
+    "muse-main",
+    "oce-oce-patches"
   ],
   "suite_tests": 13402,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "Batch 10 (repos 46-50) complete. gaudi-frontend (49) correctly out-of-scope (React UI, nothing built). Two gaudi-backend test files were placed in package-local tests/ dirs by the agent and relocated to top-level tests/. suite_tests recount pending (/tmp/cb10.txt). Next: batch 11 = repos 51-55 starting with libfive-master (HIGH-VALUE geometry kernel: dual contouring, Tree/opcode IR, interval arithmetic -- dedup vs new curv_sdf_* and geometry/meshdiff_marching_tets.py). Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user: t2cq_ast subset-scope decision; deferred README rewrite. HALFWAY+: 50/70 repos."
+  "note": "Batch 11 (repos 51-55) complete -- strongest geometry batch: libfive (f-rep IR, interval arithmetic, forward-mode AD, dual contouring+QEF) and manifold (exact 3D predicates, half-edge mesh, 3D BVH, tri-tri intersection, winding-number inside) give the harness both implicit and explicit robust-geometry substrates; oce added Gauss-Legendre quadrature. suite_tests recount pending (/tmp/cb11.txt). Next: batch 12 = repos 56-60 (check os.listdir; starts pythonocc-core-master, a large OCCT binding -> likely little new). OPEN for user (do not action): (1) t2cq_ast CHAIN_METHODS subset scope; (2) muse_scorecard watertight/manifold double-count -- muse2_geometry_issue_flags.to_funnel_geometry() available to fix consistently; (3) deferred README rewrite. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler."
 }

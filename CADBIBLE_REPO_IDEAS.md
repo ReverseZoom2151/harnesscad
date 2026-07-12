@@ -758,3 +758,106 @@ whole DeepCAD family) plus another code/comment mismatch resolved in favour of t
 code. Two gaudi-backend test files were placed in package-local tests/ dirs by the
 agent and relocated to the top-level tests/ so the canonical runner collects them.
 Per the no-README policy the suite count is tracked in audit/cadbible_progress.json.
+
+## Batch 11 (repos 51-55)
+
+Two geometry kernels (libfive f-rep, manifold mesh-boolean) plus two covered
+benchmarks and the OpenCASCADE mirror. The strongest batch for foundational
+geometry: the harness gained interval arithmetic, exact predicates, autodiff,
+dual contouring, a half-edge mesh, a 3D BVH, and numerical quadrature.
+
+### 51. libfive-master
+
+Matt Keeter's f-rep kernel. Complements Curv: Curv gave fixed Python SDF
+functions; libfive gives the reified opcode GRAPH underneath, plus the three ways
+to evaluate it (point, interval, dual).
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| f-rep opcode/Tree IR: hash-consed DAG with CSE, constant folding, commutative canonicalisation, evaluator, infix + S-expr printers, small shape stdlib | implemented `geometry/libfive_frep_ir.py` | ports libfive `tree/` + `opcode.cpp`. Distinct from `curv_sdf_*` (fixed callables) -- this is a reified, introspectable, optimisable graph |
+| Interval arithmetic + interval evaluator over the IR for octree pruning (EMPTY/FILLED/AMBIGUOUS) | implemented `numeric/libfive_interval.py` | ports `eval/interval.hpp`; div-straddling-zero conservatism, sqrt/log NaN domains, trig extrema enclosure. **No interval arithmetic existed in the harness** -- the basis of efficient implicit meshing |
+| Forward-mode automatic differentiation (dual numbers) over the IR for exact gradients/normals | implemented `numeric/libfive_forward_ad.py` | exact vs `numeric/flatcad_sdf_derivatives.py` (finite differences); composes with dual-contouring Hermite data |
+| Dual contouring (quadtree) with interval pruning, Hermite data, QEF sharp-feature vertex placement + N-D QEF solver (Jacobi eigendecomposition + rank-aware truncated pseudoinverse, mass-point bias) | implemented `geometry/libfive_dual_contour.py` | sharper-feature alternative to `geometry/meshdiff_marching_tets.py`; QEF/dual-contouring absent from the harness. Tests verify a square keeps its corners and a circle reconstructs as a clean loop |
+| C++/OpenGL/Guile-Scheme runtime, GPU | external | reimplemented in pure stdlib |
+
+### 52. manifold-master
+
+Emmett Lalish's guaranteed-manifold mesh-boolean kernel. The harness had SDF
+booleans but no mesh-boolean substrate; this fills it (short of the full
+retriangulating boolean, which needs the GPU runtime).
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Adaptive exact-sign predicates orient2d/orient3d/incircle/insphere (float fast path + exact Fraction fallback) | implemented `numeric/manifold_predicates.py` | Shewchuk-style; harness had only inexact 2D orient in `geometry/euclid_validity.py`. Foundational for robust geometry |
+| Half-edge triangle mesh + manifoldness invariants (Manifold's 3t+i indexing, next/prev, pair involution, face/vertex circulation, is_manifold/is_2manifold, Euler/genus, boundary loops) | implemented `geometry/manifold_halfedge.py` | `geometry/angelcad_polyhedron.py` had only an undirected edge-use table on polygon faces -- no half-edge, no circulation |
+| 3D BVH broad-phase (Morton SpreadBits3 + median split + stack-DFS overlap query, self_collisions, query_point) | implemented `geometry/manifold_bvh.py` | harness had only 2D quadtree, fixed-grid octree, 2D morton2 -- no 3D BVH over boxes. Verified vs brute force |
+| Predicate-driven triangle-triangle intersection (Moller coplanar-robust test, intersection segment, segment-plane / segment-segment-2D) | implemented `geometry/manifold_tritri.py` | harness had SDF booleans only, no tri-tri |
+| Winding-number point-in-mesh inside test (Van Oosterom-Strackee solid angle, generalised winding) + Kahan mass properties (signed volume, surface area) | implemented `geometry/manifold_winding.py` | degeneracy-robust vs `bench/cgb_mesh_betti.py` ray-cast parity |
+| Full retriangulating boolean, CUDA/thrust runtime | external / too large | the exact-predicate substrate is built; the full boolean assembly is out of stdlib scope |
+
+### 53. mrCAD-main
+
+Reference impl of *Multimodal Refinement of CADs* (2025). The refinement schema,
+transition function, and metrics were already built from the paper; three
+deterministic-geometry gaps remained.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact curve geometric-relation suite (parallel, perpendicular, overlap-gated parallel_distance, meeting_ends, concentric) + analytic point-to-curve distance (segment / circle / arc-sector via bearing-ordering) keyed to `editing.mrcad_schema.Curve` | implemented `geometry/mrcad2_curve_relations.py` | mrCAD attaches these as methods on Line/Arc/Circle in `design.py`; the harness `Curve` (kind+points) carried none. `geometry/arcs_closest_point.py` uses a different (centre/radius/sweep) parametrization |
+| The paper's exact `Design.design_distance` (point-to-CURVE, mean-normalised to [0,1], empty->1.0) | implemented `bench/mrcad2_design_distance.py` | **diverges** from `bench/mrcad_metrics.chamfer_asymmetric`: point-to-curve (analytic) vs point-to-sampled-point; mean-normalised [0,1] vs summed; empty->1.0 vs 0.0. The exact form is always <= the sampled form (tested) |
+| Degenerate-curve resolution for edits (line-collapse drop, arc->circle when endpoints coincide, arc drop when adjacent points coincide, circle drop) | implemented `editing/mrcad2_edit_degeneracy.py` | reimplements `editing_actions.py::MovePoint` canonicalization, which the harness `Curve.replace_point`/`apply_action` omit |
+| Curve/Design schema, edit vocabulary, transition, rollout, chamfer/PI metrics | already in repo | `editing/mrcad_schema.py`, `editing/mrcad_refinement.py`, `bench/mrcad_metrics.py` |
+| VLM eval, DeepSpeed training, cv2 rendering | external | trained model / GPU |
+
+### 54. muse-main
+
+MUSE text-to-CAD benchmark (three-stage funnel: exec -> geometry -> VLM judge).
+The funnel + three pillars were already built; four implementation-level pieces
+remained, and the source exposed a scoring-semantics issue in the harness.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Deterministic deduction-rule rubric engine (start 1.0, subtract per triggered rule_code, clamp, weighted + category aggregation) + plan component-count parser + weight dedup/normalisation | implemented `bench/muse2_rubric_deductions.py` | from `src/judge_system/rubric.py`; no deduction_ratio/rule_code logic in the harness |
+| 4-view engineering-drawing SVG metrics (path/text counts, view-label detection, component estimate via single-linkage grouping of overlapping bboxes, mm dimension parse) | implemented `drawings/muse2_svg_view_metrics.py` | from `src/judge_system/svg_metrics.py`; no estimated_component/view_label in the harness drawings/ |
+| Geometry-issue -> Stage-2 flag classifier with tri-state no_error semantics, combined-watertight definition, error counts | implemented `bench/muse2_geometry_issue_flags.py` | from `src/judge_system/geometry_metrics.py`; isolates OCCT-payload logic without the kernel |
+| Judge-vs-human agreement protocol (Item/Cell/System levels, Pearson/Spearman/Kendall-tau-b, signed bias, seeded bootstrap 95% CI) | implemented `bench/muse2_judge_agreement.py` | harness had only a spearman and ranking-only kendall_tau; no Pearson, tau-b, bias, bootstrap, or multi-level judge protocol |
+| Three-stage funnel, pillar averaging, assembly-graph isomorphism, joint/DoF Table 7 | already in repo | `bench/muse_scorecard.py`, `muse_functionality/manufacturability/assemblability.py` |
+| Interpenetration volume-ratio, OCCT validator, VLM judge | external / already in repo | OCCT/LLM-in-loop |
+
+**Finding (open, not actioned):** `bench/muse_scorecard.py` ANDs `watertight`,
+`manifold`, `self_intersection_free`, `overlap_free` as four independent checks.
+In the real MUSE repo, `watertight` is defined to already require no non-manifold
+edges, so it implies `manifold` -- feeding both independently double-counts
+manifoldness. Whether this is a bug depends on how the caller derives the input
+flags, so it changes what the benchmark score MEANS. `muse2_geometry_issue_flags`
+provides `to_funnel_geometry()` + a `watertight_strict` flag so callers can feed
+the funnel consistently, rather than silently editing the scorecard. Left as a
+user scope decision, like the t2cq_ast subset question.
+
+### 55. oce-oce-patches
+
+Despite the name, a full 36k-file mirror of the OpenCASCADE (OCCT) C++ kernel,
+not a patch set. Almost entirely external and already covered (NURBS, STEP, OCCT
+API catalogue). One genuine, self-contained gap.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Gauss-Legendre quadrature nodes/weights + 1D/2D definite-integral integrators (Newton-on-Legendre generator reproducing OCCT's `math.cxx` table to 14 dp, `gauss_points_max`) | implemented `numeric/oce_gauss_legendre.py` | OCCT hard-codes the abscissae/weights for N=1..61; **the harness had zero numerical quadrature** (all 71 "gauss" hits were Gaussian noise/diffusion) |
+| B-rep/NURBS kernel, STEP I/O, OCCT API, Bernstein/Bezier | already in repo | `numeric/nurbs_basis.py`, `geometry/nurbgen_*`, `formats/stepllm_parser.py`, `backends/ocp_occt_api_catalog.py`, `geometry/dreamcad_rational_bezier.py` |
+| "Patches"/known-issues catalogue | N/A | repo is a full OCCT source mirror, not a patch set |
+| Rest of OCCT (BOP, meshing, viewer, solvers) | external | non-stdlib-portable C++ kernel |
+
+## Batch-11 implementation result
+
+Five repos, ~211 new tests. The batch's centre of gravity is foundational
+geometry the harness had been missing entirely: interval arithmetic and
+forward-mode autodiff over a reified f-rep graph, dual contouring with QEF,
+adaptive exact-sign 3D predicates, a half-edge mesh with circulation, a 3D BVH,
+triangle-triangle intersection, a winding-number inside test, and Gauss-Legendre
+quadrature. Together libfive + manifold give the harness both an implicit
+(f-rep) and an explicit (mesh-boolean) robust-geometry substrate for the first
+time. The two covered benchmarks (mrCAD, muse) yielded only implementation-level
+gaps, including a sixth metric divergence (mrCAD point-to-curve vs point-to-point
+design distance) and a scoring-semantics finding in the harness's own MUSE
+scorecard (watertight/manifold double-count), left as a user decision. Per the
+no-README policy the suite count is tracked in audit/cadbible_progress.json.
