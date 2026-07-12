@@ -682,3 +682,79 @@ an inverted-`not`-precedence bug), and Curv's under-stated gyroid Lipschitz boun
 The batch was interrupted mid-flight by a session limit and cleanly resumed;
 per the no-README policy the suite count is tracked in
 audit/cadbible_progress.json.
+
+## Batch 10 (repos 46-50)
+
+Two FreeCAD integrations, both halves of the Gaudi product, and a covered-paper
+reference impl. The frontend correctly yielded nothing; the rest paid out.
+
+### 46. freecad-ai-master
+
+An AI-assistant workbench for FreeCAD (LLM agent loop + Qt panels + MCP glue,
+all external). The deterministic core is the ~53-operation tool catalogue, the
+FreeCAD expression language, and a relative-edit mini-language.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| FreeCAD workbench operation catalogue: 53 operations (16 PartDesign, 5 Part, 3 Assembly, 3 Spreadsheet, 2 Sketcher, 1 Draft, + inspection/document/composite), each with workbench + category + typed param schema; `check_call` validates op name / required params / enum domains with difflib near-miss repair; JSON-schema emit | implemented `adapters/fcai_freecad_tool_catalog.py` | distinct from `backends/ocp_occt_api_catalog.py` (OCCT kernel C++ classes) and `generation/query2cad_macro.py` (Part primitives+booleans only); no existing module covers the PartDesign parametric feature-tree taxonomy |
+| FreeCAD parametric expression engine: recursive-descent parser + evaluator for dotted property refs (`Variables.height`, `Box.Placement.Base.x`), `[index]` subscripts, arithmetic (right-assoc power), unit literals (mm/cm/m/in/ft/deg/rad -> base units), functions; reports the dependency reference set for recompute ordering; no `eval` | implemented `programs/fcai_expression_engine.py` | `programs/scadlm_ast.py` and `t2cq_ast.py` model OpenSCAD/CadQuery; neither covers FreeCAD's spreadsheet/property expression grammar. Genuinely new |
+| Relative property-edit resolver: `modify_property`'s mini-language (`+10%`, `-20%`, `*1.5`, `+5`, absolute) as a pure function returning structured Resolution (kind/previous/resolved/delta) with optional clamp | implemented `library/fcai_relative_value.py` | new small deterministic utility |
+| Tool registry mechanics, OpenAI/Anthropic/MCP schema emitters | already in repo | `agent/`, `surfaces/mcp/`, `agent/toolcad_tool_schema.py` -- only the FreeCAD-specific content was extracted |
+| LLM agent loop (20 providers), Qt GUI, live FreeCAD calls | external | trained model / UI / host |
+
+### 47. freecad_mcp-main
+
+A thin MCP server (~350 LOC) exposing FreeCAD via two `exec` escape-hatch tools.
+Generic MCP plumbing the harness already owns; one FreeCAD-specific artifact.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| FreeCAD document-object-model wire codec: DocumentContext/FreeCADObject/Placement/Rotation/ShapeInfo/DocumentInfo/ViewState dataclasses + encode/decode reproducing the exact `get_document_context()` JSON (TypeId, Name-vs-Label, ViewObject.Visibility, Placement as position + axis-angle, Coin3D camera quaternion), round-trip stable; `parse_type_id`; `validate_context` | implemented `formats/fcmcp_document_model.py` | new. `surfaces/mcp/` encodes CISP ops + a generic `cad://model/tree`, not a FreeCAD object tree; `ocp_occt_api_catalog` catalogues API symbols, not a document instance |
+| Placement axis-angle maths (axis_angle<->quaternion in FreeCAD/Coin3D (x,y,z,w) order) | implemented `formats/fcmcp_document_model.py` | new; FreeCAD stores rotations as axis+angle, cameras as quaternions |
+| Live FreeCAD socket RPC, FastMCP transport, the two exec tools | external / covered | harness has a full MCP server; arbitrary exec is not a deterministic op catalogue |
+
+### 48. gaudi-backend-main
+
+A text-to-*architecture* backend: a building is an ordered stack of extruded 2D
+plates (vertex / parametric / mixed profiles). Web/LLM/Blender layers external.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Plate-stack building DSL schema + one-pass validator (per-category required/optional keys, thickness>0, formula x&y, range/steps, rotation, position; building-wide name uniqueness; `normalize_plate` fills defaults) | implemented `spec/gaudi_plate_spec.py` | new. Gaudi feeds raw dicts straight into bpy with no validation; harness has sketch-extrude/command IRs but no stacked-extruded-profile architectural plate IR |
+| Safe parametric-curve profile sampler without `eval`: ast-whitelist evaluator with free var `t`, math funcs, constants; half-open `sample_curve`; profile hygiene (signed area, ensure_ccw, dedupe, is_degenerate) | implemented `geometry/gaudi_parametric_profile.py` | **replaces the upstream unsafe `eval`**. `numeric/opencad_param_expression.py` is a named-parameter-table evaluator (no free variable, no curve sampling) |
+| Deterministic building assembly: per-category outline resolution (incl. closed Catmull-Rom for `mixed`), AABB xy-centering, rotate_z, z auto-stacking by cumulative thickness, Building/PlacedPlate rings | implemented `generation/gaudi_building_assembly.py` | new orchestration. `geometry/solidpy_extrude_along_path.py` covers generic prism meshing, so no extruder was rebuilt -- only the plate-stack placement logic |
+| Generic polygon->prism extrusion; LLM prompt/repair loops; Flask/JWT/Docker/bpy | already in repo / external | `geometry/solidpy_extrude_along_path.py`, `generation/*` + `reliability/*repair*`; web/render external |
+
+### 49. gaudi-frontend-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| (none) | out-of-scope, nothing built | A Create-React-App chat UI (React 18 + three.js GLB viewer + GLSL blob) for the Gaudi product; all CAD logic is server-side behind `API_BASE_URL`. No client-side CAD schema, constraint system, deterministic geometry algorithm, or DSL; the only math is stock three.js camera/OrbitControls/Box3 auto-fit already covered by `drawings/arcs_viewport_transform.py`. Building anything here would be gold-plating |
+
+### 50. hnc-cad-main
+
+Reference impl of HNC-CAD (ICML 2023, paper 105). Its data pipeline IS SkexGen's,
+so canonical ordering / S-P-L tree / 6-bit quant / VQ assignment were already
+mined. Two implementation-level findings remained.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 25-frame discrete extrude-orientation codebook: clip the plane's three axis vectors to {-1,0,1}, concatenate to length-9, require exact match against 25 canonical patterns -> categorical index in [0,25); doubles as an in-distribution validator | implemented `reconstruction/hnc_rotation_codebook.py` | **representation difference:** the DeepCAD family (`deepcad_sketch_plane`, `deepcad_command_spec`) stores continuous ZYZ angles; SkexGen stores 9 independently-rounded matrix components. HNC collapses orientation to one of 25 categories. The 25 frames are NOT the 24 proper rotations and are not orthonormal (frame 0's x-axis is `(-1,-1,0)`) -- an empirical clipped set |
+| Flat CAD command/param codec: 6-int vocab with end-tokens promoted to command types (SKETCH_END/FACE_END/LOOP_END/LINE/ARC/CIRCLE), implicit-endpoint start-only curves (arc = start+mid, no end; circle = 4 cardinal points), 8-slot params, 11-slot extrude packing, two normalizations (loop-level half-diagonal vs sequence half-extent) | implemented `reconstruction/hnc_cad_vec_codec.py` | distinct vocab/width/normalisation vs `deepcad_command_spec` (16-slot, SOL/EOS pair) and `hnc_spl_tree` (hierarchical). **Code/comment mismatch found:** the `quantize` docstring says `n_bits**2 - 1` but the code uses `2**n_bits - 1`; reproduced the code (authoritative) |
+| S-P-L tree, canonical ordering, 6-bit quant, sha256 dedup, VQ nearest-code | already in repo | `reconstruction/hnc_spl_tree.py`, `skexgen_canonical_order.py`, `hnc_code_assignment.py`, `deepcad2_arc_macro.py` |
+| VQ-VAE + cascaded autoregressive transformers | research-heavy/external | trained models |
+
+## Batch-10 implementation result
+
+Five repos, ~193 new tests (46: 79, 47: 19, 48: 72, 49: 0, 50: 22). Two FreeCAD
+integrations added a FreeCAD-specific layer the harness lacked: a PartDesign
+feature-operation catalogue, an eval-free parametric expression engine (dotted
+refs, unit literals, dependency tracking), and a document-object wire codec.
+Gaudi contributed a text-to-architecture plate-stack DSL and, notably, replaced
+an upstream unsafe `eval` in its parametric-curve sampler with an AST-whitelisted
+one. The frontend was correctly out-of-scope. hnc-cad produced the campaign's
+fifth reference-representation finding (a 25-frame orientation codebook unlike the
+whole DeepCAD family) plus another code/comment mismatch resolved in favour of the
+code. Two gaudi-backend test files were placed in package-local tests/ dirs by the
+agent and relocated to the top-level tests/ so the canonical runner collects them.
+Per the no-README policy the suite count is tracked in audit/cadbible_progress.json.
