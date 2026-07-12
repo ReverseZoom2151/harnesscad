@@ -2209,3 +2209,63 @@ Notable new capabilities: categorical/discrete diffusion (SketchDNN, all
 prior diffusion was Gaussian-only) and the SketchGraphs relational constraint
 hypergraph. Per the no-README-during-campaign policy, the suite count is
 tracked in audit/text_to_cad_progress.json.
+
+### 166. SldprtNet - A Large-Scale Multimodal Dataset for CAD Generation in Language-Driven 3D Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Hierarchical feature-tree parametric representation (13 SolidWorks feature types) | **implemented** | `reconstruction/sldprtnet_feature_tree.py` |
+| Five-modality aligned record (sldprt/step/7-view/encoder_txt/description) | **implemented** | `dataengine/sldprtnet_record.py` |
+| Four-level complexity taxonomy + curriculum | **implemented** | `dataengine/sldprtnet_complexity.py` |
+| Acquisition cleaning + feature-signature dedup | **implemented** | `dataengine/sldprtnet_cleaning.py` |
+| Dataset statistics + quality report | **implemented** | `bench/sldprtnet_statistics.py` |
+| Learned captioner + SolidWorks API | **research-heavy/external** | trained model / host |
+
+### 167. STEP-LLM - Generating CAD STEP Models from Natural Language with Large Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| ISO 10303-21 STEP parser/serializer + round-trip | **implemented** | `formats/stepllm_parser.py` |
+| Simplified STEP schema subset for common CAD entities | **implemented** | `formats/stepllm_schema.py` |
+| Entity-reference graph + validity check | **implemented** | `formats/stepllm_graph.py` |
+| DFS reserialization + CoT branch annotations | **implemented** | `ingest/stepllm_reserialize.py` |
+| Completion/Chamfer metrics + geometric reward | **implemented** | `bench/stepllm_metrics.py` |
+| NL->STEP-skeleton builder | **implemented** | `formats/stepllm_skeleton.py` |
+| LLM + captioning + training | **research-heavy/external** | trained models |
+
+### 168. TAR3D - Creating High-Quality 3D Assets via Next-Part Prediction
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Triplane representation (XY/YZ/XZ projections + visual-hull back-projection) | **implemented** | `geometry/tar3d_triplane_grid.py` |
+| Voxel-native part decomposition (6-connected + canonical order + assembly) | **implemented** | `geometry/tar3d_voxel_parts.py` |
+| Next-part-prediction sequence + teacher-forcing targets | **implemented** | `reconstruction/tar3d_part_sequence.py` |
+| TriPE RoPE positional encoding | **implemented** | `geometry/tar3d_tripe.py` |
+| Learned VQ-VAE + GPT generator | **research-heavy/external** | trained models |
+
+### 169. Text-to-CAD Evaluation with CADTESTS
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Queryable B-rep model schema + similarity transforms | **implemented** | `bench/cadtests_model.py` |
+| CADTEST assertion primitives (six categories) | **implemented** | `bench/cadtests_assertions.py` |
+| Suite runner (conjunction, requirement grouping, pose/scale-invariance) | **implemented** | `bench/cadtests_runner.py` |
+| CADTESTBENCH metrics + mutation analysis | **implemented** | `bench/cadtests_metrics.py` |
+
+### 170. Text-to-CAD Generation Through Infusing Visual Feedback in Large Language Models
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Multi-aspect visual score (quality/quantity/distribution proxy) | **implemented** | `dataengine/cadvf_visual_score.py` |
+| VF preference-data pipeline (best/worst + renderability + invalidity ratio) | **implemented** | `dataengine/cadvf_preference_pipeline.py` |
+| Alternate SL/VF training schedule | **implemented** | `generation/cadvf_alternate_schedule.py` |
+| LVM scorer + DPO training | **research-heavy/external** | trained models |
+
+## Batch-34 implementation result
+
+All deterministic and in-scope findings from papers 166-170 are implemented.
+Recovered from a session-limit + classifier-unavailable capacity block that
+paused the batch; all 5 papers re-run cleanly after capacity returned.
+Notable new capability: a full ISO 10303-21 STEP parser/serializer (STEP-LLM),
+none existed. Per the no-README-during-campaign policy, the suite count is
+tracked in audit/text_to_cad_progress.json.

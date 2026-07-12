@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 165,
-  "next_manifest_index": 166,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-165 implemented",
+  "reviewed_count": 170,
+  "next_manifest_index": 171,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-170 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -829,6 +829,31 @@
     {
       "index": 165,
       "paper": "SketchGraphs - Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 166,
+      "paper": "SldprtNet - A Large-Scale Multimodal Dataset for CAD Generation in Language-Driven 3D Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 167,
+      "paper": "STEP-LLM - Generating CAD STEP Models from Natural Language with Large Language Models.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 168,
+      "paper": "TAR3D - Creating High-Quality 3D Assets via Next-Part Prediction.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 169,
+      "paper": "Text-to-CAD Evaluation with CADTESTS.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 170,
+      "paper": "Text-to-CAD Generation Through Infusing Visual Feedback in Large Language Models.md",
       "status": "reviewed"
     }
   ],
