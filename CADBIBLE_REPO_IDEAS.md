@@ -861,3 +861,86 @@ gaps, including a sixth metric divergence (mrCAD point-to-curve vs point-to-poin
 design distance) and a scoring-semantics finding in the harness's own MUSE
 scorecard (watertight/manifold double-count), left as a user decision. Per the
 no-README policy the suite count is tracked in audit/cadbible_progress.json.
+
+## Batch 12 (repos 56-60)
+
+An OCCT binding, two covered concepts, and the STEP/OpenSCAD tooling. The
+headline is ruststep's EXPRESS schema-language parser -- the harness could read
+STEP data but not the schema language that defines it.
+
+### 56. pythonocc-core-master
+
+SWIG bindings to the compiled OCCT kernel. Overwhelmingly external; one genuine
+kernel-independent algorithm in the pure-Python Extend/ layer.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Orientation-aware sub-shape dedup + `MapShapesAndAncestors` inverse-ancestor map, kernel-free (Shape as `(TShape, orientation)` identity; 24 oriented cube edges -> 12 unique; "which faces bound this edge?") | implemented `geometry/pyocc_topology_explorer.py` | lifted from `OCC/Extend/TopologyUtils.py::TopologyExplorer`. Distinct from `reconstruction/cadparser_brep_graph.py` (coedge half-edge graph), `geometry/manifold_halfedge.py` (triangle-mesh half-edge), `geometry/opencad_synthetic_topology.py` -- none model the TopAbs containment hierarchy or ancestor-map inversion |
+| ShapeFactory/DataExchange/LayerManager wrappers, is_* predicates, SWIG bindings | external / already in repo | thin kernel calls; API surface covered by `backends/ocp_occt_api_catalog.py` |
+
+### 57. querycad-main
+
+Reference impl of QueryCAD (ICRA 2025, paper 148). QA schema, grounding, and eval
+already built from the paper; two deterministic B-rep routines remained.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Edge-convexity classification (convex/concave/smooth via sign of `dot(cross(n_a,n_b), tangent)`) + Attributed Adjacency Graph (faces as nodes, convexity-labelled arcs, filtered-neighbour queries, convexity histogram) + dihedral angle | implemented `geometry/querycad_edge_convexity.py` | from HierarchicalCADNet `edge_dihedral`. New: harness had `mfgfeat_rule_detector` that *consumes* a per-face concave/convex flag but nothing that *computes* edge convexity from geometry |
+| Face-adjacency segmentation: connected-component prune within a feature whitelist (DFS), partition a tagged face-set into part instances, one-ring/N-ring dilation, boundary-face isolation | implemented `geometry/querycad_face_adjacency.py` | from `CADFaceUtils.prune_non_adj_faces`. New: `cascade_entity_selector`/`cq_selector_algebra` select by geometric predicate; none model topological connectivity |
+| Typed QA schema, segmentation grounding, grounded answer engine, QA eval | already in repo | `bench/querycad_query_schema.py`, `rag/querycad_segmentation_grounding.py`, `reconstruction/querycad_answer_engine.py`, `bench/querycad_eval.py` |
+| Image ray-casting grounding, GNN feature segmentation, GroundedSAM | external | OCCT kernel + trained GNN |
+
+### 58. ruststep-master
+
+ruststep: ISO 10303 in Rust + its espr EXPRESS compiler. The harness had a Part 21
+*data* parser but nothing for the EXPRESS schema *language*. Five new modules.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| EXPRESS (ISO 10303-11) schema-language parser + model: tokenizer (`--` and `(* *)` comments), SCHEMA/ENTITY/TYPE, shared + OPTIONAL attributes, SUBTYPE OF, ABSTRACT, SUPERTYPE OF (ONEOF/ANDOR/AND), DERIVE/INVERSE/UNIQUE/WHERE, ENUMERATION/SELECT, aggregates LIST/SET/ARRAY/BAG with bounds, redeclared attributes | implemented `spec/express_schema_parser.py` | reimplements espr's parser/ + ast/ (nom -> recursive descent). **Not in the harness** -- `formats/stepllm_schema.py` is a fixed 24-entity dict. **Parses 662/664 real ISO `.exp` schemas** incl. AP214 (890 entities) |
+| Inheritance graph + attribute flattening: transitive supertype/subtype edges, roots/leaves, cycle detection, diamond-safe flattened attribute list (inherited before local), nested SELECT expansion | implemented `spec/express_inheritance.py` | reimplements espr's ir/ legalize stage. Not in the harness |
+| Part 21 string X-encoding codec (decode/encode `\X\HH`, `\X2\..\X0\`, `\X4\..\X0\`, `\S\c`, `\\`) | implemented `formats/step_p21_xstring.py` | **fills a gap in `stepllm_parser`** -- it returns X-directives verbatim (`\X2\00E9\X0\` instead of `cafe`), with no way to recover the Unicode. Round-trips as literal text so not data-loss, but a semantic gap |
+| Structured HEADER model (typed FILE_DESCRIPTION/FILE_NAME/FILE_SCHEMA accessors + schema_name) | implemented `formats/step_header_model.py` | `stepllm_parser` keeps the header as an unstructured `Typed` list |
+| Schema-to-Part21 validator: each DATA instance checked against a parsed EXPRESS schema (entity declared, inheritance-aware arity via flattened attrs, structural type-kind match, `$` vs OPTIONAL, complex-instance parts) | implemented `spec/express_p21_validator.py` | only possible now both parsers exist. `stepllm_graph.validate` checks arity against an entity's OWN attributes only -- wrong for any subtype, since real records list inherited attributes first |
+| Rust struct codegen | external | mechanism; the schema model it consumes was ported |
+
+**Findings vs `formats/stepllm_parser.py`** (all gaps, not overstated as bugs):
+X-encoded strings returned verbatim (fixed by the codec); header unstructured
+(fixed by the header model); validation ignores inheritance (fixed by the
+validator, which flattens the supertype chain); and a minor ed.3 `DATA(...)`
+parametrized-section limitation, noted not fixed (out of scope).
+
+### 59. scad-clj-master
+
+A Clojure -> OpenSCAD generator. Its data-first CSG form and the OpenSCAD facet
+formula were both absent from the harness.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Data-first keyword-tagged S-expression CSG IR + `write_scad` emitter (nested tuples, radian-rotation-to-degrees on emit, `$fn/$fa/$fs` dynamic-binding resolution via context managers, include/use/import/call/define_module, excise, postwalk transform) | implemented `programs/scadclj_data_ir.py` | `programs/solidpy_scad_emit.py` is a mutable object tree with no ambient special-variable resolution and passes rotation angles through untouched; `libfive_frep_ir` is an SDF opcode DAG. Data-first inert-tuple CSG + radian-rotate + dynamic `$fn` is distinct. Output round-trips through `scadlm_ast.parse` + `scadlm_check` |
+| OpenSCAD facet-count resolution `get_fragments_from_r` (`$fn/$fa/$fs` -> fragment count: `ceil(max(min(360/fa, 2*pi*r/fs), 5))`) + exact CCW circle polygon, sphere rings, chord-error inverse | implemented `geometry/scadclj_facets.py` | **absent from the harness** (grepped `get_fragments`/`fragments_from`/`fn_fa_fs`: no hits). `scadlm_check` lists `$fn/$fa/$fs` as valid params but never resolves them. This governs how every curved OpenSCAD primitive tessellates |
+| Solid line/lines capsule geometry: direction-to-rotation math (`acos(dz/len)`, axis `[-dy,dx,0]`) carrying +Z onto a segment, degenerate cases handled | implemented `geometry/scadclj_line.py` | no existing helper builds a solid strut between two 3D points. Fixes the source's bug (end caps left at origin, not the true endpoints) |
+| Clojure/JVM runtime, core.matrix, glyph-outline text | external | needs font data |
+
+### 60. scad-hs-master
+
+A Haskell typed OpenSCAD EDSL. Overlaps heavily with existing typed-CSG/emitter/
+gear modules, as anticipated; two Haskell-distinct algebraic pieces remained.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| SetLike normalising CSG combinator laws (associative union/intersection flattening + difference subtrahend-absorption: `a-b-c-d` -> `difference(a, union(b,c,d))`) | implemented `geometry/scadhs_csg_algebra.py` | genuinely new. angelcad/solidpy/scadlm treat union/intersection/difference as opaque n-ary nodes; none apply the algebraic smart-constructor laws. Ported from `Class.hs` SetLike instance |
+| Content-addressed module extraction / CSE (`smodule`/`#`/`##` with `children()` placeholder + `mdl_N` memo naming) + an added `auto_modularize` CSE pass detecting repeated subtrees | implemented `programs/scadhs_module_cse.py` | genuinely new -- nothing in the harness hoists shared subtrees into named OpenSCAD modules. Faithful port of scad-hs's memo table |
+| Typed 2D/3D phantom dimension; SCAD emission/modifiers; involute/planetary gears | already in repo | `programs/angelcad_typed_csg.py`, `programs/solidpy_scad_emit.py`, `geometry/cadgpt_involute_gear.py` + `cadgpt_gear_train.py` + `cqplug_bevel_gear.py` |
+
+## Batch-12 implementation result
+
+Five repos, ~231 new tests. ruststep contributed the campaign's most complete
+STEP work: an EXPRESS schema-language parser validated against 662/664 real ISO
+schemas, an inheritance flattener, an X-string codec, a structured header, and a
+schema-driven validator -- plus three characterised gaps in the harness's
+existing Part 21 parser. scad-clj filled a real OpenSCAD gap (the facet-count
+formula that governs all curved-primitive tessellation). pythonocc and scad-hs
+were correctly disciplined (one/two genuine deltas from otherwise-covered repos),
+and querycad yielded its two paper-omitted B-rep routines. Per the no-README
+policy the suite count is tracked in audit/cadbible_progress.json.

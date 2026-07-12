@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 55,
-  "next_repo_index": 56,
+  "reviewed_count": 60,
+  "next_repo_index": 61,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -250,9 +250,14 @@
     "manifold-master",
     "mrCAD-main",
     "muse-main",
-    "oce-oce-patches"
+    "oce-oce-patches",
+    "pythonocc-core-master",
+    "querycad-main",
+    "ruststep-master",
+    "scad-clj-master",
+    "scad-hs-master"
   ],
   "suite_tests": 13630,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "Batch 11 (repos 51-55) complete -- strongest geometry batch: libfive (f-rep IR, interval arithmetic, forward-mode AD, dual contouring+QEF) and manifold (exact 3D predicates, half-edge mesh, 3D BVH, tri-tri intersection, winding-number inside) give the harness both implicit and explicit robust-geometry substrates; oce added Gauss-Legendre quadrature. suite_tests recount pending (/tmp/cb11.txt). Next: batch 12 = repos 56-60 (check os.listdir; starts pythonocc-core-master, a large OCCT binding -> likely little new). OPEN for user (do not action): (1) t2cq_ast CHAIN_METHODS subset scope; (2) muse_scorecard watertight/manifold double-count -- muse2_geometry_issue_flags.to_funnel_geometry() available to fix consistently; (3) deferred README rewrite. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler."
+  "note": "Batch 12 (repos 56-60) complete. ruststep gave the fullest STEP work: an EXPRESS schema-language parser (662/664 real ISO schemas) + inheritance flattener + X-string codec + header model + schema-driven validator, plus 3 characterised gaps in formats/stepllm_parser.py. scad-clj added the OpenSCAD $fn/$fa/$fs facet formula. suite_tests recount pending (/tmp/cb12.txt). Next: batch 13 = repos 61-65 (check os.listdir: sdf-csg-master, sdfx-master, solidtype, spatialhero, vitruvion likely). sdf-csg + sdfx are SDF repos -> dedup HARD vs the new curv_sdf_* AND libfive_* modules (harness now has extensive SDF: primitives, combinators, transforms, TPMS, sphere tracer, f-rep IR, interval arithmetic, dual contouring, forward-mode AD). Final batch 14 = repos 66-70; 'zip' #70 may be a junk archive -> skip if so. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user (do not action): (1) t2cq_ast subset scope; (2) muse_scorecard double-count; (3) deferred README rewrite -- now near due (campaign ~86% done)."
 }
