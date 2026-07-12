@@ -152,7 +152,7 @@
       "status": "reviewed (partial: sketch-path sampler pending)"
     }
   ],
-  "suite_tests": 9798,
+  "suite_tests": 9977,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "harness already has 186-paper corpus implemented (see text_to_cad_progress.json); dedup strictly"
 }
