@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 35,
-  "next_repo_index": 36,
+  "reviewed_count": 40,
+  "next_repo_index": 41,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -230,9 +230,14 @@
     "Text-to-CadQuery-main",
     "Text2CAD-main",
     "UV-Net-main",
-    "WhatsInAName-main"
+    "WhatsInAName-main",
+    "angelcad-master",
+    "arcs-master",
+    "cadgenbench-main",
+    "cadhub-main",
+    "cadquery-contrib-master"
   ],
-  "suite_tests": 12168,
+  "suite_tests": 12782,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "harness already has 186-paper corpus implemented (see text_to_cad_progress.json); dedup strictly"
+  "note": "Batch 9 (repos 41-45) launched but all five agents died at the session limit (2026-07-13 ~03:20 Bucharest) mid-repo. Six passing, self-contained modules were committed (cadquery-plugins: teardrop + heatsert; comet: memory consolidation + dual-channel fusion; curated-code-cad: ecosystem KB + backend selector). Untested/failing partials removed: cq_selector_algebra (repo 41, no test), cqplug_region_selectors (repo 42, 5 failures), comet_progressive_tiers (repo 43, no test), curv_sdf_primitives (repo 45, 1 failure). Repos 41-45 are NOT closed; re-run each fresh on resume - agents dedup against the committed modules. suite_tests here excludes the six batch-9 partials."
 }

@@ -459,3 +459,118 @@ UV-Net contributed the largest genuinely-new capability (sampled-geometry B-rep
 graphs); Text-to-CAD-dean, despite being a hobby app, closed three format gaps
 (stdlib STL, GLB, OpenSCAD CLI export). Per the no-README policy the suite count
 is tracked in audit/cadbible_progress.json.
+
+## Batch 8 (repos 36-40)
+
+### 36. angelcad-master
+
+AngelCAD (C++/AngelScript CSG language). Its real contribution is that the CSG
+language is *statically typed*: `solid` and `shape2d` are distinct types, so the
+2D/3D mixing bug that OpenSCAD (and every LLM writing OpenSCAD) commits silently
+is a compile error there.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Typed CSG AST + 2D/3D dimension checker (typed opAdd/opSub/opAnd/opMul, extrudes the only 2D->3D ops, projection2d the only 3D->2D one) with structured diagnostics (dim-mismatch, arity, param missing/type/range, index-range, face-degenerate, unknown-op) | implemented `programs/angelcad_typed_csg.py` | from `as_csg.cpp` register_types + shape/solid/shape2d headers. Genuinely different from the harness's untyped OpenSCAD front end (`programs/scadlm_ast.py`, `geometry/scadlm_csg_eval.py`), which cannot catch `circle(3) + cube(2)` |
+| `tmatrix` value type: composable 4x4 transforms, translate/rotate/scale/mirror, `hmatrix` frame orthonormalisation, xdir/ydir/zdir/origin, exclusive deg/rad angles | implemented `programs/angelcad_typed_csg.py` | complements `geometry/codetocad_transform_stack.py` (different convention; here the matrix is a first-class DSL node) |
+| XCSG XML CSG-tree interchange (read+write), transform composition collapsed at serialisation, byte-stable output, exact `dumps(loads(x)) == x` | implemented `formats/angelcad_xcsg_xml.py` | harness had mesh formats (STL/GLB) and OpenSCAD text but no typed CSG *tree* format |
+| AMF (ISO/ASTM 52915) codec: unit-bearing indexed XML mesh, multi-object/multi-volume lumps, metadata, plain-XML and reproducible-ZIP flavours, lump fusion, per-lump vertex compaction | implemented `formats/angelcad_amf_codec.py` | new format (harness had STL + GLB only) |
+| Polyhedron construction/validation + mass properties: Newell normals, `verify` (index range, degenerate/repeated/zero-area/non-planar faces, boundary edge, non-manifold edge, inconsistent orientation, unused vertex, inward winding), signed volume, area, centroid, inertia tensor (tet decomposition + parallel axis), flip/orient | implemented `geometry/angelcad_polyhedron.py` | nothing in the harness checked manifoldness or orientation, or computed inertia |
+| Kernel-free bounding-box propagation over the CSG tree (per-operator rules: union/hull enclose, difference bounded by first operand, intersection = overlap, minkowski = box sum, extrudes lift 2D->3D, transform re-encloses 8 corners) + `fits_within` build-volume check + `is_provably_empty` | implemented `geometry/angelcad_csg_boundingbox.py` | distinct from `geometry/solidpy_bounding_box.py` (point-list boxes + print-bed splitting, no per-operator CSG rules). Gives a free pre-kernel gate |
+| OpenSCAD `.csg` emission, csgfix/dxfread/polyfix, AngelView GUI, OCCT boolean engine | already in repo / external | `programs/solidpy_scad_emit.py`, `formats/dxf_contract.py`; kernel/UI/fonts |
+
+### 37. arcs-master
+
+`arcs` (Michael-F-Bryan): a 2D CAD framework in Rust on an ECS architecture. The
+ECS/rendering layer is app plumbing; the geometry core filled five real gaps.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Ramer-Douglas-Peucker polyline decimation (cross-product perpendicular distance, degenerate-base fallback, first-max split for determinism, endpoint preservation) | implemented `geometry/arcs_polyline_simplify.py` | harness only *mentioned* Douglas-Peucker in a `vision/rastercad_vectorize.py` docstring; no implementation existed |
+| Closest-point queries with multiplicity (ONE/MANY/INFINITE): clamped segment projection, arc radial projection, exact endpoint-tie detection, polyline variant | implemented `geometry/arcs_closest_point.py` | harness had only `geometry/joinable_joint_axis.closest_point_on_line` (unclamped, 3D infinite line, single result). Also supplies a branch-cut-safe `contains_angle` (the Rust version compares raw angles and breaks across +/-pi) |
+| Sagitta/chord-tolerance arc tessellation: `theta = 2*acos(1 - tol/R)`, `N = ceil(sweep/theta)`, inverse `chord_error(N)`, degenerate guards | implemented `geometry/arcs_chord_tolerance.py` | harness had only fixed-count sampling (`geometry/gencad2_arc_vector.sample_arc_points(n=32)`); no tolerance-driven segment count |
+| Viewport model: drawing-space <-> canvas-space affine (y-flip, pixels-per-unit, centred window), invert/compose, pixel-vs-drawing `Dimension`, zoom/pan, visible bounds, zoom-to-fit | implemented `drawings/arcs_viewport_transform.py` | no world<->screen viewport existed (`vision/cvcad_pixel_calibration` is a camera scale estimator; `drawings/cad2program_canvas_layout` lays out sheets) |
+| AABB quadtree spatial index: insert/modify/remove, query_point(p, radius), query_region, straddling items held at the parent, world auto-grow | implemented `geometry/arcs_quadtree_space.py` | harness had no spatial index, only `ingest/spatial_order.morton2` (z-order key, no queries) |
+| Arc-from-three-points / circumcentre / orientation predicate; exact arc bbox; affine transforms | already in repo | `bench/mrcad_metrics`, `geometry/euclid_validity.orient`, `geometry/gencad2_arc_vector.arc_bbox` |
+| ECS storage, flagged-storage change events, piet canvas rendering | out-of-scope | specs/piet plumbing |
+
+**Upstream bug not inherited:** `BoundingBox::intersects_with` in the Rust source
+is an acknowledged stub (`// FIXME`) that delegates to `fully_contains`, so
+overlapping-but-not-contained boxes are silently missed. The port implements the
+real separating-axis test and pins it with a regression test.
+
+### 38. cadgenbench-main
+
+A CAD-generation benchmark. Seven modules, each built because its metric
+*definition differs* from an existing harness metric rather than duplicating it.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Mesh-derived solid Betti numbers (union-find components + even-odd ray-cast parity + `b1 = b0 + b2 - chi/2`) and topology score `exp(-alpha*abs(log((c+1)/(g+1))))`, alpha=2, aggregated as a **product** | implemented `bench/cgb_mesh_betti.py` | `bench/topodiff_topology_consistency.py` computes Betti from *voxels* and scores *exact-match indicators*; `bench/evocad_topology_metrics.py` only compares Euler chi. **Differs**: graded log-ratio (2 vs 4 holes -> 0.36, not 0.60) and product aggregation, so one wrong invariant collapses the axis |
+| Interface match: keep-out/keep-in sub-volume contract, bounded pose search (deterministic Halton grid, saturation early-exit), IoU pass/fail ramp (>=0.95 -> 1.0, <=0.80 -> 0.0, linear), group = **min** of features, sample = **mean** over groups | implemented `bench/cgb_interface_match.py` | nothing modelled keep-in/keep-out regions or min-then-mean aggregation; `bench/solid_iou.py` is a raw best-IoU over axis alignments |
+| CAD Score composition: validity as a **hard gate**, 0.4/0.4/0.2 generation vs 0.6/0.3/0.1 editing weights, missing axes **renormalize** the weights, editing shape renormalized against the no-op baseline `max(0,(s-b)/(1-b))` | implemented `bench/cgb_cad_score.py` | `bench/criteria.py`, `muse_scorecard.py`, `t2cadbench_scorecard.py` do weighted aggregation but none gates on validity, renormalizes over absent axes, or anchors an edit metric to the no-op |
+| Run aggregation + leaderboard: valid/invalid/**missing** trichotomy, zeros included in the aggregate (the anti-gaming rule), validity_rate, open per-task-type buckets, deterministic ranking | implemented `bench/cgb_run_summary.py` | `bench/runner.py`, `graphcad_cadbench_report.py` aggregate but none models "missing candidate" as distinct from "invalid" nor forces non-scorable samples to zero |
+| Validity gate + advisory tier: BREP/watertight/manifold gate; advisory-only flags (min face area, face aspect, BREP tolerance) that flag fragile geometry but **never** move the score | implemented `verifiers/cgb_validity_gate.py` | `verifiers/geometry.py:BRepValidityCheck` reports validity as a diagnostic (no gate, no advisory tier) |
+| Submission contract: fixed candidate names, empty file != candidate, folders with no candidate preserved as `missing`, meta.json required keys, `agree_to_publish` defaults false and blocks acceptance | implemented `dataengine/cgb_submission_package.py` | no submission/packaging contract existed |
+| Canonical-pose contract: bbox centre at origin, extents ordered Lx>=Ly>=Lz, reference face on z=-Lz/2, canonicalization via a **proper** rotation (det +1, never a mirror), symmetry-ambiguity flag | implemented `quality/cgb_canonical_pose.py` | `bench/cadrille_orientation_align.py` brute-forces 24 rotations against a *target* by Chamfer; no target-free canonical frame or ambiguity flag |
+| Open3D ICP alignment, manifold3d IoU, renders, LLM baseline agent | research-heavy/external | kernel / ICP / renderer / LLM. The deterministic scaffolding around them is built above |
+
+### 39. cadhub-main
+
+CadHub (RedwoodJS code-CAD sharing platform). The web app is out of scope; the
+mineable core is its multi-language code-CAD abstraction layer.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Code-CAD language capability matrix / adapter registry (extension, entry file, execution model, artifact kinds, mesh export, parameter flavour, diagnostic dialect; queries + gap explanation) | implemented `adapters/cadhub_language_registry.py` | CadHub encodes this implicitly across `cadPackages/index.ts` + 4 controllers + 4 Dockerfiles; harness had `adapters/base.py` (live-CAD-app protocol) but no per-language code-CAD matrix |
+| Multi-language structured diagnostic parser (OpenSCAD / CadQuery traceback / JSCAD JS stack / curv) -> `Diagnostic(severity, file, line, column, message)` + sandbox-path scrubbing + caret source annotation | implemented `programs/cadhub_diagnostics.py` | CadHub only regex-strips the tmp path; the message stays opaque. Harness had OpenSCAD-only *line-bucket* classification (`fabrication/t2cdean_openscad_export.classify_result`) -- no line/column extraction, no other dialects |
+| Unified cross-language customizer parameter schema (OpenSCAD manifest / JSCAD getParameterDefinitions / CadQuery --getparams -> one neutral model) + value validation (clamp/truncate/enum-reset with issue reports) + params.json writer | implemented `programs/cadhub_param_schema.py` | harness had `programs/cadam_scad_customizer.py` (OpenSCAD *source* annotations only) -- no manifest ingestion, no neutral model, no value validation |
+| Render-request canonicalisation + cache key: camera quantisation to 1 dp so orbit jitter hits the same cache entry, DPR viewport sizing, per-language settings whitelist, sha256 key | implemented `backends/cadhub_render_request.py` | harness had only a CLI-export plan key (source+format+defines), no preview/camera/viewport request model |
+| Single-blob artifact+metadata envelope codec (gzipped, sentinel-delimited) with lenient decode | implemented `backends/cadhub_concat_payload.py` | ports `runScad.ts`. **Two hardenings**: split on the LAST sentinel (binary STL can contain it by chance) and `mtime=0` gzip so blobs are content-addressable |
+| Docker/lambda runners, Prisma schema, React IDE, auth | out-of-scope | web-app/deployment surface |
+
+### 40. cadquery-contrib-master
+
+A corpus of 21 real community CadQuery programs. Valuable not as a library but as
+*evidence of how the API is actually used*.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Deterministic CadQuery API-usage profiler (ast-based: method counts, positional-arity histograms, kwargs, chain shapes, selector literals) + diff against a declared method table -> unknown-method and arity-violation reports | implemented `programs/cqcontrib_api_profile.py` | harness had no API-surface profiler; `programs/t2cq_ast.py` only hard-codes `CHAIN_METHODS` |
+| CadQuery string-selector DSL: tokenizer + recursive-descent parser + evaluator over face/edge sets (`>Z`, `<Y`, `>Z[1]`, `\|Z`, `#Z`, `+Z`, `%CIRCLE`, not/and/or/exc, parens) | implemented `geometry/cqcontrib_selector_dsl.py` | selectors appear 100+ times across the examples; no selector parser existed anywhere in the harness |
+| Hole feature geometry: hole/cboreHole/cskHole axial profiles, countersink-depth closed form, exact solid-of-revolution volumes, wall break-through predicate | implemented `geometry/cqcontrib_hole_features.py` | `library/parts.py` mentions a bearing counterbore pocket as a recipe; no general cbore/csk profile geometry existed |
+| Parametric enclosure/lid recipe as pure geometry: fillet-ordering rule (larger radius first), validity predicates, inner shell dims, screw-post centres, lid split z + lip footprint, exact rounded-box volumes | implemented `geometry/cqcontrib_enclosure.py` | distils Parametric_Enclosure.py + Remote_Enclosure.py; no enclosure/lid derivation module existed |
+| Loft/sweep between profiles; 2D offset+fillet; polar/rect arrays | already in repo | `geometry/solidpy_extrude_along_path.py`, `geometry/solidpy_path_offset.py`, `procedural/autocad_array.py` |
+| Assembly constraint solving, DXF export, makeRuledSurface, parametricCurve threads | external | needs the real CadQuery/OCCT runtime |
+
+**Correctness finding against `programs/t2cq_ast.py`** (profiling all 21 programs,
+112 distinct methods):
+- **Arity bug, fixed:** `moveTo` was declared `(2, 2)`, but CadQuery's signature is
+  `moveTo(x=0, y=0)` and the corpus calls it with one argument -- so `validate()`
+  was rejecting valid programs. Widened to `(0, 2)` with regression tests.
+- **Unknown methods** (corpus counts): `val`(31), `constrain`(23), `add`(20),
+  `transformed`(14), `parametricCurve`(9), `tag`(9), `rarray`(8), `end`(8),
+  `section`(6), `eachpoint`(5), `shell`(5), `toPending`(5), `vals`(5),
+  `cboreHole`(4), `polarArray`(4), `split`(4), `makeRuledSurface`(4),
+  `located`(4), `makePlane`(4), `exportDXF`(5). `shell`, `loft`, `cboreHole`,
+  `cskHole`, `polarArray`, `rarray`, `split` are core fluent modelling methods the
+  harness AST does not know. NOT silently widened: `t2cq_ast` is scoped to the
+  *paper's* CadQuery subset by design, and expanding its notion of "valid" would
+  change what the paper-comparison numbers mean. Left as an open scope decision.
+
+## Batch-8 implementation result
+
+Five repos, 515 new tests. The batch's best idea is angelcad's **typed CSG**: a
+dimension checker that catches `circle(3) + cube(2)` with zero geometry, which,
+combined with kernel-free bbox propagation, gives a cheap pre-kernel verifier
+tier (provably-empty intersections, does-not-fit-the-printer) the harness lacked.
+Three repos that looked out-of-scope (a Rust ECS app, a Redwood web app, a folder
+of examples) each hid a real gap: no spatial index / no RDP / no viewport; no
+multi-dialect diagnostics; no selector DSL and no API-usage evidence.
+
+Separately, a latent suite bug surfaced during this batch's recount: seven
+early-campaign test files were written as bare pytest functions, which
+`python -m unittest` never collects, so 26 assertions had never executed. All 26
+pass on first real execution (no module bug was hiding); 93 tests now run where 0
+did, and `tests/test_suite_collectable.py` fails loudly if a non-collectable test
+file is added again. Suite: 12,782 tests, zero failures.
