@@ -232,3 +232,67 @@ yielded implementation-level gaps from their REFERENCE CODE -- notably DeepCAD's
 released command index order differs from the paper order our spec uses, a
 silent permutation for real .h5 data. Per the no-README policy the suite count
 is tracked in audit/cadbible_progress.json.
+
+### 21. JoinABLe-main (CVPR 2022, Autodesk)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Joint-axis derivation from B-rep entity parameters + colinearity test | **implemented** | `geometry/joinable_joint_axis.py` |
+| Joint transform algebra (axis alignment, rotation param, Householder flip) | **implemented** | `geometry/joinable_joint_transform.py` |
+| Joint-type motion model (pose params, DOF projection, motion sampling) | **implemented** | `geometry/joinable_joint_motion.py` |
+| Joint-prediction metrics (hit@top-k over entity pairs, precision curve, MRR, axis error) | **implemented** | `bench/joinable_joint_metrics.py` |
+| B-rep joint entity features (type/area/convexity/dihedral + common-scale norm) | **implemented** | `reconstruction/joinable_entity_features.py` |
+| Trained GNN + mesh search | **research-heavy/external** | trained model |
+
+### 22. OCP-master (pybind11 OCCT bindings)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| C++ header declaration parser | **implemented** | `formats/ocp_cpp_header_parser.py` |
+| OCCT API catalog (class/method inventory, arity check, near-miss suggestions) | **implemented** | `backends/ocp_occt_api_catalog.py` |
+| Generated bindings / CMake / pywrap / LIEF symbol dump | **out-of-scope** | build tooling |
+
+### 23. OpenCAD-main (modular open CAD system)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Face identity across rebuilds (TOPOLOGICAL NAMING: fingerprint + provenance) | **implemented** | `geometry/opencad_face_fingerprint.py` |
+| Numeric constraint diagnostics (Jacobian, rank, DOF, Gauss-Newton) | **implemented** | `numeric/opencad_constraint_jacobian.py` |
+| Feature-tree rebuild engine (stale propagation, suppression, cascade guard) | **implemented** | `state/opencad_feature_rebuild.py` |
+| Parametric expression evaluator + parameter table | **implemented** | `numeric/opencad_param_expression.py` |
+| Synthetic analytic topology with semantic tags | **implemented** | `geometry/opencad_synthetic_topology.py` |
+| Shape-level kernel preflight + error taxonomy | **implemented** | `verifiers/opencad_kernel_preflight.py` |
+| Selector engine / op-log replay / typed registry | **already in repo** | cascade_entity_selector / opdag / cisp |
+| OCCT backend + LLM agent + React viewport | **research-heavy/external** | kernel / model / UI |
+
+### 24. ScadLM-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| OpenSCAD lexer + parser + typed AST + unparser | **implemented** | `programs/scadlm_ast.py` |
+| Deterministic SCAD -> CSG evaluator (kernel-free geometry oracle) | **implemented** | `geometry/scadlm_csg_eval.py` |
+| Static OpenSCAD validity gate (binary-free) | **implemented** | `programs/scadlm_check.py` |
+| Binary-free SCAD geometry metrics (voxel IoU + failure reasons) | **implemented** | `bench/scadlm_geometry_match.py` |
+| LLM + openscad binary + vision judge | **research-heavy/external** | model / binary |
+
+### 25. Sketch2CAD-master (SIGGRAPH Asia 2020)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 17-channel training-block codec (stdlib reimpl of a C++ TF op) | **implemented** | `drawings/s2cadsig_block_codec.py` |
+| Sketch-op vocabulary + branch router | **implemented** | `reconstruction/s2cadsig_op_router.py` |
+| Map -> CAD-parameter decoding (heat-map -> plane, camera-ray stroke lifting) | **implemented** | `reconstruction/s2cadsig_param_decode.py` |
+| Sketching-in-context incremental state machine | **implemented** | `editing/s2cadsig_session.py` |
+| Per-op evaluation metrics | **implemented** | `reconstruction/s2cadsig_metrics.py` |
+| Trained CNN | **research-heavy/external** | trained model |
+
+## Batch-5 implementation result
+
+Mined repos 21-25 (~620 new tests). Highlights: OpenCAD gave the TOPOLOGICAL
+NAMING problem (face identity across rebuilds) + the numeric half of
+constraint solving; ScadLM yielded a full OpenSCAD parser + kernel-free CSG
+evaluator the source repo itself lacks (it shells to the openscad binary);
+JoinABLe filled the joint axis/transform/motion gap (harness had only DOF
+counts); OCP -- a pure binding repo -- still gave a C++ header parser + OCCT
+API catalog that guards kernel-call hallucination. Per the no-README policy
+the suite count is tracked in audit/cadbible_progress.json.
