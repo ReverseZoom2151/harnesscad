@@ -807,6 +807,6 @@
       "status": "reviewed"
     }
   ],
-  "suite_tests": 7496,
+  "suite_tests": 7859,
   "readme_policy": "do not edit README during campaign; full rewrite pending; track suite_tests here"
 }
