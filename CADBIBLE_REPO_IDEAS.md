@@ -118,3 +118,52 @@ airfoil) + OpenSCAD-customizer parser; CADCLAW added tolerance stacking, beam
 screening, and exploded views. CAD2Program is a static site (paper 84 already
 covers it -> no build). Per the no-README policy the suite count is tracked in
 audit/cadbible_progress.json.
+
+### 11. CADTestBench-main (paper-169 reference impl)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| String-based CADTEST execution harness (run test as code string, AST model recovery, check() preamble, replay script) | **implemented** | `bench/cadtb_exec.py` |
+| CADTEST predicate / suite / metrics / mutation analysis | **already in repo (paper 169)** | bench/cadtests_* |
+
+### 12. CADTransformer-main (CVPR 2022 panel-symbol spotting)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Vectorized floorplan primitive graph (endpoint-KNN adjacency, 6-D node feature, perimeter formulas) | **implemented** | `drawings/cadtransformer_primitive_graph.py` |
+| Length-weighted primitive-instance panoptic metrics (mask-free SQ/RQ/PQ + F1) | **implemented** | `bench/cadtransformer_panoptic.py` |
+| Instance centroid-offset targets + vote-to-centroid clustering | **implemented** | `reconstruction/cadtransformer_instance_offsets.py` |
+| Transformer/HRNet backbones | **research-heavy/external** | trained models |
+
+### 13. CQ-editor-master (CadQuery GUI, ~95% Qt/OCC)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Qt-free code-edit text ops (comment toggle, indent, EOL, gutter) | **implemented** | `editing/cqeditor_code_edit.py` |
+| show_object result model (binding-name inference, seeded rand_color) | **implemented** | `programs/cqeditor_show_object.py` |
+| Module-registry snapshot/restore sandbox | **implemented** | `programs/cqeditor_module_sandbox.py` |
+| Qt/OCC viewer / debugger / inspector UI | **out-of-scope** | GUI |
+
+### 14. CQAsk-main (CadQuery LLM assistant) -- partial
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| CadQuery API reference/retrieval index | **implemented** | `generation/cqask_api_reference.py` |
+| Code-gen scaffold/sanitizer | **pending** | agent hit session limit mid-write; follow-up |
+| LLM | **research-heavy/external** | trained model |
+
+### 15. CascadeStudio-master (OCC.js/WASM web CAD) -- partial
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| CAD entity-selection heuristic (kernel-free edge selection) | **implemented** | `geometry/cascade_entity_selector.py` |
+| Sketch-path sampler | **pending** | agent hit session limit mid-write; follow-up |
+| OCC.js kernel / Three.js/Monaco UI | **out-of-scope** | kernel / UI |
+
+## Batch-3 implementation result
+
+Mined repos 11-15. CADTestBench (paper 169) + CADTransformer (CVPR) yielded
+implementation-level pieces; CQ-editor gave Qt-free text/module helpers. A
+session-limit interruption left CQAsk and CascadeStudio at module 1 each
+(module 2 pending as a follow-up); untested partials were removed. Per the
+no-README policy the suite count is tracked in audit/cadbible_progress.json.

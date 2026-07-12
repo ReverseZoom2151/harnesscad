@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 10,
-  "next_repo_index": 11,
+  "reviewed_count": 15,
+  "next_repo_index": 16,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -125,6 +125,31 @@
       "index": 10,
       "repo": "CADCLAW-main",
       "status": "reviewed"
+    },
+    {
+      "index": 11,
+      "repo": "CADTestBench-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 12,
+      "repo": "CADTransformer-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 13,
+      "repo": "CQ-editor-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 14,
+      "repo": "CQAsk-main",
+      "status": "reviewed (partial: codegen scaffold pending)"
+    },
+    {
+      "index": 15,
+      "repo": "CascadeStudio-master",
+      "status": "reviewed (partial: sketch-path sampler pending)"
     }
   ],
   "suite_tests": 9798,
