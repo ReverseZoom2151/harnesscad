@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 135,
-  "next_manifest_index": 136,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-135 implemented (134 is a review -- no buildable content)",
+  "reviewed_count": 140,
+  "next_manifest_index": 141,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-140 implemented",
   "reviewed": [
     {
       "index": 1,
@@ -679,6 +679,31 @@
     {
       "index": 135,
       "paper": "NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 136,
+      "paper": "NURBGen - High-Fidelity Text-to-CAD Generation through LLM-Driven NURBS Modeling.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 137,
+      "paper": "OctFusion - Octree-based Diffusion Models for 3D Shape Generation.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 138,
+      "paper": "OpenECAD - An Efficient Visual Language Model for Editable 3D-CAD Design.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 139,
+      "paper": "OSCAR - Open-Set CAD Retrieval from a Language Prompt and a Single Image.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 140,
+      "paper": "Parametric + Direct CAD integration.md",
       "status": "reviewed"
     }
   ],

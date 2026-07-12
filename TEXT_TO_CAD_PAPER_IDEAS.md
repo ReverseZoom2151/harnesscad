@@ -1861,3 +1861,62 @@ back-to-back limit interruptions (weekly then session) on this batch:
 partials removed and papers re-run fresh. Notable: NeurCADRecon reuses paper
 81's FlatCAD curvature. Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
+
+### 136. NURBGen - High-Fidelity Text-to-CAD Generation through LLM-Driven NURBS Modeling
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Cox-de Boor B-spline basis + knot vectors + basis derivatives | **implemented** | `numeric/nurbs_basis.py` |
+| Rational NURBS curve evaluation + tangent + tessellation | **implemented** | `geometry/nurbgen_curve.py` |
+| Tensor-product NURBS surface + normal + mesh tessellation | **implemented** | `geometry/nurbgen_surface.py` |
+| Boehm knot insertion/refinement + Bezier decomposition | **implemented** | `geometry/nurbgen_knot_insertion.py` |
+| Hybrid analytic-primitive fidelity gate (Chamfer fallback) | **implemented** | `geometry/nurbgen_hybrid_primitives.py` |
+| LLM text->JSON generation | **research-heavy/external** | trained LLM |
+
+### 137. OctFusion - Octree-based Diffusion Models for 3D Shape Generation
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Volumetric region octree (subdivision, Morton order, neighbor queries, octree<->voxel) | **implemented** | `geometry/octfusion_octree.py` |
+| Split-signal encoding of octree structure + round-trip | **implemented** | `geometry/octfusion_split_signal.py` |
+| Multi-level Partition-of-Unity blending | **implemented** | `geometry/octfusion_mpu.py` |
+| Learned octree VAE + diffusion U-Net | **research-heavy/external** | trained model |
+
+### 138. OpenECAD - An Efficient Visual Language Model for Editable 3D-CAD Design
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Editable named-variable CAD-script DSL (emitter + ast parser + round-trip) | **implemented** | `programs/openecad_script.py` |
+| Sketch/loop validity + loop grouping | **implemented** | `programs/openecad_validity.py` |
+| Editability operations (rename/reparametrize/re-emit) | **implemented** | `programs/openecad_edit.py` |
+| Dependency-based reference-plane finding | **implemented** | `reconstruction/openecad_refplane.py` |
+| Generation scoring metric | **implemented** | `bench/openecad_score.py` |
+| VLM + LoRA training | **research-heavy/external** | trained VLM |
+
+### 139. OSCAR - Open-Set CAD Retrieval from a Language Prompt and a Single Image
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Two-stage multimodal text+image late-fusion retrieval | **implemented** | `rag/oscar_multimodal_fusion.py` |
+| Open-set recognition metrics (AUROC, open-set F-measure, rejection, novelty) | **implemented** | `bench/oscar_openset_metrics.py` |
+| MI3DOR benchmark criteria (First/Second Tier, ANMRR) | **implemented** | `bench/oscar_mi3dor_metrics.py` |
+| Learned CLIP/DINOv2/LLaVA encoders + pose pipelines | **research-heavy/external** | trained models |
+
+### 140. Parametric + Direct CAD integration
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Two-paradigm data models + edit classification by paradigm/layer | **implemented** | `editing/paramdirect_model.py` |
+| Pseudo-Feature integration (anchor-invalidation detection) | **implemented** | `editing/paramdirect_pseudofeature.py` |
+| Synchronous Technology partial conversion | **implemented** | `editing/paramdirect_synctech.py` |
+| Operation Translating (push-pull -> parameter candidates) | **implemented** | `editing/paramdirect_translate.py` |
+| Three-layer consistency reconciliation + bidirectional propagation | **implemented** | `editing/paramdirect_consistency.py` |
+| Efficient 3D constraint solving | **out-of-scope** | open problem / needs GCS solver |
+
+## Batch-28 implementation result
+
+All deterministic and in-scope findings from papers 136-140 are implemented.
+Notable new capabilities: full NURBS evaluation machinery (Cox-de Boor basis,
+rational curve/surface, knot insertion -- NURBGen) and an octree structure
+(OctFusion), neither of which existed. Per the no-README-during-campaign
+policy, the suite count is tracked in audit/text_to_cad_progress.json.
