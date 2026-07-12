@@ -257,7 +257,7 @@
     "scad-clj-master",
     "scad-hs-master"
   ],
-  "suite_tests": 13630,
+  "suite_tests": 13865,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "Batch 12 (repos 56-60) complete. ruststep gave the fullest STEP work: an EXPRESS schema-language parser (662/664 real ISO schemas) + inheritance flattener + X-string codec + header model + schema-driven validator, plus 3 characterised gaps in formats/stepllm_parser.py. scad-clj added the OpenSCAD $fn/$fa/$fs facet formula. suite_tests recount pending (/tmp/cb12.txt). Next: batch 13 = repos 61-65 (check os.listdir: sdf-csg-master, sdfx-master, solidtype, spatialhero, vitruvion likely). sdf-csg + sdfx are SDF repos -> dedup HARD vs the new curv_sdf_* AND libfive_* modules (harness now has extensive SDF: primitives, combinators, transforms, TPMS, sphere tracer, f-rep IR, interval arithmetic, dual contouring, forward-mode AD). Final batch 14 = repos 66-70; 'zip' #70 may be a junk archive -> skip if so. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user (do not action): (1) t2cq_ast subset scope; (2) muse_scorecard double-count; (3) deferred README rewrite -- now near due (campaign ~86% done)."
 }
