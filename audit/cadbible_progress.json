@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 0,
-  "next_repo_index": 1,
+  "reviewed_count": 5,
+  "next_repo_index": 6,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -75,7 +75,33 @@
     "vitruvion-main",
     "zip"
   ],
-  "reviewed": [],
+  "reviewed": [
+    {
+      "index": 1,
+      "repo": "AlphaCAD-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 2,
+      "repo": "AutoCAD-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 3,
+      "repo": "BlenderLLM-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 4,
+      "repo": "CAD-Coder-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 5,
+      "repo": "CAD-Editor-main",
+      "status": "reviewed"
+    }
+  ],
   "suite_tests": 9349,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
   "note": "harness already has 186-paper corpus implemented (see text_to_cad_progress.json); dedup strictly"
