@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 5,
-  "next_repo_index": 6,
+  "reviewed_count": 10,
+  "next_repo_index": 11,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -99,6 +99,31 @@
     {
       "index": 5,
       "repo": "CAD-Editor-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 6,
+      "repo": "CAD-GPT-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 7,
+      "repo": "CAD-MCP-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 8,
+      "repo": "CAD2Program-gh-pages",
+      "status": "reviewed"
+    },
+    {
+      "index": 9,
+      "repo": "CADAM-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 10,
+      "repo": "CADCLAW-main",
       "status": "reviewed"
     }
   ],

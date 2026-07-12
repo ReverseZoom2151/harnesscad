@@ -64,3 +64,57 @@ CAD-Editor (ICML paper) all partly covered -- extracted only genuinely-new
 implementation-level pieces. AutoCAD (COM wrapper) yielded the most net-new
 (drafting algorithms/dash/ACI). Per the no-README-during-campaign policy the
 suite count is tracked in audit/cadbible_progress.json.
+
+### 6. CAD-GPT-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Involute spur-gear geometry (radii, involute curve, rack cutter) | **implemented** | `geometry/cadgpt_involute_gear.py` |
+| Gear-pair meshing + assembly placement (ratio, centre distance, mesh phase, twist) | **implemented** | `geometry/cadgpt_gear_train.py` |
+| Standard ISO-54 gear-module series snapping | **implemented** | `geometry/cadgpt_module_series.py` |
+| GPT agent + OpenSCAD render | **research-heavy/external** | trained model / host |
+
+### 7. CAD-MCP-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 2D drawing-command geometry (rectangle/ellipse/arc/polyline + lineweight snap) | **implemented** | `drawings/cadmcp_drawing_commands.py` |
+| Coordinate/parameter regex extractor + command classification | **implemented** | `programs/cadmcp_command_parser.py` |
+| MCP plumbing / COM driver / ACI / NL semantics | **already in repo / out-of-scope** | surfaces/mcp / autocad_aci_color / nlcad |
+
+### 8. CAD2Program-gh-pages
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Shape-program representation / pose normalization / metrics / view lifting | **already in repo (paper 84)** | cad2program_* modules |
+| ViT/InternVL VLM + website | **out-of-scope** | trained model / static site (nothing built) |
+
+### 9. CADAM-master
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| NACA 4-digit airfoil coordinate generator | **implemented** | `geometry/cadam_naca_airfoil.py` |
+| OpenSCAD Customizer parameter parser | **implemented** | `programs/cadam_scad_customizer.py` |
+| Cycle-safe conversation/branch message tree | **implemented** | `agents/cadam_message_tree.py` |
+| Gear math | **already in repo** | cadgpt_involute_gear |
+| React/Three.js UI + WASM engine | **research-heavy/external** | UI / kernel |
+
+### 10. CADCLAW-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Tolerance-stack analyzer (worst-case/RSS/Monte-Carlo + Cpk) | **implemented** | `verifiers/cadclaw_tolerance_stack.py` |
+| Static-frame beam screening (section props, torsion, deflection, motor torque) | **implemented** | `quality/cadclaw_beam_screening.py` |
+| Clearance-shift suggester (interference -> fix vector) | **implemented** | `verifiers/cadclaw_clearance_shift.py` |
+| Exploded-view geometry (radial burst + removal order) | **implemented** | `geometry/cadclaw_explode.py` |
+| Claim/honesty text linter | **implemented** | `quality/cadclaw_claim_audit.py` |
+| Interference boolean / STEP / FEA solver | **research-heavy/external** | kernel / FEA |
+
+## Batch-2 implementation result
+
+Mined repos 6-10. CAD-GPT surfaced involute-gear geometry (the harness only
+had a toothless blank); CADAM added the first aerodynamic geometry (NACA
+airfoil) + OpenSCAD-customizer parser; CADCLAW added tolerance stacking, beam
+screening, and exploded views. CAD2Program is a static site (paper 84 already
+covers it -> no build). Per the no-README policy the suite count is tracked in
+audit/cadbible_progress.json.
