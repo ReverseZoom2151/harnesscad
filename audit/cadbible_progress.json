@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 15,
-  "next_repo_index": 16,
+  "reviewed_count": 20,
+  "next_repo_index": 21,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -150,6 +150,31 @@
       "index": 15,
       "repo": "CascadeStudio-master",
       "status": "reviewed (partial: sketch-path sampler pending)"
+    },
+    {
+      "index": 16,
+      "repo": "CodeToCAD-develop",
+      "status": "reviewed"
+    },
+    {
+      "index": 17,
+      "repo": "ComplexGen-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 18,
+      "repo": "DeepCAD-master",
+      "status": "reviewed"
+    },
+    {
+      "index": 19,
+      "repo": "GenCAD-main",
+      "status": "reviewed"
+    },
+    {
+      "index": 20,
+      "repo": "Graph-CAD-main",
+      "status": "reviewed"
     }
   ],
   "suite_tests": 9977,

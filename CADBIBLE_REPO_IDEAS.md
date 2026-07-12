@@ -167,3 +167,68 @@ implementation-level pieces; CQ-editor gave Qt-free text/module helpers. A
 session-limit interruption left CQAsk and CascadeStudio at module 1 each
 (module 2 pending as a follow-up); untested partials were removed. Per the
 no-README policy the suite count is tracked in audit/cadbible_progress.json.
+
+### 16. CodeToCAD-develop
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Unit-aware length/angle expression evaluator (parser + dimensional type-checking) | **implemented** | `numeric/codetocad_length_expression.py` |
+| Cardinal-direction landmark system (compositional anchors, bbox, nearest) | **implemented** | `geometry/codetocad_cardinal_landmark.py` |
+| Relative/proportional dimension resolver | **implemented** | `geometry/codetocad_axis_expression.py` |
+| General 4x4 transform stack (upstream is NotImplementedError stubs) | **implemented** | `geometry/codetocad_transform_stack.py` |
+| Code-CAD operation schema + program type-checker | **implemented** | `programs/codetocad_operation_schema.py` |
+| Blender/build123d backends | **research-heavy/external** | runtime |
+
+### 17. ComplexGen-main (SIGGRAPH 2022)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| 3D surface primitive fitting (plane/sphere/cylinder/cone LSQ + quadric distances) | **implemented** | `geometry/complexgen_surface_fit.py` |
+| B-rep chain complex (EV/FE incidence + d1*d2=0 law + watertightness) | **implemented** | `reconstruction/complexgen_chain_complex.py` |
+| Probabilistic-complex NMS + constraint repair | **implemented** | `reconstruction/complexgen_complex_nms.py` |
+| .complex file format IO | **implemented** | `reconstruction/complexgen_complex_io.py` |
+| Complex-structure + topology F1 metrics | **implemented** | `bench/complexgen_complex_metrics.py` |
+| Transformer + Gurobi ILP | **research-heavy/external** | trained model / solver |
+
+### 18. DeepCAD-master (paper reference impl)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact numericalize/denumericalize affine families + NORM_FACTOR | **implemented** | `reconstruction/deepcad2_numericalize.py` |
+| Arc macro decode (centre/radius recovery, bulge-aware bbox) | **implemented** | `reconstruction/deepcad2_arc_macro.py` |
+| 17-column h5 vector layout with the RELEASED command index order | **implemented** | `reconstruction/deepcad2_vector_layout.py` |
+| Official mask-gated ACC_cmd/ACC_param | **implemented** | `bench/deepcad2_ae_accuracy.py` |
+| Command spec / sketch plane / profile assembly / Chamfer | **already in repo** | deepcad_* modules |
+
+### 19. GenCAD-main (papers 90/91 reference impl)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Arc vector<->geometry closed form + bulge-aware bbox + sampling | **implemented** | `geometry/gencad2_arc_vector.py` |
+| Exact loop canonicalization (orientation repair + CCW enforcement) | **implemented** | `reconstruction/gencad2_loop_reorder.py` |
+| Exact quantization affine constants | **implemented** | `reconstruction/gencad2_sketch_quantize.py` |
+| CMD_ARGS_MASK loss masking + CCIP cross-modal InfoNCE | **implemented** | `bench/gencad2_loss_masks.py` |
+| FID / retrieval / latent alignment / seq-len norm / synth-bal | **already in repo** | papers 90/91 |
+
+### 20. Graph-CAD-main (ICLR 2026)
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| FORMAT-v4 decomposition-graph parser + validator + build-wave scheduler | **implemented** | `reconstruction/graphcad_knowledge_graph.py` |
+| Align/offset/polar placement solver | **implemented** | `geometry/graphcad_align.py` |
+| Grid/polar pattern expansion | **implemented** | `geometry/graphcad_pattern.py` |
+| Orientation/rotation directives -> matrices | **implemented** | `geometry/graphcad_orientation.py` |
+| Graph -> typed CAD action-plan compiler + plan validator | **implemented** | `reconstruction/graphcad_action_plan.py` |
+| CADBench corpus scoring protocol | **implemented** | `bench/graphcad_cadbench_report.py` |
+| LLM stages + Blender + VLM judge | **research-heavy/external** | trained models |
+
+## Batch-4 implementation result
+
+Mined repos 16-20 -- the richest batch yet. ComplexGen filled a major gap: 3D
+surface primitive fitting (plane/sphere/cylinder/cone), which the harness
+lacked entirely (only 2D line/circle/arc). CodeToCAD gave units/landmarks/
+transforms/operation-schema. DeepCAD + GenCAD (already-covered papers) still
+yielded implementation-level gaps from their REFERENCE CODE -- notably DeepCAD's
+released command index order differs from the paper order our spec uses, a
+silent permutation for real .h5 data. Per the no-README policy the suite count
+is tracked in audit/cadbible_progress.json.
