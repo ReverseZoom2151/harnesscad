@@ -2,9 +2,9 @@
   "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
   "manifest": "_manifest.md",
   "total_papers": 186,
-  "reviewed_count": 140,
-  "next_manifest_index": 141,
-  "implementation_status": "all deterministic ideas from reviewed papers 1-140 implemented",
+  "reviewed_count": 145,
+  "next_manifest_index": 146,
+  "implementation_status": "all deterministic ideas from reviewed papers 1-145 implemented (141/142/143 share a sketch-primitive theme, split by method)",
   "reviewed": [
     {
       "index": 1,
@@ -704,6 +704,31 @@
     {
       "index": 140,
       "paper": "Parametric + Direct CAD integration.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 141,
+      "paper": "Parametric Primitive Analysis of CAD Sketches with Vision Transformer.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 142,
+      "paper": "PHT-CAD - Efficient CAD Parametric Primitive Analysis with Progressive Hierarchical Tuning.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 143,
+      "paper": "PICASSO - A Feed-Forward Framework for Parametric Inference of CAD Sketches via Rendering Self-Supervision.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 144,
+      "paper": "PLLM - Pseudo-Labeling Large Language Models for CAD Program Synthesis.md",
+      "status": "reviewed"
+    },
+    {
+      "index": 145,
+      "paper": "Pointer-CAD - Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection.md",
       "status": "reviewed"
     }
   ],

@@ -1920,3 +1920,65 @@ Notable new capabilities: full NURBS evaluation machinery (Cox-de Boor basis,
 rational curve/surface, knot insertion -- NURBGen) and an octree structure
 (OctFusion), neither of which existed. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
+
+### 141. Parametric Primitive Analysis of CAD Sketches with Vision Transformer
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Typed sketch-primitive representation (line/circle/arc/point + flag + 7-slot rows) | **implemented** | `reconstruction/ppa_primitive.py` |
+| Coordinate normalization + 6-bit quantization | **implemented** | `reconstruction/ppa_quantization.py` |
+| Least-squares primitive fitting (TLS line, Kasa circle, 3-point arc) | **implemented** | `geometry/ppa_primitive_fit.py` |
+| Hungarian-matched evaluation protocol (type/flag/param accuracy + Chamfer) | **implemented** | `bench/ppa_primitive_eval.py` |
+| ViT image-patch tokenization | **implemented** | `vision/ppa_patch_tokenizer.py` |
+| ViT/DETR networks + pointer module | **research-heavy/external** | trained models |
+
+### 142. PHT-CAD - Efficient CAD Parametric Primitive Analysis with Progressive Hierarchical Tuning
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Efficient Hybrid Parametrization + efficiency metric | **implemented** | `reconstruction/pht_ehp.py` |
+| Three-stage progressive-hierarchical-tuning curriculum + coarse-to-fine refinement | **implemented** | `reconstruction/pht_progressive_tuning.py` |
+| Parametric-MSE + combined CE/P-MSE objective | **implemented** | `reconstruction/pht_pmse_loss.py` |
+| Dimension-Accuracy metric | **implemented** | `reconstruction/pht_dimension_accuracy.py` |
+| ViT+Qwen VLM + ParaCAD dataset | **research-heavy/external** | trained model |
+
+### 143. PICASSO - A Feed-Forward Framework for Parametric Inference of CAD Sketches via Rendering Self-Supervision
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Deterministic sketch-primitive rasterizer (line/arc/circle SDF) | **implemented** | `drawings/picasso_rasterizer.py` |
+| Multiscale rendering-consistency loss + image pyramids | **implemented** | `drawings/picasso_render_loss.py` |
+| Label-free render-compare self-supervision + gradient-free refinement | **implemented** | `drawings/picasso_self_supervision.py` |
+| Image-based eval (ImgMSE, foreground Chamfer, IoU) | **implemented** | `drawings/picasso_metrics.py` |
+| Learned SPN/SRN nets + Hungarian matching | **research-heavy/external** | trained models |
+
+### 144. PLLM - Pseudo-Labeling Large Language Models for CAD Program Synthesis
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Best-of-k pseudo-label selection (Chamfer winner + validity gate) | **implemented** | `dataengine/pllm_pseudo_label_selection.py` |
+| Per-candidate confidence/quality score | **implemented** | `dataengine/pllm_confidence_score.py` |
+| Self-training accumulator + drift detection + label-efficiency | **implemented** | `dataengine/pllm_selftrain_accumulator.py` |
+| Program-level structural augmentation | **implemented** | `datagen/pllm_program_augment.py` |
+| LoRA + encoder + executor | **research-heavy/external** | trained LLM |
+
+### 145. Pointer-CAD - Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Pointer token vocabulary + non-overlapping ID scheme | **implemented** | `reconstruction/pointercad_tokens.py` |
+| Stable B-rep entity addressing (well-defined pointers) | **implemented** | `reconstruction/pointercad_indexing.py` |
+| Pointer-based commands + dangling-pointer detection | **implemented** | `reconstruction/pointercad_pointer.py` |
+| Pointer-based sketch-plane construction | **implemented** | `reconstruction/pointercad_sketchplane.py` |
+| Unified B-rep<->command linkage + replay | **implemented** | `reconstruction/pointercad_linkage.py` |
+| Pointer-accuracy + invalidity metrics | **implemented** | `reconstruction/pointercad_metrics.py` |
+| Learned GNN encoder + Qwen backbone | **research-heavy/external** | trained model |
+
+## Batch-29 implementation result
+
+All deterministic and in-scope findings from papers 141-145 are implemented.
+Papers 141/142/143 share a CAD-sketch parametric-primitive theme; 141 built
+the foundation (ppa_) and 142/143 built their distinct method contributions
+(progressive tuning; rendering self-supervision) without duplication. Per
+the no-README-during-campaign policy, the suite count is tracked in
+audit/text_to_cad_progress.json.
