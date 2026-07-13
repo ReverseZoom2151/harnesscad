@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scene.scenegraph_model import AABB, SceneGraph, SceneNode
-from harnesscad.domain.reconstruction.scene.scenegraph_enrichment import (
+from harnesscad.domain.reconstruction.scene.model import AABB, SceneGraph, SceneNode
+from harnesscad.domain.reconstruction.scene.enrichment import (
     DEFAULT_DIMENSION_RULES,
     Vocabulary,
     affordance_for,

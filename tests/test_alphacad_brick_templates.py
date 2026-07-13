@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.procedural.alphacad_brick_templates import (
+from harnesscad.domain.procedural.brick_templates import (
     CATEGORY_TEMPLATES,
     generate_bottle,
     generate_car,

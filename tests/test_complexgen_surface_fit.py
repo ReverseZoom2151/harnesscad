@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.parametric import complexgen_surface_fit as sf
+from harnesscad.domain.geometry.parametric import surface_fit as sf
 
 
 def _plane_points(normal, offset, n=6):

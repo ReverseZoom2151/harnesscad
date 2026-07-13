@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.harness.llm3dmodel_run_metrics import (
+from harnesscad.eval.bench.harness.iterative_run_metrics import (
     FIRST_ATTEMPT, CONVERGED, DID_NOT_CONVERGE, RunRecord, refinements,
     total_time, outcome, summarize)
 

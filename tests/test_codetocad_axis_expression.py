@@ -1,13 +1,13 @@
 import unittest
 
-from harnesscad.domain.geometry.topology.codetocad_axis_expression import (
+from harnesscad.domain.geometry.topology.relative_dimensions import (
     AxisExpressionError,
     is_relative,
     resolve_axis_value,
     resolve_point,
     resolve_relative_size,
 )
-from harnesscad.domain.geometry.topology.codetocad_cardinal_landmark import BoundaryAxis, BoundaryBox
+from harnesscad.domain.geometry.topology.landmarks import BoundaryAxis, BoundaryBox
 
 
 class TestIsRelative(unittest.TestCase):

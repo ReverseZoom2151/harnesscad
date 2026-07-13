@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry.mesh.craftsman_relative_laplacian import (
+from harnesscad.domain.geometry.mesh.smoothing import (
     laplacian_smooth,
     mean_displacement,
     relative_laplacian_smooth,

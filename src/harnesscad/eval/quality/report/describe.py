@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from harnesscad.eval.quality.graph.featuregraph import FeatureGraph, build_feature_graph
+from harnesscad.eval.quality.graph.feature_graph import FeatureGraph, build_feature_graph
 
 
 # --- helpers ---------------------------------------------------------------

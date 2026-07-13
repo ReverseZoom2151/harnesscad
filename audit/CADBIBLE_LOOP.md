@@ -11,7 +11,7 @@ until all repos are done.
 - `total_repos`, `reviewed_count`, `next_repo_index`, `reviewed[]`.
 - Repo order = alphabetical (see the `reviewed[]` list / `/tmp/cadbible_repos.txt`).
 
-Idea log: `CADBIBLE_REPO_IDEAS.md` — one `### N. <repo>` section per repo with a
+Idea log: `docs/corpus/repo-ideas.md` — one `### N. <repo>` section per repo with a
 `| Build idea | Status | Repository comparison |` table.
 
 ## Critical context: the harness is already large
@@ -19,7 +19,7 @@ Idea log: `CADBIBLE_REPO_IDEAS.md` — one `### N. <repo>` section per repo with
 The 186-paper text-to-CAD campaign already produced ~700 tested modules
 (`reviewed_count=186`, `campaign_complete=true` in
 `audit/text_to_cad_progress.json`; the full inventory is in
-`TEXT_TO_CAD_PAPER_IDEAS.md`). MANY cadbible repos are the reference
+`docs/corpus/paper-ideas.md`). MANY cadbible repos are the reference
 implementations of those papers (DeepCAD, GenCAD, hnc-cad, SketchGraphs,
 Text2CAD, mrCAD, muse, querycad, CADTestBench, UV-Net, vitruvion, SkexGen,
 Sketch2CAD, CAD2Program, Text-to-CadQuery, ...). For those, the paper-level
@@ -41,7 +41,7 @@ reimplementing in stdlib Python.
    - reads the repo's key source (README + core modules) — NOT every file, but
      enough to find the deterministic algorithmic content;
    - checks the existing harness inventory to AVOID DUPLICATION (grep the
-     package tree; consult TEXT_TO_CAD_PAPER_IDEAS.md for paper coverage);
+     package tree; consult docs/corpus/paper-ideas.md for paper coverage);
    - implements every genuinely-new deterministic idea as NEW files
      (distinctive names prefixed by the repo concept; do NOT edit existing
      files, any `__init__.py`, or `pyproject.toml`). PLACE in the most-fitting
@@ -52,7 +52,7 @@ reimplementing in stdlib Python.
 3. Integrate: verify per-module tests pass; commit granularly, no
    `Co-Authored-By` trailer; `feat: <idea> (<repo>)` per module group.
 4. Update `audit/cadbible_progress.json` (`reviewed_count`, `next_repo_index`,
-   append `reviewed[]`) + append idea-tables to `CADBIBLE_REPO_IDEAS.md`.
+   append `reviewed[]`) + append idea-tables to `docs/corpus/repo-ideas.md`.
    Record the authoritative per-module suite total in the progress json
    (`suite_tests`) — a monolithic `unittest discover` segfaults at OCCT
    teardown, so count per module. Do NOT edit README during the campaign.

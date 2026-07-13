@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.views.pscad_planar_prompt import (
+from harnesscad.domain.geometry.views.plane_detection import (
     DetectedPlane,
     encode_planar_prompt,
     extract_prompts,

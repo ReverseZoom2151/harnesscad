@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.agents.exploration import dlwheel_lhs as lhs
+from harnesscad.agents.exploration import latin_hypercube as lhs
 
 
 class ProbitTests(unittest.TestCase):

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.programs.validate.scadlm_check import (
+from harnesscad.domain.programs.validate.openscad_check import (
     BUILTIN_MODULES,
     Issue,
     check,

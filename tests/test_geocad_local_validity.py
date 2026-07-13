@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sketch import geocad_local_validity as lv
+from harnesscad.domain.geometry.sketch import loop_validity as lv
 
 
 class SegmentTest(unittest.TestCase):

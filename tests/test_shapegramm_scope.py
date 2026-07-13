@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.procedural.shapegramm_scope import (
+from harnesscad.domain.procedural.scope_culling import (
     OUTSIDE, SURROUNDING, INTERSECTS, WITHIN,
     make_aabb_frustum, classify_scope, is_visible, classify_hierarchy,
 )

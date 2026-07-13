@@ -33,8 +33,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Sequence, Tuple
 
-from harnesscad.domain.geometry.parametric import uvnet_u_grid as ug
-from harnesscad.domain.geometry.parametric import uvnet_uv_grid as uvg
+from harnesscad.domain.geometry.parametric import curve_grid as ug
+from harnesscad.domain.geometry.parametric import surface_grid as uvg
 
 
 @dataclass(frozen=True)

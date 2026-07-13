@@ -1,4 +1,4 @@
-"""Tests for the design-space exploration layer (HARNESS_BLUEPRINT.md sec.12/sec.4).
+"""Tests for the design-space exploration layer (docs/blueprint.md sec.12/sec.4).
 
 Everything is deterministic and dependency-free. Variants are built with real CISP
 ``Op`` objects applied through a ``StubBackend``-backed ``HarnessSession`` (so

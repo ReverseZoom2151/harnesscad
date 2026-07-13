@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.procedural.alphacad_brick_templates import generate_tower, generate_table
-from harnesscad.eval.quality.physics.alphacad_structure_scoring import (
+from harnesscad.domain.procedural.brick_templates import generate_tower, generate_table
+from harnesscad.eval.quality.physics.voxel_structure_scoring import (
     aesthetics_score,
     base_top_counts,
     confidence_score,

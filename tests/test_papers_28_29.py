@@ -12,11 +12,11 @@ import unittest
 from harnesscad.agents.agent.iterative_edit_policy import IterativeEditPolicy
 from harnesscad.eval.bench.data.spatial_challenge_set import fixtures, stratify
 from harnesscad.data.dataengine.edits.edit_triplets import build
-from harnesscad.io.ingest.sketch_frame_tokens import SketchFrame, quantize
-from harnesscad.eval.quality.edit.directional_edit_alignment import alignment, rank
-from harnesscad.eval.quality.edit.edit_locality import locality
+from harnesscad.io.ingest.sketch_frame import SketchFrame, quantize
+from harnesscad.eval.quality.edit.directional_alignment import alignment, rank
+from harnesscad.eval.quality.edit.locality import locality
 from harnesscad.eval.quality.geometry.frame_coherence import check
-from harnesscad.eval.quality.sequence.spatial_sequence_accuracy import angle_error, score
+from harnesscad.eval.quality.sequence.spatial_accuracy import angle_error, score
 
 
 class EditTripletsTest(unittest.TestCase):

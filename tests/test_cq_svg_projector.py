@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.io.formats.cq_svg_projector import (
+from harnesscad.io.formats.svg import (
     bounding_box_2d,
     camera_basis,
     fit_transform,

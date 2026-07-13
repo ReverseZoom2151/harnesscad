@@ -1,9 +1,9 @@
 import unittest
 
-from harnesscad.data.dataengine.annotation.annotation_reconcile import ModalityDescription, reconcile_descriptions
+from harnesscad.data.dataengine.annotation.reconcile import ModalityDescription, reconcile_descriptions
 from harnesscad.data.dataengine.audit.command_balance import command_balance
-from harnesscad.data.dataengine.annotation.reverse_description import ordered_recovery_ratio, verify_with_reflection
-from harnesscad.eval.quality.sequence.sequence_confidence import CommandConfidence, assess_sequence_confidence
+from harnesscad.data.dataengine.annotation.back_translation import ordered_recovery_ratio, verify_with_reflection
+from harnesscad.eval.quality.sequence.confidence import CommandConfidence, assess_sequence_confidence
 
 
 class ReverseDescriptionTests(unittest.TestCase):

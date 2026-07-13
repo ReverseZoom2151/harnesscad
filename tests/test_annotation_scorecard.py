@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.annotation.annotation_scorecard import (
+from harnesscad.data.dataengine.annotation.scorecard import (
     AnnotationKind,
     Candidate,
     MultiViewAnnotationJob,

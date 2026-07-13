@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.parametric.dreamcad_rational_bezier import (
+from harnesscad.domain.geometry.parametric.bezier import (
     bernstein,
     bernstein_basis,
     bernstein_derivative,

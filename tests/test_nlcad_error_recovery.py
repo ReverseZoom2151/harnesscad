@@ -1,10 +1,10 @@
 import unittest
 
-from harnesscad.domain.spec.nlcad_error_recovery import (
+from harnesscad.domain.spec.command_recovery import (
     insert_missing_determiners, insert_missing_prepositions,
     recover, parse_with_recovery,
 )
-from harnesscad.domain.spec.nlcad_case_frame import _tokenize
+from harnesscad.domain.spec.case_frame import _tokenize
 
 
 class TestDeterminerRecovery(unittest.TestCase):

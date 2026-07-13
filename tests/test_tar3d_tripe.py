@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.views.tar3d_tripe import (
+from harnesscad.domain.geometry.views.triplane_encoding import (
     apply_rope,
     rope_frequencies,
     rope_vector,

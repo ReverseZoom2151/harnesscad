@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.tokens import rlcad_command_spec as cs
+from harnesscad.domain.reconstruction.tokens import rlcad_commands as cs
 
 
 class TestExtrudeCommand(unittest.TestCase):

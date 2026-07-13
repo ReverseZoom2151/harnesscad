@@ -1,7 +1,7 @@
 import unittest
 
 from harnesscad.domain.reconstruction.ortho.edges import normalize_edges, projection_feature
-from harnesscad.domain.reconstruction.evaluate.metrics import edge_prf, face_prf
+from harnesscad.domain.reconstruction.evaluate.edge_face_prf import edge_prf, face_prf
 from harnesscad.domain.reconstruction.ortho.model import Edge2D, Edge3D, FaceCluster, FaceLoop, OrthographicInput, View2D
 from harnesscad.domain.reconstruction.ortho.patterns import PATTERNS, match_patterns
 from harnesscad.domain.reconstruction.ortho.pipeline import reconstruct

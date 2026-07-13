@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.parametric.arcs_chord_tolerance import (
+from harnesscad.domain.geometry.parametric.chord_tolerance import (
     approximate_arc,
     approximate_circle,
     chord_error,
@@ -12,7 +12,7 @@ from harnesscad.domain.geometry.parametric.arcs_chord_tolerance import (
     segment_angle_for_tolerance,
     segments_for_tolerance,
 )
-from harnesscad.domain.geometry.parametric.arcs_closest_point import Arc2D
+from harnesscad.domain.geometry.parametric.closest_point import Arc2D
 
 
 class TestSagitta(unittest.TestCase):

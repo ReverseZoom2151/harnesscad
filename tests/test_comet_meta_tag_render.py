@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.agents.context.comet_meta_tag_render import (
+from harnesscad.agents.context.meta_tags import (
     ACT_PRIORITY,
     ORIGIN_PRIORITY,
     Row,

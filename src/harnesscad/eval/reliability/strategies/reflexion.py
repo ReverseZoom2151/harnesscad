@@ -1,4 +1,4 @@
-"""Reflexion — Read-Act-Reflect-Write (HARNESS_BLUEPRINT.md sec.8, sec.10).
+"""Reflexion — Read-Act-Reflect-Write (docs/blueprint.md sec.8, sec.10).
 
     "On failed verification, retrieve prior failures, synthesize an insight
      ('this boolean fails when faces are coplanar -> add offset'), store to

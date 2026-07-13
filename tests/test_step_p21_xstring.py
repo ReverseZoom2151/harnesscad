@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.formats.step_p21_xstring import (
+from harnesscad.io.formats.step_xstring import (
     XStringError,
     decode,
     encode,

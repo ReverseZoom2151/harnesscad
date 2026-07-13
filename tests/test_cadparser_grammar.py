@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.reconstruction.sequences.cadparser_grammar import State, allowed, is_valid, run
-from harnesscad.domain.reconstruction.tokens.cadparser_schema import SOS, EOS, PAD
+from harnesscad.domain.reconstruction.sequences.command_grammar import State, allowed, is_valid, run
+from harnesscad.domain.reconstruction.tokens.cadparser import SOS, EOS, PAD
 
 
 def wrap(*tokens):

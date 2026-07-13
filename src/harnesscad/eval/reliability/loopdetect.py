@@ -1,6 +1,6 @@
 """LoopDetector — sliding-window oscillation detector for the harness loop.
 
-Per HARNESS_BLUEPRINT.md sec.3: CAD agents oscillate (re-extruding, retrying a
+Per docs/blueprint.md sec.3: CAD agents oscillate (re-extruding, retrying a
 failing boolean). This hashes ``(op_tag, sorted-args)`` over a sliding window and
 flags a loop when the same signature recurs ``threshold`` times inside the window.
 

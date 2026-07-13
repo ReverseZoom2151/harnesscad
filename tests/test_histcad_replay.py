@@ -1,9 +1,9 @@
 import unittest
 
-from harnesscad.domain.reconstruction.sequences.histcad_sequence import (
+from harnesscad.domain.reconstruction.sequences.modeling_sequence import (
     Line, Circle, Arc, SketchPlane, Sketch, Extrusion, Feature, ModelingSequence,
 )
-from harnesscad.domain.reconstruction.sequences.histcad_replay import (
+from harnesscad.domain.reconstruction.sequences.replay import (
     reconstruct_loops, hierarchical_loops, replay_validity,
 )
 

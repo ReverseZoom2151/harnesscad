@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.tokens import deepcad2_arc_macro as am
+from harnesscad.domain.reconstruction.tokens import deepcad_arc_macro as am
 
 
 def _close(a, b, tol=1e-9):

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.protocols.muse2_geometry_issue_flags import (
+from harnesscad.eval.bench.protocols.geometry_issue_flags import (
     classify_geometry_issues,
     geometry_valid,
     to_funnel_geometry,

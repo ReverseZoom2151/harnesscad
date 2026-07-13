@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.review import cadreview_quantize as q
+from harnesscad.domain.programs.review import quantize as q
 
 
 class TestQuantize(unittest.TestCase):

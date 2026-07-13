@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.protocols.t2cadbench_l4_rubric import (
+from harnesscad.eval.bench.protocols.vlm_rubric_scorecard import (
     capability_dimensions,
     decoupling_leaders,
     l4_model_scorecard,

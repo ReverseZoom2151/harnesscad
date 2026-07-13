@@ -3,7 +3,7 @@
 import ast as _ast
 import unittest
 
-from harnesscad.domain.programs.ast.t2cq_ast import (
+from harnesscad.domain.programs.ast.cadquery import (
     Assign,
     Call,
     Chain,

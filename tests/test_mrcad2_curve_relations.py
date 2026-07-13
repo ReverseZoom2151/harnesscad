@@ -1,8 +1,8 @@
 import math
 import unittest
 
-from harnesscad.domain.editing.mrcad_schema import arc, circle, line
-from harnesscad.domain.geometry.sketch.mrcad2_curve_relations import (
+from harnesscad.domain.editing.sketch_edit_schema import arc, circle, line
+from harnesscad.domain.geometry.sketch.curve_relations import (
     concentric,
     curve_center,
     curve_radius,

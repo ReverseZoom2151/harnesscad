@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.vision import ppa_patch_tokenizer as pt
+from harnesscad.domain.vision import patch_tokenizer as pt
 
 
 class TestPatchGrid(unittest.TestCase):

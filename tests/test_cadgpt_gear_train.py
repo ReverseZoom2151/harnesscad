@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.kinematics.cadgpt_gear_train import (
+from harnesscad.domain.geometry.kinematics.gear_train import (
     gear_ratio,
     center_distance,
     meshing_phase_offset,

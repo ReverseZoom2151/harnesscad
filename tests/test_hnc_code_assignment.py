@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.hnc_code_assignment import (
+from harnesscad.domain.reconstruction.tokens.hnc_codebooks import (
     REINIT_THRESHOLD,
     Codebook,
     SPLCodebooks,

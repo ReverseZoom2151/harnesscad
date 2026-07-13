@@ -5,7 +5,7 @@ import json
 import struct
 import unittest
 
-from harnesscad.io.formats.t2cdean_glb_writer import (
+from harnesscad.io.formats.glb import (
     CHUNK_BIN,
     CHUNK_JSON,
     GLB_MAGIC,
@@ -19,7 +19,7 @@ from harnesscad.io.formats.t2cdean_glb_writer import (
     weld_vertices,
     write_glb,
 )
-from harnesscad.io.formats.t2cdean_stl_codec import Triangle, write_ascii_stl, write_binary_stl
+from harnesscad.io.formats.stl import Triangle, write_ascii_stl, write_binary_stl
 
 
 def unit_cube_triangles():

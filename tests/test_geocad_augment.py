@@ -3,9 +3,9 @@
 import random
 import unittest
 
-from harnesscad.data.dataengine.augment import geocad_augment as aug
-from harnesscad.domain.reconstruction.recognize.geocad_part_classifier import BRANCH_VERTEX, BRANCH_VLLM
-from harnesscad.domain.geometry.sketch.geocad_vertex_caption import caption_triangle, caption_quadrilateral
+from harnesscad.data.dataengine.augment import geometric_augment as aug
+from harnesscad.domain.reconstruction.recognize.part_classifier import BRANCH_VERTEX, BRANCH_VLLM
+from harnesscad.domain.geometry.sketch.captioning import caption_triangle, caption_quadrilateral
 
 
 class TransformTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.ingest.cadvlm_sketch_validity import (
+from harnesscad.io.ingest.sketch_validity import (
     ValidityReport, check_sketch, constraint_issues, constraint_name,
     entity_issues,
 )

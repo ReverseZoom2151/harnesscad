@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.fabrication.mfgfeat_attributes import extract_attributes
+from harnesscad.domain.fabrication.feature_attributes import extract_attributes
 
 
 class TestHole(unittest.TestCase):

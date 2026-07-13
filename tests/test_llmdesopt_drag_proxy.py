@@ -1,7 +1,7 @@
 """Tests for the deterministic aerodynamic drag proxy."""
 import unittest
 
-from harnesscad.eval.verifiers.llmdesopt_drag_proxy import (
+from harnesscad.eval.verifiers.drag_proxy import (
     bounding_box,
     box_extents,
     CarDimensions,

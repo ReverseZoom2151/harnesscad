@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.io.formats.sgraphs2_onshape_json import EntityType, SubnodeType
-from harnesscad.domain.reconstruction.sketch.sgraphs2_dof_mask import (
+from harnesscad.io.formats.onshape_json import EntityType, SubnodeType
+from harnesscad.domain.reconstruction.sketch.dof_mask import (
     EDGE_DOF_REMOVED,
     NODE_DOF,
     EdgeOp,

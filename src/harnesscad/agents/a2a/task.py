@@ -1,6 +1,6 @@
 """The A2A task lifecycle — async tasks with a guarded state machine.
 
-Per HARNESS_BLUEPRINT.md sec.12, long geometry/meshing/FEA solves run as
+Per docs/blueprint.md sec.12, long geometry/meshing/FEA solves run as
 *async tasks* whose progress is streamed as SSE-style status updates (or pushed
 via webhooks). This module models that lifecycle in-process so remote compute is
 a drop-in later:

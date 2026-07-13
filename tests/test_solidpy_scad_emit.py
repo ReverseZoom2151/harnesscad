@@ -2,9 +2,9 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sdf.scadlm_csg_eval import bounds, contains, evaluate_source
-from harnesscad.domain.programs.ast.scadlm_ast import parse, unparse
-from harnesscad.domain.programs.emit.solidpy_scad_emit import (
+from harnesscad.domain.geometry.sdf.csg_eval import bounds, contains, evaluate_source
+from harnesscad.domain.programs.ast.openscad import parse, unparse
+from harnesscad.domain.programs.emit.openscad_emit import (
     ScadNode,
     background,
     cube,

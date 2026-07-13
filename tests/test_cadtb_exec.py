@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.protocols.cadtb_exec import (
+from harnesscad.eval.bench.protocols.test_execution import (
     ASSERTION_EXEC_PREAMBLE,
     BlockResult,
     CadTestOutcome,

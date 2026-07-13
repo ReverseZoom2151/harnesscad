@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.quality.physics import dlwheel_surrogate_eval as se
+from harnesscad.eval.quality.physics import surrogate_eval as se
 
 
 class MinMaxScalerTests(unittest.TestCase):

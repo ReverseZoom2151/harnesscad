@@ -1,7 +1,7 @@
 """Tests for bench/datacon_diversity.py numeric diversity/novelty/coverage metrics."""
 import unittest
 
-from harnesscad.eval.bench.generative.datacon_diversity import (
+from harnesscad.eval.bench.generative.diversity_feature_space import (
     euclidean,
     pairwise_diversity,
     nearest_neighbor_distances,

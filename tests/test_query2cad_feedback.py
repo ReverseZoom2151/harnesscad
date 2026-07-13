@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.agents.generation.query2cad_feedback import (
+from harnesscad.agents.generation.caption_feedback import (
     resolve_caption, build_difference_feedback, CorrectiveFeedback,
     assemble_feedback, SOURCE_CAPTION, SOURCE_HUMAN,
 )

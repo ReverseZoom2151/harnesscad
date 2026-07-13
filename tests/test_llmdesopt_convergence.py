@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.harness.llmdesopt_convergence import (
+from harnesscad.eval.bench.harness.optimization_convergence import (
     std,
     generation_stats,
     trajectory_stats,

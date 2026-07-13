@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.protocols.engdesign_qa_scoring import (
+from harnesscad.eval.bench.protocols.qa_scoring import (
     majority_correct, qa_scorecard, spatial_run_scores, run_comparison,
 )
 

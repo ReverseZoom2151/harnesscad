@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.volumes.meshdiff_tet_grid import TetGrid
+from harnesscad.domain.geometry.volumes.tet_grid import TetGrid
 
 
 class TetGridTest(unittest.TestCase):

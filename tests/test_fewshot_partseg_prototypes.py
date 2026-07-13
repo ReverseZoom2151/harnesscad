@@ -1,5 +1,5 @@
 import unittest
-from harnesscad.domain.reconstruction.recognize.fewshot_partseg_prototypes import (
+from harnesscad.domain.reconstruction.recognize.prototypes import (
     farthest_point_sampling, class_prototypes, build_prototypes,
     assign, segment,
 )

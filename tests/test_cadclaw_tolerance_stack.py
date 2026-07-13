@@ -6,7 +6,7 @@ Monte-Carlo reproducibility for a fixed seed.
 import math
 import unittest
 
-from harnesscad.eval.verifiers.cadclaw_tolerance_stack import (
+from harnesscad.eval.verifiers.tolerance_stack import (
     Dimension, ToleranceChain, StackResult,
 )
 

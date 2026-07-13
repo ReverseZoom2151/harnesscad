@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sketch.gencad2_arc_vector import (
+from harnesscad.domain.geometry.sketch.arc_geometry import (
     ARGS_DIM,
     TWO_PI,
     angle_from_vector_to_x,

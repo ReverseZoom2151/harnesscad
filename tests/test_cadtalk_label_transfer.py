@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.annotate.cadtalk_label_transfer import (
+from harnesscad.domain.programs.annotate.label_transfer import (
     majority_label,
     multi_labels,
     iou_label,

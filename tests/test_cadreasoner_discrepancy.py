@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.editing.cadreasoner_discrepancy import (
+from harnesscad.domain.editing.discrepancy_encoding import (
     DiscrepancyEncoding,
     encode_discrepancy,
     encode_null_init,

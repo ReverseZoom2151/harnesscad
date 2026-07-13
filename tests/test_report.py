@@ -16,7 +16,7 @@ import json
 import unittest
 
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
-from harnesscad.eval.verifiers.report import ConformanceReport
+from harnesscad.eval.verifiers.conformance_report import ConformanceReport
 
 
 # --- fake verifiers --------------------------------------------------------

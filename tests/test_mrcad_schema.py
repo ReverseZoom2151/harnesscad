@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.editing.mrcad_schema import (
+from harnesscad.domain.editing.sketch_edit_schema import (
     Curve,
     Design,
     DeletePoint,

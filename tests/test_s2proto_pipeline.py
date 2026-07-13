@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.agents.exploration.s2proto_pipeline import (
+from harnesscad.agents.exploration.modality_pipeline import (
     SKETCH, TEXT, IMAGE, MESH,
     Stage, Pipeline, modality_rank,
     sketch2prototype_pipeline, direct_sketch_to_3d_pipeline, controlnet_pipeline,

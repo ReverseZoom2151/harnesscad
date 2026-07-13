@@ -1,11 +1,11 @@
 import unittest
 
-from harnesscad.eval.bench.geometry.mrcad2_design_distance import (
+from harnesscad.eval.bench.geometry.design_distance_curve import (
     design_distance,
     design_distance_asymmetric,
     proportional_improvement,
 )
-from harnesscad.domain.editing.mrcad_schema import Design, line
+from harnesscad.domain.editing.sketch_edit_schema import Design, line
 
 
 class TestDesignDistance(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestDesignDistance(unittest.TestCase):
 
     def test_tighter_than_sampled_chamfer(self):
         # The exact point-to-curve distance is <= the point-to-sampled-point one.
-        from harnesscad.eval.bench.geometry.mrcad_metrics import chamfer_asymmetric
+        from harnesscad.eval.bench.geometry.refinement_convergence import chamfer_asymmetric
 
         a = Design((line((0, 0), (10, 0)),))
         b = Design((line((1, 2), (9, 2)),))

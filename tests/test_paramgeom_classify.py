@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.expressions.paramgeom_classify import (
+from harnesscad.domain.programs.expressions.classify import (
     Category,
     FormativeTally,
     classify_expression,

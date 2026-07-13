@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.procedural.autocad_array import (
+from harnesscad.domain.procedural.array_patterns import (
     Placement,
     linear_array,
     fit_linear_array,

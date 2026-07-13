@@ -1,7 +1,7 @@
 import unittest
 from math import sqrt
 
-from harnesscad.eval.bench.geometry.vlmcadcode_metrics import (
+from harnesscad.eval.bench.geometry.hausdorff_iogt import (
     UNIT_CUBE_DIAGONAL, bounding_box, normalize_unit_cube,
     point_cloud_distance, hausdorff_distance, iogt, evaluate_object, aggregate,
 )

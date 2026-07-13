@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.sequence.t2cadbench_parametric_accuracy import (
+from harnesscad.eval.bench.sequence.parameter_accuracy import (
     match_parameter,
     mean_parameter_accuracy,
     parameter_accuracy,

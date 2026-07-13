@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.agents.generation.cadsmith_dual_loop import (
+from harnesscad.agents.generation.dual_loop import (
     ExecResult, ValidationResult, run_inner_loop, run_dual_loop, Stop,
 )
 

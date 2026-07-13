@@ -3,7 +3,7 @@ import math
 import random
 import unittest
 
-from harnesscad.domain.geometry.sdf.flatcad_weingarten import (
+from harnesscad.domain.geometry.sdf.curvature import (
     orthonormal_tangent_frame, rotate_frame, random_tangent_frame,
     shape_operator, off_diagonal_weingarten, s12_from_principal,
     off_diagonal_weingarten_fd,

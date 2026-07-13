@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.runtime.cqeditor_module_sandbox import (
+from harnesscad.domain.programs.runtime.module_sandbox import (
     newly_added_keys,
     module_sandbox,
     prune_new_modules,

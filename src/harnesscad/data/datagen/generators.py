@@ -1,4 +1,4 @@
-"""Seeded parametric part generators (HARNESS_BLUEPRINT.md sec.21 data engine).
+"""Seeded parametric part generators (docs/blueprint.md sec.21 data engine).
 
 The #1 named risk is data: there is no "GitHub for CAD". The bootstrap answer is
 **synthetic parametric generation + solver-in-the-loop for ground truth** — cheaply

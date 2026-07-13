@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.verifiers.datacon_rim_validation import (
+from harnesscad.eval.verifiers.rim_feasibility import (
     ValidationReport,
     jaccard_similarity,
     point_in_polygon,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.sequences.histcad_sequence import (
+from harnesscad.domain.reconstruction.sequences.modeling_sequence import (
     Line, Circle, Arc, SketchPlane, Constraint, Sketch, Extrusion, Feature,
     ModelingSequence, symmetric_difference, flatten_faces, token_estimate,
     primitive_from_dict, CONSTRAINT_TYPES, BOOLEAN_OPS,

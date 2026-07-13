@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.views.turbo3d_splat_compositing import (
+from harnesscad.domain.geometry.views.splat_compositing import (
     alpha_from_kernel,
     composite_front_to_back,
     sort_front_to_back,

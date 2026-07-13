@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.reward.cadrille_drcppo import (
+from harnesscad.data.dataengine.reward.clipped_policy_objective import (
     advantages,
     select_strongest,
     clip,

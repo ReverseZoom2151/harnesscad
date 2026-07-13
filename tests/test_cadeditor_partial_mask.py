@@ -1,7 +1,7 @@
 """Tests for editing.cadeditor_partial_mask (CAD-Editor fine-grained masking)."""
 import unittest
 
-from harnesscad.domain.editing.cadeditor_partial_mask import (
+from harnesscad.domain.editing.partial_mask import (
     MASK,
     compare_tokens,
     merge_consecutive_masks,

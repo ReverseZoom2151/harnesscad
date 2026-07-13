@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.drawings.cadmcp_drawing_commands import (
+from harnesscad.domain.drawings.drawing_commands import (
     DrawingBuilder,
     DrawingCommandError,
     VALID_LINEWEIGHTS,

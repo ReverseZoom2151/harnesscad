@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.kinematics.joinable_joint_axis import axis_lines_colinear, joint_axis_error
-from harnesscad.domain.geometry.kinematics.joinable_joint_transform import (
+from harnesscad.domain.geometry.kinematics.joint_axis import axis_lines_colinear, joint_axis_error
+from harnesscad.domain.geometry.kinematics.joint_transform import (
     align_vectors,
     apply_joint_transform_to_axis,
     identity_matrix,

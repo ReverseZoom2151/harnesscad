@@ -5,7 +5,7 @@ design-intent capture. Dependency-free: synthetic op-dicts + hand-built records.
 
 import unittest
 
-from harnesscad.data.dataengine.audit.distribution_audit import audit_distribution, op_tags, family_of
+from harnesscad.data.dataengine.audit.distribution import audit_distribution, op_tags, family_of
 from harnesscad.data.dataengine.selftrain.active_learning import (
     select_informative, uncertainty_of, signature, uncertainty_scorer,
 )

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.agents.rag.rag6d_cad_retrieval import (
+from harnesscad.agents.rag.pose_retrieval import (
     CadKnowledgeBase,
     PoseCandidate,
     cosine_similarity,

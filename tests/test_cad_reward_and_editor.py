@@ -1,24 +1,24 @@
 import unittest
 
-from harnesscad.agents.agent.cad_plan import parse_envelope
-from harnesscad.eval.bench.geometry.cad_geometry_protocol import (
+from harnesscad.agents.agent.plan_envelope import parse_envelope
+from harnesscad.eval.bench.geometry.chamfer_unit_sphere import (
     GeometryProtocol, evaluate_geometry, normalize, squared_chamfer,
 )
 from harnesscad.eval.bench.geometry.edit_alignment import (
     aggregate_edits, directional_cosine, occupancy_jsd, slice_by_se,
 )
 from harnesscad.eval.bench.data.edit_splits import balance_se, split_leakage
-from harnesscad.data.dataengine.schemas.cot_records import CoTRecord, cot_leakage
+from harnesscad.data.dataengine.schemas.cot_record import CoTRecord, cot_leakage
 from harnesscad.data.dataengine.edits.edit_caption import caption_edit
 from harnesscad.data.dataengine.edits.edit_filters import filter_edit
 from harnesscad.data.dataengine.edits.selective_edits import (
     EditCandidateRecord, create_selection,
 )
-from harnesscad.data.datagen.edit_triplets import enumerate_pairs
+from harnesscad.data.datagen.variant_pairs import enumerate_pairs
 from harnesscad.data.datagen.geometry_triplets import quality_tier, select_triplet
 from harnesscad.domain.editing.iterative_session import IterativeEditSession
 from harnesscad.domain.editing.locate_infill import MASK, context_preserved, infill, locate_mask
-from harnesscad.eval.quality.reward.cad_reward import format_reward, geometric_reward, score_candidate
+from harnesscad.eval.quality.reward.execution_reward import format_reward, geometric_reward, score_candidate
 from harnesscad.eval.quality.reward.sampling_guard import sampling_diagnostics
 
 

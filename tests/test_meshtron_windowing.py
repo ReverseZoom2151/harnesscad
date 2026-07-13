@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.formats.meshtron_windowing import (
+from harnesscad.io.formats.mesh_windowing import (
     EOS,
     PAD,
     SOS,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.agents.generation.hnc_code_control import (
+from harnesscad.agents.generation.code_tree_control import (
     LOOP,
     PROFILE,
     SOLID,
@@ -10,7 +10,7 @@ from harnesscad.agents.generation.hnc_code_control import (
     edit_code,
     level_mask,
 )
-from harnesscad.eval.bench.sequence.hnc_code_consistency import (
+from harnesscad.eval.bench.sequence.hierarchy_edit_consistency import (
     changed_levels,
     code_fix_preservation,
     edit_locality,

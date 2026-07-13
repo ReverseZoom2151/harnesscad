@@ -2,9 +2,9 @@
 
 import unittest
 
-from harnesscad.agents.agent.toolcad_tool_schema import ToolCall, default_toolcad_library
-from harnesscad.agents.agent.toolcad_trajectory import ToolTrajectory, rollout
-from harnesscad.agents.agent.toolcad_metrics import (
+from harnesscad.agents.agent.tool_schema import ToolCall, default_toolcad_library
+from harnesscad.agents.agent.tool_trajectory import ToolTrajectory, rollout
+from harnesscad.agents.agent.tool_metrics import (
     count_redundant_calls,
     effective_progress,
     interaction_cost,

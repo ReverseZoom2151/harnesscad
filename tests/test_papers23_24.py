@@ -1,13 +1,13 @@
 import unittest
 
-from harnesscad.agents.agent.cad_observation import CADObservation
+from harnesscad.agents.agent.observation import CADObservation
 from harnesscad.agents.agent.termination import TerminationDecision, gate_termination
 from harnesscad.eval.bench.harness.agent_cost import agent_cost
-from harnesscad.eval.bench.judges.cad_qa import grade_answer, qa_accuracy
+from harnesscad.eval.bench.judges.qa_evidence_grading import grade_answer, qa_accuracy
 from harnesscad.eval.bench.harness.capability_retention import capability_retention
-from harnesscad.eval.bench.sequence.code_execution import validate_cad_code, valid_syntax_rate
-from harnesscad.eval.bench.data.image_conditioning import ImageCondition, evaluate_conditions
-from harnesscad.eval.bench.sketch.sketch_metrics import sketch_f1
+from harnesscad.eval.bench.sequence.code_validity import validate_cad_code, valid_syntax_rate
+from harnesscad.eval.bench.data.image_perturbations import ImageCondition, evaluate_conditions
+from harnesscad.eval.bench.sketch.sketch_f1 import sketch_f1
 from harnesscad.eval.bench.geometry.solid_iou import best_solid_iou, inertia_scale, proper_axis_alignments
 from harnesscad.eval.bench.harness.tool_retrieval import evaluate_tool_retrieval
 from harnesscad.eval.bench.harness.tool_trajectory import audit_tool_trajectory
@@ -17,9 +17,9 @@ from harnesscad.data.datagen.cadquery_codegen import emit_cadquery
 from harnesscad.data.datagen.image_code_manifest import ImageCodeManifest, audit_manifests
 from harnesscad.io.ingest.cross_section import cross_section, triangle_plane_segment
 from harnesscad.agents.llm.generation_contract import assess_generation
-from harnesscad.eval.quality.sequence.cad_code_normalize import normalize_cad_code
+from harnesscad.eval.quality.sequence.code_normalize import normalize_cad_code
 from harnesscad.eval.quality.sketch.constraint_impact import analyze_constraint
-from harnesscad.eval.quality.sketch.sketch_serialization import (
+from harnesscad.eval.quality.sketch.serialization import (
     serialize_circle, serialize_line, serialize_sketch, validate_redundancy,
 )
 from harnesscad.io.surfaces.id_overlay import overlay_svg, place_labels

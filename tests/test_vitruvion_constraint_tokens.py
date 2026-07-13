@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VCircle, entity_from_params
-from harnesscad.domain.reconstruction.tokens.vitruvion_constraint_tokens import (
+from harnesscad.domain.geometry.sketch.normalization import VCircle, entity_from_params
+from harnesscad.domain.reconstruction.tokens.vitruvion_constraints import (
     CONSTRAINT_COORD_TOKENS,
     ConstraintEdge,
     ConstraintToken,
@@ -12,7 +12,7 @@ from harnesscad.domain.reconstruction.tokens.vitruvion_constraint_tokens import 
     reference_vocabulary_size,
     tokenize_constraints,
 )
-from harnesscad.domain.reconstruction.tokens.vitruvion_primitive_tokens import NON_COORD_TOKEN, Token, tokenize_sketch
+from harnesscad.domain.reconstruction.tokens.vitruvion_primitives import NON_COORD_TOKEN, Token, tokenize_sketch
 
 
 class TestVocabulary(unittest.TestCase):

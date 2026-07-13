@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.protocols.t2c3_eval_protocol import (
+from harnesscad.eval.bench.protocols.primitive_f1_null_class import (
     NULL_LABEL,
     CurveScore,
     EvalProtocolError,

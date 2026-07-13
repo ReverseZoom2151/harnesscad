@@ -1,11 +1,11 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.kinematics.t2cmain_urdf_kinematics import (
+from harnesscad.domain.geometry.kinematics.forward_kinematics import (
     solve_link_world_transforms,
     transform_point,
 )
-from harnesscad.domain.spec.t2cmain_urdf_parser import (
+from harnesscad.domain.spec.urdf import (
     UrdfParseError,
     parse_rgba_color,
     parse_urdf,
@@ -234,7 +234,7 @@ class ValidationTest(unittest.TestCase):
         self.assertEqual(parse_urdf(text).root_link, "a")
 
     def test_validate_tree_detects_cycle(self):
-        from harnesscad.domain.geometry.kinematics.t2cmain_urdf_kinematics import Joint
+        from harnesscad.domain.geometry.kinematics.forward_kinematics import Joint
 
         joints = (
             Joint("j1", "fixed", "a", "b"),

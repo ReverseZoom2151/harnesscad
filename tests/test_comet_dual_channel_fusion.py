@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.library.comet_dual_channel_fusion import (
+from harnesscad.domain.library.dual_channel_fusion import (
     ChannelHit,
     dual_channel_retrieve,
     expand_by_links,

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.topology.opencad_synthetic_topology import (
+from harnesscad.domain.geometry.topology.synthetic_brep import (
     BoundingBox,
     build_topology,
     direction_tags,

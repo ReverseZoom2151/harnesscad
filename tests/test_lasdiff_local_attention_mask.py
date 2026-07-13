@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harnesscad.domain.geometry.views.lasdiff_local_attention_mask import (
+from harnesscad.domain.geometry.views.local_attention import (
     attention_mask,
     default_d_delta,
     local_neighborhood,

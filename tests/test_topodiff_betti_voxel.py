@@ -1,7 +1,7 @@
 """Tests for cubical-complex Betti numbers of voxel shapes."""
 import unittest
 
-from harnesscad.domain.geometry.volumes.topodiff_betti_voxel import (
+from harnesscad.domain.geometry.volumes.betti_numbers import (
     BettiNumbers,
     betti_numbers,
     cavity_count,

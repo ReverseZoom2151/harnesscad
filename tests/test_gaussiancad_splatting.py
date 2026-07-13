@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from math import isclose, pi, sqrt
 
-from harnesscad.domain.geometry.views import gaussiancad_splatting as gs
+from harnesscad.domain.geometry.views import gaussian_splat as gs
 
 
 class TestQuaternion(unittest.TestCase):

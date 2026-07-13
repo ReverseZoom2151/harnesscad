@@ -3,12 +3,12 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.scene.worldcraft_layout_spec import (
+from harnesscad.domain.reconstruction.scene.layout_spec import (
     LayoutSpec,
     ObjectPlacement,
     Pose,
 )
-from harnesscad.agents.generation.worldcraft_layout_solver import (
+from harnesscad.agents.generation.layout_solver import (
     AlignAxis,
     FacePoint,
     MaxDistance,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.adapters.cadhub_language_registry import (
+from harnesscad.io.adapters.language_registry import (
     ARTIFACT_IMAGE,
     ARTIFACT_MESH,
     ARTIFACT_PRIMITIVES,

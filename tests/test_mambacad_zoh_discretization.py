@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.numeric.mambacad_zoh_discretization import (
+from harnesscad.domain.numeric.zoh_discretization import (
     zoh_abar, zoh_bbar, zoh_bbar_simplified, discretize,
     discrete_scan, analytic_state,
 )

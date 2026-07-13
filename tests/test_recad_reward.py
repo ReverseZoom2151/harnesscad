@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.reward.recad_reward import (
+from harnesscad.data.dataengine.reward.geometry_semantics_reward import (
     DEFAULT_LAMBDA_1,
     DEFAULT_LAMBDA_2,
     DEFAULT_TAU,

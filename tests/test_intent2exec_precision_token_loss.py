@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.reward.intent2exec_precision_token_loss import (
+from harnesscad.data.dataengine.reward.precision_token_loss import (
     DEFAULT_HEAVY_WEIGHT,
     is_numeric_token,
     precision_token_loss,

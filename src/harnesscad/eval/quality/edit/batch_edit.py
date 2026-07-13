@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from harnesscad.core.cisp.ops import Op
-from harnesscad.eval.quality.graph.featuregraph import (
+from harnesscad.eval.quality.graph.feature_graph import (
     FeatureGraph, FeatureNode, build_feature_graph,
 )
 

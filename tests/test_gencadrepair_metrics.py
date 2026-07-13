@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import Command, command
-from harnesscad.eval.reliability.gencadrepair_metrics import (
+from harnesscad.domain.reconstruction.tokens.deepcad_commands import Command, command
+from harnesscad.eval.reliability.repair_metrics import (
     RepairBenchmark,
     benchmark_repair,
     evaluate_sequences,

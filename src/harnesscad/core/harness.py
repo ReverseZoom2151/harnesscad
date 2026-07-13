@@ -1,4 +1,4 @@
-"""AgentHarness — the top-level ReAct orchestrator (HARNESS_BLUEPRINT.md sec.3+4).
+"""AgentHarness — the top-level ReAct orchestrator (docs/blueprint.md sec.3+4).
 
 This is the single from-scratch module that ties the already-built pieces
 together. It COMPOSES; it reimplements nothing:

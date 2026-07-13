@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.library.fcai_relative_value import (
+from harnesscad.domain.library.relative_value import (
     ABSOLUTE,
     DELTA,
     PERCENT,

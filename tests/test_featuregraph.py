@@ -19,7 +19,7 @@ except Exception:  # noqa: BLE001
     Hole = None
     HAVE_HOLE = False
 
-from harnesscad.eval.quality.graph.featuregraph import build_feature_graph, FeatureGraph, FeatureNode, FeatureEdge
+from harnesscad.eval.quality.graph.feature_graph import build_feature_graph, FeatureGraph, FeatureNode, FeatureEdge
 
 
 def _plate_ops(n_holes=0, fillet=False):

@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.io.formats.stepllm_parser import parse
-from harnesscad.io.formats.step_header_model import HeaderError, StepHeader, parse_header
+from harnesscad.io.formats.step import parse
+from harnesscad.io.formats.step_header import HeaderError, StepHeader, parse_header
 
 # From the ABC dataset example used in ruststep's header.rs test.
 _STEP = """ISO-10303-21;

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.validate.t2cq_validity import check_code, invalid_rate, is_valid
+from harnesscad.domain.programs.validate.cadquery_validity import check_code, invalid_rate, is_valid
 
 _GOOD = (
     "import cadquery as cq\n"

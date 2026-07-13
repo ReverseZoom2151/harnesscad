@@ -5,8 +5,8 @@ from __future__ import annotations
 import random
 import unittest
 
-from harnesscad.domain.numeric.sketchdnn_categorical_diffusion import matmul, vec_mat
-from harnesscad.domain.numeric.vqcad_mask_and_replace import (
+from harnesscad.domain.numeric.categorical_diffusion import matmul, vec_mat
+from harnesscad.domain.numeric.mask_and_replace import (
     beta_from,
     converges_to_mask,
     cumulative_for,

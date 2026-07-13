@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.editing.autocad_layout_ops import (
+from harnesscad.domain.editing.layout_ops import (
     Align,
     align,
     distribute_centers,

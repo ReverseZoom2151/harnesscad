@@ -1,4 +1,4 @@
-"""Tool annotations + approval tiers (HARNESS_BLUEPRINT.md sec.5 & sec.14).
+"""Tool annotations + approval tiers (docs/blueprint.md sec.5 & sec.14).
 
 Every tool carries MCP-style behavioural hints (``readOnlyHint`` /
 ``destructiveHint`` / ``idempotentHint``) that are *auto-assigned* from the tool

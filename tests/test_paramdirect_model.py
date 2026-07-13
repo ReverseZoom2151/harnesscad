@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.editing.paramdirect_model import (
+from harnesscad.domain.editing.hybrid_model import (
     Paradigm, InfoLayer, ParametricFeature, FeatureTree, Face, DirectBRep,
     ParameterEdit, PushPullEdit, edit_from_dict, classify_edit, edit_layer,
 )

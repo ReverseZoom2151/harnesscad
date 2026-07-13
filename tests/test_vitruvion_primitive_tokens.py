@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VArc, VCircle, VLine, VPoint, entity_from_params
-from harnesscad.domain.reconstruction.tokens.vitruvion_primitive_tokens import (
+from harnesscad.domain.geometry.sketch.normalization import VArc, VCircle, VLine, VPoint, entity_from_params
+from harnesscad.domain.reconstruction.tokens.vitruvion_primitives import (
     COORD_TOKEN_MAP,
     DEFAULT_NUM_BINS,
     GATHER_MAP,

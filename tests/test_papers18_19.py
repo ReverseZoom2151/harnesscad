@@ -1,10 +1,10 @@
 import unittest
 
-from harnesscad.eval.bench.data.brep_robustness import mask_cases, evaluate_masking
+from harnesscad.eval.bench.data.brep_masking import mask_cases, evaluate_masking
 from harnesscad.eval.bench.data.brep_splits import complexity, grouped_split
 from harnesscad.eval.bench.harness.resource_tradeoff import ResourceResult, pareto_frontier
-from harnesscad.eval.bench.vision.segmentation_metrics import face_segmentation_metrics
-from harnesscad.io.ingest.bezier_contracts import bezier_curve, bezier_triangle
+from harnesscad.eval.bench.vision.face_segmentation import face_segmentation_metrics
+from harnesscad.io.ingest.bezier import bezier_curve, bezier_triangle
 from harnesscad.io.ingest.brep_hierarchy import (
     BRepHierarchy, Coedge, Edge, Face, Loop, Shell, Vertex,
 )

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.retrieval.deepclustering_internal_indices import (
+from harnesscad.eval.bench.retrieval.clustering_internal_indices import (
     calinski_harabasz_index,
     davies_bouldin_index,
     dunn_index,

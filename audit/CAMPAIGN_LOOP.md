@@ -13,7 +13,7 @@ each as a tested module — continuously, in batches of 5, until all 186 are don
   `resources/Text-to-CAD + Spatial Intelligence/extracted-md/_manifest.md`
   (row N of the `| [paper](...) |` table = paper index N).
 
-Idea log: `TEXT_TO_CAD_PAPER_IDEAS.md` — one `### N. <Paper>` section per paper
+Idea log: `docs/corpus/paper-ideas.md` — one `### N. <Paper>` section per paper
 with a `| Build idea | Status | Repository comparison |` table. Status is
 `implemented` (with `path/module.py`), or `research-heavy/external` /
 `external` for learned-model/training/proprietary/licensed ideas.
@@ -56,7 +56,7 @@ with a `| Build idea | Status | Repository comparison |` table. Status is
    summed) because a monolithic `unittest discover` segfaults at OCCT teardown.
 5. Update `audit/text_to_cad_progress.json` (`reviewed_count += 5`,
    `next_manifest_index += 5`, append `reviewed[]` entries) and append the
-   idea-tables to `TEXT_TO_CAD_PAPER_IDEAS.md` with a
+   idea-tables to `docs/corpus/paper-ideas.md` with a
    `## Batch-<k> implementation result` note.
 6. Schedule the next batch (continuous loop) until `next_manifest_index > 186`.
 

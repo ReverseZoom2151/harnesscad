@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.spec.gaudi_plate_spec import (
+from harnesscad.domain.spec.plate_spec import (
     CATEGORIES,
     HANDLE_TYPES,
     PlateSpecError,

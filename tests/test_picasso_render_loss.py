@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.drawings.picasso_rasterizer import Circle, Line, rasterize
-from harnesscad.domain.drawings.picasso_render_loss import (
+from harnesscad.domain.drawings.rasterizer import Circle, Line, rasterize
+from harnesscad.domain.drawings.render_loss import (
     bce_loss,
     distance_field_l2,
     distance_transform,

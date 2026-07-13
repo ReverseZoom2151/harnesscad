@@ -6,7 +6,7 @@ dataclass with a stable ``OP`` tag for JSON (de)serialisation, so an op stream i
 deterministic and hashable — the substrate for the ops-DAG (see state/opdag.py).
 
 Sketch + constraint ops come first by design: the wedge is sketch/constraint/layout
-assist, not one-shot solids (see HARNESS_BLUEPRINT.md sec.18 sequencing).
+assist, not one-shot solids (see docs/blueprint.md sec.18 sequencing).
 """
 
 from __future__ import annotations

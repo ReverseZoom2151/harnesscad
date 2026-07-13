@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.data.dataengine.selftrain.gift_geometric_feedback import Candidate
-from harnesscad.data.dataengine.selftrain.gift_bootstrap_loop import (
+from harnesscad.data.dataengine.selftrain.geometric_feedback import Candidate
+from harnesscad.data.dataengine.selftrain.bootstrap_loop import (
     amortization_gap, bootstrap_round, bootstrap_selftrain,
     inverse_temperature_schedule, pass_at_1, pass_at_k,
 )

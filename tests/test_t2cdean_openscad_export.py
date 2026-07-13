@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.fabrication.t2cdean_openscad_export import (
+from harnesscad.domain.fabrication.openscad_export import (
     STATUS_EMPTY,
     STATUS_ERROR,
     STATUS_OK,

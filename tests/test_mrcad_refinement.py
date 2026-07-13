@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.editing.mrcad_schema import (
+from harnesscad.domain.editing.sketch_edit_schema import (
     DeletePoint,
     Design,
     MakeCurve,
@@ -13,7 +13,7 @@ from harnesscad.domain.editing.mrcad_schema import (
     circle,
     line,
 )
-from harnesscad.domain.editing.mrcad_refinement import (
+from harnesscad.domain.editing.refinement_session import (
     RefinementSession,
     Rollout,
     Round,

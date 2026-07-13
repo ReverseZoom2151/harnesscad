@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.drawings.rastercad_codec import (
+from harnesscad.domain.drawings.raster_codec import (
     TokenStream,
     decode_blocks,
     decode_tokens,

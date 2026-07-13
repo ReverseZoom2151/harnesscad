@@ -1,6 +1,6 @@
 """ToolExecutor — the sandboxed, gated, retrying tool-call orchestration layer.
 
-Per HARNESS_BLUEPRINT.md sec.3 (``ToolExecutor``) and sec.10 (guardrails &
+Per docs/blueprint.md sec.3 (``ToolExecutor``) and sec.10 (guardrails &
 error-recovery ladder). This is a THIN orchestration layer over pieces that
 already exist — it contains no geometry logic of its own:
 

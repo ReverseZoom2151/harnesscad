@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.evaluate import pht_pmse_loss as loss
+from harnesscad.domain.reconstruction.evaluate import pmse_loss as loss
 
 
 class CrossEntropyTest(unittest.TestCase):

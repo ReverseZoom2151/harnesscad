@@ -1,7 +1,7 @@
 """Tests for editing.voxhammer_preserve."""
 import unittest
 
-from harnesscad.domain.editing.voxhammer_preserve import (
+from harnesscad.domain.editing.latent_preserve import (
     attention_allow_mask,
     blend_latents,
     blend_vectors,

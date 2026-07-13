@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.protocols.seekcad_metrics import (
+from harnesscad.eval.bench.protocols.novelty_g_score import (
     NO,
     UNSURE,
     YES,

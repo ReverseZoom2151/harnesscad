@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import Command, command, SOL, LINE, CIRCLE, EXT, EOS
-from harnesscad.domain.reconstruction.sketch import deepcad_profile_assembly as pa
+from harnesscad.domain.reconstruction.tokens.deepcad_commands import Command, command, SOL, LINE, CIRCLE, EXT, EOS
+from harnesscad.domain.reconstruction.sketch import profile_assembly as pa
 
 
 def _square():

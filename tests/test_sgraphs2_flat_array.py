@@ -5,7 +5,7 @@ import os
 import tempfile
 import unittest
 
-from harnesscad.io.formats.sgraphs2_flat_array import (
+from harnesscad.io.formats.flat_array import (
     ARRAY_MAGIC,
     DICT_MAGIC,
     FlatArray,

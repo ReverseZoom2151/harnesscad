@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.data.wian_partname_tasks import (
+from harnesscad.eval.bench.data.partname_tasks import (
     FEATURE_KEYS,
     SPLIT_NAMES,
     build_corpus,
@@ -15,7 +15,7 @@ from harnesscad.eval.bench.data.wian_partname_tasks import (
     split_corpus,
     stratified_split,
 )
-from harnesscad.domain.library.wian_name_normalizer import CleanDocument, clean_corpus
+from harnesscad.domain.library.name_normalizer import CleanDocument, clean_corpus
 
 DOC = CleanDocument(
     document_id="d1",

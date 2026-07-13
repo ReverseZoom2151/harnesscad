@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 import unittest
 
-from harnesscad.eval.bench.retrieval.ssrl_fewshot_scaling import (
+from harnesscad.eval.bench.retrieval.fewshot_scaling import (
     stratified_subset,
     make_evaluator,
     scaling_curve,

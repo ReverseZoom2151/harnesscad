@@ -2,10 +2,10 @@
 
 import unittest
 
-from harnesscad.domain.procedural.shapegramm_instantiate import (
+from harnesscad.domain.procedural.instantiate import (
     MassiveModel, Instance, generate_view, full_object_count,
 )
-from harnesscad.domain.procedural.shapegramm_scope import make_aabb_frustum
+from harnesscad.domain.procedural.scope_culling import make_aabb_frustum
 
 
 class CellInstancingTest(unittest.TestCase):

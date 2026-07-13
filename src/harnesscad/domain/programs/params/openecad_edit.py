@@ -22,7 +22,7 @@ No learning is involved; this is the mechanical editing the paper relies on.
 
 from __future__ import annotations
 
-from harnesscad.domain.programs.ast import openecad_script as oe
+from harnesscad.domain.programs.ast import openecad as oe
 
 
 def variable_names(program: oe.Program) -> set[str]:

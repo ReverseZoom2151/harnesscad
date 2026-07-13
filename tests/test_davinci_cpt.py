@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.ingest.davinci_cpt import (
+from harnesscad.io.ingest.constraint_preserving import (
     ORIENTATION_DEPENDENT, Sketch, apply_permutation, constraints_preserved,
     random_permutation, rotate_sketch,
 )

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.assembly.graphcad_align import (
+from harnesscad.domain.geometry.assembly.placement import (
     Box,
     aggregate_box,
     apply_align,

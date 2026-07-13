@@ -1,4 +1,4 @@
-"""ui — the UI event contract for harnesscad (HARNESS_BLUEPRINT.md sec.14).
+"""ui — the UI event contract for harnesscad (docs/blueprint.md sec.14).
 
 Two framework-free layers, stdlib-only, no web server:
 

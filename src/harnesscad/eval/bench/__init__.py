@@ -1,6 +1,6 @@
 """CADBench-Verified — the SWE-bench-for-CAD evaluation harness.
 
-HARNESS_BLUEPRINT.md sec.16: spec -> agent builds part -> programmatic geometric
+docs/blueprint.md sec.16: spec -> agent builds part -> programmatic geometric
 checker. Metrics rank editability/validity above fidelity: sketch-editability,
 program-execution rebuild rate, B-rep validity, dimension match; reported as
 task-success-rate + trajectory efficiency, per-difficulty.

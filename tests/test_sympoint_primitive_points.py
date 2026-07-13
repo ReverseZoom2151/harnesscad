@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.drawings.sympoint_primitive_points import (
+from harnesscad.domain.drawings.primitive_points import (
     ARC,
     CIRCLE,
     COMMANDS,

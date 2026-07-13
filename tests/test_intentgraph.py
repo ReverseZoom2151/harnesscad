@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.quality.graph.intentgraph import (
+from harnesscad.eval.quality.graph.intent_graph import (
     IntentGraph,
     IntentNode,
     IntentRelation,

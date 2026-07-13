@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.retrieval.deepclustering_edge_protocol import (
+from harnesscad.eval.bench.retrieval.pairwise_edge_protocol import (
     balanced_accuracy,
     edge_accuracy,
     edge_confusion_matrix,

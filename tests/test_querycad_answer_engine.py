@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.data.querycad_query_schema import CadQaQuestion, PropertyFilter
-from harnesscad.agents.rag.querycad_segmentation_grounding import Part
-from harnesscad.domain.reconstruction.scene.querycad_answer_engine import Answer, answer_question
+from harnesscad.eval.bench.data.qa_query_schema import CadQaQuestion, PropertyFilter
+from harnesscad.agents.rag.segmentation_grounding import Part
+from harnesscad.domain.reconstruction.scene.answer_engine import Answer, answer_question
 
 
 def _model():

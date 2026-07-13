@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.sketch.sketchconcept_metrics import (
+from harnesscad.eval.bench.sketch.concept_library import (
     concept_cost,
     coverage,
     decomposition_cost,
@@ -9,10 +9,10 @@ from harnesscad.eval.bench.sketch.sketchconcept_metrics import (
     library_cost,
     sketch_cost,
 )
-from harnesscad.domain.library.sketchconcept_induction import induce_library
-from harnesscad.domain.library.sketchconcept_library import ConceptLibrary
-from harnesscad.domain.reconstruction.sketch.sketchconcept_decompose import decompose
-from harnesscad.domain.reconstruction.sketch.sketchconcept_template import (
+from harnesscad.domain.library.concept_induction import induce_library
+from harnesscad.domain.library.concept_library import ConceptLibrary
+from harnesscad.domain.reconstruction.sketch.concept_decompose import decompose
+from harnesscad.domain.reconstruction.sketch.concept_template import (
     Concept,
     Const,
     Constraint,

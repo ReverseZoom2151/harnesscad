@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.mesh.angelcad_polyhedron import (
+from harnesscad.domain.geometry.mesh.polyhedron import (
     Polyhedron,
     PolyhedronError,
     tetrahedron,

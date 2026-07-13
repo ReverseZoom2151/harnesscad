@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.views import dlwheel_edge as de
+from harnesscad.domain.geometry.views import edge_detection as de
 
 
 class GradientTests(unittest.TestCase):

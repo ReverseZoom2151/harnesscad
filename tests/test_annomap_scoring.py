@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.drawings.annomap_parser import CADFeature, parse_callout
-from harnesscad.domain.drawings.annomap_scoring import (
+from harnesscad.domain.drawings.annotation_parser import CADFeature, parse_callout
+from harnesscad.domain.drawings.annotation_mapping import (
     EPSILON,
     RHO,
     THETA_CAND,

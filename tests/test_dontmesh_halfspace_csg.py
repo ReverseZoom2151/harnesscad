@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sdf.dontmesh_halfspace_csg import (
+from harnesscad.domain.geometry.sdf.halfspace_csg import (
     Cell,
     CSGModel,
     Cylinder,

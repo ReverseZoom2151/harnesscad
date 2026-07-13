@@ -134,7 +134,7 @@ class TestSchematicDrawing(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestRealDrawing(unittest.TestCase):
     def _cq_plate(self, w=60.0, h=40.0, thick=8.0):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=w, h=h))

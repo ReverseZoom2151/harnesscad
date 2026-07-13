@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.drawings.cadtransformer_primitive_graph import (
+from harnesscad.domain.drawings.primitive_graph import (
     Primitive,
     build_primitive_graph,
     endpoint_knn,

@@ -1,4 +1,4 @@
-"""ContextManager — owns the token window (HARNESS_BLUEPRINT.md sec.3 + sec.7).
+"""ContextManager — owns the token window (docs/blueprint.md sec.3 + sec.7).
 
 The window is a hard budget, not a suggestion:
 

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import (
+from harnesscad.domain.geometry.sketch.normalization import (
     NUM_PARAMS,
     VArc,
     VCircle,

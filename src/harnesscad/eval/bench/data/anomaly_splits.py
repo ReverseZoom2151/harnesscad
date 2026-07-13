@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 from typing import Iterable
-from harnesscad.data.dataengine.schemas.anomaly_schema import AnomalyAsset
+from harnesscad.data.dataengine.schemas.anomaly import AnomalyAsset
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.io.formats.stepllm_parser import Entity, Enum, Ref, StepFile, parse
-from harnesscad.io.formats.stepllm_graph import (
+from harnesscad.io.formats.step import Entity, Enum, Ref, StepFile, parse
+from harnesscad.io.formats.step_graph import (
     build_graph, dangling_references, is_acyclic, reachable, roots,
     topological_order, unreachable, validate,
 )

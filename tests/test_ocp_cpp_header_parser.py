@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from harnesscad.io.formats.ocp_cpp_header_parser import (
+from harnesscad.io.formats.cpp_header import (
     ParseError, parse_header, parse_header_file, parse_param, split_params,
     split_top_level, strip_comments, strip_preprocessor,
 )

@@ -3,10 +3,10 @@
 import math
 import unittest
 
-from harnesscad.domain.editing.mrcad_schema import Design, arc, circle, line
-from harnesscad.domain.editing.mrcad_refinement import RefinementSession
-from harnesscad.domain.editing.mrcad_schema import MakeCurve, Message, MoveCurve
-from harnesscad.eval.bench.geometry.mrcad_metrics import (
+from harnesscad.domain.editing.sketch_edit_schema import Design, arc, circle, line
+from harnesscad.domain.editing.refinement_session import RefinementSession
+from harnesscad.domain.editing.sketch_edit_schema import MakeCurve, Message, MoveCurve
+from harnesscad.eval.bench.geometry.refinement_convergence import (
     ConvergenceReport,
     chamfer_asymmetric,
     chamfer_symmetric,

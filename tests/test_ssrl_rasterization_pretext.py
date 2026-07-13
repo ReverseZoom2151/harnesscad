@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.data.dataengine.augment.ssrl_rasterization_pretext import (
+from harnesscad.data.dataengine.augment.self_supervised_pretext import (
     UVBox,
     RasterSample,
     bounding_box,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scene.scenegraph_model import (
+from harnesscad.domain.reconstruction.scene.model import (
     AABB,
     RelationEdge,
     RelationType,

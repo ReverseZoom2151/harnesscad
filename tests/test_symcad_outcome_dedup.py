@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.curation.symcad_outcome_dedup import (
+from harnesscad.data.dataengine.curation.outcome_dedup import (
     dedup_report,
     deduplicate,
     duplicate_groups,

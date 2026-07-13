@@ -1,11 +1,11 @@
 import os
 import unittest
 
-from harnesscad.io.backends.ocp_occt_api_catalog import (
+from harnesscad.io.backends.occt_catalog import (
     ClassEntry, MethodEntry, OcctApiCatalog, build_catalog_from_headers,
     module_of, parse_ocp_config,
 )
-from harnesscad.io.formats.ocp_cpp_header_parser import parse_header
+from harnesscad.io.formats.cpp_header import parse_header
 
 
 HEADER = """\

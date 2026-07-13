@@ -2,8 +2,8 @@
 import random
 import unittest
 
-from harnesscad.domain.numeric.makeashape_wavelet_transform import Grid3D, dwt3, idwt3, DETAIL_NAMES
-from harnesscad.domain.numeric.makeashape_wavelet_tree import (
+from harnesscad.domain.numeric.wavelet_transform import Grid3D, dwt3, idwt3, DETAIL_NAMES
+from harnesscad.domain.numeric.wavelet_tree import (
     sibling_information, top_k_locations, truncate_top_k,
     compress_decomposition_top_k, detail_coefficient_count, nonzero_detail_count,
     importance_mask, adaptive_coordinate_set, complement_coordinate_set,

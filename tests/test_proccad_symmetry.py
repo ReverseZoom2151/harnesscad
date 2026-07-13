@@ -3,7 +3,7 @@
 import unittest
 from math import isclose, tau
 
-from harnesscad.domain.procedural.proccad_symmetry import (
+from harnesscad.domain.procedural.symmetry import (
     SymmetryReducer,
     bilateral,
     dihedral,

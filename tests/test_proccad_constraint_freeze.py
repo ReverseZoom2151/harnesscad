@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.procedural.proccad_constraint_freeze import (
+from harnesscad.domain.procedural.constraint_freeze import (
     build_constraints,
     check_preserved,
     freeze_region,

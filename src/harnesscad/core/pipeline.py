@@ -85,7 +85,7 @@ def _make_backend(backend: str):
             # optional kernel. Probe the dependency here so the pipeline does
             # not select a backend that can construct but cannot execute.
             import cadquery  # noqa: F401
-            from harnesscad.io.backends.cadquery_backend import CadQueryBackend  # type: ignore
+            from harnesscad.io.backends.cadquery import CadQueryBackend  # type: ignore
             return CadQueryBackend(), "cadquery", None
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",

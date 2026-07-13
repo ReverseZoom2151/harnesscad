@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.ast.bidircsg_ast import (
+from harnesscad.domain.programs.ast.bidirectional_csg import (
     Difference,
     Primitive,
     Repeat,
@@ -12,8 +12,8 @@ from harnesscad.domain.programs.ast.bidircsg_ast import (
     Union,
     node_at,
 )
-from harnesscad.domain.programs.runtime.bidircsg_forward import find_instance, get, leaves
-from harnesscad.domain.editing.bidircsg_backward import (
+from harnesscad.domain.programs.runtime.csg_forward_eval import find_instance, get, leaves
+from harnesscad.domain.editing.backward_propagation import (
     get_put_holds,
     put_get_probe,
     put_get_translate_holds,

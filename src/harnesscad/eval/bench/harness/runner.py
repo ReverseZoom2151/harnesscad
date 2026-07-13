@@ -1,4 +1,4 @@
-"""CADBench-Verified runner (HARNESS_BLUEPRINT.md sec.16).
+"""CADBench-Verified runner (docs/blueprint.md sec.16).
 
 Executes a Task through the HarnessSession spine (applyOps -> regen -> verify ->
 checkpoint) and scores it with the blueprint metrics, then aggregates a suite

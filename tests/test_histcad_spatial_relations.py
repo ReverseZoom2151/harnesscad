@@ -1,7 +1,7 @@
 import unittest
 import math
 
-from harnesscad.data.dataengine.annotation.histcad_spatial_relations import (
+from harnesscad.data.dataengine.annotation.spatial_relations import (
     OBB, sat_overlap, classify_contact, relative_position_labels,
     analyze_parts,
 )

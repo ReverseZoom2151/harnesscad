@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.views.blenderllm_camera_rig import (
+from harnesscad.domain.geometry.views.camera_rig import (
     BoundingBox,
     FRAME_SCALE,
     bounding_box,

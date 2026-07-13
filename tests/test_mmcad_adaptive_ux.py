@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.surfaces.mmcad_adaptive_ux import (
+from harnesscad.io.surfaces.adaptive_ux import (
     InteractionStats,
     ProficiencyEstimator,
     ProficiencyStateMachine,
@@ -11,7 +11,7 @@ from harnesscad.io.surfaces.mmcad_adaptive_ux import (
     recommend_ux,
     score_to_tier,
 )
-from harnesscad.io.surfaces.mmcad_modality_fusion import ModalityKind
+from harnesscad.io.surfaces.modality_fusion import ModalityKind
 
 
 class TestInteractionStats(unittest.TestCase):

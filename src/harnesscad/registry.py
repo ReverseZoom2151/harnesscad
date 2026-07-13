@@ -25,7 +25,7 @@ Typical use::
     for e in registry.find(tag="sdf"):
         print(e.dotted, e.summary)
 
-    mod = registry.load("harnesscad.domain.geometry.sdf.curv_sdf_primitives")
+    mod = registry.load("harnesscad.domain.geometry.sdf.primitives")
     mod.sphere_sdf(...)
 
 Everything here is stdlib-only and deterministic (no wall clock, no randomness).
@@ -348,9 +348,17 @@ def _product_imports(tree: ast.Module, dotted: str) -> Tuple[str, ...]:
     return tuple(sorted(found))
 
 
-def _tags_for(package: str, name: str, summary: str) -> Tuple[str, ...]:
+def _tags_for(package: str, name: str, summary: str, subpath: str = "") -> Tuple[str, ...]:
+    """Derive tags from the package, the module's PATH, and its docstring.
+
+    ``subpath`` is the sub-package chain below the package (e.g. ``sdf`` for
+    ``domain.geometry.sdf.primitives``). It must be part of the haystack: since
+    modules are named by capability rather than provenance, the capability now
+    lives in the FOLDER. ``sdf/primitives.py`` is an SDF module even though the
+    word "sdf" no longer appears in its name.
+    """
     tags = set(PACKAGE_TAGS.get(package, ()))
-    haystack_name = name.lower()
+    haystack_name = f"{subpath}.{name}".lower() if subpath else name.lower()
     haystack_doc = summary.lower()
     for needle, add in KEYWORD_TAGS:
         if needle in haystack_name or needle in haystack_doc:
@@ -368,6 +376,10 @@ def _scan(path: str) -> Optional[ModuleEntry]:
         layer = parts[1]
         package = parts[2] if len(parts) >= 4 else ""
     name = parts[-1]
+    # sub-package chain between the package and the module, e.g. "sdf" in
+    # harnesscad.domain.geometry.sdf.primitives -- this is where the capability
+    # now lives, since modules are named by capability rather than provenance.
+    subpath = ".".join(parts[3:-1]) if len(parts) >= 5 else ""
     try:
         with open(path, "r", encoding="utf-8") as fh:
             src = fh.read()
@@ -381,7 +393,7 @@ def _scan(path: str) -> Optional[ModuleEntry]:
         package=package,
         name=name,
         summary=summary,
-        tags=_tags_for(package, name, summary),
+        tags=_tags_for(package, name, summary, subpath),
         symbols=_public_symbols(tree),
         imports=_product_imports(tree, dotted),
     )

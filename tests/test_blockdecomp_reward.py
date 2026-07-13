@@ -2,9 +2,9 @@
 
 import unittest
 
-from harnesscad.domain.geometry.mesh.blockdecomp_domain import Shape
-from harnesscad.domain.geometry.mesh.blockdecomp_cut import full_cut
-from harnesscad.agents.exploration.blockdecomp_reward import (
+from harnesscad.domain.geometry.mesh.block_domain import Shape
+from harnesscad.domain.geometry.mesh.block_cut import full_cut
+from harnesscad.agents.exploration.decomp_reward import (
     aspect_term,
     no_effect_penalty,
     quad_term,

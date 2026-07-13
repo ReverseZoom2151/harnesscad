@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.formats.stepllm_parser import (
+from harnesscad.io.formats.step import (
     DERIVED, Entity, Enum, ParseError, Real, Ref, StepFile, Typed, UNSET,
     entity_refs, iter_refs, parse, parse_expression, serialize,
     serialize_entity, serialize_value, split_statements, strip_comments,

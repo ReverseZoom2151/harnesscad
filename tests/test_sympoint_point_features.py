@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.drawings.sympoint_point_features import (
+from harnesscad.domain.drawings.point_features import (
     BACKGROUND_SEMANTIC_ID,
     COORD_SCALE,
     FEATURE_DIM,

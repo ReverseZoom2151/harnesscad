@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.parametric import nurbgen_curve as nc
+from harnesscad.domain.geometry.parametric import nurbs_curve as nc
 from harnesscad.domain.numeric import nurbs_basis as nb
 
 

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.formats.sgraphs2_onshape_json import (
+from harnesscad.io.formats.onshape_json import (
     Arc,
     Circle,
     EntityType,

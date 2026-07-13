@@ -6,7 +6,7 @@ import math
 import random
 import unittest
 
-from harnesscad.eval.bench.retrieval.geomretr_embedding import (
+from harnesscad.eval.bench.retrieval.embedding_postprocess import (
     l2_normalize,
     l2_normalize_all,
     pca_whiten,

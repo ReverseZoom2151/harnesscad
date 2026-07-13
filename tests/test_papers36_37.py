@@ -11,17 +11,17 @@ import unittest
 
 from harnesscad.eval.bench.protocols.appearance_invariance import appearance_invariance
 from harnesscad.eval.bench.harness.candidate_scaling import candidate_scaling
-from harnesscad.eval.bench.data.geometry_prompted_segmentation import GeometrySegmentationCase, audit_cases
+from harnesscad.eval.bench.data.segmentation_manifests import GeometrySegmentationCase, audit_cases
 from harnesscad.eval.bench.vision.instance_segmentation import instance_metrics
 from harnesscad.eval.bench.harness.point_budget import point_budget_report
-from harnesscad.eval.bench.data.pointcloud_robustness import corrupt_cloud, robustness_curve
+from harnesscad.eval.bench.data.pointcloud_corruption import corrupt_cloud, robustness_curve
 from harnesscad.data.dataengine.audit.code_modularity import code_modularity
 from harnesscad.data.datagen.domain_randomization import RandomAxis, draw_scene, independence_audit
 from harnesscad.data.datagen.reverse_engineering import build_reverse_sample
 from harnesscad.data.datagen.sketch_boolean import realize_recipe, sketch_recipe
 from harnesscad.io.ingest.fourier_features import fourier_features
 from harnesscad.io.ingest.point_cloud import canonicalize_cloud
-from harnesscad.eval.quality.graph.cad_abstraction import accept_abstraction, propose_abstraction
+from harnesscad.eval.quality.graph.abstraction import accept_abstraction, propose_abstraction
 from harnesscad.eval.quality.report.parameter_exposure import expose_parameters
 from harnesscad.eval.quality.sequence.quantization_risk import quantization_risks
 from harnesscad.domain.reconstruction.evaluate.expressivity import expressivity_report

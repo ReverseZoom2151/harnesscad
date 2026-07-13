@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.transforms.e3dbench_umeyama import (
+from harnesscad.domain.geometry.transforms.umeyama import (
     Sim3,
     alignment_rmse,
     det3,
@@ -13,7 +13,7 @@ from harnesscad.domain.geometry.transforms.e3dbench_umeyama import (
     transpose,
     umeyama_alignment,
 )
-from harnesscad.eval.bench.vision.e3dbench_depth_metrics import (
+from harnesscad.eval.bench.vision.depth_metrics import (
     TAU_SPARSE,
     TAU_VIDEO,
     abs_rel,
@@ -22,21 +22,21 @@ from harnesscad.eval.bench.vision.e3dbench_depth_metrics import (
     evaluate_depth,
     median_scale_factor,
 )
-from harnesscad.eval.bench.vision.e3dbench_pose_metrics import (
+from harnesscad.eval.bench.vision.camera_pose_trajectory import (
     absolute_translation_error,
     evaluate_trajectory,
     relative_pose_error,
     rotation_angle_error,
     translation_error,
 )
-from harnesscad.eval.bench.geometry.e3dbench_pointmap_metrics import (
+from harnesscad.eval.bench.geometry.accuracy_completeness import (
     accuracy,
     completeness,
     evaluate_reconstruction,
     normal_consistency,
     precision_recall_fscore,
 )
-from harnesscad.eval.bench.harness.e3dbench_harness import (
+from harnesscad.eval.bench.harness.metric_aggregation import (
     BenchmarkHarness,
     MetricSpec,
     normalize_higher_is_better,

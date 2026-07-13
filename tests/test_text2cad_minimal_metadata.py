@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.annotation.text2cad_minimal_metadata import (
+from harnesscad.data.dataengine.annotation.minimal_metadata import (
     MinimalMetadataError,
     generate_minimal_metadata,
     is_random_key,

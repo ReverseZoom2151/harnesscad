@@ -7,7 +7,7 @@ still imports fine — cadquery is imported lazily inside its methods).
 
 import unittest
 
-from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+from harnesscad.io.backends.cadquery import CadQueryBackend
 from harnesscad.eval.verifiers.geometry import BRepValidityCheck
 from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, AddCircle, Extrude, Fillet, Boolean,

@@ -1,4 +1,4 @@
-"""Three-tier approval model (HARNESS_BLUEPRINT.md sec.14, sec.10, sec.5).
+"""Three-tier approval model (docs/blueprint.md sec.14, sec.10, sec.5).
 
 The blueprint's human-in-the-loop contract:
 

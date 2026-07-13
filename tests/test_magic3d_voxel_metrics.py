@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.geometry.magic3d_voxel_metrics import (
+from harnesscad.eval.bench.geometry.voxel_iou import (
     voxel_iou,
     voxelize_points,
     pose_mse,

@@ -9,10 +9,10 @@ Rewritten from bare pytest-style module functions (never collected by
 import unittest
 
 from harnesscad.eval.bench.harness.correction_trajectory import score as trajectory_score
-from harnesscad.eval.bench.geometry.primitive_reconstruction_metrics import metrics as reconstruction_metrics
+from harnesscad.eval.bench.geometry.primitive_fidelity import metrics as reconstruction_metrics
 from harnesscad.core.cisp.explicit_context import Context
 from harnesscad.eval.quality.perception.view_coverage import audit as view_audit
-from harnesscad.agents.rag.cad_api_knowledge import API, chunks, validate as validate_apis
+from harnesscad.agents.rag.api_knowledge import API, chunks, validate as validate_apis
 from harnesscad.domain.reconstruction.ortho.primitive_intersections import assemble
 from harnesscad.domain.reconstruction.ortho.primitive_relations import Primitive, infer, project
 from harnesscad.domain.reconstruction.ortho.primitive_stitch import stitch

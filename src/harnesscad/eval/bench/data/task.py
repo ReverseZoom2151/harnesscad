@@ -1,4 +1,4 @@
-"""CADBench-Verified task schema (HARNESS_BLUEPRINT.md sec.16).
+"""CADBench-Verified task schema (docs/blueprint.md sec.16).
 
 A Task is the SWE-bench-for-CAD unit: a natural-language spec plus a reference
 CISP op stream plus a programmatic acceptance spec. The runner builds the part

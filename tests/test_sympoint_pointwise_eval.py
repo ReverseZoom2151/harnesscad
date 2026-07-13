@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.vision.sympoint_pointwise_eval import (
+from harnesscad.eval.bench.vision.pointwise_semantic_eval import (
     ConfusionMatrix,
     evaluate,
     per_class_scores,

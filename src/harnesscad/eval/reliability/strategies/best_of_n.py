@@ -1,4 +1,4 @@
-"""Best-of-N + verifier (HARNESS_BLUEPRINT.md sec.4).
+"""Best-of-N + verifier (docs/blueprint.md sec.4).
 
 The highest-ROI reliability escalation in the blueprint: instead of trusting one
 sampled op-plan, draw N of them and let the *deterministic verifier* choose. Since

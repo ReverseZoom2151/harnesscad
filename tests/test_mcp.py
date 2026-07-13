@@ -1,6 +1,6 @@
 """Tests for the MCP-style tool-server surface (mcp/ package).
 
-Covers HARNESS_BLUEPRINT.md sec.5 (tools=action space, resources=observations,
+Covers docs/blueprint.md sec.5 (tools=action space, resources=observations,
 prompts=op templates, tool-result reward, reset tool, destructive/read-only
 annotations) and sec.9 (typed op schema, 5-component descriptions, typed errors)
 plus the CADGymEnv reset/step contract.

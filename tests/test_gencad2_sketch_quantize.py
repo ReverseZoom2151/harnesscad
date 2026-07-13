@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.gencad2_sketch_quantize import (
+from harnesscad.domain.reconstruction.tokens.gencad_quantize import (
     ARGS_DIM,
     NORM_FACTOR,
     SKETCH_DIM,

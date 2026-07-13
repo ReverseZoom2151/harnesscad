@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.parametric import complexgen_surface_fit as sf
-from harnesscad.domain.geometry.parametric import uvnet_uv_grid as uvg
+from harnesscad.domain.geometry.parametric import surface_fit as sf
+from harnesscad.domain.geometry.parametric import surface_grid as uvg
 
 
 class LinspaceGridTest(unittest.TestCase):

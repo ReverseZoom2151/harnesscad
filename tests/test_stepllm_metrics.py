@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.io.formats.stepllm_parser import parse
-from harnesscad.eval.bench.geometry.stepllm_metrics import (
+from harnesscad.io.formats.step import parse
+from harnesscad.eval.bench.geometry.step_file_metrics import (
     aec_gap, average_entity_count, center_align, centroid, chamfer_distance,
     completes, completion_rate, entity_count, geometric_reward,
     geometric_reward_for, median_scaled_chamfer_distance, rms_scale,

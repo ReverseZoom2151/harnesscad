@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scene.scenegraph_model import AABB, RelationType, SceneGraph, SceneNode
-from harnesscad.domain.reconstruction.scene.scenegraph_functional import (
+from harnesscad.domain.reconstruction.scene.model import AABB, RelationType, SceneGraph, SceneNode
+from harnesscad.domain.reconstruction.scene.functional_relations import (
     FunctionalGraph,
     extract_functional_relations,
     find_functional_units,

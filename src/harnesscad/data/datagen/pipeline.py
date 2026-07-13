@@ -1,4 +1,4 @@
-"""Solver-in-the-loop dataset pipeline (HARNESS_BLUEPRINT.md sec.21 data engine).
+"""Solver-in-the-loop dataset pipeline (docs/blueprint.md sec.21 data engine).
 
 The generators (datagen/generators.py) manufacture candidate (NL brief -> CISP ops)
 pairs cheaply. This module is the *ground-truth* half: every candidate is run through

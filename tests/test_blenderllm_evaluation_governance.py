@@ -5,7 +5,7 @@ from harnesscad.eval.bench.protocols.criteria import (
     render_failure_rate, route_and_evaluate, syntax_failure_rate,
 )
 from harnesscad.eval.bench.data.splits import SplitEntry, audit_splits
-from harnesscad.data.dataengine.annotation.annotation_workflow import (
+from harnesscad.data.dataengine.annotation.review_workflow import (
     AnnotationItem, adjudicate, decision_distribution, qc_sample,
 )
 from harnesscad.governance.research.agreement import cohen_kappa

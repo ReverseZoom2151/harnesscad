@@ -1,6 +1,6 @@
 """Contract — the machine-verifiable acceptance spec (the "Contractor" model).
 
-Per HARNESS_BLUEPRINT.md sec.6, the highest-leverage idea is to *formalize a
+Per docs/blueprint.md sec.6, the highest-leverage idea is to *formalize a
 brief into a machine-verifiable acceptance Contract* — required dimensions with
 tolerances, volume/mass targets, feature/hole counts, "manifold & watertight",
 "no self-intersections", plus optional named predicates — and then iterate with

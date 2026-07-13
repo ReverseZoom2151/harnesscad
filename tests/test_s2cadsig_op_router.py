@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.fitting.s2cadsig_op_router import (
+from harnesscad.domain.reconstruction.fitting.op_router import (
     ALL_BRANCH_OUTPUTS,
     NUM_OPERATIONS,
     OP_ADD_SUB,

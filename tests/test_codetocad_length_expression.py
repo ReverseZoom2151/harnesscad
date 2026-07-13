@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.numeric.codetocad_length_expression import (
+from harnesscad.domain.numeric.unit_expressions import (
     ANGLE,
     LENGTH,
     PERCENT,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.curation.recad_hpl_curriculum import (
+from harnesscad.data.dataengine.curation.primitive_curriculum import (
     PRIMITIVE_ORDER,
     curriculum_indices,
     difficulty_key,

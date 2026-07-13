@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.generative.lion_one_nna import (
+from harnesscad.eval.bench.generative.one_nna import (
     one_nna,
     one_nna_from_matrix,
     pairwise_distance_matrix,

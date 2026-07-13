@@ -7,12 +7,12 @@ collected by ``python -m unittest``) into focused unittest.TestCase methods.
 
 import unittest
 
-from harnesscad.eval.bench.data.cad_domain_shift import audit
+from harnesscad.eval.bench.data.domain_shift_audit import audit
 from harnesscad.eval.bench.harness.prefix_completion import auc, cuts
 from harnesscad.eval.bench.sketch.sketch_sequence_metrics import metrics
-from harnesscad.data.dataengine.annotation.hierarchical_cad_annotation import validate
-from harnesscad.eval.quality.sequence.cad_complexity import classify
-from harnesscad.eval.quality.sequence.spcc_structure import Component, collapse, expand
+from harnesscad.data.dataengine.annotation.part_hierarchy import validate
+from harnesscad.eval.quality.sequence.complexity import classify
+from harnesscad.eval.quality.sequence.macro_collapse import Component, collapse, expand
 
 
 class SPCCStructureTest(unittest.TestCase):

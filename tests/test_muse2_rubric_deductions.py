@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.judges.muse2_rubric_deductions import (
+from harnesscad.eval.bench.judges.rubric_deductions import (
     MetricsContext,
     category_breakdown,
     evaluate_rule,

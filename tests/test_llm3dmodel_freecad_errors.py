@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.sequence.llm3dmodel_freecad_errors import (
+from harnesscad.eval.bench.sequence.error_taxonomy import (
     SYNTAX, GEOMETRIC, EXECUTION, NONE, classify, tally, ErrorClassification)
 
 

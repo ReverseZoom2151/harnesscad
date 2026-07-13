@@ -243,7 +243,7 @@ def _rebuild_backend(imported_or_backend):
     if not ops:
         return None
     try:
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         backend = CadQueryBackend()
     except Exception:  # noqa: BLE001
         return None

@@ -1,6 +1,6 @@
 """Observability layer — trace / log / metrics triad over the harness spine.
 
-This is HARNESS_BLUEPRINT.md sec.15 made concrete. It sits ON TOP of ``trace.py``
+This is docs/blueprint.md sec.15 made concrete. It sits ON TOP of ``trace.py``
 (the ``Tracer`` protocol and its ``{ts, run_id, kind, data}`` event shape) and the
 events the loop (``loop.py``) emits at every decision point of the
 applyOps -> regen -> verify -> checkpoint cycle:

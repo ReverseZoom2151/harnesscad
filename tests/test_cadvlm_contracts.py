@@ -1,14 +1,14 @@
 import unittest
 
-from harnesscad.eval.bench.sketch.cadvlm_metrics import cadvlm_metrics, sliced_metrics
+from harnesscad.eval.bench.sketch.entity_sketch_f1 import cadvlm_metrics, sliced_metrics
 from harnesscad.eval.bench.harness.task_modality_ablation import ablation_matrix, promotion
-from harnesscad.data.dataengine.schemas.sketch_constraint_ontology import (
+from harnesscad.data.dataengine.schemas.constraint_ontology import (
     KINDS, resolve, validate_constraint,
 )
-from harnesscad.data.dataengine.schemas.sketch_modal_record import SketchModalRecord
+from harnesscad.data.dataengine.schemas.sketch_record import SketchModalRecord
 from harnesscad.data.datagen.paired_sketch_prefix import paired_prefixes
 from harnesscad.data.datagen.sketch_image_conditions import image_conditions
-from harnesscad.io.ingest.cadvlm_codec import (
+from harnesscad.io.ingest.sketch_codec import (
     CONSTRAINT_TOKENS, VERSION, decode_constraint, decode_entity,
     encode_constraint, encode_entity, fit_frame,
 )

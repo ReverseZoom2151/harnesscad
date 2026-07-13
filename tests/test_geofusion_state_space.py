@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.numeric.geofusion_state_space import (
+from harnesscad.domain.numeric.geometric_state_space import (
     selective_scan, curvature_descriptor, conditioning_vector,
     hierarchical_pe, depthwise_conv1d, geometric_state_mixer,
     film_modulate, gmamba_flops, sigmoid,

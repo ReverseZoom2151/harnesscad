@@ -1,8 +1,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.topology.codetocad_cardinal_landmark import BoundaryBox
-from harnesscad.domain.geometry.transforms.codetocad_transform_stack import (
+from harnesscad.domain.geometry.topology.landmarks import BoundaryBox
+from harnesscad.domain.geometry.transforms.affine import (
     IDENTITY,
     TransformError,
     apply_direction,

@@ -4,7 +4,7 @@ import math
 import random
 import unittest
 
-from harnesscad.domain.geometry.transforms.cadcoder_solidalign import (
+from harnesscad.domain.geometry.transforms.principal_axes import (
     align_point_clouds,
     candidate_rotations,
     centroid,
@@ -16,7 +16,7 @@ from harnesscad.domain.geometry.transforms.cadcoder_solidalign import (
     reflection_signs,
     voxel_iou_score,
 )
-from harnesscad.domain.geometry.transforms.e3dbench_umeyama import det3, jacobi_eigen, matmul, transpose
+from harnesscad.domain.geometry.transforms.umeyama import det3, jacobi_eigen, matmul, transpose
 
 
 def _box_points(nx, ny, nz, sx, sy, sz):

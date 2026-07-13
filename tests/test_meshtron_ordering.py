@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.io.formats.llamamesh_tokenization import canonicalize_mesh as canonicalize_zyx
-from harnesscad.io.formats.meshtron_ordering import (
+from harnesscad.io.formats.obj import canonicalize_mesh as canonicalize_zyx
+from harnesscad.io.formats.mesh_ordering import (
     canonicalize_mesh_yzx,
     coordinate_stream,
     face_sort_key,

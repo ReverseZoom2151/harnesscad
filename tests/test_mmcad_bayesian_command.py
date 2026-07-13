@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.io.surfaces.mmcad_bayesian_command import (
+from harnesscad.io.surfaces.command_prediction import (
     BayesianCommandPredictor,
     Prediction,
     WorkflowGraph,

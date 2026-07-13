@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.vision import sketch2cad_pose_grid as pg
+from harnesscad.domain.vision import pose_grid as pg
 
 
 class TestGrid(unittest.TestCase):

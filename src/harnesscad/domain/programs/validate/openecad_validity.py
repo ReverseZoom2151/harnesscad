@@ -21,7 +21,7 @@ import math
 import re
 from dataclasses import dataclass
 
-from harnesscad.domain.programs.ast import openecad_script as oe
+from harnesscad.domain.programs.ast import openecad as oe
 
 DEFAULT_TOL = 1e-6
 

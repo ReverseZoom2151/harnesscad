@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.drawings.picasso_rasterizer import (
+from harnesscad.domain.drawings.rasterizer import (
     Arc,
     Circle,
     Dot,

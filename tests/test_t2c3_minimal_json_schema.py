@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.data.dataengine.schemas.t2c3_minimal_json_schema import (
+from harnesscad.data.dataengine.schemas.minimal_json import (
     MinimalJsonError,
     build_minimal_json,
     coordinate_system_json,

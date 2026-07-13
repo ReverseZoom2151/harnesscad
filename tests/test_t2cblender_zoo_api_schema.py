@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from harnesscad.io.adapters.t2cblender_zoo_api_schema import (
+from harnesscad.io.adapters.zoo_api import (
     DEFAULT_BASE_URL,
     SUPPORTED_FORMATS,
     Operation,

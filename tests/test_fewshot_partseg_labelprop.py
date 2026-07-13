@@ -1,5 +1,5 @@
 import unittest
-from harnesscad.domain.reconstruction.recognize.fewshot_partseg_labelprop import (
+from harnesscad.domain.reconstruction.recognize.label_propagation import (
     gaussian_knn_weights, symmetric_normalise, one_hot,
     propagate_iterative, propagate_closed_form, softmax_rows, predict,
 )

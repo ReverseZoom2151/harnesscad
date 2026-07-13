@@ -32,7 +32,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from harnesscad.io.formats.stepllm_parser import DERIVED, Enum, Real, Ref, StepFile, Typed, UNSET
+from harnesscad.io.formats.step import DERIVED, Enum, Real, Ref, StepFile, Typed, UNSET
 from harnesscad.domain.spec.express_inheritance import InheritanceGraph, flatten_attributes
 from harnesscad.domain.spec.express_schema_parser import Schema, TypeRef
 

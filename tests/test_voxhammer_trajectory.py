@@ -1,7 +1,7 @@
 """Tests for editing.voxhammer_trajectory."""
 import unittest
 
-from harnesscad.domain.editing.voxhammer_trajectory import (
+from harnesscad.domain.editing.inversion_trajectory import (
     InversionCache,
     late_cfg,
     linear_schedule,

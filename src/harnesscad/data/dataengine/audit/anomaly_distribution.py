@@ -3,7 +3,7 @@
 from __future__ import annotations
 from collections import Counter
 from typing import Iterable, Mapping
-from harnesscad.data.dataengine.schemas.anomaly_schema import AnomalyAsset
+from harnesscad.data.dataengine.schemas.anomaly import AnomalyAsset
 
 
 def audit_anomaly_distribution(assets: Iterable[AnomalyAsset], rarity=50,

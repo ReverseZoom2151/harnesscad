@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.volumes.cadmorph_tsdf import (
+from harnesscad.domain.geometry.volumes.tsdf import (
     TSDFGrid, l2_distance, occupancy_hamming, voxel_iou,
 )
 

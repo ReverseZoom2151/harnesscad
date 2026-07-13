@@ -3,8 +3,8 @@ import math
 import random
 import unittest
 
-from harnesscad.domain.numeric.makeashape_wavelet_transform import Grid3D
-from harnesscad.domain.numeric.makeashape_compression_metric import (
+from harnesscad.domain.numeric.wavelet_transform import Grid3D
+from harnesscad.domain.numeric.compression_metrics import (
     mse, rmse, relative_l2_error, psnr,
     occupancy_from_sdf, occupancy_iou,
     compression_ratio, coefficient_reduction_fraction, streaming_reduction_fraction,

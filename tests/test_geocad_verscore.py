@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.evaluate import geocad_verscore as vs
+from harnesscad.domain.reconstruction.evaluate import ver_score as vs
 
 
 class NormaliseTest(unittest.TestCase):

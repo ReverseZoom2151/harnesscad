@@ -9,7 +9,7 @@ import unittest
 
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.data.datagen import generate_dataset
-from harnesscad.data.datagen.augment import augment
+from harnesscad.data.datagen.parametric_augment import augment
 from harnesscad.data.datagen.pipeline import Sample
 from harnesscad.core.loop import HarnessSession
 

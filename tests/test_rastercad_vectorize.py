@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.vision.rastercad_vectorize import (
+from harnesscad.domain.vision.vectorize import (
     ArcFit,
     CircleFit,
     LineFit,

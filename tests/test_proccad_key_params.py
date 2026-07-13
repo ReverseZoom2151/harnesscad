@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.procedural.proccad_key_params import (
+from harnesscad.domain.procedural.key_params import (
     KeyParameterTemplate,
     classify,
     two_stage_opamp_template,

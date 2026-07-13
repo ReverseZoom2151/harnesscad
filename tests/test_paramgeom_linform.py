@@ -3,7 +3,7 @@
 import unittest
 from fractions import Fraction
 
-from harnesscad.domain.programs.expressions.paramgeom_linform import (
+from harnesscad.domain.programs.expressions.linear_form import (
     LinearForm,
     NonLinearError,
     Num,

@@ -1,7 +1,7 @@
 """Tests for editing.cadmorph_verify (CADMorph verification + priority queue)."""
 import unittest
 
-from harnesscad.domain.editing.cadmorph_verify import (
+from harnesscad.domain.editing.candidate_verify import (
     CandidateQueue, ScoredCandidate, edit_distance, objective,
     score_candidates, select_best,
 )

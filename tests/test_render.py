@@ -80,7 +80,7 @@ class TestHeadlessSkip(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestRealRender(unittest.TestCase):
     def _cq_plate(self):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=20.0, h=10.0))

@@ -1,4 +1,4 @@
-"""Trajectory layer — the training-trace record (HARNESS_BLUEPRINT.md sec.17/21).
+"""Trajectory layer — the training-trace record (docs/blueprint.md sec.17/21).
 
 The harness IS the data flywheel: every session logs
 ``prompt -> plan -> ops -> geometry -> tests`` off the same trace stream the

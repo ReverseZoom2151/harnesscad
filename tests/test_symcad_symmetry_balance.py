@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.datagen.symcad_symmetry_balance import (
+from harnesscad.data.datagen.symmetry_balance import (
     OrderingInstance,
     apply_permutation,
     augment_full,

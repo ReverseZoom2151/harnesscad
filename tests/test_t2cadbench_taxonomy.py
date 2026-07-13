@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.data.t2cadbench_taxonomy import (
+from harnesscad.eval.bench.data.difficulty_tiers import (
     LEVEL_COUNTS,
     classify_example,
     classify_operations,

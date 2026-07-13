@@ -3,12 +3,12 @@
 import math
 import unittest
 
-from harnesscad.domain.drawings.vitruvion_hand_drawn_noise import (
+from harnesscad.domain.drawings.hand_drawn_noise import (
     HandDrawnNoise,
     cholesky,
     matern_kernel,
 )
-from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VArc, VCircle, VPoint, entity_from_params
+from harnesscad.domain.geometry.sketch.normalization import VArc, VCircle, VPoint, entity_from_params
 
 RES = 32  # small kernel keeps the pure-Python Cholesky fast in tests
 

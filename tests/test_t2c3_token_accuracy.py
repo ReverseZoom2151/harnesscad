@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.sequence.t2c3_token_accuracy import (
+from harnesscad.eval.bench.sequence.token_accuracy import (
     DEFAULT_TOLERANCE,
     DISCARD_TOKEN,
     TokenAccuracyError,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.cmt_tokenization import (
+from harnesscad.domain.reconstruction.tokens.cmt import (
     bounding_box, edge_token, surface_token, order_tokens,
     quantize, dequantize, quantize_token,
 )

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.ingest.davinci_subreference_validity import (
+from harnesscad.io.ingest.constraint_validity import (
     END, ENTIRE, MIDDLE, START, canonical_pair, enumerate_candidates,
     filter_constraints, is_valid_pair, is_valid_subreference,
     valid_subreferences,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.core.state.opencad_feature_rebuild import (
+from harnesscad.core.state.feature_tree import (
     BLOCKED,
     BUILT,
     FAILED,

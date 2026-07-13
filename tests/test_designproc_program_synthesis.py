@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.data.datagen import designproc_procedure as dp
-from harnesscad.data.datagen import designproc_program_synthesis as ps
+from harnesscad.data.datagen import design_procedure as dp
+from harnesscad.data.datagen import program_synthesis as ps
 
 
 class TestSynthesizeProgram(unittest.TestCase):

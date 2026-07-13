@@ -9,11 +9,11 @@ from harnesscad.eval.bench.vision.vision_metrics import (
     mask_iou, mean_average_precision, mean_iou, slice_metric, top_k_accuracy,
 )
 from harnesscad.data.dataengine.audit.anomaly_distribution import audit_anomaly_distribution
-from harnesscad.data.dataengine.schemas.anomaly_schema import (
+from harnesscad.data.dataengine.schemas.anomaly import (
     AnomalyAsset, Box, Mask, VisionTask, validate_hierarchy,
 )
 from harnesscad.data.dataengine.audit.cross_task_consistency import validate_asset
-from harnesscad.data.dataengine.curation.task_suitability import route_tasks
+from harnesscad.data.dataengine.curation.task_routing import route_tasks
 from harnesscad.data.dataengine.annotation.visual_qc import inspect_visual
 from harnesscad.data.datagen.anomaly_pairs import compose_pair
 from harnesscad.governance.security.image_privacy import PrivacyRegion, release_gate

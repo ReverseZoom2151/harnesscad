@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from harnesscad.data.dataengine.schemas.cgb_submission_package import (
+from harnesscad.data.dataengine.schemas.submission_package import (
     MAX_NOTES_CHARS,
     REQUIRED_META_KEYS,
     SampleEntry,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.views import dlwheel_spoke_points as sp
+from harnesscad.domain.geometry.views import spoke_points as sp
 
 
 class OrderingTests(unittest.TestCase):

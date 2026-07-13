@@ -1,4 +1,4 @@
-"""dataengine — the data-engine / training-trace layer (HARNESS_BLUEPRINT.md
+"""dataengine — the data-engine / training-trace layer (docs/blueprint.md
 sec.17 + sec.21).
 
 The harness IS the data flywheel: every session already logs

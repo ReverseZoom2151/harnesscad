@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.sketch import geocad_sketch_symmetry as sym
+from harnesscad.domain.geometry.sketch import symmetry as sym
 
 
 class CentroidTest(unittest.TestCase):

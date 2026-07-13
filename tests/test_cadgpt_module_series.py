@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.kinematics.cadgpt_module_series import (
+from harnesscad.domain.geometry.kinematics.gear_modules import (
     PREFERRED_MODULES,
     SECONDARY_MODULES,
     ALL_MODULES,

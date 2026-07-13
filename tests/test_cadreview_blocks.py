@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.review import cadreview_blocks as cb
+from harnesscad.domain.programs.review import blocks as cb
 
 PROGRAM = """
 $fn = 32;

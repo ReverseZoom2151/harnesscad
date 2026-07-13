@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Iterable, List, Optional, Sequence
 
-from harnesscad.data.dataengine.audit.distribution_audit import op_tags, family_of
+from harnesscad.data.dataengine.audit.distribution import op_tags, family_of
 
 Scorer = Callable[[Any], float]
 

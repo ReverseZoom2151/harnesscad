@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.protocols.graphcad_cadbench_report import (
+from harnesscad.eval.bench.protocols.parameter_dimension_scoring import (
     DIMENSIONS,
     SampleConfig,
     report,

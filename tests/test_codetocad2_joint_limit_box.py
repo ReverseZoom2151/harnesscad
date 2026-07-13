@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.kinematics.codetocad2_joint_limit_box import (
+from harnesscad.domain.geometry.kinematics.joint_limits import (
     AxisLimit,
     JointLimitBox,
     LimitError,

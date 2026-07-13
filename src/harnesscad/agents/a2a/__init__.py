@@ -1,6 +1,6 @@
 """A2A (agent-to-agent) internal message vocabulary and task lifecycle.
 
-Per HARNESS_BLUEPRINT.md sec.2 and sec.12, agents in HarnessCAD speak the A2A
+Per docs/blueprint.md sec.2 and sec.12, agents in HarnessCAD speak the A2A
 message format as their internal wire format — even in-process — so a remote
 transport (HTTP + SSE streaming / webhooks) is a drop-in later. MCP is used for
 each agent's *tools*; A2A is used *between* agents (trust-boundary separation).

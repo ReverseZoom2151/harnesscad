@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.standards.sdfx_thread_database import (
+from harnesscad.domain.standards.thread_database import (
     MM_PER_INCH,
     hex_height,
     hex_radius,

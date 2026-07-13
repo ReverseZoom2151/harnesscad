@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.agents.generation.flexcad2_appendix import (
+from harnesscad.agents.generation.sampling_policy import (
     CIRCLE_VARIANTS,
     DEFAULT_PV_FLOOR,
     SamplingConfig,

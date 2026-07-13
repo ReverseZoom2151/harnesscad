@@ -154,7 +154,7 @@ class TestGeomDiffDegrades(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestGeomDiffReal(unittest.TestCase):
     def _plate(self, w, h, t):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=w, h=h))

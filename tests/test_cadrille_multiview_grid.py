@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.vision.cadrille_multiview_grid import (
+from harnesscad.domain.vision.multiview_grid import (
     compose_grid,
     compose_named,
     grid_layout,

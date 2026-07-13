@@ -1,9 +1,9 @@
 import unittest
 
-from harnesscad.agents.generation.cadsmith_kernel_metrics import (
+from harnesscad.agents.generation.kernel_metrics import (
     KernelMetrics, hard_kernel_gate, compare_to_plan, discrepancy_feedback,
 )
-from harnesscad.agents.generation.cadsmith_design_plan import DesignPlan, Component, GeometricConstraints
+from harnesscad.agents.generation.design_plan import DesignPlan, Component, GeometricConstraints
 
 
 def _metrics(**kw):

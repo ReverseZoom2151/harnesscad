@@ -7,9 +7,9 @@ Design Reasoning" / CAMeleon). Stdlib unittest, deterministic.
 
 import unittest
 
-from harnesscad.domain.fabrication import fabworkflow_taxonomy as tax
-from harnesscad.domain.fabrication import fabworkflow_feasibility as feas
-from harnesscad.domain.fabrication import fabworkflow_compare as comp
+from harnesscad.domain.fabrication import workflow_taxonomy as tax
+from harnesscad.domain.fabrication import workflow_feasibility as feas
+from harnesscad.domain.fabrication import workflow_compare as comp
 
 
 # --------------------------------------------------------------------------- #

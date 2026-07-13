@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.cadparser_schema import (
+from harnesscad.domain.reconstruction.tokens.cadparser import (
     COMMAND_TYPES, N_COMMAND_TYPES, PARAM_LEN, PARAM_ONEHOT_DIM, UNUSED,
     Command, command, command_onehot, dequantize, from_vector, pad_sequence,
     param_index, param_names, param_onehot, quantize, sequence_matrix, to_vector,

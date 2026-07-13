@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.eval.bench.vision import sketch2cad_scene_metrics as m
-from harnesscad.domain.reconstruction.tokens import sketch2cad_scene_descriptor as sd
+from harnesscad.eval.bench.vision import scene_reconstruction as m
+from harnesscad.domain.reconstruction.tokens import sketch2cad_scene as sd
 
 SHAPES = sd.SHAPE_TYPES
 

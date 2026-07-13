@@ -1,9 +1,9 @@
 import unittest
 
-from harnesscad.eval.bench.geometry.edit_metrics import (
+from harnesscad.eval.bench.geometry.edit_ranked_metrics import (
     pass_at_k, relation_preservation, retention, symmetric_chamfer,
 )
-from harnesscad.data.dataengine.edits.brep_edit_annotations import (
+from harnesscad.data.dataengine.edits.directional_annotations import (
     DirectionalAnnotation, validate_annotations,
 )
 from harnesscad.data.dataengine.edits.edit_complexity import (

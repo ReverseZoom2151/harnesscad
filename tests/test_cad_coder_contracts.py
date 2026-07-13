@@ -1,18 +1,18 @@
 import unittest
 
-from harnesscad.eval.bench.sequence.code_metrics import (
+from harnesscad.eval.bench.sequence.code_ast_metrics import (
     annotation_accuracy, function_accuracy, parameter_accuracy, parsing_rate,
 )
-from harnesscad.eval.bench.sequence.code_passk import estimate_pass_at_k, macro_pass_at_k
+from harnesscad.eval.bench.sequence.pass_at_k import estimate_pass_at_k, macro_pass_at_k
 from harnesscad.eval.bench.harness.cross_platform import evaluate_platforms
-from harnesscad.eval.bench.geometry.geometry_distance import sampled_distance, symmetric_chamfer
+from harnesscad.eval.bench.geometry.chamfer import sampled_distance, symmetric_chamfer
 from harnesscad.core.cisp.annotations import Linear, SurfaceRoughness, Tolerance, remap_annotations
-from harnesscad.data.dataengine.schemas.cfsc_record import CFSCRecord, audit_leakage
+from harnesscad.data.dataengine.schemas.script_record import CFSCRecord, audit_leakage
 from harnesscad.data.datagen.code_comments import (
     ambiguous, inherit_comments, intent_comments, lint_intent_comments,
 )
 from harnesscad.data.datagen.script_family import ParentTemplate, expand
-from harnesscad.io.formats.dxf_contract import (
+from harnesscad.io.formats.dxf import (
     DraftAnnotation, DxfDocument, Entity, Layer,
 )
 from harnesscad.governance.research.ablation_matrix import compare_ablation

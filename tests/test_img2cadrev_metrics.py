@@ -1,11 +1,11 @@
 import unittest
 
-from harnesscad.eval.bench.geometry.img2cadrev_metrics import (
+from harnesscad.eval.bench.geometry.factorization_fidelity import (
     chamfer_distance, mirror_points, symmetry_chamfer, num_scc,
     structure_accuracy, attribute_error, factorization_fidelity,
     factorization_report,
 )
-from harnesscad.domain.reconstruction.sequences.img2cadrev_factorization import factorize
+from harnesscad.domain.reconstruction.sequences.factorization import factorize
 
 
 def sample_model():

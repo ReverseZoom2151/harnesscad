@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.ast import openecad_script as oe
+from harnesscad.domain.programs.ast import openecad as oe
 from harnesscad.domain.programs.validate import openecad_validity as val
 
 

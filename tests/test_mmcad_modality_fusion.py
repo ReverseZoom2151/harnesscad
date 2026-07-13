@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.io.surfaces.mmcad_modality_fusion import (
+from harnesscad.io.surfaces.modality_fusion import (
     FusedIntent,
     ModalityFuser,
     ModalityKind,

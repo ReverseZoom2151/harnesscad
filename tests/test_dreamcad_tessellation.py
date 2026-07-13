@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.parametric.dreamcad_rational_bezier import unit_weight_grid
-from harnesscad.domain.geometry.parametric.dreamcad_tessellation import (
+from harnesscad.domain.geometry.parametric.bezier import unit_weight_grid
+from harnesscad.domain.geometry.parametric.tessellation import (
     enforce_c0_shared_points,
     mesh_area,
     tessellate_patch,

@@ -1,6 +1,6 @@
 """MCP-style tool-server surface for the harnesscad CAD environment.
 
-This package realises HARNESS_BLUEPRINT.md sec.5 ("expose the environment as an
+This package realises docs/blueprint.md sec.5 ("expose the environment as an
 MCP server") and sec.9 ("typed op schema, 5-component tool descriptions, tools
 raise typed errors) *without* pulling in the MCP SDK. The MCP concepts are
 modelled as plain dataclasses / JSON so a real FastMCP transport drops in later:

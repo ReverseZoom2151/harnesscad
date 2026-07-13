@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.datagen.pllm_program_augment import (
+from harnesscad.data.datagen.program_length_augment import (
     BOOLEAN_OPS, Program, W_MAX, diversify, expand_append, expand_spawn,
     procedural_workspace, program_length, shorten_remove_boolean,
 )

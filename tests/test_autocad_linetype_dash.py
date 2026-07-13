@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.drawings.autocad_linetype_dash import (
+from harnesscad.domain.drawings.linetypes import (
     NAMED_PATTERNS,
     StrokedLine,
     pattern_length,

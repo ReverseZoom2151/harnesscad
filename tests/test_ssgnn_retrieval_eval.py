@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.retrieval.ssgnn_retrieval_eval import (
+from harnesscad.eval.bench.retrieval.graded_retrieval_eval import (
     GAIN_PARTIAL,
     GAIN_SIMILAR,
     evaluate_retrieval,

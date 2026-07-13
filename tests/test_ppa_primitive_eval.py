@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.sketch import ppa_primitive as pp
-from harnesscad.domain.reconstruction.tokens import ppa_quantization as pq
-from harnesscad.eval.bench.sketch import ppa_primitive_eval as ev
+from harnesscad.domain.reconstruction.sketch import primitives as pp
+from harnesscad.domain.reconstruction.tokens import ppa_quantize as pq
+from harnesscad.eval.bench.sketch import primitive_prediction_eval as ev
 
 
 def _norm(sketch):

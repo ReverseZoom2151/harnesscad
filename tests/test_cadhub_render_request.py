@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.backends.cadhub_render_request import (
+from harnesscad.io.backends.render_request import (
     Camera,
     Vec3,
     Viewport,

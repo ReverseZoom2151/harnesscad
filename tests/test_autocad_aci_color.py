@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.standards.autocad_aci_color import (
+from harnesscad.domain.standards.aci_color import (
     BYBLOCK,
     BYLAYER,
     BYENTITY,

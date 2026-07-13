@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.recognize.cmt_mmabc_dedup import (
+from harnesscad.domain.reconstruction.recognize.dedup import (
     quantize_point, model_hash, deduplicate, connected_bodies,
 )
 

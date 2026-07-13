@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.harness.turbo3d_efficiency import (
+from harnesscad.eval.bench.harness.latency_speedup import (
     PipelineLatency,
     compare_methods_by_time,
     latent_speedup_fraction,

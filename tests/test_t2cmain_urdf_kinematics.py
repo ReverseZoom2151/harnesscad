@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.kinematics.t2cmain_urdf_kinematics import (
+from harnesscad.domain.geometry.kinematics.forward_kinematics import (
     IDENTITY_TRANSFORM,
     Joint,
     JointMimic,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.datagen import designproc_procedure as dp
+from harnesscad.data.datagen import design_procedure as dp
 
 
 class TestDesignStep(unittest.TestCase):

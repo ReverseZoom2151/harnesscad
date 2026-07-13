@@ -10,8 +10,8 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdf import curv_sdf_primitives as P
-from harnesscad.domain.numeric import curv_sphere_trace as R
+from harnesscad.domain.geometry.sdf import primitives as P
+from harnesscad.domain.numeric import sphere_tracing as R
 
 
 class TestSphereTrace(unittest.TestCase):

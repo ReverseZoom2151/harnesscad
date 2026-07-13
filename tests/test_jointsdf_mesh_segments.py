@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.mesh.jointsdf_mesh_segments import (
+from harnesscad.domain.geometry.mesh.segmentation import (
     majority_face_labels,
     connected_components,
     part_count,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.retrieval.deepclustering_ensemble import (
+from harnesscad.eval.bench.retrieval.clustering_ensemble import (
     ensemble_by_majority_vote,
     ensemble_human_balanced_accuracy,
     human_ensemble,

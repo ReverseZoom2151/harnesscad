@@ -10,7 +10,7 @@ import unittest
 
 from harnesscad.eval.bench.generative.render_distribution import summarize
 from harnesscad.data.dataengine.trace.prior_cache import PriorCache, cache_key
-from harnesscad.domain.procedural.cad_patterns import grid, linear, pipe, radial
+from harnesscad.domain.procedural.patterns import grid, linear, pipe, radial
 from harnesscad.domain.procedural.lazy_scene import expand
 from harnesscad.domain.procedural.shape_grammar import Production, derive
 from harnesscad.eval.quality.perception.camera_pruning import CameraSample, prune

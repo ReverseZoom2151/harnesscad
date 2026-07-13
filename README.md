@@ -661,7 +661,7 @@ harnesscad/
 │   ├── ops_plate.json      #   a runnable op array (constrained plate -> extrude)
 │   └── bench_tasks/        #   easy/medium/hard CADBench-Verified task files
 ├── tests/                  # 1575 unittest tests across every module
-├── HARNESS_BLUEPRINT.md    # the founding design doc / north star
+├── docs/blueprint.md    # the founding design doc / north star
 └── pyproject.toml          # stdlib core; [cadquery], [llm], [constraints] optional extras
 ```
 
@@ -669,7 +669,7 @@ Research and reference material lives under a gitignored `resources/` directory 
 never committed — it is not part of the product.
 
 The corpus-to-code accounting is documented in
-[CAD_CORPUS_AUDIT.md](CAD_CORPUS_AUDIT.md), with a machine-checkable 67-item
+[docs/corpus/audit.md](docs/corpus/audit.md), with a machine-checkable 67-item
 atomic register in `audit/cad_idea_register.json`.
 
 ### Module map
@@ -744,7 +744,7 @@ stub (with a note on stderr) when CadQuery is absent, so all three always run.
 
 ## Roadmap
 
-The staged plan from [HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md). Phases 0-5 are now
+The staged plan from [docs/blueprint.md](docs/blueprint.md). Phases 0-5 are now
 substantially implemented and tested against the same spine; what remains under
 **Planned / future** is deliberately the parts that need a real external backend,
 real training runs, or a shipped UI — not new harness logic.
@@ -776,7 +776,7 @@ real training runs, or a shipped UI — not new harness logic.
 ## Design doc
 
 The full thesis, layered architecture, verification strategy, and open decisions are in
-[HARNESS_BLUEPRINT.md](HARNESS_BLUEPRINT.md) — the north star this codebase is built
+[docs/blueprint.md](docs/blueprint.md) — the north star this codebase is built
 toward.
 
 ## License

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.geometry.sketch.diffusioncad_structure_constraints import (
+from harnesscad.domain.geometry.sketch.constraints import (
     available_constraints,
     enforce,
     line_line_parallel,

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.assembly.shapegramm_geometry_sharing import (
+from harnesscad.domain.geometry.assembly.instancing import (
     geometry_signature, share_geometries, compress_transforms, CompressedGroup,
 )
 

@@ -1,7 +1,7 @@
 """Cross-task class, box, and mask consistency checks."""
 
 from __future__ import annotations
-from harnesscad.data.dataengine.schemas.anomaly_schema import AnomalyAsset
+from harnesscad.data.dataengine.schemas.anomaly import AnomalyAsset
 
 
 def validate_asset(asset: AnomalyAsset) -> tuple[str, ...]:

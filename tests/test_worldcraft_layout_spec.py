@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.scene.worldcraft_layout_spec import (
+from harnesscad.domain.reconstruction.scene.layout_spec import (
     LayoutSpec,
     ObjectPlacement,
     Pose,

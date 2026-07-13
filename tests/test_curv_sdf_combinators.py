@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdf import curv_sdf_combinators as C
+from harnesscad.domain.geometry.sdf import combinators as C
 
 
 class TestHard(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.annotation import img2cadseq_knowledge as k
+from harnesscad.data.dataengine.annotation import design_rules as k
 
 
 CYL = [k.ADD_SKETCH, k.ADD_CIRCLE, k.ADD_EXTRUDE]

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.drawings.sympoint_instance_cutmix import (
+from harnesscad.domain.drawings.instance_cutmix import (
     InstanceQueue,
     cutmix,
     extract_instances,
@@ -11,7 +11,7 @@ from harnesscad.domain.drawings.sympoint_instance_cutmix import (
     shuffle,
     vflip,
 )
-from harnesscad.domain.drawings.sympoint_point_features import build_point_cloud, polar_angle
+from harnesscad.domain.drawings.point_features import build_point_cloud, polar_angle
 
 
 def make_sample():

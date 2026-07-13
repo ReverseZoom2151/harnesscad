@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.features.cqcontrib_hole_features import (
+from harnesscad.domain.geometry.features.holes import (
     HoleError,
     counterbore_hole,
     countersink_depth,

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.data.datagen import designproc_reference_surface as rs
+from harnesscad.data.datagen import reference_surface as rs
 
 
 class TestHeightFields(unittest.TestCase):

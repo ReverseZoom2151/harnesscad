@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from harnesscad.domain.reconstruction.tokens import sketch2cad_scene_descriptor as sd
+from harnesscad.domain.reconstruction.tokens import sketch2cad_scene as sd
 
 
 class TestQuantize(unittest.TestCase):

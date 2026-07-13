@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.validate.cq_workplane_state import (
+from harnesscad.domain.programs.validate.cadquery_workplane import (
     calls_from_code,
     is_valid_code,
     validate_calls,

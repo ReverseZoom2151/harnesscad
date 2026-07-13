@@ -1,6 +1,6 @@
 """The A2A (agent-to-agent) message vocabulary — our *internal* wire format.
 
-Per HARNESS_BLUEPRINT.md sec.2 and sec.12, agents talk to each other in the A2A
+Per docs/blueprint.md sec.2 and sec.12, agents talk to each other in the A2A
 message format *even in-process*, so a remote transport (HTTP + SSE/webhooks) is
 a drop-in later without touching agent code. This module is that vocabulary as
 frozen, typed, JSON-serialisable dataclasses:

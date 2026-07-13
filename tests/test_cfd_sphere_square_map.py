@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.numeric import cfd_sphere_square_map as m
+from harnesscad.domain.numeric import sphere_square_map as m
 
 
 class TestRoundTrip(unittest.TestCase):

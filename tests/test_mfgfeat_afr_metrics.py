@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.protocols import mfgfeat_afr_metrics as m
+from harnesscad.eval.bench.protocols import manufacturing_feature_recognition as m
 
 
 class TestFNA(unittest.TestCase):

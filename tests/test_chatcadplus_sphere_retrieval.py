@@ -6,7 +6,7 @@ import math
 import random
 import unittest
 
-from harnesscad.agents.rag.chatcadplus_sphere_retrieval import SphereKDTree, normalise
+from harnesscad.agents.rag.sphere_knn import SphereKDTree, normalise
 
 
 def _cos(a, b):

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.editing.cqeditor_code_edit import (
+from harnesscad.domain.editing.code_text_edit import (
     detect_eol,
     indent_lines,
     unindent_lines,

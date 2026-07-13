@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.validate.codetocad_operation_schema import (
+from harnesscad.domain.programs.validate.operation_schema import (
     CATEGORIES,
     OPERATIONS,
     Call,

@@ -4,9 +4,9 @@ import math
 import random
 import unittest
 
-from harnesscad.domain.geometry.volumes.meshdiff_tet_grid import TetGrid
-from harnesscad.domain.geometry.volumes.meshdiff_marching_tets import is_watertight, signed_volume
-from harnesscad.domain.geometry.volumes.meshdiff_dmtet import (
+from harnesscad.domain.geometry.volumes.tet_grid import TetGrid
+from harnesscad.domain.geometry.volumes.marching_tetrahedra import is_watertight, signed_volume
+from harnesscad.domain.geometry.volumes.dmtet import (
     DMTet,
     barycentric_coords,
     interpolate_sdf_in_tet,

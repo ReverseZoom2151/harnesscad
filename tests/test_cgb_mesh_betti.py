@@ -1,7 +1,7 @@
 """Tests for mesh-based Betti numbers and the CADGenBench topology-match score."""
 import unittest
 
-from harnesscad.eval.bench.geometry.cgb_mesh_betti import (
+from harnesscad.eval.bench.geometry.betti_graded import (
     BETTI_SHARPNESS,
     BettiResult,
     MeshGateError,

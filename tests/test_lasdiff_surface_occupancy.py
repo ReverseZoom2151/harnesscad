@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harnesscad.domain.geometry.volumes.lasdiff_surface_occupancy import (
+from harnesscad.domain.geometry.volumes.occupancy import (
     coarsen_occupancy,
     occupancy_iou,
     occupied_cells,

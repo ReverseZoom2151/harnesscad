@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.agents.agent.toolcad_tool_schema import (
+from harnesscad.agents.agent.tool_schema import (
     ArgSpec,
     InterfaceResult,
     ToolCall,

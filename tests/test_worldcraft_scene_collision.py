@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scene.worldcraft_layout_spec import LayoutSpec, ObjectPlacement, Pose
-from harnesscad.domain.geometry.assembly.worldcraft_scene_collision import (
+from harnesscad.domain.reconstruction.scene.layout_spec import LayoutSpec, ObjectPlacement, Pose
+from harnesscad.domain.geometry.assembly.scene_validity import (
     SceneReport,
     check_child_containment,
     check_floating,

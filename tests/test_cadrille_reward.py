@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.reward.cadrille_reward import (
+from harnesscad.data.dataengine.reward.iou_reward import (
     IOU_SCALE,
     INVALID_PENALTY,
     HARD_MINING_THRESHOLD,

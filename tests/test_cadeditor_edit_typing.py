@@ -1,7 +1,7 @@
 """Tests for dataengine.cadeditor_edit_typing (CAD-Editor variant pairing)."""
 import unittest
 
-from harnesscad.data.dataengine.edits.cadeditor_edit_typing import (
+from harnesscad.data.dataengine.edits.edit_typing import (
     classify_edit_type,
     group_by_prefix,
     pair_group,

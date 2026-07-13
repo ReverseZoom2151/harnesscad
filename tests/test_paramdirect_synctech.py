@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.editing.paramdirect_model import FeatureTree, ParametricFeature
-from harnesscad.domain.editing.paramdirect_synctech import SyncPartition, from_tree
+from harnesscad.domain.editing.hybrid_model import FeatureTree, ParametricFeature
+from harnesscad.domain.editing.synchronous_partition import SyncPartition, from_tree
 
 
 class TestSyncPartition(unittest.TestCase):

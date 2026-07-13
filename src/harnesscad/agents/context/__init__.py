@@ -1,6 +1,6 @@
 """Context management layer — the finite, precious window, budgeted explicitly.
 
-This package implements HARNESS_BLUEPRINT.md sec.3 (`ContextManager`) and sec.7
+This package implements docs/blueprint.md sec.3 (`ContextManager`) and sec.7
 (context management + the Context Staging Area). Two public surfaces:
 
 - `context.manager` — the `ContextManager` that owns the token window: an

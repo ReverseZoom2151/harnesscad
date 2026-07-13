@@ -1,7 +1,7 @@
 """Tests for run-level aggregation and leaderboard reporting."""
 import unittest
 
-from harnesscad.eval.bench.harness.cgb_run_summary import (
+from harnesscad.eval.bench.harness.run_summary import (
     SampleResult,
     build_run_summary,
     leaderboard_row,

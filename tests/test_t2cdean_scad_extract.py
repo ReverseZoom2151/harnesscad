@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.extract.t2cdean_scad_extract import (
+from harnesscad.domain.programs.extract.openscad_extract import (
     CodeBlock,
     ScadExtractionError,
     extract_code_blocks,

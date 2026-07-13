@@ -1,7 +1,7 @@
 import random
 import unittest
 
-from harnesscad.domain.numeric.sketchdnn_categorical_diffusion import (
+from harnesscad.domain.numeric.categorical_diffusion import (
     absorbing_transition_matrix,
     argmax_decode,
     categorical_posterior,

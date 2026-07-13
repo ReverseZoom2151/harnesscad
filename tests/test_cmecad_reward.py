@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.data.dataengine.reward import cmecad_reward as r
+from harnesscad.data.dataengine.reward import workplane_reward as r
 
 
 class TestFormatReward(unittest.TestCase):

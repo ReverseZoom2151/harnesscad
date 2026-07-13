@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.agents.rag.oscar_multimodal_fusion import (
+from harnesscad.agents.rag.multimodal_fusion import (
     OscarModel,
     cosine_similarity,
     text_similarity,

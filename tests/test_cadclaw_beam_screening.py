@@ -6,7 +6,7 @@ against hand computations; budget checks against threshold logic.
 import math
 import unittest
 
-from harnesscad.eval.quality.physics.cadclaw_beam_screening import (
+from harnesscad.eval.quality.physics.beam_screening import (
     rectangular_section, simply_supported_deflection,
     motor_torque_budget, belt_tension, STANDARD_GRAVITY,
 )

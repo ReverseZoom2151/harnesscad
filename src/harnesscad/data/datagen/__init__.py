@@ -1,4 +1,4 @@
-"""datagen — the synthetic-data bootstrap generator (HARNESS_BLUEPRINT.md sec.21).
+"""datagen — the synthetic-data bootstrap generator (docs/blueprint.md sec.21).
 
 Data is the #1 named risk (there is no "GitHub for CAD"). This package is the
 cold-start answer: **synthetic parametric generation + solver-in-the-loop for ground

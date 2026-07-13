@@ -1,4 +1,4 @@
-"""Grammar-constrained op-decoding layer (HARNESS_BLUEPRINT.md sec.9, sec.4/11).
+"""Grammar-constrained op-decoding layer (docs/blueprint.md sec.9, sec.4/11).
 
 Blueprint sec.9 asks for **grammar-constrained decoding** (XGrammar / Outlines /
 llama.cpp GBNF) so op emission is *syntactically guaranteed* — a context-free

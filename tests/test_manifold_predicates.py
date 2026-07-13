@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.numeric.manifold_predicates import orient2d, orient3d, incircle, insphere
+from harnesscad.domain.numeric.exact_predicates import orient2d, orient3d, incircle, insphere
 
 
 class TestOrient2d(unittest.TestCase):
@@ -86,7 +86,7 @@ class TestInsphere(unittest.TestCase):
         self.b = (1.0, 0.0, 0.0)
         self.c = (0.0, 1.0, 0.0)
         self.d = (0.0, 0.0, 1.0)
-        from harnesscad.domain.numeric.manifold_predicates import orient3d as o3
+        from harnesscad.domain.numeric.exact_predicates import orient3d as o3
         if o3(self.a, self.b, self.c, self.d) < 0:
             self.b, self.c = self.c, self.b
         assert o3(self.a, self.b, self.c, self.d) > 0

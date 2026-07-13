@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.assembly.arcs_quadtree_space import (
+from harnesscad.domain.geometry.assembly.quadtree import (
     QuadTreeSpace,
     bbox_area,
     bbox_around_points,

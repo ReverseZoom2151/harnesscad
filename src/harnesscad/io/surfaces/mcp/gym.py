@@ -1,4 +1,4 @@
-"""CADGymEnv — the Gym interface from HARNESS_BLUEPRINT.md sec.5.
+"""CADGymEnv — the Gym interface from docs/blueprint.md sec.5.
 
 ``reset() -> obs``, ``step(action) -> (obs, reward, done, info)``, ``state()``,
 ``render()``, ``close()``, wrapping a :class:`loop.HarnessSession` + a

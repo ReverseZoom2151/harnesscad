@@ -2,7 +2,7 @@ import json
 import unittest
 
 from harnesscad.core.cisp.ops import AddRectangle, Extrude, NewSketch
-from harnesscad.eval.quality.graph.featuregraph import FeatureEdge, FeatureGraph, FeatureNode
+from harnesscad.eval.quality.graph.feature_graph import FeatureEdge, FeatureGraph, FeatureNode
 from harnesscad.core.state.opdag import OpDAG
 from harnesscad.io.surfaces.graphview import build_graph_view
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity

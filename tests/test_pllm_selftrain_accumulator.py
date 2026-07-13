@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.selftrain.pllm_selftrain_accumulator import (
+from harnesscad.data.dataengine.selftrain.pseudo_label_pool import (
     PseudoLabelPool, detect_drift, label_efficiency, run_selftraining,
 )
 

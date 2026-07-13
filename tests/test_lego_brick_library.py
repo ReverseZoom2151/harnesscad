@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.fabrication.lego_brick_library import (
+from harnesscad.domain.fabrication.brick_library import (
     LIBRARY,
     ALLOWED_ORIENTED,
     Brick,

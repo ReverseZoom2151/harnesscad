@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.sketch import ppa_primitive as pp
-from harnesscad.domain.reconstruction.tokens import ppa_quantization as pq
+from harnesscad.domain.reconstruction.sketch import primitives as pp
+from harnesscad.domain.reconstruction.tokens import ppa_quantize as pq
 
 
 class TestQuantLattice(unittest.TestCase):

@@ -9,7 +9,7 @@ only when cadquery is installed.
 
 import unittest
 
-from harnesscad.eval.verifiers.vision import (
+from harnesscad.eval.verifiers.vlm_judge import (
     VLMJudgeCheck, GEvalScore, JudgeVerdict,
     parse_judge_json, build_judge_messages, DEFAULT_RUBRIC,
 )
@@ -58,7 +58,7 @@ def _stub_with_solid() -> StubBackend:
 
 
 def _cq_plate():
-    from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+    from harnesscad.io.backends.cadquery import CadQueryBackend
     b = CadQueryBackend()
     b.apply(NewSketch(plane="XY"))
     b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=20.0, h=10.0))

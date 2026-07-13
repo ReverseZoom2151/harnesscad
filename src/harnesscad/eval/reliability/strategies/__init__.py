@@ -1,4 +1,4 @@
-"""strategies — reliability patterns from HARNESS_BLUEPRINT.md (sec.4, 8, 10).
+"""strategies — reliability patterns from docs/blueprint.md (sec.4, 8, 10).
 
 These compose the existing harness spine (Planner -> HarnessSession -> verify ->
 MemoryStore) without touching it. Each strategy spends extra inference compute to

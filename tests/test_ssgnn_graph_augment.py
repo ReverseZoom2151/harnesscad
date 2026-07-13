@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 import unittest
 
-from harnesscad.domain.reconstruction.recognize.ssgnn_graph_augment import (
+from harnesscad.domain.reconstruction.recognize.graph_augment import (
     CADGraph,
     STRUCTURE_SCHEMES,
     augment,

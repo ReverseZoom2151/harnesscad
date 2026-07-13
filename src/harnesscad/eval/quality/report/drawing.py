@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
 
-from harnesscad.eval.quality.graph.featuregraph import build_feature_graph
+from harnesscad.eval.quality.graph.feature_graph import build_feature_graph
 
 
 # --- small formatting helpers ----------------------------------------------

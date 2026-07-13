@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.topology.cqplug_region_selectors import (
+from harnesscad.domain.geometry.topology.region_selectors import (
     CylinderRegion,
     HollowCylinderRegion,
     HollowInfiniteCylinderRegion,

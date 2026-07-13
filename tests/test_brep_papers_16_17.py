@@ -6,7 +6,7 @@ from harnesscad.domain.reconstruction.evaluate.failure_audit import classify,Fai
 from harnesscad.domain.reconstruction.brep.structured_brep import Node,pad_children,unique_children,validate_tree
 from harnesscad.domain.reconstruction.ortho.brep_merge import GeometryNode,cluster
 from harnesscad.domain.reconstruction.ortho.geometry_stitch import average_vertices,align_edge,consistency
-from harnesscad.eval.bench.generative.generative_brep_metrics import ratios,coverage_mmd,jsd
+from harnesscad.eval.bench.generative.brep_set_metrics import ratios,coverage_mmd,jsd
 
 class Tests(unittest.TestCase):
  def test_labels(self):

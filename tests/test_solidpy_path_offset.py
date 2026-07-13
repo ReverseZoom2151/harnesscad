@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.parametric.solidpy_path_offset import (
+from harnesscad.domain.geometry.parametric.path_offset import (
     LEFT_DIR,
     RIGHT_DIR,
     arc_points,

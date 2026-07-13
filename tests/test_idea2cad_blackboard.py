@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.agents.agents.idea2cad_blackboard import DesignBlackboard, VPhase, PHASE_ORDER, Revision
+from harnesscad.agents.agents.blackboard import DesignBlackboard, VPhase, PHASE_ORDER, Revision
 
 
 class TestPhases(unittest.TestCase):

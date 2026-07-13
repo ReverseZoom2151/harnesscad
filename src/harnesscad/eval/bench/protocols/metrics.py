@@ -1,4 +1,4 @@
-"""CADBench-Verified metrics (HARNESS_BLUEPRINT.md sec.16).
+"""CADBench-Verified metrics (docs/blueprint.md sec.16).
 
 The blueprint's metric set, ranked editability/validity ABOVE fidelity:
 

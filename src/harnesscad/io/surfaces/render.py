@@ -1,7 +1,7 @@
 """Multi-view rendering — turn the backend's current solid into per-view images.
 
 This is the *observation* half of the SpatialHero render->judge->reward loop
-(HARNESS_BLUEPRINT.md sec.21): a CadQuery model is rendered from an isometric
+(docs/blueprint.md sec.21): a CadQuery model is rendered from an isometric
 camera plus the orthographic views (front/top/right/...), and those images feed
 a vision model (see :mod:`checks_vision`). It also supplies the "rendered
 viewport" half of the hybrid observation from sec.5 (geometry summary + image).

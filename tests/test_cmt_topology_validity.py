@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.evaluate.cmt_topology_validity import (
+from harnesscad.domain.reconstruction.evaluate.topology_validity import (
     check_adjacency, check_edge_geometry, is_valid,
     quantized_is_valid, valid_ratio,
 )

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.fitting.pscad_residual_regions import (
+from harnesscad.domain.reconstruction.fitting.residual_regions import (
     ResidualRegion,
     cluster_residual_regions,
     compute_pref,

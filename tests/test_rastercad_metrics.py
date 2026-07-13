@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.sketch.rastercad_metrics import (
+from harnesscad.eval.bench.sketch.raster_vectorization import (
     PRF,
     VectorizationAccuracy,
     match_primitives,

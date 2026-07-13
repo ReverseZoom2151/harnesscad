@@ -1,6 +1,6 @@
 """Guardrails — the ``before_tool_callback`` hard gate + error-recovery ladder.
 
-Per HARNESS_BLUEPRINT.md sec.10: a hard validation gate runs on every kernel op
+Per docs/blueprint.md sec.10: a hard validation gate runs on every kernel op
 BEFORE it is applied, blocking geometrically invalid ops (block-and-correct) so a
 bad op never corrupts the model. This is a PRE-apply layer that complements
 HarnessSession's post-apply block-and-correct in loop.py — the gate stops obviously

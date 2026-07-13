@@ -1,6 +1,6 @@
 """Tests for the ui package — the typed SSE event contract and 3-tier approval.
 
-Covers (per HARNESS_BLUEPRINT.md sec.14):
+Covers (per docs/blueprint.md sec.14):
   - every EventType round-trips through to_sse()/parse_sse
   - EventStream yields well-formed SSE frames (and a terminal done)
   - tier_for maps representative ops (export=REQUIRE, extrude=NOTIFY,

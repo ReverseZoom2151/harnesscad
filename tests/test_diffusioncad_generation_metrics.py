@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.generative.diffusioncad_generation_metrics import (
+from harnesscad.eval.bench.generative.sequence_set_ratios import (
     ARC,
     CIRCLE,
     EOS,

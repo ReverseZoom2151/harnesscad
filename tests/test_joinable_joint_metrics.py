@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.retrieval.joinable_joint_metrics import (
+from harnesscad.eval.bench.retrieval.joint_prediction_ranking import (
     DEFAULT_K_SEQUENCE,
     aggregate_precision_at_k,
     flatten,

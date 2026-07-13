@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.sequences.pscad_candidate_selection import (
+from harnesscad.domain.reconstruction.sequences.candidate_selection import (
     StepCandidate,
     axis_aligned_bbox,
     bbox_iou,

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.features.cqplug_teardrop_profile import (
+from harnesscad.domain.geometry.features.teardrop import (
     TeardropError,
     apex_height,
     bridge_span,

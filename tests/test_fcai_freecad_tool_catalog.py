@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.adapters.fcai_freecad_tool_catalog import (
+from harnesscad.io.adapters.freecad_catalog import (
     CallCheck,
     FreeCadToolCatalog,
     Operation,

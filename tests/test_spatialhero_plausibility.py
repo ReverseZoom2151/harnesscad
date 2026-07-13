@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.verifiers.spatialhero_plausibility import (
+from harnesscad.eval.verifiers.plausibility import (
     AABB,
     check_constraints,
     check_physical_plausibility,

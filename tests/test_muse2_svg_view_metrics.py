@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.drawings.muse2_svg_view_metrics import (
+from harnesscad.domain.drawings.svg_view_metrics import (
     all_views_present,
     analyze_svg_text,
     boxes_overlap,

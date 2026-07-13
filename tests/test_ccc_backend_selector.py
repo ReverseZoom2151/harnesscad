@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.io.adapters import ccc_backend_selector as sel
-from harnesscad.io.adapters import ccc_codecad_ecosystem as eco
+from harnesscad.io.adapters import backend_selector as sel
+from harnesscad.io.adapters import ecosystem_catalog as eco
 
 
 class TestSupportLevels(unittest.TestCase):

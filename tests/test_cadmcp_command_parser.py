@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.extract.cadmcp_command_parser import (
+from harnesscad.domain.programs.extract.command_parser import (
     extract_coordinates,
     extract_keyword_value,
     extract_numbers,
@@ -120,13 +120,13 @@ class PipelineTests(unittest.TestCase):
     """Parsed commands feed the drawing-command builder cleanly."""
 
     def test_circle_pipeline(self):
-        from harnesscad.domain.drawings.cadmcp_drawing_commands import circle
+        from harnesscad.domain.drawings.drawing_commands import circle
         r = parse_command("draw a circle at (0,0) radius 4")
         e = circle(r["center"], r["radius"])
         self.assertEqual(e.geometry["radius"], 4.0)
 
     def test_rectangle_pipeline(self):
-        from harnesscad.domain.drawings.cadmcp_drawing_commands import rectangle
+        from harnesscad.domain.drawings.drawing_commands import rectangle
         r = parse_command("draw a rectangle (0,0) (4,2)")
         e = rectangle(r["corner1"], r["corner2"])
         self.assertEqual(len(e.geometry["points"]), 5)

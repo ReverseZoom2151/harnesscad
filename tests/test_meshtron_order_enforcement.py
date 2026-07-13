@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.formats.meshtron_order_enforcement import (
+from harnesscad.io.formats.mesh_order_checks import (
     eos_allowed,
     invalid_category_count,
     invalid_category_mask,

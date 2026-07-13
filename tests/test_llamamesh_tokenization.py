@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.io.formats.llamamesh_tokenization import (
+from harnesscad.io.formats.obj import (
     canonicalize_mesh,
     compression_ratio,
     dequantize_vertices,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.agents.generation.query2cad_macro import (
+from harnesscad.agents.generation.freecad_macro import (
     Primitive, BooleanOp, FreeCADMacro, estimate_difficulty,
     PRIMITIVE_PARAMS, BOOLEAN_FUNCS,
 )

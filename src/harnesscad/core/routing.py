@@ -1,4 +1,4 @@
-"""Classify-then-route cost-control layer (HARNESS_BLUEPRINT.md sec.11, sec.13).
+"""Classify-then-route cost-control layer (docs/blueprint.md sec.11, sec.13).
 
 The harness talks to a single `LLM` (llm.base). This module is a *drop-in* `LLM`
 that sits in front of several concrete models and decides, per request, which one

@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.eval.bench.geometry.geometry_distance import symmetric_chamfer
-from harnesscad.domain.editing.cadreasoner_beam import BeamResult, run_geometry_beam
+from harnesscad.eval.bench.geometry.chamfer import symmetric_chamfer
+from harnesscad.domain.editing.geometry_beam import BeamResult, run_geometry_beam
 
 
 def _render(program):

@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdf.neurcad_developable_detect import (
+from harnesscad.domain.geometry.sdf.developable_detect import (
     is_developable, shape_operator_rank, is_tip_point,
     classify_developability, is_doubly_curved,
     segment_developable, developable_fraction,

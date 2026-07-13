@@ -223,7 +223,7 @@ class TestSetParam(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestCadQueryAssemblyInterference(unittest.TestCase):
     def _plate_cq(self):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         b = CadQueryBackend()
         assert b.apply(NewSketch(plane="XY")).ok
         assert b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=10.0, h=10.0)).ok

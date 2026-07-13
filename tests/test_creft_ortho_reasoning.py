@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.protocols.creft_ortho_reasoning import (
+from harnesscad.eval.bench.protocols.orthographic_reasoning import (
     COMPOSITE,
     COUNTING,
     RECOGNITION,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.spec.datacon_rim_spec import (
+from harnesscad.domain.spec.rim_spec import (
     RimSpec,
     bolt_circle_outer_diameter,
     center_bore_inner_diameter,

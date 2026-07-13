@@ -3,7 +3,7 @@
 import gzip
 import unittest
 
-from harnesscad.io.backends.cadhub_concat_payload import (
+from harnesscad.io.backends.render_payload import (
     SENTINEL,
     TYPE_STL,
     PayloadError,

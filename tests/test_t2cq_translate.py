@@ -2,9 +2,9 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import command
-from harnesscad.domain.programs.ast.t2cq_ast import VarRef, parse_program, validate, serialize
-from harnesscad.domain.reconstruction.translate.t2cq_translate import (
+from harnesscad.domain.reconstruction.tokens.deepcad_commands import command
+from harnesscad.domain.programs.ast.cadquery import VarRef, parse_program, validate, serialize
+from harnesscad.domain.reconstruction.translate.cadquery_translate import (
     translate_to_code,
     translate_to_program,
     _arc_midpoint,

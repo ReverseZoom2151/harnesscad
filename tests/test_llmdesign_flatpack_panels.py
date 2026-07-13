@@ -10,7 +10,7 @@ Help Humans in Design and Manufacturing" (Makatura et al.):
 
 import unittest
 
-from harnesscad.domain.fabrication.llmdesign_flatpack_panels import (
+from harnesscad.domain.fabrication.flatpack_panels import (
     Panel,
     decompose_cabinet,
     fits_on_bed,

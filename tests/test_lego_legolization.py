@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.fabrication.lego_brick_library import is_library_part
-from harnesscad.domain.fabrication.lego_legolization import (
+from harnesscad.domain.fabrication.brick_library import is_library_part
+from harnesscad.domain.fabrication.legolization import (
     covers_exactly,
     legolize,
     legolize_variants,

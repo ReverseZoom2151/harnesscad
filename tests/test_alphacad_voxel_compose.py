@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.procedural.alphacad_brick_templates import generate_car, generate_tower
-from harnesscad.domain.procedural.alphacad_voxel_compose import compose, mutate_dims
+from harnesscad.domain.procedural.brick_templates import generate_car, generate_tower
+from harnesscad.domain.procedural.voxel_compose import compose, mutate_dims
 
 
 class TestCompose(unittest.TestCase):

@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from harnesscad.data.datagen.gencad3d_synthbal import (
+from harnesscad.data.datagen.synthetic_balancing import (
     BalanceReport,
     balance_dataset,
     balanced_target,

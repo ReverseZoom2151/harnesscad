@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.geometry.pscad_reconstruction_metrics import (
+from harnesscad.eval.bench.geometry.edge_chamfer_recon import (
     ReconstructionReport,
     chamfer_distance,
     edge_chamfer_distance,

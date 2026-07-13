@@ -34,7 +34,7 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
     """Return (backend, resolved_name, note). Falls back to stub with a note."""
     if name == "cadquery":
         try:
-            from harnesscad.io.backends import cadquery_backend  # type: ignore
+            from harnesscad.io.backends import cadquery as cadquery_backend  # type: ignore
             return cadquery_backend.CadQueryBackend(), "cadquery", None
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",

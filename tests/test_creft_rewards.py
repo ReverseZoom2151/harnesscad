@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.reward.creft_rewards import (
+from harnesscad.data.dataengine.reward.curriculum_reward import (
     EASY,
     HARD,
     MEDIUM,

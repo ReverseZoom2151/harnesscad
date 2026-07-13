@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.geometry.topology.cq_selector_algebra import (
+from harnesscad.domain.geometry.topology.selector_algebra import (
     AndSelector,
     AreaNthSelector,
     BoxSelector,

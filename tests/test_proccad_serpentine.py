@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.features.proccad_serpentine import (
+from harnesscad.domain.geometry.features.serpentine import (
     beam_endpoints,
     bounding_box,
     cross_braces,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.protocols.engdesign_topopt_metrics import (
+from harnesscad.eval.bench.protocols.topopt_metrics import (
     volume_fraction_error, mean_volume_fraction_error, floating_material_error,
     prompting_strategy_table, caption_analysis_score,
 )

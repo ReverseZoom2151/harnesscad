@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.reward.intent2exec_trs import (
+from harnesscad.data.dataengine.reward.asymmetric_clip import (
     DEFAULT_EPS_HIGH,
     DEFAULT_EPS_LOW,
     clip_ratio,

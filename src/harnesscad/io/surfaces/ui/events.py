@@ -1,4 +1,4 @@
-"""Typed SSE event protocol — the UI wire contract (HARNESS_BLUEPRINT.md sec.14).
+"""Typed SSE event protocol — the UI wire contract (docs/blueprint.md sec.14).
 
 The harness spine (loop.py) emits *internal* trace events (trace.py:
 run_start/op_applied/verify_result/rejected/checkpoint/run_end). This module is

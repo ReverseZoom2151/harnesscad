@@ -94,7 +94,7 @@ class TestImportSolid(unittest.TestCase):
     @unittest.skipUnless(_HAVE_CQ, "cadquery/OCCT not installed")
     def test_roundtrip_real_step(self):
         # Export a plate from the real backend, then import it back and measure.
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         step_text = be.export("step")
         with tempfile.NamedTemporaryFile(
@@ -163,7 +163,7 @@ class TestDecompile(unittest.TestCase):
 
     @unittest.skipUnless(_HAVE_CQ, "cadquery/OCCT not installed")
     def test_real_box_recovers_prismatic(self):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         result = decompile(be)
         self.assertTrue(result.ops)
@@ -205,7 +205,7 @@ class TestMetadata(unittest.TestCase):
         "cadquery-ocp XCAF application singleton segfaults the interpreter at "
         "teardown on some builds, which would crash the whole test process")
     def test_real_step_metadata(self):
-        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         step_text = be.export("step")
         with tempfile.NamedTemporaryFile(

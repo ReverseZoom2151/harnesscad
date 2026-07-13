@@ -2,9 +2,9 @@
 
 import unittest
 
-from harnesscad.agents.agent.toolcad_tool_schema import ToolCall, default_toolcad_library
-from harnesscad.agents.agent.toolcad_trajectory import ToolTrajectory, rollout
-from harnesscad.agents.agent.toolcad_reward import (
+from harnesscad.agents.agent.tool_schema import ToolCall, default_toolcad_library
+from harnesscad.agents.agent.tool_trajectory import ToolTrajectory, rollout
+from harnesscad.agents.agent.tool_reward import (
     aggregate_reward,
     format_reward,
     mean_step_reward,

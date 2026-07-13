@@ -1,12 +1,12 @@
 import unittest
 
-from harnesscad.domain.programs.emit.cadtalk_primitive_program import (
+from harnesscad.domain.programs.emit.primitive_program import (
     Cuboid,
     Ellipsoid,
     synthesize,
     ProgramEntry,
 )
-from harnesscad.domain.programs.annotate import cadtalk_parser as parser
+from harnesscad.domain.programs.annotate import block_parser as parser
 
 
 class TestPrimitives(unittest.TestCase):

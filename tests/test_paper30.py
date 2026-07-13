@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.sequence.command_metrics import command_metrics
+from harnesscad.eval.bench.sequence.command_f1 import command_metrics
 from harnesscad.eval.bench.judges.compiler_judge import (
     CompilerJudge, VerificationLevel, component_scorecard, pareto_scorecards,
 )
@@ -14,7 +14,7 @@ from harnesscad.data.dataengine.preference.binary_preferences import (
 )
 from harnesscad.data.dataengine.preference.binary_sampling import sample_binary
 from harnesscad.data.dataengine.preference.kto import implied_reward, kto_row, kto_utility
-from harnesscad.domain.geometry.mesh.mesh_sampling import sample_mesh, triangle_area
+from harnesscad.domain.geometry.mesh.sampling import sample_mesh, triangle_area
 from harnesscad.eval.reliability.compiler_diagnostics import normalize_compiler_error
 from harnesscad.governance.research.judge_ablation import judge_ablation
 

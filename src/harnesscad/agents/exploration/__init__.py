@@ -1,4 +1,4 @@
-"""exploration — design-space exploration layer (HARNESS_BLUEPRINT.md sec.12, sec.4).
+"""exploration — design-space exploration layer (docs/blueprint.md sec.12, sec.4).
 
 The ranking/evolution tier *above* ``strategies.best_of_n``. Best-of-N draws N
 candidates and lets the verifier pick one; this package treats a whole population of

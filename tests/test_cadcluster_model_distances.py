@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.recognize.cadcluster_model_distances import (
+from harnesscad.domain.reconstruction.recognize.model_distances import (
     chamfer_distance,
     min_max_normalize,
     pairwise_distance_matrix,

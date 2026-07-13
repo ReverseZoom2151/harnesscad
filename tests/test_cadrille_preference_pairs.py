@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.preference.cadrille_preference_pairs import (
+from harnesscad.data.dataengine.preference.dpo_pairs import (
     preference_pair,
     all_preference_pairs,
     sample_preference_pairs,

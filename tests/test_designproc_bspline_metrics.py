@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from harnesscad.data.datagen import designproc_bspline_metrics as m
-from harnesscad.data.datagen import designproc_procedure as dp
-from harnesscad.data.datagen import designproc_program_synthesis as ps
+from harnesscad.data.datagen import bspline_metrics as m
+from harnesscad.data.datagen import design_procedure as dp
+from harnesscad.data.datagen import program_synthesis as ps
 
 
 class TestBsplineRatio(unittest.TestCase):

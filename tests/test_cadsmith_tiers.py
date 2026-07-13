@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.agents.generation.cadsmith_tiers import (
+from harnesscad.agents.generation.difficulty_tiers import (
     classify, tier_spec, op_count_tier, TIERS, T1, T2, T3,
 )
 

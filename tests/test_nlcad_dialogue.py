@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.spec.nlcad_dialogue import (
+from harnesscad.domain.spec.dialogue_state import (
     EntityRegistry, resolve_reference, extract_fragment, DialogueState,
 )
 

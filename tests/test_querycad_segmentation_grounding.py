@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.agents.rag.querycad_segmentation_grounding import (
+from harnesscad.agents.rag.segmentation_grounding import (
     Part, ground, ground_ids, matches_description, visible_from,
     DEFAULT_MAX_COVERAGE,
 )

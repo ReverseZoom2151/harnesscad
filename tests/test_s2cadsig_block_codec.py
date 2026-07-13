@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.drawings.s2cadsig_block_codec import (
+from harnesscad.domain.drawings.block_codec import (
     BlockFormatError,
     BlockShape,
     CURVE_BASE,

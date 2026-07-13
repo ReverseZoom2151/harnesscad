@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.vision.img2cadsvg_edge_extract import (
+from harnesscad.domain.vision.edge_extract import (
     gaussian_kernel,
     gaussian_blur,
     sobel_gradients,
