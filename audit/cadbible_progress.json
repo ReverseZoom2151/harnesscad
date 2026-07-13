@@ -1,8 +1,8 @@
 {
   "campaign": "cadbible-repo-mining",
   "total_repos": 70,
-  "reviewed_count": 65,
-  "next_repo_index": 66,
+  "reviewed_count": 70,
+  "next_repo_index": 71,
   "repos": [
     "AlphaCAD-main",
     "AutoCAD-main",
@@ -260,9 +260,15 @@
     "sdfx-master",
     "solidtype-main",
     "spatialhero-main",
-    "structural-frontend-main"
+    "structural-frontend-main",
+    "text-to-cad-blender-addon-main",
+    "text-to-cad-main",
+    "text-to-cad-ui-main",
+    "vitruvion-main",
+    "zip/CodeToCAD-develop"
   ],
   "suite_tests": 13865,
   "readme_policy": "do not edit README during campaign; track suite_tests here",
-  "note": "Batch 13 (repos 61-65) complete. sdf-csg added canonical marching cubes + surface nets (2 winding bugs fixed); sdfx added the manufacturing 2D-CAD layer (concave polygon SDF, ISO/Acme/buttress thread profiles, fastener DB, cam/spiral); solidtype added integer-geometry vertex welding; spatialhero (name misleads -- a CadQuery RL reward system) added plausibility gate + reward aggregator; structural-frontend was out-of-scope UI (nothing built). suite_tests recount pending (/tmp/cb13.txt). FINAL batch 14 = repos 66-70: text-to-cad-blender-addon-main + 4 more (check os.listdir). Last is likely 'zip' #70 -> inspect and SKIP if junk archive. After repo 70, CLOSE the campaign: campaign_complete=true, update memory cadbible file, REPORT full completion summary to user, and surface the now-due README rewrite (do NOT do it unprompted). Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler. OPEN for user: (1) t2cq_ast subset scope; (2) muse_scorecard double-count."
+  "note": "CAMPAIGN COMPLETE: all 70 cadbible repos mined (2026-07-13). Final suite recount pending in /tmp/cb14.txt -- update suite_tests when it lands. Correctly-out-of-scope no-builds (3): gaudi-frontend, structural-frontend, text-to-cad-ui (all pure web UI). Repo 70 'zip' was NOT junk -- it contained CodeToCAD. Key findings across the campaign: t2cq_ast moveTo arity bug (FIXED); 7 grammar divergences in the harness's own selector DSL incl. inverted-not-precedence (FIXED via cq_selector_grammar); quantiser/representation differences in SkexGen, HNC (25-frame rotation codebook), Text2CAD (chained loops), and Vitruvion (floor-quantise + bin-centre dequantise -- the only unbiased one); metric divergences in Text-to-CadQuery, mrCAD, CADGenBench; Curv's understated gyroid Lipschitz bound (4/3 vs true sqrt(3)); upstream bugs NOT inherited from arcs (bbox intersects stub) and cadhub (first-sentinel split). STILL OPEN for user: (1) t2cq_ast CHAIN_METHODS subset scope -- rejects ~100 real fluent methods; widening changes paper-comparison semantics; (2) muse_scorecard watertight/manifold double-count -- muse2_geometry_issue_flags.to_funnel_geometry() available; (3) DEFERRED README REWRITE -- now due, awaiting user go-ahead. Pending optional: CQAsk code-gen scaffold, CascadeStudio sketch-path sampler.",
+  "campaign_complete": true
 }

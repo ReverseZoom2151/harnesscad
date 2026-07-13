@@ -1023,3 +1023,125 @@ spatialhero -- a third name-misleads-content repo -- gave a plausibility gate an
 reward aggregator. structural-frontend was correctly a second UI no-build. Two
 marching-cubes/surface-nets winding bugs were found and fixed during testing. Per
 the no-README policy the suite count is tracked in audit/cadbible_progress.json.
+
+## Batch 14 (repos 66-70) -- FINAL BATCH
+
+The campaign's last five. Two repo-identity assumptions in the launch prompts
+turned out wrong, and in both cases the agent verified by grep and mined what was
+actually there rather than forcing the hypothesis.
+
+### 66. text-to-cad-blender-addon-main
+
+A Blender addon driving Zoo/KittyCAD's text-to-CAD API. The bpy/UI/live-API
+layers are external; two deterministic pieces were transferable.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Base64 data-URI codec (encode/decode, MIME handling) | implemented `formats/t2cblender_base64data.py` | no data-URI codec existed |
+| Zoo/KittyCAD text-to-CAD async API schema (job submission, status polling, result envelope) as a deterministic data model | implemented `adapters/t2cblender_zoo_api_schema.py` | new; the harness had no text-to-CAD job/result schema |
+| bpy operators/panels, live API calls, LLM | external | Blender host / network / trained model |
+
+### 67. text-to-cad-main
+
+**Not** Zoo's CLI (the launch prompt's assumption was wrong -- the agent grepped:
+no `kcl`/`kittycad` anywhere). It is `earthtojake/text-to-cad` "CAD Skills": an
+agent-skills library for CAD, robotics, and hardware handoff. It opened a domain
+the harness had nothing in -- robot description.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| URDF forward kinematics: 4x4 rigid transforms, rpy/axis-angle, joint clamping, mimic-chain resolution with cycle guard, DFS world-transform solve, frame-relative queries | implemented `geometry/t2cmain_urdf_kinematics.py` | **the harness had no robot kinematics of any kind**; `numeric/cq_assembly_dof.py` counts DOF, it does not pose |
+| Strict URDF XML parser: joint-type whitelist, mandatory `<limit>`, radian->degree conversion, single-rooted-tree/cycle/multi-parent/forest rejection, primitive + material validation | implemented `spec/t2cmain_urdf_parser.py` | new (`spec/express_schema_parser.py` parses EXPRESS, unrelated) |
+| SRDF semantics with URDF cross-validation: chain joint-path walk, group closure over chains+subgroups (cycle-safe), end-effector adjacency/disjointness rules, group-state limit checks, disabled-collision dedup + reason classification, missing-adjacent-disable detector | implemented `spec/t2cmain_srdf_semantics.py` | entirely new capability |
+| CAD-reference token grammar `#o1.2.f3,f4`: occurrence-tree positional selectors with left-to-right occurrence inheritance, canonicalisation, safe STEP-path normalisation | implemented `programs/t2cmain_cad_ref_selectors.py` | categorically different from `geometry/cq_selector_grammar.py` / `cqcontrib_selector_dsl.py` / `cascade_entity_selector.py`, which are *predicate* selectors (">Z", tags); this is an *index into an assembly occurrence tree* |
+| Exploded-view layout solver: occurrence-prefix grouping, coplanar layer merge with model-scaled tolerance, non-intersecting stacking gaps, golden-angle spiral fallback for centroid-degenerate radial groups, grounded base, eased progress | implemented `geometry/t2cmain_exploded_view.py` | new; no assembly-presentation solver existed |
+| Zoo API schema / base64 codec | already mined (repo 66) -- and absent from this repo anyway | `adapters/t2cblender_zoo_api_schema.py`, `formats/t2cblender_base64data.py` |
+| KCL lexer/parser/AST | not present in this repo | nothing to mine |
+| STEP/STL/3MF/GLB export, three.js viewer, implicit GLSL SDF, MoveIt2 server, slicers, printer control | external / already in repo | `formats/` covers the formats; `curv_sdf_*`/`sdfcsg_*` cover SDF |
+
+**Note on method:** three test rounds failed, and each time the agent checked the
+source before changing anything -- finding the *source's* rule was right and its
+own assumption wrong (mimic-cycle fallback resolves to the re-entered joint's own
+default; the SRDF end-effector adjacency rule; the common-occurrence-prefix
+grouping window). It corrected the tests to reality, not the modules to the tests.
+
+### 68. text-to-cad-ui-main
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| (none) | out-of-scope, nothing built | Zoo's SvelteKit reference frontend for the Text-to-CAD API. Svelte components, a Threlte/three.js ModelViewer (only "math" is stock bounding-box camera-fit), `@kittycad/lib` API client, and trivial base64/time/kebab helpers. Specifically checked for a client-side KCL parser (which would have been genuinely new): KCL appears only as a download-format string and an API request flag -- the language is generated server-side. Third correctly-out-of-scope UI repo |
+
+### 69. vitruvion-main
+
+Vitruvion (ICLR 2022), a generative model of parametric CAD sketches. The paper's
+concepts were covered indirectly by the SketchGraphs modules, but **no Vitruvion
+implementation-level numerics existed**. Six modules -- and the campaign's
+sharpest quantiser finding.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Exact analytic sketch bbox (quadrant-crossing arc rule) + centre/long-axis-1 rescale to `[-0.5,0.5]` + start/mid/end arc parameterisation with circumcentre re-fit | implemented `geometry/vitruvion_sketch_norm.py` | `drawings/sgraphs2_entity_render.bounding_box` is *polyline-sampled* and always under-reports an arc's extremum; `normalize_scene` maps to `[0,1]^2`. Vitruvion needs an *exact* bbox and a `[-0.5,0.5]` domain or the quantiser bins differ |
+| Primitive token codec: 3 parallel streams (val/coord/pos), 7 control tokens, per-slot coord ids (Arc 2-7, Circle 8-10, Line 11-14, Point 15-16), isConstruction flags, gather pointer offsets | implemented `reconstruction/vitruvion_primitive_tokens.py` | no 3-stream sketch tokenizer existed; `deepcad2_*`/`gencad2_*` are single-stream command tokenizers |
+| Constraint hypergraph as a *pointer* token stream (16-token vocab, ref token = `16 + gather_idx`, arity limited to 2 by the coord vocab, external constraints dropped, refs sorted not argument-ordered) | implemented `reconstruction/vitruvion_constraint_tokens.py` | `reconstruction/sketchgraphs_graph.py` models the hypergraph as a data structure; nothing encoded it as pointers into a primitive stream |
+| Seeded truncated-normal primitive noise (parameter-space, arc rejection loop with halving scale) | implemented `datagen/vitruvion_primitive_noise.py` | no perturbation module existed |
+| Hand-drawn stroke noise: Matern-GP displacement along arclength (stdlib Cholesky), radial for arcs, 359-degree circle gap | implemented `drawings/vitruvion_hand_drawn_noise.py` | no Matern/Cholesky/GP code existed; `datagen/sketch_image_conditions.py` only *names* a `simulate_hand` callable -- this supplies it |
+| Dataset curation: 6..16-entity filter + degeneracy rejection, exact length-bucketed token dedup, remainder-balanced shard ranges | implemented `dataengine/vitruvion_sequence_filter.py` | `bench/skexgen_dedup_hash.py` is a *hash* dedup (lossy); Vitruvion's is exact. No shard-range util existed |
+| Autoregressive transformers, MobileNet image encoder, samplers | external | trained model / GPU |
+
+**Quantiser finding (the campaign's 8th representation discrepancy).** Vitruvion:
+```
+bin   = int((v + 0.5) * n)      # TRUNCATION (floor), clamp n -> n-1
+value = (bin + 0.5) / n - 0.5   # BIN CENTRE, not the level
+```
+domain `[-0.5, 0.5]`, default n = 64 (6-bit). Compare:
+- DeepCAD (`reconstruction/deepcad2_numericalize.py`) and GenCAD: **256 levels over
+  `[-1,1]`, round-half-even, dequantise at the level**.
+- SkexGen: 6-bit **truncating**, but also dequantises at the level.
+
+Vitruvion is the only one with **floor-quantise + bin-centre dequantise**, so its
+round-trip error is unbiased and bounded by `1/(2n)`, whereas floor/floor
+(SkexGen) biases every coordinate *downward* by half a bin. Mixing Vitruvion bins
+with a DeepCAD-style dequantiser shifts every primitive by half a bin of the
+sketch's long axis -- a silent systematic offset.
+
+Two further reference quirks reproduced and documented in-module:
+- `truncnorm.rvs(a=-max_diff, b=max_diff, scale=std)` -- scipy's bounds are in
+  **standard-deviation units**, so the paper's `std = max_diff = 0.15` actually
+  bounds the jitter at `0.0225`, 6.6x tighter than the literal reading. Exposed as
+  `bounds_in_std_units`.
+- `RenderNoise._get_ranges` updates the extent with `+/-radius` **about the origin**
+  and the centre separately (not `centre +/- radius`). Cosmetic (it only feeds the
+  GP smoothness scale); `bbox_extent=True` opts into the corrected version.
+- The constraint coord vocab has only 2 reference slots, so a hyperedge of arity
+  >= 3 would silently desync the three streams; this port raises instead.
+
+### 70. CodeToCAD (in `zip/`)
+
+The folder named `zip` was **not** a junk archive -- it contains CodeToCAD, a
+provider-agnostic CAD scripting API (Blender/FreeCAD/OnShape backends). Two
+genuine kinematics deltas; landmarks and the interface taxonomy were already
+covered.
+
+| Build idea | Status | Repository comparison |
+|---|---|---|
+| Per-axis 6-DOF joint limit box: each DOF free / locked / `[min,max]`; clamp a proposed pose into the box (angles wrapped to the nearest branch first); classify joint type from the limit pattern; intersect limit boxes; rigid/revolute/prismatic/cylindrical/planar/ball constructors | implemented `geometry/codetocad2_joint_limit_box.py` | new: `geometry/joinable_joint_motion.py` only *zeroes* disallowed DOF -- no ranges, so a revolute joint had no stops; `numeric/cq_assembly_dof.py` only *counts* DOF |
+| Gear-ratio rotational driver coupling `driven = -ratio * driver` + train propagation (mesh sign external/internal/shaft, effective ratio, idler sign flip, compound shaft stages, speeds, ideal torques, cycle + multi-driver rejection) | implemented `geometry/codetocad2_gear_coupling.py` | new: `geometry/cadgpt_gear_train.py` does ratio + spatial *placement*, never propagates rotation |
+| Landmark system (named bbox anchors, cardinal presets, offsets, nearest-entity search) | already in repo | `geometry/codetocad_cardinal_landmark.py` |
+| Provider-agnostic interface taxonomy | already in repo | `adapters/fcai_freecad_tool_catalog.py`, `cadhub_language_registry.py`, `ccc_codecad_ecosystem.py` |
+| Length/angle unit expressions; transform stack | already in repo | `numeric/codetocad_length_expression.py`, `geometry/codetocad_transform_stack.py` |
+| Blender/FreeCAD/OnShape live backends | external | proprietary hosts |
+
+## Batch-14 implementation result
+
+Five repos, ~332 new tests. The final batch opened a domain the harness had never
+touched (robot description: URDF kinematics, URDF/SRDF parsing and cross-
+validation), closed the last kinematics gaps (joint limit boxes, gear rotational
+propagation), added the Vitruvion sketch stack, and produced the campaign's 8th
+and sharpest representation finding -- Vitruvion is the only sketch quantiser in
+the corpus using floor-quantise + bin-centre dequantise, making it the only one
+whose round-trip error is unbiased. Two of the five launch prompts carried a wrong
+repo-identity assumption; in both cases the agent verified by grep, said so, and
+mined the repo that actually existed. Three UI repos across the campaign were
+correctly no-builds.
+
+## CAMPAIGN COMPLETE: 70/70 repos mined.
