@@ -1,4 +1,4 @@
-# CADBible Repo Mining — Build Ideas Log
+# CADBible Repo Mining: Build Ideas Log
 
 Deterministic, locally-buildable ideas mined from each repo in
 `resources/cadbible/` and implemented as tested stdlib-only modules.
@@ -60,7 +60,7 @@ ideas. Learned/proprietary/kernel-dependent work is logged research-heavy/extern
 ## Batch-1 implementation result
 
 Mined repos 1-5. Strong dedup: AlphaCAD (papers 94/95), CAD-Coder (VLM),
-CAD-Editor (ICML paper) all partly covered -- extracted only genuinely-new
+CAD-Editor (ICML paper) all partly covered; extracted only genuinely-new
 implementation-level pieces. AutoCAD (COM wrapper) yielded the most net-new
 (drafting algorithms/dash/ACI). Per the no-README-during-campaign policy the
 suite count is tracked in audit/cadbible_progress.json.
@@ -144,7 +144,7 @@ audit/cadbible_progress.json.
 | Module-registry snapshot/restore sandbox | **implemented** | `programs/cqeditor_module_sandbox.py` |
 | Qt/OCC viewer / debugger / inspector UI | **out-of-scope** | GUI |
 
-### 14. CQAsk-main (CadQuery LLM assistant) -- partial
+### 14. CQAsk-main (CadQuery LLM assistant): partial
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -152,7 +152,7 @@ audit/cadbible_progress.json.
 | Code-gen scaffold/sanitizer | **pending** | agent hit session limit mid-write; follow-up |
 | LLM | **research-heavy/external** | trained model |
 
-### 15. CascadeStudio-master (OCC.js/WASM web CAD) -- partial
+### 15. CascadeStudio-master (OCC.js/WASM web CAD): partial
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -224,11 +224,11 @@ no-README policy the suite count is tracked in audit/cadbible_progress.json.
 
 ## Batch-4 implementation result
 
-Mined repos 16-20 -- the richest batch yet. ComplexGen filled a major gap: 3D
+Mined repos 16-20, the richest batch yet. ComplexGen filled a major gap: 3D
 surface primitive fitting (plane/sphere/cylinder/cone), which the harness
 lacked entirely (only 2D line/circle/arc). CodeToCAD gave units/landmarks/
 transforms/operation-schema. DeepCAD + GenCAD (already-covered papers) still
-yielded implementation-level gaps from their REFERENCE CODE -- notably DeepCAD's
+yielded implementation-level gaps from their REFERENCE CODE: DeepCAD's
 released command index order differs from the paper order our spec uses, a
 silent permutation for real .h5 data. Per the no-README policy the suite count
 is tracked in audit/cadbible_progress.json.
@@ -293,7 +293,7 @@ NAMING problem (face identity across rebuilds) + the numeric half of
 constraint solving; ScadLM yielded a full OpenSCAD parser + kernel-free CSG
 evaluator the source repo itself lacks (it shells to the openscad binary);
 JoinABLe filled the joint axis/transform/motion gap (harness had only DOF
-counts); OCP -- a pure binding repo -- still gave a C++ header parser + OCCT
+counts); OCP (a pure binding repo) still gave a C++ header parser + OCCT
 API catalog that guards kernel-call hallucination. Per the no-README policy
 the suite count is tracked in audit/cadbible_progress.json.
 
@@ -323,7 +323,7 @@ the suite count is tracked in audit/cadbible_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| SkexGen token format (6-bit truncating quantization -- differs from BOTH DeepCAD and GenCAD) | **implemented** | `reconstruction/skexgen_token_format.py` |
+| SkexGen token format (6-bit truncating quantization; differs from BOTH DeepCAD and GenCAD) | **implemented** | `reconstruction/skexgen_token_format.py` |
 | 19-token extrude block (rotation MATRIX not Euler) | **implemented** | `reconstruction/skexgen_extrude_tokens.py` |
 | CADparser decode + validity oracle | **implemented** | `reconstruction/skexgen_sequence_decode.py` |
 | Canonical ordering by bbox + connectivity | **implemented** | `reconstruction/skexgen_canonical_order.py` |
@@ -358,9 +358,9 @@ the suite count is tracked in audit/cadbible_progress.json.
 
 ## Batch-6 implementation result
 
-Mined repos 26-30 (~660 new tests -- the biggest batch). SolidPython CLOSED THE
+Mined repos 26-30 (~660 new tests, the biggest batch). SolidPython CLOSED THE
 OPENSCAD LOOP (emit -> parse -> evaluate offline) and added sweep/loft, 2D
-offset+fillet, interpolating splines, and screw threads -- all previously
+offset+fillet, interpolating splines, and screw threads, all previously
 absent. SketchGraphs' reference impl exposed a CORRECTNESS FIX: constraint DOF
 depends on the entity type-pair, not a nominal scalar. SkexGen's quantization
 differs from both DeepCAD and GenCAD (three incompatible schemes now modeled).
@@ -392,7 +392,7 @@ three implementation-level pieces the paper review missed.
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Raw-generation -> runnable script cleaning (EOS truncation, `### Response:` de-prefix, fence strip, export canonicalisation) | implemented `programs/t2cq2_output_cleaning.py` | `inference/step2_clean_run_CadQuery`; nothing in the harness did this |
-| Exact eval protocol: centroid + max-bbox-extent normalisation, CD = mean(d^2)+mean(d^2) x1000, F1 @ 0.02, volumetric IoU @ pitch 0.02, judge Match-Yes gate, mean+median | implemented `bench/t2cq2_eval_protocol.py` | **differs from** `bench/cad_geometry_protocol.py`, which uses unit-sphere normalisation and has no F1/IoU/judge gate -- different numbers on the same meshes, so both now coexist |
+| Exact eval protocol: centroid + max-bbox-extent normalisation, CD = mean(d^2)+mean(d^2) x1000, F1 @ 0.02, volumetric IoU @ pitch 0.02, judge Match-Yes gate, mean+median | implemented `bench/t2cq2_eval_protocol.py` | **differs from** `bench/cad_geometry_protocol.py`, which uses unit-sphere normalisation and has no F1/IoU/judge gate; different numbers on the same meshes, so both now coexist |
 | Dataset layer: JSONL input/output schema, Instruction/Response template, 2-attempt execution-feedback retry (last-5-stderr-lines), DeepCAD UID bucketing | implemented `dataengine/t2cq2_dataset.py` | `data_annotation/gemini_pipeline.py`; no prior T2CQ record schema |
 | DeepCAD-JSON -> CadQuery translation; CadQuery API subset; Invalid-Rate | already in repo (paper 171) | `reconstruction/t2cq_translate.py`, `programs/t2cq_ast.py`, `programs/t2cq_validity.py` |
 | Finetuning six LLMs, Gemini annotator/judge, Blender render | research-heavy/external | trained model / GPU / renderer |
@@ -407,12 +407,12 @@ Reference impl of papers 172/173 (already covered by `dataengine/text2cad_*`,
 | Exact `CADSequence.to_vec`/`from_vec` codec: chained closed loops (line = 1 token, arc = 2, circle = centre+pt1), 11-token extrusion block, START wrapper, pad to 272, `flag_vec`/`index_vec` | implemented `reconstruction/t2c3_cad_vec_codec.py` | `reconstruction/text2cad2_sequence_tokens.py` has the ids but serialises every curve point (2N tokens); the real codec is chained (N tokens) |
 | Exact eval protocol (`generate_report`): geometric bbox-L2 loop matching, curve re-matching, **Null 4th class**, per-primitive P/R/F1 from a 4x4 confusion matrix, macro/micro, extrusion count F1 + L1 parameter report rescaled by 1/0.75 | implemented `bench/t2c3_eval_protocol.py` | `bench/text2cad_sequence_f1.py` matches loops by primitive-multiset cost, has no Null class and no extrusion parameter report |
 | Minimal-JSON schema (LLM-facing doc: part_N/face_N/loop_N, Euler angles in degrees, negative-zero-normalised 4-decimal rounding) + inverse parser | implemented `dataengine/t2c3_minimal_json_schema.py` | `dataengine/text2cad_minimal_metadata.py` models the transformation, never the document schema/round-trip |
-| Training token accuracy (`AccuracyCalculator`: min-length truncation, target>6 mask, per-slot abs(pred-gt) < 3) | implemented `bench/t2c3_token_accuracy.py` | `bench/deepcad2_ae_accuracy.py` scores 17-column rows via `CMD_ARGS_MASK` -- different stream, different masking rule |
+| Training token accuracy (`AccuracyCalculator`: min-length truncation, target>6 mask, per-slot abs(pred-gt) < 3) | implemented `bench/t2c3_token_accuracy.py` | `bench/deepcad2_ae_accuracy.py` scores 17-column rows via `CMD_ARGS_MASK`; different stream, different masking rule |
 | L0-L3 prompt taxonomy, prompt generator, minimal metadata, token id table, Invalidity Ratio, 8-bit quantisation | already in repo (papers 172/173) | Text2CAD reuses DeepCAD quantisation maps verbatim (unlike SkexGen/GenCAD) |
 | Trained Transformer, BERT encoder, OCC BRep/STEP/STL export, Chamfer | research-heavy/external | GPU / OCC |
 
 **Finding:** the Text2CAD sequence layout differs materially from the paper
-Table 3 -- loops are closed and chained, so curve token cost is N, not 2N, and a
+Table 3: loops are closed and chained, so curve token cost is N, not 2N, and a
 circle is identified structurally by being the only curve in its loop.
 
 ### 34. UV-Net-main
@@ -437,7 +437,7 @@ absent: the harness could describe a B-rep topology but had no way to attach
 Not topological naming (despite the name): the code+data release for *What's In
 A Name? Evaluating Assembly-Part Semantic Knowledge in Language Models through
 User-Provided Names in CAD Files* (JCISE 2023). Zero overlap with
-`geometry/opencad_face_fingerprint.py` -- that solves persistent *entity*
+`geometry/opencad_face_fingerprint.py`, which solves persistent *entity*
 identity; this is the *natural-language semantics* of user-authored names.
 
 | Build idea | Status | Repository comparison |
@@ -451,7 +451,7 @@ identity; this is the *natural-language semantics* of user-authored names.
 ## Batch-7 implementation result
 
 Five repos, 416 new tests. Two reference-impl repos (32, 33) correctly yielded
-only implementation-level gaps -- but those gaps included two protocol
+only implementation-level gaps, but those gaps included two protocol
 *contradictions* worth keeping: the Text-to-CadQuery eval normalisation differs
 from the existing `bench/cad_geometry_protocol.py`, and the real Text2CAD
 sequence layout is chained (N tokens/loop), not the 2N its own paper implies.
@@ -523,8 +523,8 @@ mineable core is its multi-language code-CAD abstraction layer.
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Code-CAD language capability matrix / adapter registry (extension, entry file, execution model, artifact kinds, mesh export, parameter flavour, diagnostic dialect; queries + gap explanation) | implemented `adapters/cadhub_language_registry.py` | CadHub encodes this implicitly across `cadPackages/index.ts` + 4 controllers + 4 Dockerfiles; harness had `adapters/base.py` (live-CAD-app protocol) but no per-language code-CAD matrix |
-| Multi-language structured diagnostic parser (OpenSCAD / CadQuery traceback / JSCAD JS stack / curv) -> `Diagnostic(severity, file, line, column, message)` + sandbox-path scrubbing + caret source annotation | implemented `programs/cadhub_diagnostics.py` | CadHub only regex-strips the tmp path; the message stays opaque. Harness had OpenSCAD-only *line-bucket* classification (`fabrication/t2cdean_openscad_export.classify_result`) -- no line/column extraction, no other dialects |
-| Unified cross-language customizer parameter schema (OpenSCAD manifest / JSCAD getParameterDefinitions / CadQuery --getparams -> one neutral model) + value validation (clamp/truncate/enum-reset with issue reports) + params.json writer | implemented `programs/cadhub_param_schema.py` | harness had `programs/cadam_scad_customizer.py` (OpenSCAD *source* annotations only) -- no manifest ingestion, no neutral model, no value validation |
+| Multi-language structured diagnostic parser (OpenSCAD / CadQuery traceback / JSCAD JS stack / curv) -> `Diagnostic(severity, file, line, column, message)` + sandbox-path scrubbing + caret source annotation | implemented `programs/cadhub_diagnostics.py` | CadHub only regex-strips the tmp path; the message stays opaque. Harness had OpenSCAD-only *line-bucket* classification (`fabrication/t2cdean_openscad_export.classify_result`); no line/column extraction, no other dialects |
+| Unified cross-language customizer parameter schema (OpenSCAD manifest / JSCAD getParameterDefinitions / CadQuery --getparams -> one neutral model) + value validation (clamp/truncate/enum-reset with issue reports) + params.json writer | implemented `programs/cadhub_param_schema.py` | harness had `programs/cadam_scad_customizer.py` (OpenSCAD *source* annotations only); no manifest ingestion, no neutral model, no value validation |
 | Render-request canonicalisation + cache key: camera quantisation to 1 dp so orbit jitter hits the same cache entry, DPR viewport sizing, per-language settings whitelist, sha256 key | implemented `backends/cadhub_render_request.py` | harness had only a CLI-export plan key (source+format+defines), no preview/camera/viewport request model |
 | Single-blob artifact+metadata envelope codec (gzipped, sentinel-delimited) with lenient decode | implemented `backends/cadhub_concat_payload.py` | ports `runScad.ts`. **Two hardenings**: split on the LAST sentinel (binary STL can contain it by chance) and `mtime=0` gzip so blobs are content-addressable |
 | Docker/lambda runners, Prisma schema, React IDE, auth | out-of-scope | web-app/deployment surface |
@@ -546,7 +546,7 @@ A corpus of 21 real community CadQuery programs. Valuable not as a library but a
 **Correctness finding against `programs/t2cq_ast.py`** (profiling all 21 programs,
 112 distinct methods):
 - **Arity bug, fixed:** `moveTo` was declared `(2, 2)`, but CadQuery's signature is
-  `moveTo(x=0, y=0)` and the corpus calls it with one argument -- so `validate()`
+  `moveTo(x=0, y=0)` and the corpus calls it with one argument, so `validate()`
   was rejecting valid programs. Widened to `(0, 2)` with regression tests.
 - **Unknown methods** (corpus counts): `val`(31), `constrain`(23), `add`(20),
   `transformed`(14), `parametricCurve`(9), `tag`(9), `rarray`(8), `end`(8),
@@ -592,7 +592,7 @@ selector grammar against the harness's own DSL surfaced seven divergences.
 | Programmatic Selector object algebra (composable `&`/`+`/`-` operators; NearestToPoint, BoxSelector with XOR containment + bbox mode, Direction/Parallel/Perpendicular, TypeSelector, Nth-with-tolerance-clustering: Radius/Length/Area/CenterNth, DirectionMinMax, DirectionNth) | implemented `geometry/cq_selector_algebra.py` | harness had `geometry/cqcontrib_selector_dsl.py` (string parser only); the object algebra it lacked, with identity-based order-preserving set combiners |
 | Grammar-faithful selector-string compiler targeting the object algebra | implemented `geometry/cq_selector_grammar.py` | fixes 7 documented divergences of `cqcontrib_selector_dsl` from the real grammar (see finding) |
 | CadQuery `Plane` named-preset frame algebra (12 presets, toWorld/toLocalCoords, rotated via Rodrigues, setOrigin2d, tolerant equality) | implemented `geometry/cq_plane_frame.py` | `geometry/codetocad_transform_stack.py` is a generic 4x4 lib; new is the CAD-specific named-plane preset table + world/local convention |
-| Workplane pending-model state-transition validator (edges->wires->solids; catches extrude-with-no-wire, unfused-edges, close-empty-path, loft<2, boolean-no-base, cross-plane combine) + ast chain extractor | implemented `programs/cq_workplane_state.py` | `programs/t2cq_ast.py` does arity/varref only; new is the semantic pending-wire/edge state layer -- a validation advance beyond arity |
+| Workplane pending-model state-transition validator (edges->wires->solids; catches extrude-with-no-wire, unfused-edges, close-empty-path, loft<2, boolean-no-base, cross-plane combine) + ast chain extractor | implemented `programs/cq_workplane_state.py` | `programs/t2cq_ast.py` does arity/varref only; new is the semantic pending-wire/edge state layer, a validation advance beyond arity |
 | Assembly 6-DOF constraint algebra + Grubler mobility well-posedness (unary/binary kinds, DOF-removed table, under/well/over classification, redundant-constraint + no-anchor detection) | implemented `numeric/cq_assembly_dof.py` | `reconstruction/sgraphs2_dof_mask.py` / `opencad_constraint_jacobian` are 2D sketch DOF; new is 3D rigid-body assembly DOF |
 | Orthographic-projection SVG exporter (camera-basis projection, M/L path emission, exact getSVG bbox-fit unitScale/translate, visible/hidden styling) | implemented `formats/cq_svg_projector.py` | harness had AMF/DXF/STL/GLB but no SVG exporter; the OCCT HLR pass is external, the projection+fit+emission algebra is reproduced |
 | OCCT booleans/fillets/lofts, scipy constraint numerics | external | kernel / solver |
@@ -602,7 +602,7 @@ real `_makeGrammar`), encoded in `GRAMMAR_FINDINGS`:**
 1. **`not` precedence inverted (real bug):** CadQuery lists `not` last in its
    `infix_notation`, making it the *loosest* operator, so `not >X and #XY` means
    `not(>X and #XY)`. The DSL parses `not` at tightest binding, giving
-   `(not >X) and #XY` -- different result sets. The new compiler reproduces the
+   `(not >X) and #XY`. The result sets differ. The new compiler reproduces the
    correct loosest-`not` precedence.
 2. Center-Nth `>>`/`<<` missing (the DSL tokenizes only single `>`/`<`).
 3. Named views `front/back/left/right/top/bottom` missing.
@@ -623,13 +623,13 @@ Community plugins. Two modules committed in the first (interrupted) pass
 | Heat-set insert bore schedule keyed to screw designation | implemented `standards/cqplug_heatsert_schedule.py` | `library/parts.py` had only a bearing-pocket recipe |
 | Volumetric region selectors (infinite/finite cylinder, hollow cylinder, sphere, hollow sphere): keep shapes whose centre lies inside a solid via axis-projection `(h, rho)` test | implemented `geometry/cqplug_region_selectors.py` | `cqcontrib_selector_dsl` / `cascade_entity_selector` do direction/size intent; neither has a point-in-solid test. This is the `more_selectors` addition; re-mined correctly after the prior partial failed 5 tests |
 | Bevel-gear cone geometry + spherical involute + meshing-pair pitch cones (delta_b, face/root cones, delta_p1 from shaft angle, R from module) | implemented `geometry/cqplug_bevel_gear.py` | `geometry/cadgpt_involute_gear.py` is planar spur only; `cadgpt_gear_train.bevel_scale` is a linear-extrude taper approximation. The plugin's planar Gear class duplicates cadgpt_involute_gear -> skipped |
-| localselectors (named-view remap, centre-nth) | skipped -- low-value | thin remap over the existing DSL; centre-nth duplicates DirMinMax index grouping |
+| localselectors (named-view remap, centre-nth) | skipped (low-value) | thin remap over the existing DSL; centre-nth duplicates DirMinMax index grouping |
 | apply_to_each_face, fragment, freecad_import, cq_cache | external | OCCT-runtime iteration/boolean/import or a file cache |
 
 ### 43. comet-main
 
 CoMeT (Cognitive Memory Tree): a lossless structured-memory substrate for LLM
-agents, deployed behind an autonomous-CAD stack -- in-domain for the harness's
+agents, deployed behind an autonomous-CAD stack, in-domain for the harness's
 own memory layer. Two modules committed pre-interruption, three after resume.
 
 | Build idea | Status | Repository comparison |
@@ -644,7 +644,7 @@ own memory layer. Two modules committed pre-interruption, three after resume.
 ### 44. curated-code-cad-main
 
 A curated awesome-list of code-CAD systems + a birdhouse reference-part set.
-Documentation, not code -- correctly yields a knowledge base, not algorithms.
+Documentation, not code: correctly yields a knowledge base, not algorithms.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -657,17 +657,17 @@ Documentation, not code -- correctly yields a knowledge base, not algorithms.
 
 Curv (Doug Moen): a functional language representing shapes as signed distance
 fields. The harness had SDF *consumers* (marching tets, TSDF, FD gradients) but
-no way to *author* an SDF -- this batch's biggest single capability.
+no way to *author* an SDF, this batch's biggest single capability.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Exact SDF primitives (sphere, box exact+mitred, rounded box, cylinder, cone, capped cone, capsule, torus, ellipsoid bound, plane; 2D circle/rect/regular-polygon/half-plane + extrude/revolve lifts) | implemented `geometry/curv_sdf_primitives.py` | no SDF primitive algebra existed (only FD derivatives / TSDF / marching-tets). Formulas from `lib/curv/std.curv` |
 | SDF combinators + smooth blends (hard min/max/diff/complement N-ary; polynomial/exponential/power smooth-min; smooth union/intersection/difference; chamfer) | implemented `geometry/curv_sdf_combinators.py` | no combinators/smooth-min existed; tests verify smin->min as k->0 and smooth_union <= hard union |
 | Distance-field & domain transforms (offset, shell, round, morph; translate/rotate/scale with `*s` compensation/stretch/mirror; infinite & finite repetition with cell clamp) | implemented `geometry/curv_sdf_transforms.py` | no offset/shell/domain-repetition; scale compensation preserves the Eikonal property |
-| TPMS (gyroid, Schwarz-P, Schwarz-D, Neovius), raw implicit + Lipschitz-normalised | implemented `geometry/curv_sdf_tpms.py` | no gyroid/TPMS anywhere. **Correctness finding:** Curv's docs recommend dividing the gyroid field by 4/3 to make it 1-Lipschitz, but the true sup\|grad F\| is sqrt(3) ~ 1.732 (and 7 for Neovius) -- 4/3 does not bound the gradient, so sphere-tracing can overstep. The module divides by the measured bound and documents it |
+| TPMS (gyroid, Schwarz-P, Schwarz-D, Neovius), raw implicit + Lipschitz-normalised | implemented `geometry/curv_sdf_tpms.py` | no gyroid/TPMS anywhere. **Correctness finding:** Curv's docs recommend dividing the gyroid field by 4/3 to make it 1-Lipschitz, but the true sup\|grad F\| is sqrt(3) ~ 1.732 (and 7 for Neovius); 4/3 does not bound the gradient, so sphere-tracing can overstep. The module divides by the measured bound and documents it |
 | Sphere-tracing / raymarching (Lipschitz-safe stepping, hit/miss) + central-difference normals | implemented `numeric/curv_sphere_trace.py` | no sphere tracer; Hart-1996 stepping with Curv `lipschitz k` compensation |
 | C++/GLSL GPU compiler, OpenGL viewer, GLSL codegen | external | non-transferable host/GPU tooling |
-| FD gradient/Hessian | already in repo | `numeric/flatcad_sdf_derivatives.py` -- composed, not rebuilt |
+| FD gradient/Hessian | already in repo | `numeric/flatcad_sdf_derivatives.py` (composed, not rebuilt) |
 
 ## Batch-9 implementation result
 
@@ -699,7 +699,7 @@ FreeCAD expression language, and a relative-edit mini-language.
 | FreeCAD workbench operation catalogue: 53 operations (16 PartDesign, 5 Part, 3 Assembly, 3 Spreadsheet, 2 Sketcher, 1 Draft, + inspection/document/composite), each with workbench + category + typed param schema; `check_call` validates op name / required params / enum domains with difflib near-miss repair; JSON-schema emit | implemented `adapters/fcai_freecad_tool_catalog.py` | distinct from `backends/ocp_occt_api_catalog.py` (OCCT kernel C++ classes) and `generation/query2cad_macro.py` (Part primitives+booleans only); no existing module covers the PartDesign parametric feature-tree taxonomy |
 | FreeCAD parametric expression engine: recursive-descent parser + evaluator for dotted property refs (`Variables.height`, `Box.Placement.Base.x`), `[index]` subscripts, arithmetic (right-assoc power), unit literals (mm/cm/m/in/ft/deg/rad -> base units), functions; reports the dependency reference set for recompute ordering; no `eval` | implemented `programs/fcai_expression_engine.py` | `programs/scadlm_ast.py` and `t2cq_ast.py` model OpenSCAD/CadQuery; neither covers FreeCAD's spreadsheet/property expression grammar. Genuinely new |
 | Relative property-edit resolver: `modify_property`'s mini-language (`+10%`, `-20%`, `*1.5`, `+5`, absolute) as a pure function returning structured Resolution (kind/previous/resolved/delta) with optional clamp | implemented `library/fcai_relative_value.py` | new small deterministic utility |
-| Tool registry mechanics, OpenAI/Anthropic/MCP schema emitters | already in repo | `agent/`, `surfaces/mcp/`, `agent/toolcad_tool_schema.py` -- only the FreeCAD-specific content was extracted |
+| Tool registry mechanics, OpenAI/Anthropic/MCP schema emitters | already in repo | `agent/`, `surfaces/mcp/`, `agent/toolcad_tool_schema.py`; only the FreeCAD-specific content was extracted |
 | LLM agent loop (20 providers), Qt GUI, live FreeCAD calls | external | trained model / UI / host |
 
 ### 47. freecad_mcp-main
@@ -722,7 +722,7 @@ plates (vertex / parametric / mixed profiles). Web/LLM/Blender layers external.
 |---|---|---|
 | Plate-stack building DSL schema + one-pass validator (per-category required/optional keys, thickness>0, formula x&y, range/steps, rotation, position; building-wide name uniqueness; `normalize_plate` fills defaults) | implemented `spec/gaudi_plate_spec.py` | new. Gaudi feeds raw dicts straight into bpy with no validation; harness has sketch-extrude/command IRs but no stacked-extruded-profile architectural plate IR |
 | Safe parametric-curve profile sampler without `eval`: ast-whitelist evaluator with free var `t`, math funcs, constants; half-open `sample_curve`; profile hygiene (signed area, ensure_ccw, dedupe, is_degenerate) | implemented `geometry/gaudi_parametric_profile.py` | **replaces the upstream unsafe `eval`**. `numeric/opencad_param_expression.py` is a named-parameter-table evaluator (no free variable, no curve sampling) |
-| Deterministic building assembly: per-category outline resolution (incl. closed Catmull-Rom for `mixed`), AABB xy-centering, rotate_z, z auto-stacking by cumulative thickness, Building/PlacedPlate rings | implemented `generation/gaudi_building_assembly.py` | new orchestration. `geometry/solidpy_extrude_along_path.py` covers generic prism meshing, so no extruder was rebuilt -- only the plate-stack placement logic |
+| Deterministic building assembly: per-category outline resolution (incl. closed Catmull-Rom for `mixed`), AABB xy-centering, rotate_z, z auto-stacking by cumulative thickness, Building/PlacedPlate rings | implemented `generation/gaudi_building_assembly.py` | new orchestration. `geometry/solidpy_extrude_along_path.py` covers generic prism meshing, so no extruder was rebuilt, only the plate-stack placement logic |
 | Generic polygon->prism extrusion; LLM prompt/repair loops; Flask/JWT/Docker/bpy | already in repo / external | `geometry/solidpy_extrude_along_path.py`, `generation/*` + `reliability/*repair*`; web/render external |
 
 ### 49. gaudi-frontend-main
@@ -739,7 +739,7 @@ mined. Two implementation-level findings remained.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| 25-frame discrete extrude-orientation codebook: clip the plane's three axis vectors to {-1,0,1}, concatenate to length-9, require exact match against 25 canonical patterns -> categorical index in [0,25); doubles as an in-distribution validator | implemented `reconstruction/hnc_rotation_codebook.py` | **representation difference:** the DeepCAD family (`deepcad_sketch_plane`, `deepcad_command_spec`) stores continuous ZYZ angles; SkexGen stores 9 independently-rounded matrix components. HNC collapses orientation to one of 25 categories. The 25 frames are NOT the 24 proper rotations and are not orthonormal (frame 0's x-axis is `(-1,-1,0)`) -- an empirical clipped set |
+| 25-frame discrete extrude-orientation codebook: clip the plane's three axis vectors to {-1,0,1}, concatenate to length-9, require exact match against 25 canonical patterns -> categorical index in [0,25); doubles as an in-distribution validator | implemented `reconstruction/hnc_rotation_codebook.py` | **representation difference:** the DeepCAD family (`deepcad_sketch_plane`, `deepcad_command_spec`) stores continuous ZYZ angles; SkexGen stores 9 independently-rounded matrix components. HNC collapses orientation to one of 25 categories. The 25 frames are NOT the 24 proper rotations and are not orthonormal (frame 0's x-axis is `(-1,-1,0)`); an empirical clipped set |
 | Flat CAD command/param codec: 6-int vocab with end-tokens promoted to command types (SKETCH_END/FACE_END/LOOP_END/LINE/ARC/CIRCLE), implicit-endpoint start-only curves (arc = start+mid, no end; circle = 4 cardinal points), 8-slot params, 11-slot extrude packing, two normalizations (loop-level half-diagonal vs sequence half-extent) | implemented `reconstruction/hnc_cad_vec_codec.py` | distinct vocab/width/normalisation vs `deepcad_command_spec` (16-slot, SOL/EOS pair) and `hnc_spl_tree` (hierarchical). **Code/comment mismatch found:** the `quantize` docstring says `n_bits**2 - 1` but the code uses `2**n_bits - 1`; reproduced the code (authoritative) |
 | S-P-L tree, canonical ordering, 6-bit quant, sha256 dedup, VQ nearest-code | already in repo | `reconstruction/hnc_spl_tree.py`, `skexgen_canonical_order.py`, `hnc_code_assignment.py`, `deepcad2_arc_macro.py` |
 | VQ-VAE + cascaded autoregressive transformers | research-heavy/external | trained models |
@@ -750,7 +750,7 @@ Five repos, ~193 new tests (46: 79, 47: 19, 48: 72, 49: 0, 50: 22). Two FreeCAD
 integrations added a FreeCAD-specific layer the harness lacked: a PartDesign
 feature-operation catalogue, an eval-free parametric expression engine (dotted
 refs, unit literals, dependency tracking), and a document-object wire codec.
-Gaudi contributed a text-to-architecture plate-stack DSL and, notably, replaced
+Gaudi contributed a text-to-architecture plate-stack DSL and replaced
 an upstream unsafe `eval` in its parametric-curve sampler with an AST-whitelisted
 one. The frontend was correctly out-of-scope. hnc-cad produced the campaign's
 fifth reference-representation finding (a 25-frame orientation codebook unlike the
@@ -774,8 +774,8 @@ to evaluate it (point, interval, dual).
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| f-rep opcode/Tree IR: hash-consed DAG with CSE, constant folding, commutative canonicalisation, evaluator, infix + S-expr printers, small shape stdlib | implemented `geometry/libfive_frep_ir.py` | ports libfive `tree/` + `opcode.cpp`. Distinct from `curv_sdf_*` (fixed callables) -- this is a reified, introspectable, optimisable graph |
-| Interval arithmetic + interval evaluator over the IR for octree pruning (EMPTY/FILLED/AMBIGUOUS) | implemented `numeric/libfive_interval.py` | ports `eval/interval.hpp`; div-straddling-zero conservatism, sqrt/log NaN domains, trig extrema enclosure. **No interval arithmetic existed in the harness** -- the basis of efficient implicit meshing |
+| f-rep opcode/Tree IR: hash-consed DAG with CSE, constant folding, commutative canonicalisation, evaluator, infix + S-expr printers, small shape stdlib | implemented `geometry/libfive_frep_ir.py` | ports libfive `tree/` + `opcode.cpp`. Distinct from `curv_sdf_*` (fixed callables); this is a reified, introspectable, optimisable graph |
+| Interval arithmetic + interval evaluator over the IR for octree pruning (EMPTY/FILLED/AMBIGUOUS) | implemented `numeric/libfive_interval.py` | ports `eval/interval.hpp`; div-straddling-zero conservatism, sqrt/log NaN domains, trig extrema enclosure. **No interval arithmetic existed in the harness**, the basis of efficient implicit meshing |
 | Forward-mode automatic differentiation (dual numbers) over the IR for exact gradients/normals | implemented `numeric/libfive_forward_ad.py` | exact vs `numeric/flatcad_sdf_derivatives.py` (finite differences); composes with dual-contouring Hermite data |
 | Dual contouring (quadtree) with interval pruning, Hermite data, QEF sharp-feature vertex placement + N-D QEF solver (Jacobi eigendecomposition + rank-aware truncated pseudoinverse, mass-point bias) | implemented `geometry/libfive_dual_contour.py` | sharper-feature alternative to `geometry/meshdiff_marching_tets.py`; QEF/dual-contouring absent from the harness. Tests verify a square keeps its corners and a circle reconstructs as a clean loop |
 | C++/OpenGL/Guile-Scheme runtime, GPU | external | reimplemented in pure stdlib |
@@ -789,8 +789,8 @@ retriangulating boolean, which needs the GPU runtime).
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Adaptive exact-sign predicates orient2d/orient3d/incircle/insphere (float fast path + exact Fraction fallback) | implemented `numeric/manifold_predicates.py` | Shewchuk-style; harness had only inexact 2D orient in `geometry/euclid_validity.py`. Foundational for robust geometry |
-| Half-edge triangle mesh + manifoldness invariants (Manifold's 3t+i indexing, next/prev, pair involution, face/vertex circulation, is_manifold/is_2manifold, Euler/genus, boundary loops) | implemented `geometry/manifold_halfedge.py` | `geometry/angelcad_polyhedron.py` had only an undirected edge-use table on polygon faces -- no half-edge, no circulation |
-| 3D BVH broad-phase (Morton SpreadBits3 + median split + stack-DFS overlap query, self_collisions, query_point) | implemented `geometry/manifold_bvh.py` | harness had only 2D quadtree, fixed-grid octree, 2D morton2 -- no 3D BVH over boxes. Verified vs brute force |
+| Half-edge triangle mesh + manifoldness invariants (Manifold's 3t+i indexing, next/prev, pair involution, face/vertex circulation, is_manifold/is_2manifold, Euler/genus, boundary loops) | implemented `geometry/manifold_halfedge.py` | `geometry/angelcad_polyhedron.py` had only an undirected edge-use table on polygon faces; no half-edge, no circulation |
+| 3D BVH broad-phase (Morton SpreadBits3 + median split + stack-DFS overlap query, self_collisions, query_point) | implemented `geometry/manifold_bvh.py` | harness had only 2D quadtree, fixed-grid octree, 2D morton2; no 3D BVH over boxes. Verified vs brute force |
 | Predicate-driven triangle-triangle intersection (Moller coplanar-robust test, intersection segment, segment-plane / segment-segment-2D) | implemented `geometry/manifold_tritri.py` | harness had SDF booleans only, no tri-tri |
 | Winding-number point-in-mesh inside test (Van Oosterom-Strackee solid angle, generalised winding) + Kahan mass properties (signed volume, surface area) | implemented `geometry/manifold_winding.py` | degeneracy-robust vs `bench/cgb_mesh_betti.py` ray-cast parity |
 | Full retriangulating boolean, CUDA/thrust runtime | external / too large | the exact-predicate substrate is built; the full boolean assembly is out of stdlib scope |
@@ -827,7 +827,7 @@ remained, and the source exposed a scoring-semantics issue in the harness.
 **Finding (open, not actioned):** `bench/muse_scorecard.py` ANDs `watertight`,
 `manifold`, `self_intersection_free`, `overlap_free` as four independent checks.
 In the real MUSE repo, `watertight` is defined to already require no non-manifold
-edges, so it implies `manifold` -- feeding both independently double-counts
+edges, so it implies `manifold`; feeding both independently double-counts
 manifoldness. Whether this is a bug depends on how the caller derives the input
 flags, so it changes what the benchmark score MEANS. `muse2_geometry_issue_flags`
 provides `to_funnel_geometry()` + a `watertight_strict` flag so callers can feed
@@ -865,7 +865,7 @@ no-README policy the suite count is tracked in audit/cadbible_progress.json.
 ## Batch 12 (repos 56-60)
 
 An OCCT binding, two covered concepts, and the STEP/OpenSCAD tooling. The
-headline is ruststep's EXPRESS schema-language parser -- the harness could read
+headline is ruststep's EXPRESS schema-language parser: the harness could read
 STEP data but not the schema language that defines it.
 
 ### 56. pythonocc-core-master
@@ -875,7 +875,7 @@ kernel-independent algorithm in the pure-Python Extend/ layer.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Orientation-aware sub-shape dedup + `MapShapesAndAncestors` inverse-ancestor map, kernel-free (Shape as `(TShape, orientation)` identity; 24 oriented cube edges -> 12 unique; "which faces bound this edge?") | implemented `geometry/pyocc_topology_explorer.py` | lifted from `OCC/Extend/TopologyUtils.py::TopologyExplorer`. Distinct from `reconstruction/cadparser_brep_graph.py` (coedge half-edge graph), `geometry/manifold_halfedge.py` (triangle-mesh half-edge), `geometry/opencad_synthetic_topology.py` -- none model the TopAbs containment hierarchy or ancestor-map inversion |
+| Orientation-aware sub-shape dedup + `MapShapesAndAncestors` inverse-ancestor map, kernel-free (Shape as `(TShape, orientation)` identity; 24 oriented cube edges -> 12 unique; "which faces bound this edge?") | implemented `geometry/pyocc_topology_explorer.py` | lifted from `OCC/Extend/TopologyUtils.py::TopologyExplorer`. Distinct from `reconstruction/cadparser_brep_graph.py` (coedge half-edge graph), `geometry/manifold_halfedge.py` (triangle-mesh half-edge), `geometry/opencad_synthetic_topology.py`; none model the TopAbs containment hierarchy or ancestor-map inversion |
 | ShapeFactory/DataExchange/LayerManager wrappers, is_* predicates, SWIG bindings | external / already in repo | thin kernel calls; API surface covered by `backends/ocp_occt_api_catalog.py` |
 
 ### 57. querycad-main
@@ -897,11 +897,11 @@ ruststep: ISO 10303 in Rust + its espr EXPRESS compiler. The harness had a Part 
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| EXPRESS (ISO 10303-11) schema-language parser + model: tokenizer (`--` and `(* *)` comments), SCHEMA/ENTITY/TYPE, shared + OPTIONAL attributes, SUBTYPE OF, ABSTRACT, SUPERTYPE OF (ONEOF/ANDOR/AND), DERIVE/INVERSE/UNIQUE/WHERE, ENUMERATION/SELECT, aggregates LIST/SET/ARRAY/BAG with bounds, redeclared attributes | implemented `spec/express_schema_parser.py` | reimplements espr's parser/ + ast/ (nom -> recursive descent). **Not in the harness** -- `formats/stepllm_schema.py` is a fixed 24-entity dict. **Parses 662/664 real ISO `.exp` schemas** incl. AP214 (890 entities) |
+| EXPRESS (ISO 10303-11) schema-language parser + model: tokenizer (`--` and `(* *)` comments), SCHEMA/ENTITY/TYPE, shared + OPTIONAL attributes, SUBTYPE OF, ABSTRACT, SUPERTYPE OF (ONEOF/ANDOR/AND), DERIVE/INVERSE/UNIQUE/WHERE, ENUMERATION/SELECT, aggregates LIST/SET/ARRAY/BAG with bounds, redeclared attributes | implemented `spec/express_schema_parser.py` | reimplements espr's parser/ + ast/ (nom -> recursive descent). **Not in the harness**; `formats/stepllm_schema.py` is a fixed 24-entity dict. **Parses 662/664 real ISO `.exp` schemas** incl. AP214 (890 entities) |
 | Inheritance graph + attribute flattening: transitive supertype/subtype edges, roots/leaves, cycle detection, diamond-safe flattened attribute list (inherited before local), nested SELECT expansion | implemented `spec/express_inheritance.py` | reimplements espr's ir/ legalize stage. Not in the harness |
-| Part 21 string X-encoding codec (decode/encode `\X\HH`, `\X2\..\X0\`, `\X4\..\X0\`, `\S\c`, `\\`) | implemented `formats/step_p21_xstring.py` | **fills a gap in `stepllm_parser`** -- it returns X-directives verbatim (`\X2\00E9\X0\` instead of `cafe`), with no way to recover the Unicode. Round-trips as literal text so not data-loss, but a semantic gap |
+| Part 21 string X-encoding codec (decode/encode `\X\HH`, `\X2\..\X0\`, `\X4\..\X0\`, `\S\c`, `\\`) | implemented `formats/step_p21_xstring.py` | **fills a gap in `stepllm_parser`**; it returns X-directives verbatim (`\X2\00E9\X0\` instead of `cafe`), with no way to recover the Unicode. Round-trips as literal text so not data-loss, but a semantic gap |
 | Structured HEADER model (typed FILE_DESCRIPTION/FILE_NAME/FILE_SCHEMA accessors + schema_name) | implemented `formats/step_header_model.py` | `stepllm_parser` keeps the header as an unstructured `Typed` list |
-| Schema-to-Part21 validator: each DATA instance checked against a parsed EXPRESS schema (entity declared, inheritance-aware arity via flattened attrs, structural type-kind match, `$` vs OPTIONAL, complex-instance parts) | implemented `spec/express_p21_validator.py` | only possible now both parsers exist. `stepllm_graph.validate` checks arity against an entity's OWN attributes only -- wrong for any subtype, since real records list inherited attributes first |
+| Schema-to-Part21 validator: each DATA instance checked against a parsed EXPRESS schema (entity declared, inheritance-aware arity via flattened attrs, structural type-kind match, `$` vs OPTIONAL, complex-instance parts) | implemented `spec/express_p21_validator.py` | only possible now both parsers exist. `stepllm_graph.validate` checks arity against an entity's OWN attributes only, wrong for any subtype, since real records list inherited attributes first |
 | Rust struct codegen | external | mechanism; the schema model it consumes was ported |
 
 **Findings vs `formats/stepllm_parser.py`** (all gaps, not overstated as bugs):
@@ -930,7 +930,7 @@ gear modules, as anticipated; two Haskell-distinct algebraic pieces remained.
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | SetLike normalising CSG combinator laws (associative union/intersection flattening + difference subtrahend-absorption: `a-b-c-d` -> `difference(a, union(b,c,d))`) | implemented `geometry/scadhs_csg_algebra.py` | genuinely new. angelcad/solidpy/scadlm treat union/intersection/difference as opaque n-ary nodes; none apply the algebraic smart-constructor laws. Ported from `Class.hs` SetLike instance |
-| Content-addressed module extraction / CSE (`smodule`/`#`/`##` with `children()` placeholder + `mdl_N` memo naming) + an added `auto_modularize` CSE pass detecting repeated subtrees | implemented `programs/scadhs_module_cse.py` | genuinely new -- nothing in the harness hoists shared subtrees into named OpenSCAD modules. Faithful port of scad-hs's memo table |
+| Content-addressed module extraction / CSE (`smodule`/`#`/`##` with `children()` placeholder + `mdl_N` memo naming) + an added `auto_modularize` CSE pass detecting repeated subtrees | implemented `programs/scadhs_module_cse.py` | genuinely new: nothing in the harness hoists shared subtrees into named OpenSCAD modules. Faithful port of scad-hs's memo table |
 | Typed 2D/3D phantom dimension; SCAD emission/modifiers; involute/planetary gears | already in repo | `programs/angelcad_typed_csg.py`, `programs/solidpy_scad_emit.py`, `geometry/cadgpt_involute_gear.py` + `cadgpt_gear_train.py` + `cqplug_bevel_gear.py` |
 
 ## Batch-12 implementation result
@@ -938,7 +938,7 @@ gear modules, as anticipated; two Haskell-distinct algebraic pieces remained.
 Five repos, ~231 new tests. ruststep contributed the campaign's most complete
 STEP work: an EXPRESS schema-language parser validated against 662/664 real ISO
 schemas, an inheritance flattener, an X-string codec, a structured header, and a
-schema-driven validator -- plus three characterised gaps in the harness's
+schema-driven validator, plus three characterised gaps in the harness's
 existing Part 21 parser. scad-clj filled a real OpenSCAD gap (the facet-count
 formula that governs all curved-primitive tessellation). pythonocc and scad-hs
 were correctly disciplined (one/two genuine deltas from otherwise-covered repos),
@@ -959,7 +959,7 @@ genuine gaps were mesh extractors and six missing primitives.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Canonical Marching Cubes (Lorensen-Cline 256-case edge + triangle tables, welded vertices, SDF-convention winding) | implemented `geometry/sdfcsg_marching_cubes.py` | **absent from the harness** -- it had marching *tets* and dual contouring but not the standard MC. **Bug found+fixed:** Bourke's tables assume "inside = above isolevel" but SDF uses "inside = negative", so normals pointed inward until winding was reversed; a 256-case table-consistency test confirms correct transcription |
+| Canonical Marching Cubes (Lorensen-Cline 256-case edge + triangle tables, welded vertices, SDF-convention winding) | implemented `geometry/sdfcsg_marching_cubes.py` | **absent from the harness**; it had marching *tets* and dual contouring but not the standard MC. **Bug found+fixed:** Bourke's tables assume "inside = above isolevel" but SDF uses "inside = negative", so normals pointed inward until winding was reversed; a 256-case table-consistency test confirms correct transcription |
 | Naive Surface Nets isosurface extractor (one vertex per sign-changing cell = averaged edge crossings) + tiled grid sampling + ASCII STL | implemented `geometry/sdfcsg_surface_nets.py` | the repo's actual mesher; distinct from QEF dual contouring (2D-only) and marching tets. **Bug found+fixed:** watertightness required correct per-axis quad winding |
 | Six IQ primitives absent from curv: box_frame, capped_torus, link, hexagonal_prism, triangular_prism, solid_angle | implemented `geometry/sdfcsg_primitives.py` | extend `geometry/curv_sdf_primitives.py` |
 | User-data attribute interpolation across the surface (inverse-distance blend) | implemented `geometry/sdfcsg_surface_nets.py` | the repo's getUserData mechanism; no harness equivalent |
@@ -974,7 +974,7 @@ manufacturing 2D-CAD layer: exact concave-polygon distance and fastener geometry
 |---|---|---|
 | Exact arbitrary-polygon 2D SDF (winding-number sign + min edge distance) + area/centroid/point-in-polygon | implemented `geometry/sdfx_polygon_sdf.py` | `curv_sdf_primitives.regular_polygon` is a mitred *regular* n-gon field only; `manifold_winding` is a 3D solid-angle mesh test. No exact concave arbitrary-polygon 2D SDF existed |
 | Fluent 2D sketch builder: relative/polar vertices, corner fillet (smooth), chamfer, segment->arc replacement, regular n-gon ring | implemented `geometry/sdfx_polygon_builder.py` | no polygon *geometry* builder in the harness; curv/libfive expose only fields |
-| Standard thread cross-section profiles: ISO/UTS 60 deg V (7/8 H ext, 1/4 H int truncation, rounded root/crest), 29 deg Acme, ANSI 45/7 buttress (period-wrap-continuous) | implemented `geometry/sdfx_thread_profile.py` | `geometry/solidpy_screw_thread.py` is a helical mesh sweep with a generic tooth section -- no standard ISO/Acme/buttress profile math |
+| Standard thread cross-section profiles: ISO/UTS 60 deg V (7/8 H ext, 1/4 H int truncation, rounded root/crest), 29 deg Acme, ANSI 45/7 buttress (period-wrap-continuous) | implemented `geometry/sdfx_thread_profile.py` | `geometry/solidpy_screw_thread.py` is a helical mesh sweep with a generic tooth section; no standard ISO/Acme/buttress profile math |
 | Fastener standard dimension database: ISO metric coarse/fine (M1-M64), UNC/UNF, NPT (tapered), normalised to mm, + hex head radius/height | implemented `standards/sdfx_thread_database.py` | `standards/cqplug_heatsert_schedule.py` is heat-set inserts only; no thread/fastener table existed |
 | Cam profiles as exact SDFs (flat-flank + three-arc) with design-parameter solvers | implemented `geometry/sdfx_cam_profile.py` | no cam primitive in curv/libfive/sdf-csg |
 | Archimedean spiral exact 2D SDF (polar inversion + whole-turn shifting, thickness offset) | implemented `geometry/sdfx_spiral_sdf.py` | no spiral primitive anywhere in the SDF stack |
@@ -1008,7 +1008,7 @@ for RL-training LLMs to write CadQuery. Three deterministic reward modules.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| (none) | out-of-scope, nothing built | The frontend twin of the Gaudi product (same gaudi_logo.png, same Railway backend): a Create-React-App SPA -- react-router auth-gated screens, a three.js `@react-three/fiber` BuildingViewer loading server-generated STL/GLB, a chat Assistant that POSTs prompts and polls. A grep of src/ for beam/truss/moment-of-inertia/section-modulus/centroid/deflection/buckling/euler/yield/shear/bending/load-combination/young's-modulus/I-beam/steel-section returned zero hits. All structural analysis is server-side; nothing deterministic is transferable |
+| (none) | out-of-scope, nothing built | The frontend twin of the Gaudi product (same gaudi_logo.png, same Railway backend): a Create-React-App SPA: react-router auth-gated screens, a three.js `@react-three/fiber` BuildingViewer loading server-generated STL/GLB, a chat Assistant that POSTs prompts and polls. A grep of src/ for beam/truss/moment-of-inertia/section-modulus/centroid/deflection/buckling/euler/yield/shear/bending/load-combination/young's-modulus/I-beam/steel-section returned zero hits. All structural analysis is server-side; nothing deterministic is transferable |
 
 ## Batch-13 implementation result
 
@@ -1019,12 +1019,12 @@ six primitives, and sdfx yielded the entire manufacturing 2D-CAD layer (exact
 concave-polygon distance, ISO/Acme/buttress thread profiles, a fastener database,
 cam and spiral profiles) that pure-SDF-art libraries omit. solidtype added
 integer-geometry vertex welding (complementary to the manifold predicates).
-spatialhero -- a third name-misleads-content repo -- gave a plausibility gate and
+spatialhero (a third name-misleads-content repo) gave a plausibility gate and
 reward aggregator. structural-frontend was correctly a second UI no-build. Two
 marching-cubes/surface-nets winding bugs were found and fixed during testing. Per
 the no-README policy the suite count is tracked in audit/cadbible_progress.json.
 
-## Batch 14 (repos 66-70) -- FINAL BATCH
+## Batch 14 (repos 66-70): FINAL BATCH
 
 The campaign's last five. Two repo-identity assumptions in the launch prompts
 turned out wrong, and in both cases the agent verified by grep and mined what was
@@ -1043,10 +1043,10 @@ layers are external; two deterministic pieces were transferable.
 
 ### 67. text-to-cad-main
 
-**Not** Zoo's CLI (the launch prompt's assumption was wrong -- the agent grepped:
+**Not** Zoo's CLI (the launch prompt's assumption was wrong; the agent grepped:
 no `kcl`/`kittycad` anywhere). It is `earthtojake/text-to-cad` "CAD Skills": an
 agent-skills library for CAD, robotics, and hardware handoff. It opened a domain
-the harness had nothing in -- robot description.
+the harness had nothing in: robot description.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1055,12 +1055,12 @@ the harness had nothing in -- robot description.
 | SRDF semantics with URDF cross-validation: chain joint-path walk, group closure over chains+subgroups (cycle-safe), end-effector adjacency/disjointness rules, group-state limit checks, disabled-collision dedup + reason classification, missing-adjacent-disable detector | implemented `spec/t2cmain_srdf_semantics.py` | entirely new capability |
 | CAD-reference token grammar `#o1.2.f3,f4`: occurrence-tree positional selectors with left-to-right occurrence inheritance, canonicalisation, safe STEP-path normalisation | implemented `programs/t2cmain_cad_ref_selectors.py` | categorically different from `geometry/cq_selector_grammar.py` / `cqcontrib_selector_dsl.py` / `cascade_entity_selector.py`, which are *predicate* selectors (">Z", tags); this is an *index into an assembly occurrence tree* |
 | Exploded-view layout solver: occurrence-prefix grouping, coplanar layer merge with model-scaled tolerance, non-intersecting stacking gaps, golden-angle spiral fallback for centroid-degenerate radial groups, grounded base, eased progress | implemented `geometry/t2cmain_exploded_view.py` | new; no assembly-presentation solver existed |
-| Zoo API schema / base64 codec | already mined (repo 66) -- and absent from this repo anyway | `adapters/t2cblender_zoo_api_schema.py`, `formats/t2cblender_base64data.py` |
+| Zoo API schema / base64 codec | already mined (repo 66), and absent from this repo anyway | `adapters/t2cblender_zoo_api_schema.py`, `formats/t2cblender_base64data.py` |
 | KCL lexer/parser/AST | not present in this repo | nothing to mine |
 | STEP/STL/3MF/GLB export, three.js viewer, implicit GLSL SDF, MoveIt2 server, slicers, printer control | external / already in repo | `formats/` covers the formats; `curv_sdf_*`/`sdfcsg_*` cover SDF |
 
 **Note on method:** three test rounds failed, and each time the agent checked the
-source before changing anything -- finding the *source's* rule was right and its
+source before changing anything, finding the *source's* rule was right and its
 own assumption wrong (mimic-cycle fallback resolves to the re-entered joint's own
 default; the SRDF end-effector adjacency rule; the common-occurrence-prefix
 grouping window). It corrected the tests to reality, not the modules to the tests.
@@ -1069,13 +1069,13 @@ grouping window). It corrected the tests to reality, not the modules to the test
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| (none) | out-of-scope, nothing built | Zoo's SvelteKit reference frontend for the Text-to-CAD API. Svelte components, a Threlte/three.js ModelViewer (only "math" is stock bounding-box camera-fit), `@kittycad/lib` API client, and trivial base64/time/kebab helpers. Specifically checked for a client-side KCL parser (which would have been genuinely new): KCL appears only as a download-format string and an API request flag -- the language is generated server-side. Third correctly-out-of-scope UI repo |
+| (none) | out-of-scope, nothing built | Zoo's SvelteKit reference frontend for the Text-to-CAD API. Svelte components, a Threlte/three.js ModelViewer (only "math" is stock bounding-box camera-fit), `@kittycad/lib` API client, and trivial base64/time/kebab helpers. Specifically checked for a client-side KCL parser (which would have been genuinely new): KCL appears only as a download-format string and an API request flag; the language is generated server-side. Third correctly-out-of-scope UI repo |
 
 ### 69. vitruvion-main
 
 Vitruvion (ICLR 2022), a generative model of parametric CAD sketches. The paper's
 concepts were covered indirectly by the SketchGraphs modules, but **no Vitruvion
-implementation-level numerics existed**. Six modules -- and the campaign's
+implementation-level numerics existed**. Six modules, and the campaign's
 sharpest quantiser finding.
 
 | Build idea | Status | Repository comparison |
@@ -1084,7 +1084,7 @@ sharpest quantiser finding.
 | Primitive token codec: 3 parallel streams (val/coord/pos), 7 control tokens, per-slot coord ids (Arc 2-7, Circle 8-10, Line 11-14, Point 15-16), isConstruction flags, gather pointer offsets | implemented `reconstruction/vitruvion_primitive_tokens.py` | no 3-stream sketch tokenizer existed; `deepcad2_*`/`gencad2_*` are single-stream command tokenizers |
 | Constraint hypergraph as a *pointer* token stream (16-token vocab, ref token = `16 + gather_idx`, arity limited to 2 by the coord vocab, external constraints dropped, refs sorted not argument-ordered) | implemented `reconstruction/vitruvion_constraint_tokens.py` | `reconstruction/sketchgraphs_graph.py` models the hypergraph as a data structure; nothing encoded it as pointers into a primitive stream |
 | Seeded truncated-normal primitive noise (parameter-space, arc rejection loop with halving scale) | implemented `datagen/vitruvion_primitive_noise.py` | no perturbation module existed |
-| Hand-drawn stroke noise: Matern-GP displacement along arclength (stdlib Cholesky), radial for arcs, 359-degree circle gap | implemented `drawings/vitruvion_hand_drawn_noise.py` | no Matern/Cholesky/GP code existed; `datagen/sketch_image_conditions.py` only *names* a `simulate_hand` callable -- this supplies it |
+| Hand-drawn stroke noise: Matern-GP displacement along arclength (stdlib Cholesky), radial for arcs, 359-degree circle gap | implemented `drawings/vitruvion_hand_drawn_noise.py` | no Matern/Cholesky/GP code existed; `datagen/sketch_image_conditions.py` only *names* a `simulate_hand` callable; this supplies it |
 | Dataset curation: 6..16-entity filter + degeneracy rejection, exact length-bucketed token dedup, remainder-balanced shard ranges | implemented `dataengine/vitruvion_sequence_filter.py` | `bench/skexgen_dedup_hash.py` is a *hash* dedup (lossy); Vitruvion's is exact. No shard-range util existed |
 | Autoregressive transformers, MobileNet image encoder, samplers | external | trained model / GPU |
 
@@ -1102,10 +1102,10 @@ Vitruvion is the only one with **floor-quantise + bin-centre dequantise**, so it
 round-trip error is unbiased and bounded by `1/(2n)`, whereas floor/floor
 (SkexGen) biases every coordinate *downward* by half a bin. Mixing Vitruvion bins
 with a DeepCAD-style dequantiser shifts every primitive by half a bin of the
-sketch's long axis -- a silent systematic offset.
+sketch's long axis: a silent systematic offset.
 
 Two further reference quirks reproduced and documented in-module:
-- `truncnorm.rvs(a=-max_diff, b=max_diff, scale=std)` -- scipy's bounds are in
+- `truncnorm.rvs(a=-max_diff, b=max_diff, scale=std)`: scipy's bounds are in
   **standard-deviation units**, so the paper's `std = max_diff = 0.15` actually
   bounds the jitter at `0.0225`, 6.6x tighter than the literal reading. Exposed as
   `bounds_in_std_units`.
@@ -1117,14 +1117,14 @@ Two further reference quirks reproduced and documented in-module:
 
 ### 70. CodeToCAD (in `zip/`)
 
-The folder named `zip` was **not** a junk archive -- it contains CodeToCAD, a
+The folder named `zip` was **not** a junk archive; it contains CodeToCAD, a
 provider-agnostic CAD scripting API (Blender/FreeCAD/OnShape backends). Two
 genuine kinematics deltas; landmarks and the interface taxonomy were already
 covered.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Per-axis 6-DOF joint limit box: each DOF free / locked / `[min,max]`; clamp a proposed pose into the box (angles wrapped to the nearest branch first); classify joint type from the limit pattern; intersect limit boxes; rigid/revolute/prismatic/cylindrical/planar/ball constructors | implemented `geometry/codetocad2_joint_limit_box.py` | new: `geometry/joinable_joint_motion.py` only *zeroes* disallowed DOF -- no ranges, so a revolute joint had no stops; `numeric/cq_assembly_dof.py` only *counts* DOF |
+| Per-axis 6-DOF joint limit box: each DOF free / locked / `[min,max]`; clamp a proposed pose into the box (angles wrapped to the nearest branch first); classify joint type from the limit pattern; intersect limit boxes; rigid/revolute/prismatic/cylindrical/planar/ball constructors | implemented `geometry/codetocad2_joint_limit_box.py` | new: `geometry/joinable_joint_motion.py` only *zeroes* disallowed DOF; no ranges, so a revolute joint had no stops; `numeric/cq_assembly_dof.py` only *counts* DOF |
 | Gear-ratio rotational driver coupling `driven = -ratio * driver` + train propagation (mesh sign external/internal/shaft, effective ratio, idler sign flip, compound shaft stages, speeds, ideal torques, cycle + multi-driver rejection) | implemented `geometry/codetocad2_gear_coupling.py` | new: `geometry/cadgpt_gear_train.py` does ratio + spatial *placement*, never propagates rotation |
 | Landmark system (named bbox anchors, cardinal presets, offsets, nearest-entity search) | already in repo | `geometry/codetocad_cardinal_landmark.py` |
 | Provider-agnostic interface taxonomy | already in repo | `adapters/fcai_freecad_tool_catalog.py`, `cadhub_language_registry.py`, `ccc_codecad_ecosystem.py` |
@@ -1137,7 +1137,7 @@ Five repos, ~332 new tests. The final batch opened a domain the harness had neve
 touched (robot description: URDF kinematics, URDF/SRDF parsing and cross-
 validation), closed the last kinematics gaps (joint limit boxes, gear rotational
 propagation), added the Vitruvion sketch stack, and produced the campaign's 8th
-and sharpest representation finding -- Vitruvion is the only sketch quantiser in
+and sharpest representation finding: Vitruvion is the only sketch quantiser in
 the corpus using floor-quantise + bin-centre dequantise, making it the only one
 whose round-trip error is unbiased. Two of the five launch prompts carried a wrong
 repo-identity assumption; in both cases the agent verified by grep, said so, and

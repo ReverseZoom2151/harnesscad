@@ -9,14 +9,14 @@ Status: 45 / 186 papers reviewed.
 
 Classifications:
 
-- **implemented** — the repository already contains the operative capability;
-- **partial** — a related capability exists, but a distinct paper contribution
+- **implemented**: the repository already contains the operative capability;
+- **partial**: a related capability exists, but a distinct paper contribution
   remains;
-- **net-new** — deterministic/testable work can be built now;
-- **research-heavy** — requires substantial model training, datasets or compute;
-- **external** — requires a third-party host, sensor, service or solver.
+- **net-new**: deterministic/testable work can be built now;
+- **research-heavy**: requires substantial model training, datasets or compute;
+- **external**: requires a third-party host, sensor, service or solver.
 
-## Batch 1 — papers 1–5
+## Batch 1: papers 1–5
 
 ### 1. 3D-GPT: Procedural 3D Modeling with Large Language Models
 
@@ -138,7 +138,7 @@ large-model training, A2Z-scale dataset construction, and advanced multimodal
 geometry generation. Those require external data, models, and compute and were
 not represented by unusable stubs.
 
-## Batch 2 — papers 6–10
+## Batch 2: papers 6–10
 
 ### 6. Advancements in Computer-Aided Design Automation using Large-Scale Procedural Content Generation from the Video Game Industry
 
@@ -191,7 +191,7 @@ Core mechanism:
 | Solver-normalized sketch dataset preparation | **partial** | generated samples are solver-filtered; imported sketch corpora are not normalized into solved geometry before use |
 | DPO/GRPO/RLOO post-training of a constraint model | **research-heavy** | requires a trained constraint policy, millions of sketches and substantial compute |
 
-### 8. Alignist — CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences
+### 8. Alignist: CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences
 
 Source:
 `Alignist - CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences.md`
@@ -266,9 +266,9 @@ implemented. Remaining partial items require corpus-wide dataset conversion;
 remaining external or research-heavy items require hosted infrastructure,
 FreeCAD, proprietary datasets, trained neural models, or substantial compute.
 
-## Batch 3 — papers 11–15
+## Batch 3: papers 11–15
 
-### 11. Atlas3D — Physically Constrained Self-Supporting Text-to-3D
+### 11. Atlas3D: Physically Constrained Self-Supporting Text-to-3D
 
 Source:
 `Atlas3D - Physically Constrained Self-Supporting Text-to-3D for Simulation and Fabrication.md`
@@ -340,7 +340,7 @@ Core mechanism:
 | Kernel trim/sew for every curved analytic surface | **external** | exposed as an injected stitch adapter; full operation requires OCCT |
 | B-spline, partial-view, section-view and raster drawing recovery | **research-heavy** | outside the paper’s own supported assumptions and requires additional inference |
 
-### 14. B-repLer — Language-guided Editing of CAD Models
+### 14. B-repLer: Language-guided Editing of CAD Models
 
 Source: `B-repLer - Language-guided Editing of CAD Models.md`
 
@@ -364,7 +364,7 @@ Core mechanism:
 | HoLa-BRep latent encoder, DINO/ROIAlign fusion and flow decoder | **research-heavy** | requires the 240K dataset, learned weights and GPU training |
 | Fusion 360 face-deletion host | **external** | injected kernel protocol supports it; Fusion is not locally available |
 
-### 15. BlenderLLM — Training Large Language Models for Computer-Aided Design with Self-improvement
+### 15. BlenderLLM: Training Large Language Models for Computer-Aided Design with Self-improvement
 
 Source:
 `BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md`
@@ -401,7 +401,7 @@ All deterministic and locally testable ideas from papers 11–15 are implemented
 External kernel/application seams remain explicit, and model-training or
 physical-validation claims are not simulated with unusable placeholders.
 
-## Batch 4 — papers 16–20
+## Batch 4: papers 16–20
 
 ### 16. BRep Boundary and Junction Detection for CAD Reverse Engineering
 
@@ -420,7 +420,7 @@ severe label imbalance and error cascades.
 | DGCNN boundary/junction inference and focal-loss training | **research-heavy** | requires scan datasets, learned models and GPUs |
 | ABC/CC3D data and physical scanners | **external** | dataset and capture dependencies |
 
-### 17. BrepGen — A B-rep Generative Diffusion Model with Structured Latent Geometry
+### 17. BrepGen: A B-rep Generative Diffusion Model with Structured Latent Geometry
 
 Source: `BrepGen - A B-rep Generative Diffusion Model with Structured Latent Geometry.md`
 
@@ -438,7 +438,7 @@ decoded geometry, and evaluate validity, novelty, coverage and distribution.
 | VAE/DDPM/Transformer B-rep generation | **research-heavy** | requires large geometry corpora and GPU training |
 | OCCT B-spline fitting/sewing | **external** | retained as an injected kernel seam |
 
-### 18. Bringing Attention to CAD — Boundary Representation Learning via Transformer
+### 18. Bringing Attention to CAD: Boundary Representation Learning via Transformer
 
 Source: `Bringing Attention to CAD - Boundary Representation Learning via Transformer.md`
 
@@ -457,7 +457,7 @@ before global attention, and test masking robustness and per-face segmentation.
 | Complexity-stratified leakage-safe splits | **implemented** | `bench/brep_splits.py` |
 | Learned BRT encoder/classifier/segmenter | **research-heavy** | requires labeled continuous-geometry data and GPU training |
 
-### 19. CAD — Memory Efficient Convolutional Adapter
+### 19. CAD: Memory Efficient Convolutional Adapter
 
 Source: `CAD - Memory Efficient Convolutional Adapter.md`
 
@@ -474,7 +474,7 @@ transferred.
 | Evidence/resource-aware model promotion gate | **implemented** | `research/model_promotion.py` |
 | SAM convolutional-adapter reproduction | **research-heavy** | unrelated to core CAD and requires PyTorch/CUDA/vision data |
 
-### 20. CAD 100K — A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection
+### 20. CAD 100K: A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection
 
 Source:
 `CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md`
@@ -503,9 +503,9 @@ All deterministic and locally testable ideas from papers 16–20 are implemented
 Paper 19 is retained as an audited acronym false positive with only defensible
 cross-domain infrastructure transferred.
 
-## Batch 5 — papers 21–25
+## Batch 5: papers 21–25
 
-### 21. CAD Shape Grammar — Procedural Generation for Massive CAD Model
+### 21. CAD Shape Grammar: Procedural Generation for Massive CAD Model
 
 Source: `CAD Shape Grammar- Procedural Generation for Massive CAD Model.md`
 
@@ -521,7 +521,7 @@ compression for scenes containing millions of repeated CAD objects.
 | Grammar compression, reuse and rule-coverage metrics | **implemented** | `quality/grammar_compression.py` |
 | GPU-resident generation/rendering and plant-scale datasets | **external** | requires specialized renderer, data and benchmark hardware |
 
-### 22. CAD(Block) — Photorealistic 3D Generation via Adversarial Distillation
+### 22. CAD(Block): Photorealistic 3D Generation via Adversarial Distillation
 
 Source: `CAD(Block) - Photorealistic 3D Generation via Adversarial Distillation.md`
 
@@ -538,7 +538,7 @@ evaluate view quality, diversity and angular consistency separately.
 | Render-distribution quality/diversity/coverage summary | **implemented** | `bench/render_distribution.py` |
 | StyleGAN/triplane/GAN/diffusion distillation and neural rendering | **research-heavy** | requires models, GPUs and multi-day training |
 
-### 23. CAD-Assistant — Tool-Augmented VLLMs as Generic CAD Task Solvers
+### 23. CAD-Assistant: Tool-Augmented VLLMs as Generic CAD Task Solvers
 
 Source: `CAD-Assistant - Tool-Augmented VLLMs as Generic CAD Task Solvers.md`
 
@@ -557,7 +557,7 @@ QA evidence and task cost.
 | Learned sketch/scan recognizers and FreeCAD host | **external** | require model weights and installed FreeCAD |
 | Arbitrary planner-authored Python | **rejected** | typed CISP/MCP execution is safer and more auditable |
 
-### 24. CAD-Coder — An Open-Source Vision-Language Model for Computer-Aided Design Code Generation
+### 24. CAD-Coder: An Open-Source Vision-Language Model for Computer-Aided Design Code Generation
 
 Source:
 `CAD-Coder - An Open-Source Vision-Language Model for Computer-Aided Design Code Generation.md`
@@ -576,7 +576,7 @@ capability-retention evaluation.
 | Image-conditioning and capability-retention benchmarks | **implemented** | `bench/image_conditioning.py`, `bench/capability_retention.py` |
 | LLaVA/CAD-Coder fine-tuning and real-photo corpus | **research-heavy** | requires datasets, weights, H100-class compute and physical capture |
 
-### 25. CAD-Coder — Text-Guided CAD Files Code Generation
+### 25. CAD-Coder: Text-Guided CAD Files Code Generation
 
 Source: `CAD-Coder - Text-Guided CAD Files Code Generation.md`
 
@@ -603,9 +603,9 @@ All deterministic and locally testable findings from papers 21–25 are
 implemented. Unsafe arbitrary code execution is explicitly rejected, and
 external/model-dependent claims remain behind typed seams.
 
-## Batch 6 — papers 26–30
+## Batch 6: papers 26–30
 
-### 26. CAD-Coder — Text-to-CAD Generation with Chain-of-Thought and Geometric Reward
+### 26. CAD-Coder: Text-to-CAD Generation with Chain-of-Thought and Geometric Reward
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -617,7 +617,7 @@ external/model-dependent claims remain behind typed seams.
 | CoT/code/geometry/review provenance and leakage | **implemented** | `dataengine/cot_records.py` |
 | Qwen SFT/GRPO and DeepSeek annotation | **research-heavy** | requires datasets and A800-class training |
 
-### 27. CAD-Editor — Locate-then-Infill Framework
+### 27. CAD-Editor: Locate-then-Infill Framework
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -629,7 +629,7 @@ external/model-dependent claims remain behind typed seams.
 | Append-only iterative edit/rollback provenance | **implemented** | `editing/iterative_session.py` |
 | Locator/infiller LoRA, CLIP and crowd evaluation | **research-heavy** | requires models, datasets, GPUs and human raters |
 
-### 28. CAD-Editor — Text-Based CAD Editing Through Synthetic Data
+### 28. CAD-Editor: Text-Based CAD Editing Through Synthetic Data
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -639,7 +639,7 @@ external/model-dependent claims remain behind typed seams.
 | Monotonic iterative edit policy with rollback/oscillation stop | **implemented** | `agent/iterative_edit_policy.py` |
 | LoRA, MLLM captions, CLIP and human preference collection | **external/research-heavy** | deterministic orchestration exists; learned services do not |
 
-### 29. CAD-GPT — Spatial Reasoning-Enhanced Multimodal CAD Sequences
+### 29. CAD-GPT: Spatial Reasoning-Enhanced Multimodal CAD Sequences
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -649,7 +649,7 @@ external/model-dependent claims remain behind typed seams.
 | Deterministic spatial challenge fixtures/report | **implemented** | `bench/spatial_challenge_set.py` |
 | LLaVA encoders and learned spatial embeddings | **research-heavy** | requires multimodal data and GPU training |
 
-### 30. CAD-Judge — Efficient Morphological Grading and Verification
+### 30. CAD-Judge: Efficient Morphological Grading and Verification
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -667,9 +667,9 @@ All deterministic and locally testable findings from papers 26–30 are
 implemented. Compiler success, morphology and requirements evidence remain
 separate so validity cannot be misreported as semantic correctness.
 
-## Batch 7 — papers 31–35
+## Batch 7: papers 31–35
 
-### 31. CAD-Llama — Parametric 3D Model Generation
+### 31. CAD-Llama: Parametric 3D Model Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -679,7 +679,7 @@ separate so validity cannot be misreported as semantic correctness.
 | Cross-domain structural vocabulary/complexity shift | **implemented** | `bench/cad_domain_shift.py` |
 | LLaMA pretraining, LoRA and GPT/CLIP annotation | **research-heavy** | requires models, corpora and GPUs |
 
-### 32. CAD-LLM — Large Language Model for CAD Generation
+### 32. CAD-LLM: Large Language Model for CAD Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -687,7 +687,7 @@ separate so validity cannot be misreported as semantic correctness.
 | Entity accuracy, strict sketch accuracy and macro/micro CAD F1 | **implemented** | `bench/sketch_sequence_metrics.py` |
 | GPT/PEFT training on SketchGraphs | **research-heavy** | requires weights, dataset and training |
 
-### 33. CAD-MLLM — Unifying Multimodality-Conditioned CAD Generation
+### 33. CAD-MLLM: Unifying Multimodality-Conditioned CAD Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -698,7 +698,7 @@ separate so validity cannot be misreported as semantic correctness.
 | Modality robustness, complementarity, splits and fusion policy | **implemented** | `bench/modality_robustness.py`, `omnicad_splits.py`, `quality/modality_fusion.py` |
 | DINO/Michelangelo/Vicuna multimodal training | **research-heavy** | requires the 453K corpus and H800-class compute |
 
-### 34. CAD-Prompted Generative Models — A Pathway to Feasible and Novel Engineering Designs
+### 34. CAD-Prompted Generative Models: A Pathway to Feasible and Novel Engineering Designs
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -710,7 +710,7 @@ separate so validity cannot be misreported as semantic correctness.
 | Prompt/render/output/rater lineage and perceived-vs-actual claims | **implemented** | `dataengine/cad_prompt_record.py`, `bench/perceived_actual_gap.py` |
 | T2I models, BIKED data and human study | **external/research-heavy** | requires services, licensed data and participants |
 
-### 35. CAD-Prompted Generative Models — A Pathway To Feasible And Novel Engineering
+### 35. CAD-Prompted Generative Models: A Pathway To Feasible And Novel Engineering
 
 **Duplicate alias.** From `## Page 1` through EOF this paper is byte-identical
 to paper 34 (SHA-256
@@ -723,9 +723,9 @@ mechanism or evidence and is intentionally implemented once.
 All deterministic findings from papers 31–35 are implemented. Exact duplicate
 paper 35 is recorded as an alias rather than double-counted.
 
-## Batch 8 — papers 36–40
+## Batch 8: papers 36–40
 
-### 36. CAD-Prompted SAM3 — Geometry-Conditioned Instance Segmentation
+### 36. CAD-Prompted SAM3: Geometry-Conditioned Instance Segmentation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -735,7 +735,7 @@ paper 35 is recorded as an alias rather than double-counted.
 | Prompt-conditioned split/leakage and appearance invariance | **implemented** | `bench/geometry_prompted_segmentation.py`, `appearance_invariance.py` |
 | SAM3 fusion and Isaac/Blender synthetic training | **research-heavy/external** | requires models, simulators, assets and GPUs |
 
-### 37. CAD-Recode — Reverse Engineering CAD Code from Point Clouds
+### 37. CAD-Recode: Reverse Engineering CAD Code from Point Clouds
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -747,7 +747,7 @@ paper 35 is recorded as an alias rather than double-counted.
 | Safe semantic parameter exposure | **implemented** | `quality/parameter_exposure.py` |
 | Qwen point projector, 1M corpus and real scans | **research-heavy/external** | requires models, data, kernels and H100 training |
 
-### 38. CAD-Tokenizer — Modality-Specific Tokenization
+### 38. CAD-Tokenizer: Modality-Specific Tokenization
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -757,14 +757,14 @@ paper 35 is recorded as an alias rather than double-counted.
 | Tokenizer/backbone nested exposure split audit | **implemented** | `bench/tokenizer_split_audit.py` |
 | VQ-VAE/codebook and LLaMA training | **research-heavy** | requires datasets, learned tokenizer and GPUs |
 
-### 39. CAD-VAE — Correlation-Aware Latents for Fair Disentanglement
+### 39. CAD-VAE: Correlation-Aware Latents for Fair Disentanglement
 
 **Unrelated acronym collision.** CAD denotes a correlation-aware
 disentanglement VAE for fairness-focused image datasets, not computer-aided
 design. It contributes no geometry, sketch, B-rep or manufacturing mechanism;
 its learned architecture is intentionally excluded.
 
-### 40. CAD-VLM — Language and Vision for Parametric CAD Sketches
+### 40. CAD-VLM: Language and Vision for Parametric CAD Sketches
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -780,9 +780,9 @@ its learned architecture is intentionally excluded.
 All deterministic findings from papers 36–40 are implemented. Paper 39 is
 recorded as an unrelated acronym collision.
 
-## Batch 9 — papers 41–45
+## Batch 9: papers 41–45
 
-### 41. CADDesigner — Conceptual Design Based on a General-Purpose Agent
+### 41. CADDesigner: Conceptual Design Based on a General-Purpose Agent
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -792,7 +792,7 @@ recorded as an unrelated acronym collision.
 | Correction convergence/recovery/oscillation metrics | **implemented** | `bench/correction_trajectory.py` |
 | Hosted LLM/VLM and shell CAD execution | **external** | typed agent seams exist; services/hosts are not bundled |
 
-### 42. CADDreamer — CAD Object Generation from Single-view Images
+### 42. CADDreamer: CAD Object Generation from Single-view Images
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -803,7 +803,7 @@ recorded as an unrelated acronym collision.
 | Primitive relation, normal and hanging-face metrics | **implemented** | `bench/primitive_reconstruction_metrics.py` |
 | Cross-view diffusion, NeuS and segmentation models | **research-heavy** | require image corpora, neural models and GPUs |
 
-### 43. CADEvolve — Creating Realistic CAD via Program Evolution
+### 43. CADEvolve: Creating Realistic CAD via Program Evolution
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -814,7 +814,7 @@ recorded as an unrelated acronym collision.
 | Evolution dynamics and ordered admission validation | **implemented** | `bench/evolution_dynamics.py`, `datagen/evolution_validation.py` |
 | LLM/VLM proposal, CMA-ES and training corpora | **research-heavy/external** | deterministic orchestration exists; learned proposal systems do not |
 
-### 44. CADgpt — NLP for Enhanced CAD Workflows
+### 44. CADgpt: NLP for Enhanced CAD Workflows
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -824,7 +824,7 @@ recorded as an unrelated acronym collision.
 | Executable NL-CAD scenario casebook | **implemented** | `bench/nl_cad_casebook.py` |
 | Rhino/Grasshopper plugins and hosted GPT | **external** | require proprietary host installation and services |
 
-### 45. CADKnitter — Compositional CAD Generation from Text and Geometry Guidance
+### 45. CADKnitter: Compositional CAD Generation from Text and Geometry Guidance
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -840,7 +840,7 @@ recorded as an unrelated acronym collision.
 All deterministic and locally testable findings from papers 41–45 are
 implemented.
 
-### 46. CADmium — Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design
+### 46. CADmium: Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -848,7 +848,7 @@ implemented.
 | Corpus annotation statistics (conciseness band, unique-word ratio, Heaps vocabulary growth, decimal-precision distribution, head-to-head corpus comparison) | **implemented** | `dataengine/cadmium_annotation_stats.py` |
 | GPT-4.1 multimodal annotation, Qwen2.5-Coder LoRA SFT, LLM-as-a-judge, Onshape-FeatureScript JSON normalization | **research-heavy/external** | learned models / proprietary tooling |
 
-### 47. CADMorph — Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop
+### 47. CADMorph: Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -858,7 +858,7 @@ implemented.
 | Plan-generate-verify orchestrator (queue-seeded, deterministic) | **implemented** | `editing/cadmorph_loop.py` |
 | P2S latent-diffusion model, MPP LLM infiller, cross-attention contribution map | **research-heavy/external** | learned models; injected as callables |
 
-### 48. CADParser — A Learning Approach of Sequence Modeling for B-Rep CAD
+### 48. CADParser: A Learning Approach of Sequence Modeling for B-Rep CAD
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -868,7 +868,7 @@ implemented.
 | Dataset statistics + back-to-front truncation augmentation | **implemented** | `reconstruction/cadparser_sequence_stats.py` |
 | Learned graph-encoder/Transformer-decoder parser; 40k SolidWorks dataset | **research-heavy/external** | model training / proprietary data |
 
-### 49. CADReasoner — Iterative Program Editing for CAD Reverse Engineering
+### 49. CADReasoner: Iterative Program Editing for CAD Reverse Engineering
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -878,7 +878,7 @@ implemented.
 | Occlusion-based scan-simulation defect pipeline (spherical depth buffer, seeded noise, hole punching) | **implemented** | `datagen/cadreasoner_scansim.py` |
 | Qwen2-VL editor + SFT curriculum, multi-view RGB overlay backbone, Poisson reconstruction | **research-heavy/external** | learned VLM / external mesh kernel |
 
-### 50. CADReview — Automatically Reviewing CAD Programs with Error Detection and Correction
+### 50. CADReview: Automatically Reviewing CAD Programs with Error Detection and Correction
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -896,7 +896,7 @@ implemented.
 All deterministic and locally testable findings from papers 46-50 are
 implemented. Suite: 1791 tests, all passing.
 
-### 51. cadrille — Multi-modal CAD Reconstruction with Reinforcement Learning
+### 51. cadrille: Multi-modal CAD Reconstruction with Reinforcement Learning
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -909,7 +909,7 @@ implemented. Suite: 1791 tests, all passing.
 | Orientation-invariant discrete-ICP over 24 axis rotations | **implemented** | `bench/cadrille_orientation_align.py` |
 | Learned Qwen2-VL policy + SFT/RL training + LLM caption pipeline | **research-heavy/external** | learned VLM / GPU training |
 
-### 52. CADSmith — Multi-Agent CAD Generation with Programmatic Geometric Validation
+### 52. CADSmith: Multi-Agent CAD Generation with Programmatic Geometric Validation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -923,7 +923,7 @@ implemented. Suite: 1791 tests, all passing.
 | T1/T2/T3 benchmark difficulty tiers | **implemented** | `cadsmith_tiers.py` |
 | VLM-as-Judge (Claude Opus); RAG-over-API-docs generation | **research-heavy/external** | learned VLM / LLM |
 
-### 53. CADTalk — An Algorithm and Benchmark for Semantic Commenting of CAD Programs
+### 53. CADTalk: An Algorithm and Benchmark for Semantic Commenting of CAD Programs
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -934,7 +934,7 @@ implemented. Suite: 1791 tests, all passing.
 | Point-cloud label transfer (max-vote / multi-label / IoU) | **implemented** | `cadtalk_label_transfer.py` |
 | ControlNet image translation; Grounding-DINO + SAM; ChatGPT commenting | **research-heavy/external** | learned foundation models |
 
-### 54. CadVLM — Bridging Language and Vision in the Generation of Parametric CAD Sketches
+### 54. CadVLM: Bridging Language and Vision in the Generation of Parametric CAD Sketches
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -945,7 +945,7 @@ implemented. Suite: 1791 tests, all passing.
 | Sketch codec, constraint ontology, Entity/Sketch-Accuracy/CAD-F1, prefix pairs, crossmodal, ablation | **already in repo (prior near-duplicate paper)** | `ingest/cadvlm_codec.py`, `bench/cadvlm_metrics.py`, etc. |
 | CadVLM two-stream ViT-MAE + CodeT5+ encoder-decoder training | **research-heavy/external** | learned models / GPU |
 
-### 55. CAM — CAD Point Cloud Part Segmentation via Few-Shot Learning
+### 55. CAM: CAD Point Cloud Part Segmentation via Few-Shot Learning
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -961,7 +961,7 @@ implemented. Suite: 1791 tests, all passing.
 All deterministic and locally testable findings from papers 51-55 are
 implemented. Suite: 2106 tests, all passing.
 
-### 56. ChatCAD+ — Towards a Universal and Reliable Interactive CAD using LLMs
+### 56. ChatCAD+: Towards a Universal and Reliable Interactive CAD using LLMs
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -969,7 +969,7 @@ implemented. Suite: 2106 tests, all passing.
 | Spherical-projection KD-tree for exact O(log n) cosine top-k | **implemented** | `chatcadplus_sphere_retrieval.py` |
 | Hierarchical in-context retrieval, DFS knowledge traversal, domain-argmax routing, medical report NLG | **out-of-scope / research-heavy** | medical computer-aided diagnosis; LLM/CLIP-driven |
 
-### 57. Clarify Before You Draw — Proactive Agents for Robust Text-to-CAD Generation
+### 57. Clarify Before You Draw: Proactive Agents for Robust Text-to-CAD Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -981,7 +981,7 @@ implemented. Suite: 2106 tests, all passing.
 | Scaling-operation failure detector/rewriter | **implemented** | `clarify_scaling.py` |
 | ProCAD SFT, VLM description + LLM-judge + user simulator | **research-heavy/external** | learned models |
 
-### 58. CME-CAD — Heterogeneous Collaborative Multi-Expert Reinforcement Learning for CAD Code Generation
+### 58. CME-CAD: Heterogeneous Collaborative Multi-Expert Reinforcement Learning for CAD Code Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -991,7 +991,7 @@ implemented. Suite: 2106 tests, all passing.
 | Hard-negative sample buffering (partitioned rotating split + probabilistic admission) | **implemented** | `dataengine/cmecad_hardneg_buffer.py` |
 | MEFT multi-expert CoT training, CADExpert dataset construction | **research-heavy/external** | learned VLM experts / annotation |
 
-### 59. CMT — A Cascade MAR with Topology Predictor for Multimodal Conditional CAD Generation
+### 59. CMT: A Cascade MAR with Topology Predictor for Multimodal Conditional CAD Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1014,8 +1014,8 @@ implemented. Suite: 2106 tests, all passing.
 ## Batch-12 implementation result
 
 All deterministic and in-scope findings from papers 56-60 are implemented
-(ChatCAD+ is medical CAD -- only two domain-agnostic primitives kept;
-Fabrication Workflows is an HCI study -- only its workflow artifacts
+(ChatCAD+ is medical CAD: only two domain-agnostic primitives kept;
+Fabrication Workflows is an HCI study: only its workflow artifacts
 kept). Suite: 2391 tests, all passing.
 
 ### 61. Consistent Flow Distillation for Text-to-3D Generation
@@ -1038,7 +1038,7 @@ kept). Suite: 2391 tests, all passing.
 | Manufacturing-spec builder with provenance + precision/recall/F1 link evaluation | **implemented** | `annomap_spec.py` |
 | VLM semantic enrichment + constrained-LLM escalation | **research-heavy/external** | learned VLM/LLM |
 
-### 63. ContrastCAD — Contrastive Learning-Based Representation Learning for Computer-Aided Design Models
+### 63. ContrastCAD: Contrastive Learning-Based Representation Learning for Computer-Aided Design Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1049,14 +1049,14 @@ kept). Suite: 2391 tests, all passing.
 | Position-aligned tolerant reconstruction accuracy | **implemented** | `bench/contrastcad_recon_accuracy.py` |
 | Learned Transformer autoencoder + latent-GAN generation | **research-heavy/external** | trained models |
 
-### 64. CraftsMan — High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner
+### 64. CraftsMan: High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
 | Relative Laplacian smoothing (resists thin-feature collapse) + umbrella Laplacian/Taubin/displacement operators | **implemented** | `geometry/craftsman_relative_laplacian.py` |
 | Native-3D latent-set diffusion + learned normal-based geometry refiner + MV conditioning | **research-heavy/external** | trained diffusion/ControlNet |
 
-### 65. CReFT-CAD — Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning
+### 65. CReFT-CAD: Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1070,11 +1070,11 @@ kept). Suite: 2391 tests, all passing.
 ## Batch-13 implementation result
 
 All deterministic and in-scope findings from papers 61-65 are implemented
-(text-to-3D and mesh-generation papers are mostly learned -- only their
+(text-to-3D and mesh-generation papers are mostly learned: only their
 deterministic numeric/geometry primitives kept). Suite: 2680 tests, all
 passing.
 
-### 66. DAVINCI — A Single-Stage Architecture for Constrained CAD Sketch Inference
+### 66. DAVINCI: A Single-Stage Architecture for Constrained CAD Sketch Inference
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1084,7 +1084,7 @@ passing.
 | Set-based eval suite (Hungarian matcher, token accuracy, primitive/constraint F1, Chamfer) | **implemented** | `bench/davinci_inference_metrics.py` |
 | Learned transformer + FreeCAD-solver CPT generation | **research-heavy/external** | trained model / proprietary solver |
 
-### 67. DeepCAD — A Deep Generative Network for Computer-Aided Design Models
+### 67. DeepCAD: A Deep Generative Network for Computer-Aided Design Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1106,7 +1106,7 @@ passing.
 | Complexity-based corpus stratification | **implemented** | `dataengine/spectiling_complexity.py` |
 | LLM CAD-code inference + learned-embedding baselines | **research-heavy/external** | frozen LLM / neural embeddings |
 
-### 69. Diffusion-CAD — Controllable Diffusion Model for Generating CAD Models
+### 69. Diffusion-CAD: Controllable Diffusion Model for Generating CAD Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1115,7 +1115,7 @@ passing.
 | Unique/novel/sequence-validity generation metrics | **implemented** | `bench/diffusioncad_generation_metrics.py` |
 | BERT denoiser + GPT-2 classifier guidance + point-cloud metrics + training | **research-heavy/external** | trained models |
 
-### 70. Don't Mesh with Me — Generating CSG Instead of Meshes by Fine-Tuning a Code-Generation LLM
+### 70. Don't Mesh with Me: Generating CSG Instead of Meshes by Fine-Tuning a Code-Generation LLM
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1131,7 +1131,7 @@ All deterministic and in-scope findings from papers 66-70 are implemented
 diffusion/generation papers kept only their deterministic scaffolding).
 Suite: 2929 tests, all passing. All modules placed in packages, not root.
 
-### 71. Draw It Like Euclid — Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps
+### 71. Draw It Like Euclid: Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1141,7 +1141,7 @@ Suite: 2929 tests, all passing. All modules placed in packages, not root.
 | Constructibility/validity checker + profile-validity + construction-accuracy metrics | **implemented** | `geometry/euclid_validity.py` |
 | Learned autoregressive transformer + RL fine-tuning + OCCT/ABC dataset extraction | **research-heavy/external** | trained model / kernel / dataset |
 
-### 72. DreamCAD — Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces
+### 72. DreamCAD: Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1152,7 +1152,7 @@ Suite: 2929 tests, all passing. All modules placed in packages, not root.
 | Multi-modal condition-encoding schema | **implemented** | `reconstruction/dreamcad_condition_schema.py` |
 | Learned VAE/SLAT + flow-matching generation + DINOv2/PointNet++ encoders | **research-heavy/external** | trained models |
 
-### 73. E3D-Bench — A Benchmark for End-to-End 3D Geometric Foundation Models
+### 73. E3D-Bench: A Benchmark for End-to-End 3D Geometric Foundation Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1163,7 +1163,7 @@ Suite: 2929 tests, all passing. All modules placed in packages, not root.
 | Per-scene-normalized cross-scene leaderboard harness | **implemented** | `bench/e3dbench_harness.py` |
 | The 16 GFM models + latency/GPU benchmarking | **out-of-scope / external** | trained foundation models / hardware |
 
-### 74. EnzymeCAGE — A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights
+### 74. EnzymeCAGE: A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1183,7 +1183,7 @@ Suite: 2929 tests, all passing. All modules placed in packages, not root.
 ## Batch-15 implementation result
 
 All deterministic and in-scope findings from papers 71-75 are implemented
-(EnzymeCAGE is biochemistry -- only its ranked-retrieval metrics kept;
+(EnzymeCAGE is biochemistry: only its ranked-retrieval metrics kept;
 the text-to-3D/mesh/foundation-model papers kept only their deterministic
 geometry/metric primitives). Suite: 3124 tests, all passing.
 
@@ -1200,7 +1200,7 @@ geometry/metric primitives). Suite: 3124 tests, all passing.
 | CAD-model distance protocol (Chamfer + voxel-Jaccard, thin-object rule) | **implemented** | `reconstruction/cadcluster_model_distances.py` |
 | Learned deep-clustering encoders + human annotation | **research-heavy/external** | trained models / data labor |
 
-### 77. EvoCAD — Evolutionary CAD Code Generation with Vision Language Models
+### 77. EvoCAD: Evolutionary CAD Code Generation with Vision Language Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1244,7 +1244,7 @@ Also this session: four agent-protocol integrations (MCP server, A2A
 server + a2a/ spec conformance, Zed ACP agent). All modules in packages,
 not root.
 
-### 81. FlatCAD — Fast Curvature Regularization of Neural SDFs for CAD Models
+### 81. FlatCAD: Fast Curvature Regularization of Neural SDFs for CAD Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1253,7 +1253,7 @@ not root.
 | Finite-difference SDF gradient/Hessian + FlatCAD symmetric mixed stencil (O(h^2)) | **implemented** | `numeric/flatcad_sdf_derivatives.py` |
 | SIREN network + training pipeline; autodiff HVP route | **research-heavy/external** | learned neural SDF |
 
-### 82. FlexCAD — Unified and Versatile Controllable CAD Generation with Fine-Tuned Large Language Models
+### 82. FlexCAD: Unified and Versatile Controllable CAD Generation with Fine-Tuned Large Language Models
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1270,7 +1270,7 @@ not root.
 | Serialization / masking / infill / controllability metrics | **covered by paper 82** | `flexcad_*` modules |
 | Circle-representation variants (center-radius / diameter / four-points) with round-trip codecs; PV-constrained sampling-config selector + Pareto frontier | **implemented** | `generation/flexcad2_appendix.py` |
 
-### 84. From 2D CAD Drawings to 3D Parametric Models — A Vision-Language Approach
+### 84. From 2D CAD Drawings to 3D Parametric Models: A Vision-Language Approach
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1281,7 +1281,7 @@ not root.
 | Three-view fixed-canvas layout | **implemented** | `drawings/cad2program_canvas_layout.py` |
 | ViT/InternVL vision-language model + CLIP model-id token | **research-heavy/external** | trained VLM/CLIP |
 
-### 85. From Concept to Manufacturing — Evaluating Vision-Language Models for Engineering Design
+### 85. From Concept to Manufacturing: Evaluating Vision-Language Models for Engineering Design
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1298,11 +1298,11 @@ not root.
 ## Batch-17 implementation result
 
 All deterministic and in-scope findings from papers 81-85 are implemented
-(paper 83 is a near-duplicate of 82 -- only its appendix-only circle-repr
+(paper 83 is a near-duplicate of 82: only its appendix-only circle-repr
 and PV-sampling ideas were new). Per the no-README-during-campaign policy,
 the suite count is tracked in audit/text_to_cad_progress.json.
 
-### 86. From Idea to CAD — A Language Model-Driven Multi-Agent System for Collaborative Design
+### 86. From Idea to CAD: A Language Model-Driven Multi-Agent System for Collaborative Design
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1312,7 +1312,7 @@ the suite count is tracked in audit/text_to_cad_progress.json.
 | Four nested empty-feedback loops (validation/verification/design/codegen) | **implemented** | `agents/idea2cad_workflow.py` |
 | VLM codegen + doc scraping + rendering | **research-heavy/external** | learned VLM / web / kernel |
 
-### 87. From Intent to Execution — Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation
+### 87. From Intent to Execution: Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1327,9 +1327,9 @@ the suite count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| AI-in-CAD vision, MBR desiderata, VR/AR/MR narrative, 3D-printing survey | **out-of-scope** | survey/vision essay -- no deterministic buildable artifact (nothing built) |
+| AI-in-CAD vision, MBR desiderata, VR/AR/MR narrative, 3D-printing survey | **out-of-scope** | survey/vision essay; no deterministic buildable artifact (nothing built) |
 
-### 89. GaussianCAD — Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting
+### 89. GaussianCAD: Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1339,7 +1339,7 @@ the suite count is tracked in audit/text_to_cad_progress.json.
 | Exact-Hungarian Earth Mover's Distance metric | **implemented** | `reconstruction/gaussiancad_emd.py` |
 | Sketch image-processing pipeline; 3DGS optimization + diffusion | **research-heavy/external** | image ops / learned optimization |
 
-### 90. GenCAD — Image-Conditioned CAD Generation with Transformer-Based Contrastive Representation and Diffusion Priors
+### 90. GenCAD: Image-Conditioned CAD Generation with Transformer-Based Contrastive Representation and Diffusion Priors
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1351,12 +1351,12 @@ the suite count is tracked in audit/text_to_cad_progress.json.
 ## Batch-18 implementation result
 
 All deterministic and in-scope findings from papers 86-90 are implemented
-(paper 88 is a survey/vision essay -- correctly no buildable content;
+(paper 88 is a survey/vision essay: correctly no buildable content;
 GenCAD built modestly since most machinery already existed). Per the
 no-README-during-campaign policy, the suite count is tracked in
 audit/text_to_cad_progress.json.
 
-### 91. GenCAD-3D — CAD Program Generation using Multimodal Latent Space Alignment and Synthetic Dataset Balancing
+### 91. GenCAD-3D: CAD Program Generation using Multimodal Latent Space Alignment and Synthetic Dataset Balancing
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1365,7 +1365,7 @@ audit/text_to_cad_progress.json.
 | Deterministic linear cross-modal latent-alignment surrogate + alignment-quality diagnostics | **implemented** | `bench/gencad3d_latent_alignment.py` |
 | Learned encoders + latent diffusion training | **research-heavy/external** | trained models |
 
-### 92. GenCAD-Self-Repairing — Feasibility Enhancement for 3D CAD Generation
+### 92. GenCAD-Self-Repairing: Feasibility Enhancement for 3D CAD Generation
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
@@ -1410,7 +1410,7 @@ audit/text_to_cad_progress.json.
 ## Batch-19 implementation result
 
 All deterministic and in-scope findings from papers 91-95 are implemented
-(95 LEGOGPT reuses paper 94's brick mechanics -- only its LEGO-specific
+(95 LEGOGPT reuses paper 94's brick mechanics: only its LEGO-specific
 library/legolization/coloring were new). Recovered from a mid-batch
 session-limit interruption by removing untested partials and re-running all
 5 papers fresh. Per the no-README-during-campaign policy, the suite count
@@ -1438,11 +1438,11 @@ is tracked in audit/text_to_cad_progress.json.
 | Convergence-outcome run-metrics protocol | **implemented** | `bench/llm3dmodel_run_metrics.py` |
 | LLM script generation + FreeCAD host | **research-heavy/external** | learned LLM / host |
 
-### 98. Generative AI meets 3D — A Survey on Text-to-3D in AIGC Era
+### 98. Generative AI meets 3D: A Survey on Text-to-3D in AIGC Era
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Method-taxonomy tables, 3D-representation comparison, cited NeRF/DDPM/SDS equations, future-agenda prose | **out-of-scope** | pure literature survey -- no self-contained algorithm (nothing built) |
+| Method-taxonomy tables, 3D-representation comparison, cited NeRF/DDPM/SDS equations, future-agenda prose | **out-of-scope** | pure literature survey; no self-contained algorithm (nothing built) |
 
 ### 99. GeoCAD - Local Geometry-Controllable CAD Generation with Large Language Models
 
@@ -1469,7 +1469,7 @@ is tracked in audit/text_to_cad_progress.json.
 ## Batch-20 implementation result
 
 All deterministic and in-scope findings from papers 96-100 are implemented
-(98 is a text-to-3D survey -- correctly no buildable content). This closes
+(98 is a text-to-3D survey: correctly no buildable content). This closes
 the first 100 papers of the 186-paper corpus. Per the no-README-during-
 campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
@@ -1477,7 +1477,7 @@ campaign policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| CAD terminology/format glossary, GDL method taxonomy, cited B-rep GNN encoders (UV-Net, Hierarchical CADNet, SB-GCN), generative pipelines | **out-of-scope / research-heavy** | pure literature survey -- cited external neural methods, no self-contained algorithm (nothing built) |
+| CAD terminology/format glossary, GDL method taxonomy, cited B-rep GNN encoders (UV-Net, Hierarchical CADNet, SB-GCN), generative pipelines | **out-of-scope / research-heavy** | pure literature survey; cited external neural methods, no self-contained algorithm (nothing built) |
 
 ### 102. Geometry of Spatial World Models
 
@@ -1609,7 +1609,7 @@ tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Intensional-vs-extensional ICAD role; 7-module ICAD 2.0 framework; design-phase taxonomy; five research challenges | **out-of-scope / research-heavy** | vision/position essay -- aspirational framework, no specified algorithm (nothing built) |
+| Intensional-vs-extensional ICAD role; 7-module ICAD 2.0 framework; design-phase taxonomy; five research challenges | **out-of-scope / research-heavy** | vision/position essay; aspirational framework, no specified algorithm (nothing built) |
 
 ### 114. Interactive Procedural Computer-Aided Design
 
@@ -1637,7 +1637,7 @@ tracked in audit/text_to_cad_progress.json.
 ## Batch-23 implementation result
 
 All deterministic and in-scope findings from papers 111-115 are implemented
-(113 Intelligent CAD 2.0 is a vision/position paper -- correctly no-build).
+(113 Intelligent CAD 2.0 is a vision/position paper: correctly no-build).
 Recovered from a mid-batch session-limit interruption: partials for 112/114/
 115 removed and those papers re-run fresh. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
@@ -1668,7 +1668,7 @@ policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Six-area LLM-in-CAD taxonomy; LLM/dataset/industry tables | **out-of-scope** | pure literature survey -- no self-contained algorithm (nothing built) |
+| Six-area LLM-in-CAD taxonomy; LLM/dataset/industry tables | **out-of-scope** | pure literature survey; no self-contained algorithm (nothing built) |
 
 ### 119. Learning From Design Procedure To Generate CAD Programs for Data Augmentation
 
@@ -1694,7 +1694,7 @@ policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
 All deterministic and in-scope findings from papers 116-120 are implemented
 (118 LLMs-for-CAD survey is correctly no-build; 120's "CAD" is cylindrical
-algebraic decomposition -- only its transferable domain-agnostic ML dataset
+algebraic decomposition: only its transferable domain-agnostic ML dataset
 methodology was built). Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
 
@@ -1746,7 +1746,7 @@ count is tracked in audit/text_to_cad_progress.json.
 ## Batch-25 implementation result
 
 All deterministic and in-scope findings from papers 121-125 are implemented
-(122 is a materially identical duplicate of 121 -- only its two extra
+(122 is a materially identical duplicate of 121: only its two extra
 diagnostics were new). Per the no-README-during-campaign policy, the suite
 count is tracked in audit/text_to_cad_progress.json.
 
@@ -1841,7 +1841,7 @@ policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| Representation taxonomy, surrogate-modeling narrative, LHS/DoE + surrogate-assisted optimization | **out-of-scope** | pure literature review -- methodologies cited not specified, and already in the repo (nothing built) |
+| Representation taxonomy, surrogate-modeling narrative, LHS/DoE + surrogate-assisted optimization | **out-of-scope** | pure literature review; methodologies cited not specified, and already in the repo (nothing built) |
 
 ### 135. NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature
 
@@ -1917,7 +1917,7 @@ count is tracked in audit/text_to_cad_progress.json.
 
 All deterministic and in-scope findings from papers 136-140 are implemented.
 Notable new capabilities: full NURBS evaluation machinery (Cox-de Boor basis,
-rational curve/surface, knot insertion -- NURBGen) and an octree structure
+rational curve/surface, knot insertion, from NURBGen) and an octree structure
 (OctFusion), neither of which existed. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
@@ -2035,7 +2035,7 @@ audit/text_to_cad_progress.json.
 ## Batch-30 implementation result
 
 All deterministic and in-scope findings from papers 146-150 are implemented.
-Papers 149 and 150 each returned empty (0 tool uses) on first launch -- flaky
+Papers 149 and 150 each returned empty (0 tool uses) on first launch: flaky
 starts, not a limit; both re-ran cleanly. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
@@ -2082,12 +2082,12 @@ policy, the suite count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| SIMA embodied game-agent (pixels->keyboard/mouse), instruction eval, skill taxonomy | **out-of-scope** | DeepMind embodied game agents -- no deterministic mechanical-CAD content (nothing built) |
+| SIMA embodied game-agent (pixels->keyboard/mouse), instruction eval, skill taxonomy | **out-of-scope** | DeepMind embodied game agents; no deterministic mechanical-CAD content (nothing built) |
 
 ## Batch-31 implementation result
 
 All deterministic and in-scope findings from papers 151-155 are implemented
-(155 SIMA is out-of-scope -- embodied game agents). Notable new capabilities:
+(155 SIMA is out-of-scope: embodied game agents). Notable new capabilities:
 revolve geometry via Pappus (RLCAD) and block-decomposition geometry (paper
 152), neither of which existed. Per the no-README-during-campaign policy, the
 suite count is tracked in audit/text_to_cad_progress.json.
@@ -2329,7 +2329,7 @@ count is tracked in audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| LLM concept-vector geometry (LDA over unembeddings, causal inner product, simplices/polytopes, orthogonality) | **out-of-scope** | LLM-interpretability paper -- every transferable is LLM-specific machinery or a trivial existing primitive (nothing built) |
+| LLM concept-vector geometry (LDA over unembeddings, causal inner product, simplices/polytopes, orthogonality) | **out-of-scope** | LLM-interpretability paper; every transferable is LLM-specific machinery or a trivial existing primitive (nothing built) |
 
 ### 177. TOOLCAD - Exploring Tool-Using Large Language Models in Text-to-CAD Generation with Reinforcement Learning
 
@@ -2391,7 +2391,7 @@ audit/text_to_cad_progress.json.
 
 | Build idea | Status | Repository comparison |
 |---|---|---|
-| E(3)-equivariant interatomic potential (Nequix) + Muon/RMSNorm training recipe + DFT atomistic properties | **out-of-scope** | materials-science ML -- no mechanical-CAD-transferable deterministic artifact (nothing built) |
+| E(3)-equivariant interatomic potential (Nequix) + Muon/RMSNorm training recipe + DFT atomistic properties | **out-of-scope** | materials-science ML; no mechanical-CAD-transferable deterministic artifact (nothing built) |
 
 ### 183. Turbo3D - Ultra-fast Text-to-3D Generation
 
@@ -2432,7 +2432,7 @@ audit/text_to_cad_progress.json.
 | Geometric scene-validity/collision check | **implemented** | `geometry/worldcraft_scene_collision.py` |
 | LLM agents + rendering | **research-heavy/external** | trained models |
 
-## Batch-37/38 implementation result -- CAMPAIGN COMPLETE
+## Batch-37/38 implementation result: CAMPAIGN COMPLETE
 
 All deterministic and in-scope findings from the final papers 181-186 are
 implemented (182 Materials-Foundation-Model is a correct out-of-scope
@@ -2442,4 +2442,4 @@ buildable idea implemented as a tested stdlib-only module in a topical
 package, with learned/proprietary/out-of-domain work honestly logged as
 research-heavy/external or out-of-scope. Per the no-README-during-campaign
 policy, the suite count is tracked in audit/text_to_cad_progress.json
-(README rewrite deferred to campaign end -- now due).
+(README rewrite deferred to campaign end; now due).

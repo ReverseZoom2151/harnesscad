@@ -102,8 +102,8 @@ not repeated product-pitch language:
 | lines 65000–65789 | Ingest, normalize, annotate, QC, human review and consumption APIs | implemented | `ingest/`, `dataengine/`, `surfaces/mcp/` |
 | lines ~63658 and 65000+ | Capture real modeling sessions/video as aligned intent→operation training data | net-new | Trajectory logging exists, but no video/session capture aligner |
 
-Repeated strategic material—Revit positioning, construction-market pitches,
-Ukraine/off-planet plans and duplicate grant drafts—does not add a distinct CAD
+Repeated strategic material (Revit positioning, construction-market pitches,
+Ukraine/off-planet plans and duplicate grant drafts) does not add a distinct CAD
 mechanism.
 
 ### AI CAD Research Paper Part 2
@@ -187,7 +187,7 @@ These findings must be prioritized before claiming the directory is exhausted.
 
 ## Prioritized net-new backlog
 
-### P0 — close core harness gaps
+### P0: close core harness gaps
 
 | Item | Acceptance boundary | Source |
 |---|---|---|
@@ -197,7 +197,7 @@ These findings must be prioritized before claiming the directory is exhausted.
 | Simulation job orchestration | Async job record, content-addressed cache, timeout/cancel/retry and solver provenance around the existing `FEASolver` seam | Part 2 lines 18440–18618 |
 | Cross-source reconciliation | Compare imported solid, drawing annotations and reference metadata through persistent correspondence IDs and emit a discrepancy report | Part 2 lines 441–545, 11599–11698 |
 
-### P1 — product and interaction layer
+### P1: product and interaction layer
 
 | Item | Acceptance boundary | Source |
 |---|---|---|
@@ -207,7 +207,7 @@ These findings must be prioritized before claiming the directory is exhausted.
 | Keyboard-first command surface | Command grammar, discoverable mode/state, undo and accessibility tests over CISP | Scale AI lines 336–369 |
 | Sketch/screenshot conditioning seam | Typed image/sketch attachment with provenance and a model-provider interface; no fake vision implementation | Kinth lines 10–18 |
 
-### P2 — data and evaluation
+### P2: data and evaluation
 
 | Item | Acceptance boundary | Source |
 |---|---|---|
