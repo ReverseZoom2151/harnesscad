@@ -45,7 +45,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from harnesscad import registry as capability_registry
 from harnesscad.core.cisp.ops import (
-    AddCircle, AddRectangle, Extrude, NewSketch, Op,
+    AddCircle, AddLine, AddRectangle, Extrude, NewSketch, Op,
 )
 
 __all__ = [
@@ -107,13 +107,46 @@ def _boxes(cells: Sequence[Tuple[float, float, float, float, float, float]],
 
 def _discs(points: Sequence[Tuple[float, float]], radius: float, depth: float,
            start_sketch: int = 1) -> List[Op]:
-    """A ring/lattice of points -> one sketch of circles, extruded once."""
+    """A ring/lattice of points -> one sketch of circles, extruded once.
+
+    A circle is the honest emission for a placement that carries NO orientation
+    (``procedural.patterns`` yields bare offsets): a disc is rotation-invariant,
+    so nothing is being silently invented.
+    """
     if not points:
         return []
     ops: List[Op] = [NewSketch(plane="XY")]
     sid = "sk%d" % start_sketch
     for (x, y) in points:
         ops.append(AddCircle(sketch=sid, cx=float(x), cy=float(y), r=float(radius)))
+    ops.append(Extrude(sketch=sid, distance=float(depth)))
+    return ops
+
+
+def _oriented_squares(placements: Sequence[Any], size: float, depth: float,
+                      start_sketch: int = 1) -> List[Op]:
+    """Placements that carry a ROTATION -> square profiles actually turned by it.
+
+    This is where ``array_patterns`` earns its separate name. CISP has no rotated
+    rectangle, so the square is emitted as four AddLine segments at the
+    placement's angle -- the rotation ends up in the geometry instead of being
+    quietly dropped (which is exactly what happens if you emit a disc).
+    """
+    if not placements:
+        return []
+    ops: List[Op] = [NewSketch(plane="XY")]
+    sid = "sk%d" % start_sketch
+    half = float(size) / 2.0
+    corners = ((-half, -half), (half, -half), (half, half), (-half, half))
+    for p in placements:
+        ang = math.radians(float(p.rotation))
+        cos_a, sin_a = math.cos(ang), math.sin(ang)
+        pts = [(float(p.x) + cx * cos_a - cy * sin_a,
+                float(p.y) + cx * sin_a + cy * cos_a) for (cx, cy) in corners]
+        for i in range(4):
+            x1, y1 = pts[i]
+            x2, y2 = pts[(i + 1) % 4]
+            ops.append(AddLine(sketch=sid, x1=x1, y1=y1, x2=x2, y2=y2))
     ops.append(Extrude(sketch=sid, distance=float(depth)))
     return ops
 
@@ -181,15 +214,20 @@ def _gen_array_rectangular(rows: int = 2, cols: int = 3, row_step: float = 25.0,
     return _boxes([(p.x, p.y, w, h, 0.0, depth) for p in places], start_sketch)
 
 
-def _gen_array_polar(count: int = 6, radius: float = 30.0, hole_radius: float = 3.0,
+def _gen_array_polar(count: int = 6, radius: float = 30.0, size: float = 6.0,
                      depth: float = 5.0, rotate_items: bool = True,
                      start_sketch: int = 1, **_kw) -> List[Op]:
-    """The AutoCAD polar array -- unlike ``patterns.radial`` it also ROTATES items."""
+    """The AutoCAD polar array -- unlike ``patterns.radial`` it also ROTATES items.
+
+    The rotation is emitted (see :func:`_oriented_squares`), so
+    ``rotate_items=True`` and ``rotate_items=False`` produce DIFFERENT geometry.
+    That difference is the whole reason this is a separate family.
+    """
     from harnesscad.domain.procedural.array_patterns import polar_array
 
     places = polar_array((0.0, 0.0), float(radius), int(count),
                          rotate_items=bool(rotate_items))
-    return _discs([(p.x, p.y) for p in places], hole_radius, depth, start_sketch)
+    return _oriented_squares(places, size, depth, start_sketch)
 
 
 def _gen_array_fit_linear(total_length: float = 100.0, pitch: float = 25.0,
@@ -347,7 +385,7 @@ _GENERATORS: Dict[str, _Gen] = {
         "AutoCAD rectangular array (row/col step vectors)"),
     "array.polar": _Gen(
         _gen_array_polar, _PKG + "array_patterns", "pattern",
-        "AutoCAD polar array -- items ARE rotated to face the centre"),
+        "AutoCAD polar array -- items ARE rotated, and the rotation is emitted"),
     "array.fit_linear": _Gen(
         _gen_array_fit_linear, _PKG + "array_patterns", "pattern",
         "fit as many instances as a run of given length allows"),
