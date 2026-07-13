@@ -1,0 +1,448 @@
+"""The MANUFACTURING surface -- can this actually be made, and how?
+
+``domain/fabrication`` carried a workflow taxonomy, per-process feasibility
+checks, a prototype-readiness gate, flat-pack panel decomposition + nesting,
+brick legolization and colouring, a machining-feature taxonomy, and an OpenSCAD
+export planner. None of it was reachable. This module is the dispatcher: the
+route a model takes AFTER it verifies, on the way to a machine.
+
+    workflows(part)                 -> which processes can make this at all
+    analyze("fdm_3d_printing", ...) -> the findings for one process
+    readiness(descriptor)           -> the go / no-go prototype gate
+    panels(...) / nest(...)         -> a cabinet -> panels -> a sheet layout
+    bricks(voxels)                  -> a voxel model -> a legal brick layout
+    export_plan(source, "stl")      -> the OpenSCAD invocation, planned not run
+
+NOTHING HERE SHELLS OUT. :func:`export_plan` returns the ExportPlan (argv,
+artifact name, cache key) and :func:`classify_export` reads a result you got
+from somewhere else -- planning an ``openscad`` invocation is deterministic;
+running one is not this module's business and is not stdlib.
+
+Adapters only: the fabrication modules are never modified. Deterministic,
+stdlib-only, no network.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+
+from harnesscad import registry as capability_registry
+
+__all__ = [
+    "FabricationError",
+    "part_spec",
+    "workflows",
+    "machines",
+    "analyze",
+    "compare",
+    "rank_workflows",
+    "checklist",
+    "readiness",
+    "panels",
+    "nest",
+    "bricks",
+    "brick_colors",
+    "difficulty",
+    "feature_attributes",
+    "export_plan",
+    "classify_export",
+    "discover",
+    "routed_modules",
+    "unadapted",
+    "add_arguments",
+    "run_cli",
+    "main",
+]
+
+_FAB = "harnesscad.domain.fabrication."
+
+
+class FabricationError(ValueError):
+    """Base class for every manufacturing-surface failure."""
+
+
+# --------------------------------------------------------------------------- #
+# Workflow selection + feasibility
+# --------------------------------------------------------------------------- #
+def part_spec(bbox: Sequence[float], volume_mm3: float = 0.0, **kw):
+    """The manufacturing view of a part: its envelope, volume and process hints."""
+    from harnesscad.domain.fabrication.workflow_feasibility import PartSpec
+
+    return PartSpec(bbox=tuple(float(v) for v in bbox),
+                    volume_mm3=float(volume_mm3), **kw)
+
+
+def workflows(category: Optional[str] = None,
+              machine_ids: Optional[Sequence[str]] = None) -> List[dict]:
+    """The manufacturing workflows on offer, optionally filtered."""
+    from harnesscad.domain.fabrication.workflow_taxonomy import (
+        WORKFLOWS, available_workflows, workflows_in_category,
+    )
+
+    if machine_ids:
+        found = available_workflows(list(machine_ids))
+    elif category:
+        found = workflows_in_category(category)
+    else:
+        found = [WORKFLOWS[k] for k in sorted(WORKFLOWS)]
+    return [{"id": w.id, "name": w.name, "category": w.category,
+             "machines": list(w.machines), "materials": list(w.materials),
+             "cost": w.cost, "time": w.time, "precision": w.precision,
+             "skill": w.skill} for w in found]
+
+
+def machines() -> List[str]:
+    from harnesscad.domain.fabrication.workflow_taxonomy import MACHINES
+
+    return sorted(MACHINES)
+
+
+def analyze(workflow_id: str, part, machine_id: Optional[str] = None,
+            material: Optional[str] = None, infill: float = 0.2) -> List[dict]:
+    """Every feasibility finding for ONE process: fit, stock, kerf, draft, load.
+
+    A finding is ``{severity, code, message}``; ``severity == 'error'`` means the
+    process cannot make this part as specified. Nothing is averaged across
+    processes -- a part that FDM can make and a laser cannot is not "half
+    manufacturable".
+    """
+    from harnesscad.domain.fabrication.workflow_feasibility import analyze_workflow
+
+    findings = analyze_workflow(workflow_id, part, machine_id=machine_id,
+                                material=material, infill=float(infill))
+    return [{"check": f.check, "severity": f.severity, "message": f.message,
+             "data": dict(f.data or {}), "ok": bool(f.ok)} for f in findings]
+
+
+def compare(workflow_ids: Sequence[str],
+            criteria: Optional[Sequence[str]] = None) -> Dict[str, Dict[str, object]]:
+    """Side-by-side criterion table for several workflows. NOT a single score."""
+    from harnesscad.domain.fabrication.workflow_compare import compare_workflows
+
+    return compare_workflows(list(workflow_ids), criteria=list(criteria) if criteria else None)
+
+
+def rank_workflows(requirements: Dict[str, object],
+                   candidate_ids: Optional[Sequence[str]] = None,
+                   machine_ids: Optional[Sequence[str]] = None,
+                   top_k: int = 3) -> List[dict]:
+    """Match stated requirements against the workflow taxonomy. Ranked, with reasons."""
+    from harnesscad.domain.fabrication.workflow_compare import rank_by_intent
+
+    matches = rank_by_intent(dict(requirements),
+                             candidate_ids=list(candidate_ids) if candidate_ids else None,
+                             machine_ids=list(machine_ids) if machine_ids else None,
+                             top_k=int(top_k))
+    return [{"workflow_id": m.workflow_id, "score": m.score,
+             "matched": list(m.matched), "missed": list(m.missed),
+             "reasons": list(m.reasons)} for m in matches]
+
+
+def checklist(workflow_id: str) -> dict:
+    """The reflection checklist a process demands before you commit to it."""
+    from harnesscad.domain.fabrication.workflow_compare import reflection_checklist
+
+    c = reflection_checklist(workflow_id)
+    return {"workflow_id": c.workflow_id, "general": list(c.general),
+            "specific": list(c.specific)}
+
+
+# --------------------------------------------------------------------------- #
+# The prototype-readiness gate
+# --------------------------------------------------------------------------- #
+def readiness(descriptor: Mapping[str, Any], allow_warnings: bool = True) -> dict:
+    """Go / no-go: is this model actually ready to send to a printer?
+
+    ``descriptor`` carries what the checks read: ``hole_count`` (watertightness),
+    ``component_count`` (fragmentation), ``volume_mm3``, the surface-smoothness
+    signal, and the source prompt/image provenance flags. A key the descriptor
+    does not carry is not checked -- never guessed.
+    """
+    from harnesscad.domain.fabrication.prototype_readiness import readiness_report
+
+    return readiness_report(dict(descriptor), allow_warnings=bool(allow_warnings))
+
+
+# --------------------------------------------------------------------------- #
+# Flat-pack: a cabinet -> panels -> a sheet layout
+# --------------------------------------------------------------------------- #
+def panels(exterior_height: float, exterior_width: float, exterior_depth: float,
+           thickness: float, num_shelves: int = 1,
+           back_full_cover: bool = False) -> List[dict]:
+    from harnesscad.domain.fabrication.flatpack_panels import (
+        decompose_cabinet, total_material_area,
+    )
+
+    ps = decompose_cabinet(float(exterior_height), float(exterior_width),
+                           float(exterior_depth), float(thickness),
+                           num_shelves=int(num_shelves),
+                           back_full_cover=bool(back_full_cover))
+    return [{"name": p.name, "width": p.width, "height": p.height,
+             "thickness": p.thickness, "area": p.area,
+             "holes": list(p.holes),
+             "total_material_area": total_material_area(ps)} for p in ps]
+
+
+def nest(exterior_height: float, exterior_width: float, exterior_depth: float,
+         thickness: float, bed_w: float, bed_h: float, kerf: float = 0.0,
+         num_shelves: int = 1) -> dict:
+    """Panels -> a sheet-bed nesting report (what fits, what must be split)."""
+    from harnesscad.domain.fabrication.flatpack_panels import (
+        decompose_cabinet, nest_report,
+    )
+
+    ps = decompose_cabinet(float(exterior_height), float(exterior_width),
+                           float(exterior_depth), float(thickness),
+                           num_shelves=int(num_shelves))
+    return nest_report(ps, float(bed_w), float(bed_h), kerf=float(kerf))
+
+
+# --------------------------------------------------------------------------- #
+# Bricks
+# --------------------------------------------------------------------------- #
+def bricks(voxels: Sequence[Tuple[int, int, int]], seed: Optional[int] = 0) -> List[dict]:
+    """A voxel occupancy set -> a LEGAL brick layout that covers it exactly."""
+    from harnesscad.domain.fabrication.legolization import covers_exactly, legolize
+
+    cells = [tuple(int(c) for c in v) for v in voxels]
+    laid = legolize(cells, seed=seed)
+    exact = covers_exactly(laid, cells)
+    return [{"x": b.x, "y": b.y, "z": b.z, "h": b.h, "w": b.w,
+             "valid_part": bool(b.is_valid_part()), "covers_exactly": bool(exact)}
+            for b in laid]
+
+
+def brick_colors(voxels: Sequence[Tuple[int, int, int]],
+                 voxel_face_colors: Mapping[Any, Sequence[Tuple[int, int, int]]],
+                 seed: Optional[int] = 0) -> List[str]:
+    """Per-brick LEGO palette colours, from the per-voxel face colours."""
+    from harnesscad.domain.fabrication.brick_coloring import assign_brick_colors
+    from harnesscad.domain.fabrication.legolization import legolize
+
+    cells = [tuple(int(c) for c in v) for v in voxels]
+    return assign_brick_colors(legolize(cells, seed=seed),
+                               dict(voxel_face_colors))
+
+
+# --------------------------------------------------------------------------- #
+# Machining features
+# --------------------------------------------------------------------------- #
+def difficulty(counts: Mapping[str, int]) -> dict:
+    """How hard is this part to machine, from its feature histogram."""
+    from harnesscad.domain.fabrication.feature_difficulty import classify_difficulty
+
+    r = classify_difficulty(dict(counts))
+    return {"level": r.level, "total_quantity": r.total_quantity,
+            "excluded_present": list(r.excluded_present),
+            "hard_present": list(r.hard_present),
+            "reasons": list(r.reasons)}
+
+
+def feature_attributes(feature: str, raw: Mapping[str, Any]) -> dict:
+    """Normalise a machining feature and extract only the attributes it DECLARES."""
+    from harnesscad.domain.fabrication.feature_attributes import extract_attributes
+    from harnesscad.domain.fabrication.feature_taxonomy import (
+        attributes_of, category_of, normalize_feature,
+    )
+
+    name = normalize_feature(feature)
+    return {
+        "feature": name,
+        "category": category_of(name),
+        "declares": list(attributes_of(name)),
+        "attributes": extract_attributes(name, dict(raw)),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Export planning (planned, never executed)
+# --------------------------------------------------------------------------- #
+def export_plan(source: str, export_format: str = "stl", out_dir: str = ".",
+                defines: Optional[Mapping[str, Any]] = None,
+                executable: str = "openscad") -> dict:
+    """Plan an OpenSCAD export. Returns the argv/artifact/cache key -- runs nothing."""
+    from harnesscad.domain.fabrication.openscad_export import (
+        plan_export, plan_cache_key, sorted_formats,
+    )
+
+    plan = plan_export(source, export_format=export_format, out_dir=out_dir,
+                       defines=dict(defines or {}), executable=executable)
+    return {
+        "argv": list(plan.argv),
+        "scad_path": plan.scad_path,
+        "output_path": plan.output_path,
+        "digest": plan.digest,
+        "format": plan.export_format,
+        "cache_key": plan_cache_key(source, export_format, dict(defines or {})),
+        "formats_3d": list(sorted_formats("3d")),
+    }
+
+
+def classify_export(returncode: int, stderr: str = "") -> dict:
+    """Read an OpenSCAD run's result (which somebody else executed)."""
+    from harnesscad.domain.fabrication.openscad_export import (
+        classify_result, is_success, warnings_only,
+    )
+
+    return {
+        "classification": classify_result(int(returncode), stderr),
+        "success": bool(is_success(int(returncode), stderr)),
+        "warnings_only": bool(warnings_only(stderr)),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Discovery
+# --------------------------------------------------------------------------- #
+def _index() -> Dict[str, Any]:
+    return {e.dotted: e
+            for e in capability_registry.find(package="fabrication")}
+
+
+def _available(dotted: str) -> bool:
+    return dotted in _index()
+
+
+_ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
+    ("workflow", "workflows", _FAB + "workflow_taxonomy",
+     "the workflow / machine / material taxonomy"),
+    ("workflow", "analyze", _FAB + "workflow_feasibility",
+     "per-process feasibility: machine fit, stock, kerf, draft, load, print time"),
+    ("workflow", "compare", _FAB + "workflow_compare",
+     "side-by-side criterion table + intent ranking + reflection checklist"),
+    ("gate", "readiness", _FAB + "prototype_readiness",
+     "the go/no-go prototype gate (watertight, fragmentation, volume, provenance)"),
+    ("flatpack", "panels", _FAB + "flatpack_panels",
+     "a cabinet -> panels -> a sheet-bed nesting report"),
+    ("brick", "bricks", _FAB + "legolization",
+     "a voxel model -> a legal brick layout that covers it exactly"),
+    ("brick", "brick_colors", _FAB + "brick_coloring",
+     "per-brick LEGO palette colours from per-voxel face colours"),
+    ("brick", "bricks", _FAB + "brick_library",
+     "the legal brick parts, their serialisation and raster ordering"),
+    ("feature", "difficulty", _FAB + "feature_difficulty",
+     "machining difficulty from a feature histogram; dataset stratification"),
+    ("feature", "feature_attributes", _FAB + "feature_attributes",
+     "extract only the attributes a machining feature declares"),
+    ("feature", "feature_attributes", _FAB + "feature_taxonomy",
+     "the machining-feature taxonomy (normalise, categorise, leaves)"),
+    ("export", "export_plan", _FAB + "openscad_export",
+     "plan an OpenSCAD export (argv, artifact, cache key) -- never executes it"),
+)
+
+
+def routed_modules() -> Tuple[str, ...]:
+    return tuple(sorted({m for _g, _n, m, _d in _ROUTES if _available(m)}))
+
+
+def discover() -> List[dict]:
+    return [{"group": g, "route": n, "module": m, "doc": d,
+             "present": _available(m)}
+            for (g, n, m, d) in _ROUTES]
+
+
+def unadapted() -> List[Tuple[str, str]]:
+    routed = set(routed_modules())
+    return [(d, "no route yet") for d in sorted(_index())
+            if d not in routed and not d.endswith(".registry")]
+
+
+# --------------------------------------------------------------------------- #
+# CLI
+# --------------------------------------------------------------------------- #
+def add_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--list", action="store_true",
+                        help="list every manufacturing route")
+    parser.add_argument("--workflows", action="store_true",
+                        help="list the manufacturing workflows")
+    parser.add_argument("--machines", action="store_true",
+                        help="list the machines")
+    parser.add_argument("--analyze", default=None, metavar="WORKFLOW",
+                        help="feasibility-check --bbox against this workflow")
+    parser.add_argument("--bbox", default=None, metavar="X,Y,Z",
+                        help="the part envelope in mm")
+    parser.add_argument("--volume", type=float, default=0.0,
+                        help="the part volume in mm^3")
+    parser.add_argument("--machine", default=None, help="the machine id")
+    parser.add_argument("--material", default=None, help="the material id")
+    parser.add_argument("--readiness", default=None, metavar="JSON",
+                        help="a descriptor (JSON object or @file) for the readiness gate")
+    parser.add_argument("--unadapted", action="store_true",
+                        help="list fabrication modules with no route")
+    parser.add_argument("--json", action="store_true",
+                        help="emit JSON instead of text")
+
+
+def _load(text: str) -> Any:
+    if text.startswith("@"):
+        with open(text[1:], "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    return json.loads(text)
+
+
+def run_cli(args: argparse.Namespace) -> int:
+    if getattr(args, "unadapted", False):
+        for dotted, reason in unadapted():
+            print("%s\n    %s" % (dotted, reason))
+        return 0
+
+    if getattr(args, "machines", False):
+        for m in machines():
+            print(m)
+        return 0
+
+    if getattr(args, "workflows", False):
+        rows = workflows()
+        if getattr(args, "json", False):
+            print(json.dumps(rows, indent=2, sort_keys=True))
+        else:
+            for w in rows:
+                print("%-26s %-16s %s" % (w["id"], w["category"],
+                                          ",".join(w["machines"])))
+        return 0
+
+    if getattr(args, "readiness", None):
+        report = readiness(_load(args.readiness))
+        print(json.dumps(report, indent=2, sort_keys=True, default=str))
+        return 0 if report.get("ready") else 1
+
+    if getattr(args, "analyze", None):
+        if not getattr(args, "bbox", None):
+            print("--analyze needs --bbox X,Y,Z", file=__import__("sys").stderr)
+            return 2
+        bbox = [float(v) for v in args.bbox.split(",")]
+        part = part_spec(bbox, volume_mm3=getattr(args, "volume", 0.0) or 0.0)
+        findings = analyze(args.analyze, part,
+                           machine_id=getattr(args, "machine", None),
+                           material=getattr(args, "material", None))
+        if getattr(args, "json", False):
+            print(json.dumps(findings, indent=2, sort_keys=True))
+        else:
+            for f in findings:
+                print("[%s] %s: %s" % (f["severity"], f["code"], f["message"]))
+        return 0 if all(f["ok"] for f in findings) else 1
+
+    rows = discover()
+    if getattr(args, "json", False):
+        print(json.dumps(rows, indent=2, sort_keys=True))
+        return 0
+    width = max(len(r["route"]) for r in rows)
+    for r in rows:
+        mark = " " if r["present"] else "-"
+        print("%s %-9s %-*s  %s" % (mark, r["group"], width, r["route"], r["doc"]))
+    return 0
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="harnesscad fabricate",
+        description="manufacturing surface: workflows, feasibility, readiness, "
+                    "flat-pack, bricks, export planning")
+    add_arguments(parser)
+    return run_cli(parser.parse_args(list(argv) if argv is not None else None))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

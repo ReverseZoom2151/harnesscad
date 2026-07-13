@@ -1,0 +1,7 @@
+[
+  {"op": "new_sketch", "plane": "XY"},
+  {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0, "w": 20.0, "h": 10.0},
+  {"op": "extrude", "sketch": "sk1", "distance": 5.0},
+  {"op": "fillet", "edges": ["e1"], "radius": 8.0},
+  {"op": "shell", "faces": ["f1"], "thickness": 9.0}
+]

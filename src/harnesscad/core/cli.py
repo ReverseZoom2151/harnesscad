@@ -48,6 +48,32 @@
         CSG and the rest are different languages, not rival implementations, and
         one language's parser is never used on another's source.
 
+    python cli.py edit --list | --rivals | --unadapted
+    python cli.py edit --params [--ops ops.json]
+    python cli.py edit --set 1:w=40 [--ops ops.json] [--json]
+    python cli.py edit --strategy plan_verify|refine|geometry_beam --target goal.json
+        The EDIT surface (domain/editing/registry.py): the harness could build and
+        ingest, but not change what it built. `--set I:PARAM=VALUE` applies a real
+        parametric edit (SetParam -> deterministic rebuild) and prints the diff;
+        `--strategy` runs a named edit LOOP toward a target model. The three loops
+        (CADMorph plan-verify, CADReasoner refine, CADReasoner beam) are RIVALS and
+        are selected by name -- their results are never averaged.
+
+    python cli.py search --list | --rivals | --unadapted | --space
+    python cli.py search --strategy evolution --target goal.json [--seed N] [--json]
+        The SEARCH surface (agents/exploration/registry.py): run a real design
+        search over the session's shape parameters toward an objective. `evolution`
+        (a GA over CAD programs) and `evolution_strategy` (a numeric mu,lambda ES)
+        are different algorithms, as are the three samplers -- all exposed by name.
+
+    python cli.py generate "<brief>" [--strategy dual_loop|verify_loop|...]
+    python cli.py generate --list | --rivals | --retrieve "<query>"
+        The GENERATION surface (agents/generation/registry.py): named strategies
+        that drive a session to a solid, with a DETERMINISTIC STUB PLANNER by
+        default (no LLM, no network). The three correction loops (CADSmith dual
+        loop, CADCodeVerify, prompt evolution) are rivals; `--retrieve` runs the RAG
+        layer over this repo's own capability index.
+
     python cli.py bench --list [--kind geometry|sequence|sketch|vision|...]
     python cli.py bench --suites | --rivals | --unadapted
     python cli.py bench --suite deepcad --input samples.json [--json]
@@ -124,8 +150,8 @@ def _print_result(result: dict) -> None:
         print(f"rejected:  {json.dumps(result['rejected'])}")
 
 
-def _run_ops(ops: List[dict], backend: str) -> dict:
-    server = CISPServer(backend=backend)
+def _run_ops(ops: List[dict], backend: str, verify: str = "core") -> dict:
+    server = CISPServer(backend=backend, verify_level=verify)
     return server.applyOps(ops)
 
 
@@ -139,7 +165,10 @@ def cmd_apply(args: argparse.Namespace) -> int:
     if not isinstance(ops, list):
         print(f"error: {args.ops!r} must contain a JSON array of ops", file=sys.stderr)
         return 2
-    result = _run_ops(ops, args.backend)
+    # `--verify full` runs the whole discovered verifier fleet, not just the core
+    # checks. Without it the fleet was reachable only through the built-in demo,
+    # which made the harness's main capability unusable on a real op stream.
+    result = _run_ops(ops, args.backend, getattr(args, "verify", "core"))
     _print_result(result)
     return 0 if result["ok"] else 1
 
@@ -296,6 +325,63 @@ def cmd_program(args: argparse.Namespace) -> int:
     return programs_registry.run_cli(args)
 
 
+def cmd_spec(args: argparse.Namespace) -> int:
+    # Imported here so the spec tree is only touched by `spec`.
+    from harnesscad.domain.spec import registry as spec_registry
+
+    return spec_registry.run_cli(args)
+
+
+def cmd_procedural(args: argparse.Namespace) -> int:
+    # Imported here so the procedural tree is only touched by `procedural`.
+    from harnesscad.domain.procedural import registry as procedural_registry
+
+    return procedural_registry.run_cli(args)
+
+
+def cmd_catalog(args: argparse.Namespace) -> int:
+    # Imported here so the catalogue (and its execution gate) is only touched by
+    # `catalog`.
+    from harnesscad.domain.library import registry as library_registry
+
+    return library_registry.run_cli(args)
+
+
+def cmd_fabricate(args: argparse.Namespace) -> int:
+    # Imported here so the fabrication tree is only touched by `fabricate`.
+    from harnesscad.domain.fabrication import registry as fabrication_registry
+
+    return fabrication_registry.run_cli(args)
+
+
+def cmd_govern(args: argparse.Namespace) -> int:
+    # Imported here so the governance tree is only touched by `govern`.
+    from harnesscad.governance import registry as governance_registry
+
+    return governance_registry.run_cli(args)
+
+
+def cmd_edit(args: argparse.Namespace) -> int:
+    # Imported here so the editing tree is only touched by `edit`.
+    from harnesscad.domain.editing import registry as editing_registry
+
+    return editing_registry.run_cli(args)
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    # Imported here so the exploration tree is only touched by `search`.
+    from harnesscad.agents.exploration import registry as exploration_registry
+
+    return exploration_registry.run_cli(args)
+
+
+def cmd_generate(args: argparse.Namespace) -> int:
+    # Imported here so the generation tree is only touched by `generate`.
+    from harnesscad.agents.generation import registry as generation_registry
+
+    return generation_registry.run_cli(args)
+
+
 def cmd_bench(args: argparse.Namespace) -> int:
     # Imported here so the metric registry (and the bench tree it adapts) is only
     # touched when the `bench` subcommand actually runs.
@@ -325,6 +411,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_apply = sub.add_parser("apply", help="run a JSON array of ops")
     p_apply.add_argument("ops", help="path to a JSON array of ops")
     p_apply.add_argument("--backend", default="stub", choices=["stub", "cadquery", "frep"])
+    p_apply.add_argument(
+        "--verify", default="core", choices=["core", "full"],
+        help="'core' runs the three core checks; 'full' runs the whole discovered "
+             "verifier fleet over the plan (advisory: reported, not fatal)",
+    )
     p_apply.set_defaults(func=cmd_apply)
 
     p_demo = sub.add_parser("demo", help="run the built-in constrained-plate sample")
@@ -392,6 +483,73 @@ def build_parser() -> argparse.ArgumentParser:
 
     _programs_registry.add_arguments(p_program)
     p_program.set_defaults(func=cmd_program)
+
+    p_spec = sub.add_parser(
+        "spec",
+        help="spec surface: a brief -> a checked spec -> constraints; "
+             "EXPRESS/Part-21 validation; structured spec formats")
+    from harnesscad.domain.spec import registry as _spec_registry
+
+    _spec_registry.add_arguments(p_spec)
+    p_spec.set_defaults(func=cmd_spec)
+
+    p_procedural = sub.add_parser(
+        "procedural",
+        help="named procedural generators that emit CISP ops (--list/--rivals/--gen)")
+    from harnesscad.domain.procedural import registry as _procedural_registry
+
+    _procedural_registry.add_arguments(p_procedural)
+    p_procedural.set_defaults(func=cmd_procedural)
+
+    p_catalog = sub.add_parser(
+        "catalog",
+        help="parts catalogue + standards knowledge base "
+             "(--parts/--find/--part/--thread/--heatsert/--aci)")
+    from harnesscad.domain.library import registry as _library_registry
+
+    _library_registry.add_arguments(p_catalog)
+    p_catalog.set_defaults(func=cmd_catalog)
+
+    p_fabricate = sub.add_parser(
+        "fabricate",
+        help="manufacturing surface: workflows, feasibility, readiness, "
+             "flat-pack, bricks, export planning")
+    from harnesscad.domain.fabrication import registry as _fabrication_registry
+
+    _fabrication_registry.add_arguments(p_fabricate)
+    p_fabricate.set_defaults(func=cmd_fabricate)
+
+    p_govern = sub.add_parser(
+        "govern",
+        help="governance surface: security gates, research evidence, audit closure")
+    from harnesscad.governance import registry as _governance_registry
+
+    _governance_registry.add_arguments(p_govern)
+    p_govern.set_defaults(func=cmd_govern)
+
+    p_edit = sub.add_parser(
+        "edit",
+        help="edit surface: apply a parametric edit, diff it, or run an edit loop")
+    from harnesscad.domain.editing import registry as _editing_registry
+
+    _editing_registry.add_arguments(p_edit)
+    p_edit.set_defaults(func=cmd_edit)
+
+    p_search = sub.add_parser(
+        "search",
+        help="design-space search over a session (--list/--rivals/--strategy)")
+    from harnesscad.agents.exploration import registry as _exploration_registry
+
+    _exploration_registry.add_arguments(p_search)
+    p_search.set_defaults(func=cmd_search)
+
+    p_generate = sub.add_parser(
+        "generate",
+        help="generation strategies driving a session (deterministic stub planner)")
+    from harnesscad.agents.generation import registry as _generation_registry
+
+    _generation_registry.add_arguments(p_generate)
+    p_generate.set_defaults(func=cmd_generate)
 
     p_bench = sub.add_parser(
         "bench",

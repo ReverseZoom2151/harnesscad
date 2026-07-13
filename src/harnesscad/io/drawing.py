@@ -286,23 +286,38 @@ def orthographic_drawing(mesh: Mesh,
                 builder.add(cmd.DrawingEntity(kind=e.kind, geometry=e.geometry,
                                               layer="hidden"))
         if show_dimensions:
-            pts = [to_px(_project(p, name)) for p in verts]
-            for geom in dim.overall_dimensions(pts, offset=18.0):
-                _add_dimension(builder, geom)
+            # Measure in MODEL space, place in PIXEL space. Measuring the
+            # already-pixelised points made every dimension report screen
+            # distance: a 40 mm plate was annotated "342".
+            pts_model = [_project(p, name) for p in verts]
+            offset_model = 18.0 / scale if scale else 18.0
+            for geom in dim.overall_dimensions(pts_model, offset=offset_model):
+                _add_dimension(builder, geom, to_px)
         builder.add(cmd.text((ox + 8.0, oy + 16.0, 0.0), name.upper(), height=11.0))
 
     return _to_svg(builder.to_list(), width, height, title, sufficiency)
 
 
-def _add_dimension(builder: "cmd.DrawingBuilder", geom: "dim.DimensionGeometry") -> None:
-    """Emit a dimension's line, extension lines, arrow ticks and text."""
+def _add_dimension(builder: "cmd.DrawingBuilder", geom: "dim.DimensionGeometry",
+                   to_px=None) -> None:
+    """Emit a dimension's line, extension lines, arrow ticks and text.
+
+    ``geom`` is measured in MODEL units, so ``geom.measured`` is the real
+    dimension (mm). ``to_px`` maps its placement into sheet pixels. The value
+    printed is never rescaled: a 40 mm edge is annotated "40", whatever the
+    sheet scale happens to be.
+    """
+    px = to_px if to_px is not None else (lambda p: p)
     for seg in (geom.dimension_line, geom.extension_a, geom.extension_b):
-        e = cmd.line((seg[0], seg[1], 0.0), (seg[2], seg[3], 0.0))
+        a = px((seg[0], seg[1]))
+        b = px((seg[2], seg[3]))
+        e = cmd.line((a[0], a[1], 0.0), (b[0], b[1], 0.0))
         builder.add(cmd.DrawingEntity(kind=e.kind, geometry=e.geometry, layer="dimension"))
-    for (ax, ay) in (geom.arrow_a, geom.arrow_b):
+    for arrow in (geom.arrow_a, geom.arrow_b):
+        ax, ay = px(arrow)
         e = cmd.circle((ax, ay, 0.0), 1.5)
         builder.add(cmd.DrawingEntity(kind=e.kind, geometry=e.geometry, layer="dimension"))
-    tx, ty = geom.text_anchor
+    tx, ty = px(geom.text_anchor)
     e = cmd.text((tx, ty - 3.0, 0.0), _svg_num(geom.measured), height=10.0)
     builder.add(cmd.DrawingEntity(kind=e.kind, geometry=e.geometry, layer="dimension"))
 
