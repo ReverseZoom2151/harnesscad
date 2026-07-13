@@ -17,7 +17,10 @@ TESTS_DIR = pathlib.Path(__file__).resolve().parent
 
 
 def _test_modules():
-    return sorted(p for p in TESTS_DIR.glob("test_*.py") if p.name != pathlib.Path(__file__).name)
+    # rglob, not glob: the suite mirrors src/ across ~99 sub-packages, so a
+    # flat glob would silently check 2 files instead of ~892 -- exactly the
+    # blind spot this guard exists to prevent.
+    return sorted(p for p in TESTS_DIR.rglob("test_*.py") if p.name != pathlib.Path(__file__).name)
 
 
 def _defines_testcase(tree):
