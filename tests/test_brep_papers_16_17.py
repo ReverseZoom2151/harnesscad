@@ -1,12 +1,12 @@
 import unittest
-from reconstruction.point_labels import *
-from ingest.scan_brep_labels import *
-from quality.scan_label_audit import audit
-from reconstruction.failure_audit import classify,Failure
-from reconstruction.structured_brep import Node,pad_children,unique_children,validate_tree
-from reconstruction.brep_merge import GeometryNode,cluster
-from reconstruction.geometry_stitch import average_vertices,align_edge,consistency
-from bench.generative_brep_metrics import ratios,coverage_mmd,jsd
+from harnesscad.domain.reconstruction.point_labels import *
+from harnesscad.io.ingest.scan_brep_labels import *
+from harnesscad.eval.quality.scan_label_audit import audit
+from harnesscad.domain.reconstruction.failure_audit import classify,Failure
+from harnesscad.domain.reconstruction.structured_brep import Node,pad_children,unique_children,validate_tree
+from harnesscad.domain.reconstruction.brep_merge import GeometryNode,cluster
+from harnesscad.domain.reconstruction.geometry_stitch import average_vertices,align_edge,consistency
+from harnesscad.eval.bench.generative_brep_metrics import ratios,coverage_mmd,jsd
 
 class Tests(unittest.TestCase):
  def test_labels(self):

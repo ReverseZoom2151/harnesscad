@@ -13,10 +13,10 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 
-import cli
-import pipeline
-from pipeline import build, BuildError
-from llm.base import CompletionResult, ToolCall
+from harnesscad.core import cli
+from harnesscad.core import pipeline
+from harnesscad.core.pipeline import build, BuildError
+from harnesscad.agents.llm.base import CompletionResult, ToolCall
 
 from tests.test_llm import MockLLM, plate_ops_json
 

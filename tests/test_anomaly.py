@@ -16,10 +16,10 @@ import os
 import tempfile
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from quality.anomaly import (
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.quality.anomaly import (
     feature_vector, AnomalyModel, AnomalyScore, IsolationLite,
     AnomalyCheck, with_anomaly,
 )

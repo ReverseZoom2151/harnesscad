@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from generation.cadsmith_abs_metrics import (
+from harnesscad.agents.generation.cadsmith_abs_metrics import (
     bbox_center, bbox_extent, center_to_origin, kabsch, icp,
     chamfer, f1_score, voxel_iou, voxel_resolution, absolute_space_metrics,
 )

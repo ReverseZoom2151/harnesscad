@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from programs.angelcad_typed_csg import (
+from harnesscad.domain.programs.angelcad_typed_csg import (
     SHAPE2D,
     SOLID,
     CsgTypeError,

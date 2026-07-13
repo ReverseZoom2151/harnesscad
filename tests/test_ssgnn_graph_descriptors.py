@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from reconstruction.ssgnn_graph_augment import build_graph
-from reconstruction.ssgnn_graph_descriptors import (
+from harnesscad.domain.reconstruction.ssgnn_graph_augment import build_graph
+from harnesscad.domain.reconstruction.ssgnn_graph_descriptors import (
     degree_histogram,
     descriptor_vector,
     wl_kernel,

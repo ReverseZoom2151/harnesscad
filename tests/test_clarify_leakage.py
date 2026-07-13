@@ -1,6 +1,6 @@
 import unittest
 
-from spec.clarify_leakage import check_leakage, style_warnings
+from harnesscad.domain.spec.clarify_leakage import check_leakage, style_warnings
 
 
 class TestHardFails(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 import unittest
 
-from dataengine.cadrille_drcppo import (
+from harnesscad.data.dataengine.cadrille_drcppo import (
     advantages,
     select_strongest,
     clip,

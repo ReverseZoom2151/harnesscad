@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from reconstruction import ppa_primitive as pp
+from harnesscad.domain.reconstruction import ppa_primitive as pp
 
 
 class TestConstructors(unittest.TestCase):

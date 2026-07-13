@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import unittest
 
-from reconstruction.deepcad_command_spec import Command, command
-from reliability.gencadrepair_sequence import repair_sequence
-from reliability.gencadrepair_taxonomy import is_feasible
+from harnesscad.domain.reconstruction.deepcad_command_spec import Command, command
+from harnesscad.eval.reliability.gencadrepair_sequence import repair_sequence
+from harnesscad.eval.reliability.gencadrepair_taxonomy import is_feasible
 
 
 def _ext(**kw):

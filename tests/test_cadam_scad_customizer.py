@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs.cadam_scad_customizer import parse_parameters, Parameter
+from harnesscad.domain.programs.cadam_scad_customizer import parse_parameters, Parameter
 
 
 def by_name(params):

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.querycad_edge_convexity import (
+from harnesscad.domain.geometry.querycad_edge_convexity import (
     CONCAVE,
     CONVEX,
     SMOOTH,

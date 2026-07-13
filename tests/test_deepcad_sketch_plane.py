@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from reconstruction import deepcad_sketch_plane as sp
+from harnesscad.domain.reconstruction import deepcad_sketch_plane as sp
 
 
 def _close(a, b, tol=1e-9):

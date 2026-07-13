@@ -18,11 +18,11 @@ import os
 import tempfile
 import unittest
 
-from standards.registry import (
+from harnesscad.domain.standards.registry import (
     Rule, RulePack, StandardsRegistry, parse_simple_yaml,
 )
-from standards.ingest import ingest_standard, ingest_heuristic, rule_schema
-from standards.conflict import detect_conflicts
+from harnesscad.domain.standards.ingest import ingest_standard, ingest_heuristic, rule_schema
+from harnesscad.domain.standards.conflict import detect_conflicts
 
 
 def _rule(**kw) -> Rule:
@@ -275,7 +275,7 @@ class _MockLLM:
         self._payload = payload
 
     def complete(self, messages, tools=None, response_schema=None, **opts):
-        from llm.base import CompletionResult
+        from harnesscad.agents.llm.base import CompletionResult
         return CompletionResult(text=json.dumps(self._payload))
 
     def stream(self, messages, tools=None, response_schema=None, **opts):

@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.seekcad_captype import (
+from harnesscad.domain.geometry.seekcad_captype import (
     CAP_TYPES,
     END,
     START,

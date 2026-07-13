@@ -2,7 +2,7 @@ import math
 import random
 import unittest
 
-from numeric.diffusioncad_sqrt_schedule import (
+from harnesscad.domain.numeric.diffusioncad_sqrt_schedule import (
     SqrtNoiseSchedule,
     classifier_free_mix,
     conditional_noise_seed,

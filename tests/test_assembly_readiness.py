@@ -1,6 +1,6 @@
 import unittest
 
-from quality.assembly_readiness import (
+from harnesscad.eval.quality.assembly_readiness import (
     AspectResult,
     AssemblyRequirements,
     CorrectionAttempt,

@@ -9,15 +9,15 @@ import os
 import tempfile
 import unittest
 
-from ingest import (
+from harnesscad.io.ingest import (
     ImportedPart, import_solid, detect_format,
     DecompileResult, decompile,
     PartMetadata, extract_metadata,
     precedent_text, index_precedent,
 )
-from ingest.decompile import _decompile_from_metrics
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from backends.stub import StubBackend
+from harnesscad.io.ingest.decompile import _decompile_from_metrics
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
 
 
 try:  # optional real-kernel gate
@@ -94,7 +94,7 @@ class TestImportSolid(unittest.TestCase):
     @unittest.skipUnless(_HAVE_CQ, "cadquery/OCCT not installed")
     def test_roundtrip_real_step(self):
         # Export a plate from the real backend, then import it back and measure.
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         step_text = be.export("step")
         with tempfile.NamedTemporaryFile(
@@ -163,7 +163,7 @@ class TestDecompile(unittest.TestCase):
 
     @unittest.skipUnless(_HAVE_CQ, "cadquery/OCCT not installed")
     def test_real_box_recovers_prismatic(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         result = decompile(be)
         self.assertTrue(result.ops)
@@ -205,7 +205,7 @@ class TestMetadata(unittest.TestCase):
         "cadquery-ocp XCAF application singleton segfaults the interpreter at "
         "teardown on some builds, which would crash the whole test process")
     def test_real_step_metadata(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         be = _build_plate(CadQueryBackend())
         step_text = be.export("step")
         with tempfile.NamedTemporaryFile(
@@ -241,7 +241,7 @@ class TestPrecedentIngestion(unittest.TestCase):
         self.assertIn("bbox:", text)
 
     def test_index_precedent_into_retriever(self):
-        from rag import HybridRetriever
+        from harnesscad.agents.rag import HybridRetriever
         r = HybridRetriever()
         part = index_precedent(r, "bracket.step")
         self.assertIsInstance(part, ImportedPart)

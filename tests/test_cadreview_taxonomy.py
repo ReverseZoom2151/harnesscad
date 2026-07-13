@@ -1,6 +1,6 @@
 import unittest
 
-import programs.cadreview_taxonomy as tax
+from harnesscad.domain.programs import cadreview_taxonomy as tax
 
 
 class TestTaxonomy(unittest.TestCase):

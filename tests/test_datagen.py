@@ -9,15 +9,15 @@ import os
 import tempfile
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
-from datagen import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.data.datagen import (
     ParametricSampler, Sample,
     gen_plate, gen_bracket, gen_plate_with_holes, DEFAULT_GENERATORS,
     generate_dataset, generate_dataset_report,
     to_jsonl, read_jsonl, verifiers_as_labor,
 )
-from loop import HarnessSession
+from harnesscad.core.loop import HarnessSession
 
 
 def _bad_generator(rng):

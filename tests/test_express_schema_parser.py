@@ -2,7 +2,7 @@
 
 import unittest
 
-from spec.express_schema_parser import (
+from harnesscad.domain.spec.express_schema_parser import (
     ExpressParseError,
     SuperTypeExpr,
     TypeRef,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.sgraphs2_autoconstrain_metrics import (
+from harnesscad.eval.bench.sgraphs2_autoconstrain_metrics import (
     corpus_scores,
     edge_key,
     edge_key_set,
@@ -11,7 +11,7 @@ from bench.sgraphs2_autoconstrain_metrics import (
     per_type_scores,
     sketch_scores,
 )
-from reconstruction.sgraphs2_dof_mask import EdgeOp
+from harnesscad.domain.reconstruction.sgraphs2_dof_mask import EdgeOp
 
 
 class TestEdgeKey(unittest.TestCase):

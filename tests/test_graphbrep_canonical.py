@@ -2,8 +2,8 @@
 
 import unittest
 
-from reconstruction import graphbrep_canonical as gc
-from reconstruction import graphbrep_surface_graph as gsg
+from harnesscad.domain.reconstruction import graphbrep_canonical as gc
+from harnesscad.domain.reconstruction import graphbrep_surface_graph as gsg
 
 
 def relabel(matrix, order):

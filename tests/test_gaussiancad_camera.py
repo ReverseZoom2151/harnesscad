@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from math import isclose
 
-from geometry import gaussiancad_camera as cam
+from harnesscad.domain.geometry import gaussiancad_camera as cam
 
 
 def _det3(m):

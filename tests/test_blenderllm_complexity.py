@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from bench.blenderllm_complexity import (
+from harnesscad.eval.bench.blenderllm_complexity import (
     complexity,
     parameter_density,
     safe_complexity,

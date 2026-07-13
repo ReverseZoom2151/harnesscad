@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.octfusion_octree import Octree, OctreeNode, _child_index
+from harnesscad.domain.geometry.octfusion_octree import Octree, OctreeNode, _child_index
 
 
 class TestChildIndex(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from fabrication.s2proto_readiness import (
+from harnesscad.domain.fabrication.s2proto_readiness import (
     OK, WARNING, ERROR,
     check_prompt_safety, check_source_image_text, check_fragmentation,
     check_watertight, check_surface_smoothness, check_manufacturable_volume,

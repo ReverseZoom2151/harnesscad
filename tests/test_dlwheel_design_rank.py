@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from quality import dlwheel_design_rank as dr
+from harnesscad.eval.quality import dlwheel_design_rank as dr
 
 
 class L1DedupTests(unittest.TestCase):

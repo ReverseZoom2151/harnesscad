@@ -12,9 +12,9 @@ bbox-corridor fallback* (always available) plus graceful degradation:
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.access import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.access import (
     AccessCheck, AccessRules, with_access,
     _collect_features, _corridor_bbox, _overlap_dims, _normalize,
 )

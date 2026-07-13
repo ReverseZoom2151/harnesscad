@@ -7,12 +7,12 @@ still imports fine — cadquery is imported lazily inside its methods).
 
 import unittest
 
-from backends.cadquery_backend import CadQueryBackend
-from verifiers.geometry import BRepValidityCheck
-from cisp.ops import (
+from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+from harnesscad.eval.verifiers.geometry import BRepValidityCheck
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, AddCircle, Extrude, Fillet, Boolean,
 )
-from verifiers.verify import Severity
+from harnesscad.eval.verifiers.verify import Severity
 
 
 def _cadquery_available() -> bool:
@@ -137,7 +137,7 @@ class TestFeatures(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestDofTracking(unittest.TestCase):
     def test_constraints_reduce_nominal_dof_like_stub(self):
-        from cisp.ops import Constrain
+        from harnesscad.core.cisp.ops import Constrain
         b = CadQueryBackend()
         b.apply(NewSketch())
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=10.0, h=10.0))

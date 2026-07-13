@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry.shapeit_heightfield import HeightField
-from geometry import shapeit_keyframe as kf
+from harnesscad.domain.geometry.shapeit_heightfield import HeightField
+from harnesscad.domain.geometry import shapeit_keyframe as kf
 
 
 class TestEasing(unittest.TestCase):

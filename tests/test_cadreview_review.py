@@ -1,9 +1,9 @@
 import unittest
 
-import programs.cadreview_errorgen as eg
-import programs.cadreview_review as rv
-import programs.cadreview_taxonomy as tax
-from programs.cadreview_detect import detect
+from harnesscad.domain.programs import cadreview_errorgen as eg
+from harnesscad.domain.programs import cadreview_review as rv
+from harnesscad.domain.programs import cadreview_taxonomy as tax
+from harnesscad.domain.programs.cadreview_detect import detect
 
 PROGRAM = """
 $fn = 32;

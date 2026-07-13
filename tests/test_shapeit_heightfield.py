@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry import shapeit_heightfield as hfmod
-from geometry.shapeit_heightfield import HeightField
+from harnesscad.domain.geometry import shapeit_heightfield as hfmod
+from harnesscad.domain.geometry.shapeit_heightfield import HeightField
 
 
 class TestConstruction(unittest.TestCase):

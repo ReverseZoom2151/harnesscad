@@ -1,6 +1,6 @@
 import unittest
 
-from generation.vlmcadcode_verify_loop import (
+from harnesscad.agents.generation.vlmcadcode_verify_loop import (
     repair_until_compiles, filter_feedback, answer_accuracy, run_cadcodeverify,
 )
 

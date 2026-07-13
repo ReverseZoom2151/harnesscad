@@ -3,7 +3,7 @@
 import struct
 import unittest
 
-from formats.t2cdean_stl_codec import (
+from harnesscad.io.formats.t2cdean_stl_codec import (
     StlError,
     Triangle,
     bounding_box,

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.manifold_tritri import (
+from harnesscad.domain.geometry.manifold_tritri import (
     triangles_intersect,
     triangle_triangle_segment,
     segment_plane_intersection,

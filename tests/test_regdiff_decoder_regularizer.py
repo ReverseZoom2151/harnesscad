@@ -2,8 +2,8 @@
 
 import unittest
 
-from numeric.diffusioncad_sqrt_schedule import SqrtNoiseSchedule
-from numeric.regdiff_decoder_regularizer import (
+from harnesscad.domain.numeric.diffusioncad_sqrt_schedule import SqrtNoiseSchedule
+from harnesscad.domain.numeric.regdiff_decoder_regularizer import (
     batch_regularization_loss,
     combined_decoder_loss,
     decoder_distance,

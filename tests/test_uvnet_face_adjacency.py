@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from geometry import uvnet_u_grid as ug
-from geometry import uvnet_uv_grid as uvg
-from reconstruction import uvnet_face_adjacency as fa
+from harnesscad.domain.geometry import uvnet_u_grid as ug
+from harnesscad.domain.geometry import uvnet_uv_grid as uvg
+from harnesscad.domain.reconstruction import uvnet_face_adjacency as fa
 
 
 def unit_cube_faces():

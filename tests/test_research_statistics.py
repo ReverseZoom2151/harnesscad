@@ -1,6 +1,6 @@
 import unittest
 
-from research.statistics import compare_samples, effect_magnitude
+from harnesscad.governance.research.statistics import compare_samples, effect_magnitude
 
 
 class ResearchStatisticsTests(unittest.TestCase):

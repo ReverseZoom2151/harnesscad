@@ -2,7 +2,7 @@
 
 import unittest
 
-from numeric.turbo3d_dual_teacher_dmd import (
+from harnesscad.domain.numeric.turbo3d_dual_teacher_dmd import (
     compounding_collapse_indicator,
     dmd_gradient,
     dual_teacher_gradient,

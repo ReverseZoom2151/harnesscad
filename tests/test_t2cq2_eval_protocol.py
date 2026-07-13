@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bench.t2cq2_eval_protocol import (
+from harnesscad.eval.bench.t2cq2_eval_protocol import (
     CD_SCALE,
     aggregate,
     chamfer_distance,

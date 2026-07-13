@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry.octfusion_octree import Octree
-from geometry.octfusion_split_signal import (
+from harnesscad.domain.geometry.octfusion_octree import Octree
+from harnesscad.domain.geometry.octfusion_split_signal import (
     decode_split_signals,
     encode_split_signals,
     full_octree_node_count,

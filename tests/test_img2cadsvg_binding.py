@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.img2cadsvg_binding import (
+from harnesscad.domain.reconstruction.img2cadsvg_binding import (
     nearest_endpoint,
     bind_segment,
     bind_and_select,

@@ -1,6 +1,6 @@
 import unittest
 
-from drawings.sympoint_query_grouping import (
+from harnesscad.domain.drawings.sympoint_query_grouping import (
     MASK_THRESHOLD,
     OBJECT_SCORE,
     OVERLAP_THRESHOLD,

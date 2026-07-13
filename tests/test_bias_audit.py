@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.bias_audit import DIMENSIONS, audit_bias
+from harnesscad.data.dataengine.bias_audit import DIMENSIONS, audit_bias
 
 
 class BiasAuditTests(unittest.TestCase):

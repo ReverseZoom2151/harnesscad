@@ -3,9 +3,9 @@
 import random
 import unittest
 
-from numeric.diffusioncad_sqrt_schedule import SqrtNoiseSchedule
-from numeric.lion_ddim_sampler import ddim_sample, ddim_step
-from numeric.regdiff_ddim_inversion import (
+from harnesscad.domain.numeric.diffusioncad_sqrt_schedule import SqrtNoiseSchedule
+from harnesscad.domain.numeric.lion_ddim_sampler import ddim_sample, ddim_step
+from harnesscad.domain.numeric.regdiff_ddim_inversion import (
     ddim_invert,
     ddim_inversion_step,
     gaussian_noise,

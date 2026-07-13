@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.cascade_entity_selector import Entity, EntitySelector
+from harnesscad.domain.geometry.cascade_entity_selector import Entity, EntitySelector
 
 
 def _box_edges():

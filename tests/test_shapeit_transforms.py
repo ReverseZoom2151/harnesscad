@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from geometry.shapeit_heightfield import HeightField
-from geometry import shapeit_transforms as tf
+from harnesscad.domain.geometry.shapeit_heightfield import HeightField
+from harnesscad.domain.geometry import shapeit_transforms as tf
 
 
 def _single(rows, cols, r, c, val=1.0):

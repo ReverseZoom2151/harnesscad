@@ -9,8 +9,8 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import libfive_frep_ir as ir
-from numeric import libfive_forward_ad as ad
+from harnesscad.domain.geometry import libfive_frep_ir as ir
+from harnesscad.domain.numeric import libfive_forward_ad as ad
 
 
 def _fd_gradient(node, x, y, z, h=1e-6):

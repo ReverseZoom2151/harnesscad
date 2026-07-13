@@ -1,6 +1,6 @@
 import unittest
 
-from programs.t2cmain_cad_ref_selectors import (
+from harnesscad.domain.programs.t2cmain_cad_ref_selectors import (
     build_cad_token,
     common_occurrence_prefix,
     is_descendant_occurrence,

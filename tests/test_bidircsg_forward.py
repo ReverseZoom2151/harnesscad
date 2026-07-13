@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from programs.bidircsg_ast import (
+from harnesscad.domain.programs.bidircsg_ast import (
     Difference,
     Primitive,
     Repeat,
@@ -12,7 +12,7 @@ from programs.bidircsg_ast import (
     Translate,
     Union,
 )
-from programs.bidircsg_forward import (
+from harnesscad.domain.programs.bidircsg_forward import (
     Affine,
     IDENTITY,
     find_instance,

@@ -1,6 +1,6 @@
 import unittest
 
-from generation.seekcad_stepwise_svf import (
+from harnesscad.agents.generation.seekcad_stepwise_svf import (
     NEGATIVE,
     POSITIVE,
     build_svf_plan,

@@ -9,7 +9,7 @@ import json
 import unittest
 from typing import List, Optional
 
-from llm.base import (
+from harnesscad.agents.llm.base import (
     LLM,
     Message,
     ToolSpec,
@@ -20,14 +20,14 @@ from llm.base import (
     assistant,
     messages_to_dicts,
 )
-from llm.structured import (
+from harnesscad.agents.llm.structured import (
     ops_from_json,
     ops_from_completion,
     validate_ops,
     validate_raw,
     OpParseError,
 )
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 
 
 # --- a reusable canned-response LLM (shared with test_planner) --------------
@@ -195,7 +195,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         sys.modules["litellm"] = module
 
     def test_complete_builds_model_and_messages(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
 
         sink = {}
         self._install(self._fake_completion_module(sink))
@@ -211,7 +211,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         self.assertEqual(result.finish_reason, "stop")
 
     def test_complete_maps_tools(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
 
         sink = {}
         self._install(self._fake_completion_module(sink))
@@ -221,7 +221,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         self.assertEqual(sink["tool_choice"], "auto")
 
     def test_complete_maps_response_schema(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
 
         sink = {}
         self._install(self._fake_completion_module(sink))
@@ -231,7 +231,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         self.assertEqual(sink["response_format"]["json_schema"]["name"], "Plan")
 
     def test_opts_and_overrides_forwarded(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
 
         sink = {}
         self._install(self._fake_completion_module(sink))
@@ -241,7 +241,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         self.assertEqual(sink["temperature"], 0.7)  # per-call override wins
 
     def test_parse_response_extracts_tool_calls(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
 
         response = {
             "choices": [{
@@ -265,7 +265,7 @@ class TestLiteLLMBackendRequestConstruction(unittest.TestCase):
         self.assertEqual(len(ops), 7)
 
     def test_stream_yields_text_chunks(self):
-        from llm.litellm_backend import LiteLLMClient
+        from harnesscad.agents.llm.litellm_backend import LiteLLMClient
         import types
 
         chunks = [

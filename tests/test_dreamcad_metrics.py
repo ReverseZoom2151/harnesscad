@@ -2,14 +2,14 @@
 
 import unittest
 
-from geometry.dreamcad_metrics import (
+from harnesscad.domain.geometry.dreamcad_metrics import (
     chamfer_distance,
     hausdorff_distance,
     one_sided_residual,
     sample_rational_bezier,
     surface_consistency,
 )
-from geometry.dreamcad_rational_bezier import unit_weight_grid
+from harnesscad.domain.geometry.dreamcad_rational_bezier import unit_weight_grid
 
 
 def _flat_grid(z=0.0):

@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.cadtests_model import (
+from harnesscad.eval.bench.cadtests_model import (
     CADModel,
     Edge,
     Face,

@@ -1,11 +1,11 @@
 """Tests for editing.cadmorph_plan (CADMorph planning / relative-contribution masking)."""
 import unittest
 
-from editing.cadmorph_plan import (
+from harnesscad.domain.editing.cadmorph_plan import (
     apply_mask, leave_one_out_contribution, plan_mask, relative_scores,
     select_mask_indices,
 )
-from editing.locate_infill import MASK
+from harnesscad.domain.editing.locate_infill import MASK
 
 
 class RelativeScoreTests(unittest.TestCase):

@@ -1,21 +1,21 @@
 import unittest
 
-from bench.code_metrics import (
+from harnesscad.eval.bench.code_metrics import (
     annotation_accuracy, function_accuracy, parameter_accuracy, parsing_rate,
 )
-from bench.code_passk import estimate_pass_at_k, macro_pass_at_k
-from bench.cross_platform import evaluate_platforms
-from bench.geometry_distance import sampled_distance, symmetric_chamfer
-from cisp.annotations import Linear, SurfaceRoughness, Tolerance, remap_annotations
-from dataengine.cfsc_record import CFSCRecord, audit_leakage
-from datagen.code_comments import (
+from harnesscad.eval.bench.code_passk import estimate_pass_at_k, macro_pass_at_k
+from harnesscad.eval.bench.cross_platform import evaluate_platforms
+from harnesscad.eval.bench.geometry_distance import sampled_distance, symmetric_chamfer
+from harnesscad.core.cisp.annotations import Linear, SurfaceRoughness, Tolerance, remap_annotations
+from harnesscad.data.dataengine.cfsc_record import CFSCRecord, audit_leakage
+from harnesscad.data.datagen.code_comments import (
     ambiguous, inherit_comments, intent_comments, lint_intent_comments,
 )
-from datagen.script_family import ParentTemplate, expand
-from formats.dxf_contract import (
+from harnesscad.data.datagen.script_family import ParentTemplate, expand
+from harnesscad.io.formats.dxf_contract import (
     DraftAnnotation, DxfDocument, Entity, Layer,
 )
-from research.ablation_matrix import compare_ablation
+from harnesscad.governance.research.ablation_matrix import compare_ablation
 
 
 class CadCoderContractsTests(unittest.TestCase):

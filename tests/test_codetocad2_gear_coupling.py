@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.codetocad2_gear_coupling import (
+from harnesscad.domain.geometry.codetocad2_gear_coupling import (
     EXTERNAL,
     INTERNAL,
     SHAFT,

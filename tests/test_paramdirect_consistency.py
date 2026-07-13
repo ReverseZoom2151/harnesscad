@@ -1,10 +1,10 @@
 import unittest
 
-from editing.paramdirect_model import (
+from harnesscad.domain.editing.paramdirect_model import (
     DirectBRep, Face, FeatureTree, ParametricFeature, InfoLayer,
     ParameterEdit, PushPullEdit,
 )
-from editing.paramdirect_consistency import (
+from harnesscad.domain.editing.paramdirect_consistency import (
     DistanceConstraint, ParallelConstraint, Inconsistency, HybridModel,
     check_consistency, is_consistent, propagate_parametric_to_geometry,
     propagate_direct_to_constraint, recognize_constraints, design_intent_drift,

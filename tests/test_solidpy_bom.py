@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs.solidpy_bom import (
+from harnesscad.domain.programs.solidpy_bom import (
     BOM_TRAIT,
     bill_of_materials,
     bom_part,
@@ -10,7 +10,7 @@ from programs.solidpy_bom import (
     bom_traits,
     table_string,
 )
-from programs.solidpy_scad_emit import cube, cylinder, translate, union
+from harnesscad.domain.programs.solidpy_scad_emit import cube, cylinder, translate, union
 
 
 @bom_part("M3x16 Screw", 0.12, currency="US$", vendor="Acme")

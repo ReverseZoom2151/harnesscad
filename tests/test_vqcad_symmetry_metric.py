@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bench.vqcad_symmetry_metric import (
+from harnesscad.eval.bench.vqcad_symmetry_metric import (
     horizontal_symmetry,
     intensity_centroid,
     is_more_symmetric,

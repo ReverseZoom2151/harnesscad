@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import pht_dimension_accuracy as da
+from harnesscad.domain.reconstruction import pht_dimension_accuracy as da
 
 
 class DimensionTest(unittest.TestCase):

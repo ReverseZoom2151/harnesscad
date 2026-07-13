@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from geometry.sdfx_polygon_builder import Polygon, nagon
-from geometry.sdfx_polygon_sdf import polygon_area, polygon_sdf
+from harnesscad.domain.geometry.sdfx_polygon_builder import Polygon, nagon
+from harnesscad.domain.geometry.sdfx_polygon_sdf import polygon_area, polygon_sdf
 
 
 class TestBasicBuilding(unittest.TestCase):

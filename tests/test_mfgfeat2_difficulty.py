@@ -2,7 +2,7 @@
 
 import unittest
 
-from fabrication.mfgfeat2_difficulty import (
+from harnesscad.domain.fabrication.mfgfeat2_difficulty import (
     CONFUSABLE_PAIRS,
     EASY_MAX_FEATURE_COUNT,
     HARD_COUNT_THRESHOLD,

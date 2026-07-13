@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry.scadlm_csg_eval import bounds, contains, evaluate_source
-from geometry.solidpy_bounding_box import (
+from harnesscad.domain.geometry.scadlm_csg_eval import bounds, contains, evaluate_source
+from harnesscad.domain.geometry.solidpy_bounding_box import (
     X,
     Y,
     Z,
@@ -14,8 +14,8 @@ from geometry.solidpy_bounding_box import (
     section_cut,
     split_body_planar,
 )
-from programs.scadlm_ast import parse
-from programs.solidpy_scad_emit import cube, scad_render, sphere
+from harnesscad.domain.programs.scadlm_ast import parse
+from harnesscad.domain.programs.solidpy_scad_emit import cube, scad_render, sphere
 
 
 class TestBoundingBoxOfPoints(unittest.TestCase):

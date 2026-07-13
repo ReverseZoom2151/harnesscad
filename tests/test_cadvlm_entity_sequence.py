@@ -1,6 +1,6 @@
 import unittest
 
-from ingest.cadvlm_entity_sequence import (
+from harnesscad.io.ingest.cadvlm_entity_sequence import (
     ENTITY, TOKEN, ParsedSequence, build_sequence, entity_segments,
     flat_sequence, parse_sequence,
 )

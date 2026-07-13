@@ -2,7 +2,7 @@
 
 import unittest
 
-from procedural.proccad_incremental import ProceduralGraph
+from harnesscad.domain.procedural.proccad_incremental import ProceduralGraph
 
 
 def _build():

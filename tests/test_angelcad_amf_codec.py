@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 
-from formats.angelcad_amf_codec import (
+from harnesscad.io.formats.angelcad_amf_codec import (
     AmfError,
     AmfObject,
     dumps,
@@ -15,7 +15,7 @@ from formats.angelcad_amf_codec import (
     to_polyhedra,
     write_amf,
 )
-from geometry.angelcad_polyhedron import Polyhedron, tetrahedron, unit_cube, verify
+from harnesscad.domain.geometry.angelcad_polyhedron import Polyhedron, tetrahedron, unit_cube, verify
 
 
 def _shifted(p, dx):

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.cadgpt_involute_gear import (
+from harnesscad.domain.geometry.cadgpt_involute_gear import (
     pitch_radius,
     pitch_diameter,
     base_radius,

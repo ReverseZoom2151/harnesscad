@@ -2,7 +2,7 @@
 
 import unittest
 
-from generation.hnc_code_control import (
+from harnesscad.agents.generation.hnc_code_control import (
     LOOP,
     PROFILE,
     SEP,

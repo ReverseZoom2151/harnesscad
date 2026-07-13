@@ -12,14 +12,14 @@ plans BEFORE any geometry is built. These tests build raw op lists and confirm:
 
 import unittest
 
-from cisp.ops import (
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, AddCircle, AddLine,
     Extrude, Fillet, Hole, Shell, Boolean,
     LinearPattern, Mate,
 )
-from state.opdag import OpDAG
-from verifiers.verify import Severity
-from verifiers.precheck import PrecheckCheck, PrecheckRules, with_precheck
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.precheck import PrecheckCheck, PrecheckRules, with_precheck
 
 
 def _codes(report):

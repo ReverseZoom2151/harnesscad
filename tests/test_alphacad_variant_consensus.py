@@ -1,6 +1,6 @@
 import unittest
 
-from exploration.alphacad_variant_consensus import (
+from harnesscad.agents.exploration.alphacad_variant_consensus import (
     analyze_variants,
     base_positions,
     consensus_base,

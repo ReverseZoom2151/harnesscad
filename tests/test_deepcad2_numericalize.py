@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from reconstruction import deepcad2_numericalize as dn
+from harnesscad.domain.reconstruction import deepcad2_numericalize as dn
 
 
 class TestUnitFamily(unittest.TestCase):

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.arcs_closest_point import (
+from harnesscad.domain.geometry.arcs_closest_point import (
     INFINITE,
     MANY,
     ONE,

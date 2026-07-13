@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.cadvf_visual_score import (
+from harnesscad.data.dataengine.cadvf_visual_score import (
     Component, collision_penalty, distribution_score, shape_quality_score,
     shape_quantity_score, spacing_penalty, visual_score, MAX_SCORE,
 )

@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction.t2c3_cad_vec_codec import (
+from harnesscad.domain.reconstruction.t2c3_cad_vec_codec import (
     BOOLEAN_OFFSET,
     CAD_CLASS_INFO,
     COORD_OFFSET,

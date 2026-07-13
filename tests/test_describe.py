@@ -8,18 +8,18 @@ phrasing seam without any network.
 
 import unittest
 
-from backends.stub import StubBackend
-from state.opdag import OpDAG
-from cisp.ops import NewSketch, AddRectangle, Extrude, Fillet
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude, Fillet
 
 try:
-    from cisp.ops import Hole
+    from harnesscad.core.cisp.ops import Hole
     HAVE_HOLE = True
 except Exception:  # noqa: BLE001
     Hole = None
     HAVE_HOLE = False
 
-from quality.describe import describe_part, answer_query
+from harnesscad.eval.quality.describe import describe_part, answer_query
 
 
 def _plate(backend, n_holes=0, fillet=False):

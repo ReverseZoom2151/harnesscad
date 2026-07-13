@@ -9,20 +9,20 @@ import os
 import tempfile
 import unittest
 
-from cisp.ops import (
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, AddCircle, Constrain, Extrude, Fillet,
 )
-from state.opdag import OpDAG
-from llm.base import Message, ToolSpec
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.agents.llm.base import Message, ToolSpec
 
-from context.manager import (
+from harnesscad.agents.context.manager import (
     BudgetReport,
     ContextManager,
     ContextOverflowError,
     HeuristicCounter,
     feature_tree_summary,
 )
-from context.staging import StagingArea
+from harnesscad.agents.context.staging import StagingArea
 
 
 # --- token counting --------------------------------------------------------

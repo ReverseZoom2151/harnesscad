@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.cmt_topology_predictor import (
+from harnesscad.domain.reconstruction.cmt_topology_predictor import (
     point_box_distance, edge_surface_score, topology_scores,
     predict_adjacency, predict, surface_edges,
 )

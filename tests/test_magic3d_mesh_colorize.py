@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.magic3d_mesh_colorize import (
+from harnesscad.domain.geometry.magic3d_mesh_colorize import (
     barycentric,
     interpolate_color,
     sample_surface_color,

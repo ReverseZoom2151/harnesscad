@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import unittest
 
-from backends.stub import StubBackend
-from loop import HarnessSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
 
-from library.catalog import build_default_catalog
-from quality.suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
+from harnesscad.domain.library.catalog import build_default_catalog
+from harnesscad.eval.quality.suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
 
 
 def session_factory() -> HarnessSession:
@@ -60,7 +60,7 @@ class TestBearingSuggestion(unittest.TestCase):
 class TestBackendInput(unittest.TestCase):
     def test_reads_holes_from_backend(self):
         # Build a flange (which cuts a 6.6 mm bolt clearance hole) and scan it.
-        from library.parts import flange_card
+        from harnesscad.domain.library.parts import flange_card
         backend = StubBackend()
         session = HarnessSession(backend)
         ops = flange_card().instantiate()

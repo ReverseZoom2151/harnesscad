@@ -1,9 +1,9 @@
 import unittest
 
-from agent.edit_session import EditSession
-from backends.stub import StubBackend
-from cisp.ops import AddRectangle, Extrude, Fillet, NewSketch
-from loop import HarnessSession
+from harnesscad.agents.agent.edit_session import EditSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import AddRectangle, Extrude, Fillet, NewSketch
+from harnesscad.core.loop import HarnessSession
 
 
 class EditSessionTests(unittest.TestCase):

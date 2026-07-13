@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.cadam_naca_airfoil import (
+from harnesscad.domain.geometry.cadam_naca_airfoil import (
     thickness,
     camber,
     camber_slope,

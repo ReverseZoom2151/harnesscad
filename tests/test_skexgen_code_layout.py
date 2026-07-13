@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.skexgen_code_layout import (
+from harnesscad.domain.reconstruction.skexgen_code_layout import (
     CODE_LEN, EXTRUDE_CODEBOOK, TOPOLOGY_CODEBOOK, branch_histogram, branch_of,
     codebook_usage, code_model_vocab, filter_valid, is_valid_code, join_code,
     split_code, swap_branch, unique_codes,

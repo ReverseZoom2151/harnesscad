@@ -2,7 +2,7 @@
 
 import unittest
 
-from procedural.shapegramm_markov_grammar import Rule, MarkovGrammar
+from harnesscad.domain.procedural.shapegramm_markov_grammar import Rule, MarkovGrammar
 
 
 def _grammar():

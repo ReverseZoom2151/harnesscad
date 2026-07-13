@@ -9,13 +9,13 @@ to ok=True.
 import json
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
-from backends.stub import StubBackend
-from loop import HarnessSession
-from llm.base import CompletionResult, ToolCall
-from agent.planner import Planner, PlanError, EMIT_OPS_TOOL
-from agent.runner import run
-from agent.system_prompt import SYSTEM_PROMPT, op_vocabulary, build_system_prompt
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
+from harnesscad.agents.llm.base import CompletionResult, ToolCall
+from harnesscad.agents.agent.planner import Planner, PlanError, EMIT_OPS_TOOL
+from harnesscad.agents.agent.runner import run
+from harnesscad.agents.agent.system_prompt import SYSTEM_PROMPT, op_vocabulary, build_system_prompt
 
 from tests.test_llm import MockLLM, plate_ops_json
 

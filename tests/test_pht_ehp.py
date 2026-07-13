@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from reconstruction import pht_ehp as ehp
+from harnesscad.domain.reconstruction import pht_ehp as ehp
 
 
 class NormaliseCoordTest(unittest.TestCase):

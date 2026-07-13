@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.cad2program_shape_program import (
+from harnesscad.domain.reconstruction.cad2program_shape_program import (
     Bbox, PrimitiveInstance, ShapeProgram, make_instance, normalize_model_id,
     model_id_bracketed, serialize_python, parse_python, serialize_yaml,
     parse_yaml, program_bounds, normalize_to_first_octant, translate,

@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.s2cadsig_metrics import (
+from harnesscad.domain.reconstruction.s2cadsig_metrics import (
     MetricError,
     curve_class_metrics,
     face_heatmap_error,

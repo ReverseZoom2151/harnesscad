@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry.brick_structure import Brick, BrickStructure
-from geometry.brick_connectivity import (
+from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
+from harnesscad.domain.geometry.brick_connectivity import (
     GROUND,
     adjacency,
     connected_components,

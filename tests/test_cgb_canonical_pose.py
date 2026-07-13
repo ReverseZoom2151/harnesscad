@@ -1,7 +1,7 @@
 """Tests for the canonical-pose contract."""
 import unittest
 
-from quality.cgb_canonical_pose import (
+from harnesscad.eval.quality.cgb_canonical_pose import (
     ambiguity_flags,
     axes_are_ordered,
     bounding_box,

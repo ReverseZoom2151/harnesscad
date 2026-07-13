@@ -1,6 +1,6 @@
 import unittest
 
-from drawings.annomap_gdt import (
+from harnesscad.domain.drawings.annomap_gdt import (
     FORM,
     LOCATION,
     category_of,
@@ -8,7 +8,7 @@ from drawings.annomap_gdt import (
     validate_frames,
     worst_severity,
 )
-from drawings.annomap_parser import parse_gdt_frame
+from harnesscad.domain.drawings.annomap_parser import parse_gdt_frame
 
 
 class CategoryTests(unittest.TestCase):

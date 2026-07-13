@@ -1,7 +1,7 @@
 import unittest
 
-from ingest.davinci_primitive_tokens import encode_primitive
-from bench.davinci_inference_metrics import (
+from harnesscad.io.ingest.davinci_primitive_tokens import encode_primitive
+from harnesscad.eval.bench.davinci_inference_metrics import (
     chamfer_distance, constraint_f1, evaluate, hungarian, match_primitives,
     primitive_f1, primitive_true_positives, sample_primitive, token_accuracy,
     token_cost,

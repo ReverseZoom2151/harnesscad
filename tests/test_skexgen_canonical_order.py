@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.skexgen_canonical_order import (
+from harnesscad.domain.reconstruction.skexgen_canonical_order import (
     bottom_left, canonicalize_sketch, circle_rim_points, curve_bbox, endpoints,
     face_bbox, flip_curve, loop_bbox, point_key, sort_curves, sort_faces,
     sort_loops,

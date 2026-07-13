@@ -1,6 +1,6 @@
 import unittest
 
-from security.tool_gate import (
+from harnesscad.governance.security.tool_gate import (
     ToolPolicy,
     ToolTrustGate,
     TrustTier,

@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from geometry import nurbgen_curve as nc
-from geometry import nurbgen_knot_insertion as ki
-from numeric import nurbs_basis as nb
+from harnesscad.domain.geometry import nurbgen_curve as nc
+from harnesscad.domain.geometry import nurbgen_knot_insertion as ki
+from harnesscad.domain.numeric import nurbs_basis as nb
 
 
 def _sample_curve():

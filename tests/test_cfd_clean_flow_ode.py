@@ -2,7 +2,7 @@
 
 import unittest
 
-import numeric.cfd_clean_flow_ode as cf
+from harnesscad.domain.numeric import cfd_clean_flow_ode as cf
 
 
 class TestAnalyticPredictions(unittest.TestCase):

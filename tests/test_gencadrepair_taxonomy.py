@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from reconstruction.deepcad_command_spec import Command, command
-from reliability.gencadrepair_taxonomy import (
+from harnesscad.domain.reconstruction.deepcad_command_spec import Command, command
+from harnesscad.eval.reliability.gencadrepair_taxonomy import (
     COMMANDS_AFTER_EOS,
     CURVE_BEFORE_LOOP,
     DEGENERATE_EXTRUDE,

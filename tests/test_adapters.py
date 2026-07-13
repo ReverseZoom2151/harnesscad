@@ -1,6 +1,6 @@
 import unittest
 
-from adapters.base import (
+from harnesscad.io.adapters.base import (
     CADAdapter,
     Capability,
     CapabilityError,
@@ -9,7 +9,7 @@ from adapters.base import (
     VerificationRequired,
     WriteCommand,
 )
-from adapters.memory import MemoryCADAdapter
+from harnesscad.io.adapters.memory import MemoryCADAdapter
 
 
 class MemoryCADAdapterTests(unittest.TestCase):

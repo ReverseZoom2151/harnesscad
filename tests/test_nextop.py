@@ -1,15 +1,15 @@
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import AddCircle, AddInstance, Extrude, NewSketch
-from quality.nextop import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import AddCircle, AddInstance, Extrude, NewSketch
+from harnesscad.eval.quality.nextop import (
     NextOperationRanker,
     reciprocal_rank,
     rank_next_operations,
     top_k_accuracy,
 )
-from state.opdag import OpDAG
-from verifiers.verify import Diagnostic, Severity
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 
 
 def apply(dag, backend, op):

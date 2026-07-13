@@ -2,7 +2,7 @@
 
 import unittest
 
-from dataengine.cadmium_annotation_stats import (
+from harnesscad.data.dataengine.cadmium_annotation_stats import (
     compare_corpora,
     corpus_stats,
     decimal_places,

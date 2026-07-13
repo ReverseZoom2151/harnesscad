@@ -12,10 +12,10 @@ Two backend regimes, mirroring the contract tests:
 
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.dfm import DFMRules, DFMCheck, with_dfm
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.dfm import DFMRules, DFMCheck, with_dfm
 
 
 def _build_plate(backend):

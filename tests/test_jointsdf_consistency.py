@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from reconstruction.jointsdf_consistency import (
+from harnesscad.domain.reconstruction.jointsdf_consistency import (
     per_anchor_consistency,
     segmentation_consistency,
     surface_consistency,

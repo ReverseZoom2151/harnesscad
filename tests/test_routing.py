@@ -7,8 +7,8 @@ and a `FailingLLM` exercises the sequential fallback chain.
 import unittest
 from typing import List, Optional
 
-from llm.base import LLM, CompletionResult, Message, user, system
-from routing import (
+from harnesscad.agents.llm.base import LLM, CompletionResult, Message, user, system
+from harnesscad.core.routing import (
     TaskClass,
     Classifier,
     HeuristicClassifier,

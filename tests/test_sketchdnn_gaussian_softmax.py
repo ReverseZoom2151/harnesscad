@@ -2,7 +2,7 @@ import math
 import random
 import unittest
 
-from numeric.sketchdnn_gaussian_softmax import (
+from harnesscad.domain.numeric.sketchdnn_gaussian_softmax import (
     argmax_class,
     gs_cumulative_sample,
     gs_forward_step,

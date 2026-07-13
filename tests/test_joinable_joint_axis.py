@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.joinable_joint_axis import (
+from harnesscad.domain.geometry.joinable_joint_axis import (
     AxisLineError,
     angle_between,
     as_vec3,

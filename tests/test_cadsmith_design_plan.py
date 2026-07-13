@@ -1,6 +1,6 @@
 import unittest
 
-from generation.cadsmith_design_plan import (
+from harnesscad.agents.generation.cadsmith_design_plan import (
     Component, GeometricConstraints, DesignPlan,
     validate, is_valid, check_prompt_conventions,
 )

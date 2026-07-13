@@ -2,7 +2,7 @@
 
 import unittest
 
-from dataengine.comet_memory_consolidation import (
+from harnesscad.data.dataengine.comet_memory_consolidation import (
     MemoryNode,
     consolidate,
     find_clusters,

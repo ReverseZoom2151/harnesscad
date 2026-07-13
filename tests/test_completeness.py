@@ -14,9 +14,9 @@ Deterministic; no network.
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.completeness import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.completeness import (
     CompletenessRules, CompletenessCheck, with_completeness,
 )
 
@@ -137,7 +137,7 @@ class TestHoleCoverage(unittest.TestCase):
 
     def test_ops_derived_hole_flagged(self):
         # A Hole op carries no tolerance/thread -> a genuine metadata gap.
-        from cisp.ops import Hole
+        from harnesscad.core.cisp.ops import Hole
         backend = _MetaBackend(metrics={
             "name": "p", "units": "mm",
             "bodies": [{"id": "b1", "material": "steel"}],

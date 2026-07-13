@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.recad_hard_question import (
+from harnesscad.data.dataengine.recad_hard_question import (
     DEFAULT_TAU_H,
     OBJ_GRPO,
     OBJ_GUIDED,

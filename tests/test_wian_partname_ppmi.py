@@ -1,7 +1,7 @@
 import unittest
 
-from bench.wian_partname_pairs import NamePair, evaluate_pairs
-from library.wian_partname_ppmi import (
+from harnesscad.eval.bench.wian_partname_pairs import NamePair, evaluate_pairs
+from harnesscad.domain.library.wian_partname_ppmi import (
     build_ppmi,
     cosine,
     nearest_tokens,

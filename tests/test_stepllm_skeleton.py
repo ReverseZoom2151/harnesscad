@@ -1,8 +1,8 @@
 import unittest
 
-from formats.stepllm_parser import Real, Ref, parse, serialize
-from formats.stepllm_schema import check_attributes
-from formats.stepllm_skeleton import (
+from harnesscad.io.formats.stepllm_parser import Real, Ref, parse, serialize
+from harnesscad.io.formats.stepllm_schema import check_attributes
+from harnesscad.io.formats.stepllm_skeleton import (
     StepBuilder, default_header, detect_primitives, skeleton_from_keywords,
 )
 

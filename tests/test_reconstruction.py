@@ -1,12 +1,12 @@
 import unittest
 
-from reconstruction.edges import normalize_edges, projection_feature
-from reconstruction.metrics import edge_prf, face_prf
-from reconstruction.model import Edge2D, Edge3D, FaceCluster, FaceLoop, OrthographicInput, View2D
-from reconstruction.patterns import PATTERNS, match_patterns
-from reconstruction.pipeline import reconstruct
-from reconstruction.svg import parse_svg, validate_input
-from reconstruction.topology import (
+from harnesscad.domain.reconstruction.edges import normalize_edges, projection_feature
+from harnesscad.domain.reconstruction.metrics import edge_prf, face_prf
+from harnesscad.domain.reconstruction.model import Edge2D, Edge3D, FaceCluster, FaceLoop, OrthographicInput, View2D
+from harnesscad.domain.reconstruction.patterns import PATTERNS, match_patterns
+from harnesscad.domain.reconstruction.pipeline import reconstruct
+from harnesscad.domain.reconstruction.svg import parse_svg, validate_input
+from harnesscad.domain.reconstruction.topology import (
     cluster_planar_loops, find_face_loops, manifold_gate, wireframe_graph,
 )
 

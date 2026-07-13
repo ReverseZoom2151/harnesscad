@@ -1,7 +1,7 @@
 import unittest
 
-from cisp.ops import AddCircle, Extrude, Hole, Mate, NewSketch, SetParam
-from surfaces.commands import (
+from harnesscad.core.cisp.ops import AddCircle, Extrude, Hole, Mate, NewSketch, SetParam
+from harnesscad.io.surfaces.commands import (
     CommandParseError,
     CommandSurface,
     HelpIntent,

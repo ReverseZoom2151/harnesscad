@@ -1,6 +1,6 @@
 import unittest
 
-from drawings.t2cadtd_projection_convention import (
+from harnesscad.domain.drawings.t2cadtd_projection_convention import (
     FRONT, TOP, SIDE, THIRD_ANGLE, FIRST_ANGLE,
     view_placements, convert_layout, infer_convention,
     dimensions_covered, views_sufficient, SufficiencyResult,

@@ -11,15 +11,15 @@ import threading
 import unittest
 import urllib.request
 
-from cisp.ops import AddRectangle, Constrain, Extrude, NewSketch
-from backends.stub import StubBackend
-from harness import AgentHarness
-from llm.structured import ParsedOps
-from loop import HarnessSession
-from surfaces.a2a_server import wire
-from surfaces.a2a_server.app import make_server
-from surfaces.a2a_server.card import build_agent_card
-from surfaces.a2a_server.handler import A2AHandler
+from harnesscad.core.cisp.ops import AddRectangle, Constrain, Extrude, NewSketch
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.harness import AgentHarness
+from harnesscad.agents.llm.structured import ParsedOps
+from harnesscad.core.loop import HarnessSession
+from harnesscad.io.surfaces.a2a_server import wire
+from harnesscad.io.surfaces.a2a_server.app import make_server
+from harnesscad.io.surfaces.a2a_server.card import build_agent_card
+from harnesscad.io.surfaces.a2a_server.handler import A2AHandler
 
 
 # --- fixtures --------------------------------------------------------------

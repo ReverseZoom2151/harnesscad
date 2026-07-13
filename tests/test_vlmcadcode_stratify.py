@@ -1,6 +1,6 @@
 import unittest
 
-from bench.vlmcadcode_stratify import (
+from harnesscad.eval.bench.vlmcadcode_stratify import (
     GEOMETRIC_COMPLEXITY_LEVELS, mesh_complexity_score, split_mesh_complexity,
     compilation_difficulty, classify_geometric_complexity, object_statistics,
     dataset_statistics,

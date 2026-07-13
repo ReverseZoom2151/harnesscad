@@ -3,12 +3,12 @@
 import collections
 import unittest
 
-from datagen.contrastcad_permute import (
+from harnesscad.data.datagen.contrastcad_permute import (
     cyclic_shift_loop,
     permute_sequence,
     swap_circle_loops,
 )
-from datagen.contrastcad_rre import CIRCLE, EXTRUDE, LINE, SOL
+from harnesscad.data.datagen.contrastcad_rre import CIRCLE, EXTRUDE, LINE, SOL
 
 
 def _loop_p1():

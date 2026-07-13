@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine import img2cadseq_knowledge as k
+from harnesscad.data.dataengine import img2cadseq_knowledge as k
 
 
 CYL = [k.ADD_SKETCH, k.ADD_CIRCLE, k.ADD_EXTRUDE]

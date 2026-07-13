@@ -1,11 +1,11 @@
 import unittest
 
-from reconstruction.skexgen_extrude_tokens import (
+from harnesscad.domain.reconstruction.skexgen_extrude_tokens import (
     EXT_FLAGS, EXT_SEQ_LEN, OP_ADD, OP_CUT, OP_INTERSECT, decode_extrude,
     encode_extrude, extrude_flags, extrude_vocab_size, flag_field_positions,
     is_valid_extrude_block, op_token,
 )
-from reconstruction.skexgen_token_format import shift_stream
+from harnesscad.domain.reconstruction.skexgen_token_format import shift_stream
 
 KWARGS = dict(
     extrude_value=(0.5, -0.25),

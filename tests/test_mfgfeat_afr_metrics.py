@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bench import mfgfeat_afr_metrics as m
+from harnesscad.eval.bench import mfgfeat_afr_metrics as m
 
 
 class TestFNA(unittest.TestCase):

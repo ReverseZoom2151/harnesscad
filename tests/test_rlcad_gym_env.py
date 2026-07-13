@@ -2,8 +2,8 @@
 
 import unittest
 
-from reconstruction import rlcad_gym_env as gym
-from reconstruction.rlcad_command_spec import (
+from harnesscad.domain.reconstruction import rlcad_gym_env as gym
+from harnesscad.domain.reconstruction.rlcad_command_spec import (
     INTERSECTION, NEWBODY, SUBTRACTION, UNION,
 )
 

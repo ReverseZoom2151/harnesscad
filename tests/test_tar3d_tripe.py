@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.tar3d_tripe import (
+from harnesscad.domain.geometry.tar3d_tripe import (
     apply_rope,
     rope_frequencies,
     rope_vector,

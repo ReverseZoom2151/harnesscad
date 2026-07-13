@@ -13,9 +13,9 @@ Covers:
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.compliance import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.compliance import (
     ComplianceRules, ComplianceCheck, with_compliance,
 )
 

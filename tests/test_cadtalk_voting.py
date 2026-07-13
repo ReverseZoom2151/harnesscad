@@ -1,6 +1,6 @@
 import unittest
 
-from programs.cadtalk_voting import (
+from harnesscad.domain.programs.cadtalk_voting import (
     Evidence,
     accumulate,
     assign_labels,

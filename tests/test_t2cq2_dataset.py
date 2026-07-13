@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import unittest
 
-from dataengine.t2cq2_dataset import (
+from harnesscad.data.dataengine.t2cq2_dataset import (
     CadQueryRecord,
     annotation_outcomes,
     build_annotation_request,

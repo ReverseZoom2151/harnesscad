@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from bench.gencad3d_latent_alignment import (
+from harnesscad.eval.bench.gencad3d_latent_alignment import (
     AlignmentQuality,
     LinearAlignment,
     alignment_improvement,

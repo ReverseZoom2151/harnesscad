@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from numeric.opencad_constraint_jacobian import (
+from harnesscad.domain.numeric.opencad_constraint_jacobian import (
     Circle,
     Constraint,
     Line,

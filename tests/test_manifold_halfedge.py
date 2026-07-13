@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.manifold_halfedge import (
+from harnesscad.domain.geometry.manifold_halfedge import (
     HalfedgeMesh,
     next_halfedge,
     prev_halfedge,

@@ -9,10 +9,10 @@ where both branches touched the same feature/parameter.
 
 import unittest
 
-from cisp.ops import (
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, AddCircle, Extrude, Boolean, SetParam,
 )
-from state.opdag import OpDAG, DEFAULT_BRANCH
+from harnesscad.core.state.opdag import OpDAG, DEFAULT_BRANCH
 
 
 def _base(dag):

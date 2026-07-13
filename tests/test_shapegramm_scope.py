@@ -2,7 +2,7 @@
 
 import unittest
 
-from procedural.shapegramm_scope import (
+from harnesscad.domain.procedural.shapegramm_scope import (
     OUTSIDE, SURROUNDING, INTERSECTS, WITHIN,
     make_aabb_frustum, classify_scope, is_visible, classify_hierarchy,
 )

@@ -1,6 +1,6 @@
 import unittest
 
-from ingest.reconcile import DiscrepancyKind, Evidence, reconcile
+from harnesscad.io.ingest.reconcile import DiscrepancyKind, Evidence, reconcile
 
 
 class TestReconcile(unittest.TestCase):

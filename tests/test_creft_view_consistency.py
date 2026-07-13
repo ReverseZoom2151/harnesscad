@@ -2,8 +2,8 @@
 
 import unittest
 
-from drawings.creft_projection import Box, View, project_three_views
-from drawings.creft_view_consistency import (
+from harnesscad.domain.drawings.creft_projection import Box, View, project_three_views
+from harnesscad.domain.drawings.creft_view_consistency import (
     DimensionConstraint,
     check_dimension_constraints,
     check_view_consistency,

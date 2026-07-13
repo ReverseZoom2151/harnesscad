@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.cadrille_metrics import (
+from harnesscad.eval.bench.cadrille_metrics import (
     normalize_to_unit_cube,
     chamfer_distance,
     median_cd,

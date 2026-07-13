@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.t2cadbench_scorecard import (
+from harnesscad.eval.bench.t2cadbench_scorecard import (
     cell_scorecard,
     degradation_ratio,
     prompt_style_comparison,

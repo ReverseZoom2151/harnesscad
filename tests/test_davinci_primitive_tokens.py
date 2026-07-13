@@ -1,6 +1,6 @@
 import unittest
 
-from ingest.davinci_primitive_tokens import (
+from harnesscad.io.ingest.davinci_primitive_tokens import (
     N_TOKENS, PARAM_COUNT, TYPE_TOKENS, decode_primitive, dequantize,
     encode_primitive, is_empty_slot, quantize, token_issues,
 )

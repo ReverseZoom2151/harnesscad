@@ -3,7 +3,7 @@ import math
 import random
 import unittest
 
-from numeric.makeashape_wavelet_transform import (
+from harnesscad.domain.numeric.makeashape_wavelet_transform import (
     Grid3D, WAVELETS, SUBBAND_NAMES, DETAIL_NAMES,
     wavelet_forward_1d, wavelet_inverse_1d,
     dwt3_level, idwt3_level, dwt3, idwt3, WaveletDecomposition,

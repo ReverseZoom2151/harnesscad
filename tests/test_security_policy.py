@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from security import DataPolicy, SecureIngestGate, redact_metadata
+from harnesscad.governance.security import DataPolicy, SecureIngestGate, redact_metadata
 
 
 class SecurityPolicyTests(unittest.TestCase):

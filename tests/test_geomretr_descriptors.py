@@ -6,7 +6,7 @@ import math
 import random
 import unittest
 
-from reconstruction.geomretr_descriptors import (
+from harnesscad.domain.reconstruction.geomretr_descriptors import (
     d2_shape_distribution,
     radial_shell_signature,
     pca_extents,

@@ -1,13 +1,13 @@
 import unittest
 
-from reconstruction.graphcad_action_plan import (
+from harnesscad.domain.reconstruction.graphcad_action_plan import (
     Action,
     action_histogram,
     plan_actions,
     render_plan,
     validate_plan,
 )
-from reconstruction.graphcad_knowledge_graph import (
+from harnesscad.domain.reconstruction.graphcad_knowledge_graph import (
     GraphNode,
     KnowledgeGraph,
     parse_document,

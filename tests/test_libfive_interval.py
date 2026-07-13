@@ -11,9 +11,9 @@ import math
 import random
 import unittest
 
-from geometry import libfive_frep_ir as ir
-from numeric import libfive_interval as iv
-from numeric.libfive_interval import Interval
+from harnesscad.domain.geometry import libfive_frep_ir as ir
+from harnesscad.domain.numeric import libfive_interval as iv
+from harnesscad.domain.numeric.libfive_interval import Interval
 
 
 def _sample_range(fn, lo, hi, n=400):

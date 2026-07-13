@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.jointsdf_boundary_fscore import (
+from harnesscad.eval.bench.jointsdf_boundary_fscore import (
     boundary_edges,
     boundary_prf,
     boundary_f1,

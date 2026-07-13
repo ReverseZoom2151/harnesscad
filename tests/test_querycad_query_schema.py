@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bench.querycad_query_schema import (
+from harnesscad.eval.bench.querycad_query_schema import (
     CadQaQuestion, PropertyFilter, QUESTION_TYPES, VIEWS,
     canonical_aggregation, question_from_dict, filter_from_dict,
 )

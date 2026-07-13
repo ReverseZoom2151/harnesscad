@@ -5,7 +5,7 @@ from __future__ import annotations
 import random
 import unittest
 
-from reconstruction.flexcad_text import (
+from harnesscad.domain.reconstruction.flexcad_text import (
     CADModel,
     LEVEL_CAD,
     LEVEL_SE,
@@ -34,7 +34,7 @@ from reconstruction.flexcad_text import (
     mask_field,
     infill,
 )
-from dataengine.flexcad_masking import (
+from harnesscad.data.dataengine.flexcad_masking import (
     enumerate_fields,
     fields_at_level,
     sample_level,
@@ -44,7 +44,7 @@ from dataengine.flexcad_masking import (
     mask_curves_of_loop,
     SAMPLING_LEVELS,
 )
-from dataengine.flexcad_infill_pairs import (
+from harnesscad.data.dataengine.flexcad_infill_pairs import (
     pair_from_target,
     unconditional_pair,
     sample_pair,
@@ -52,7 +52,7 @@ from dataengine.flexcad_infill_pairs import (
     verify_pair,
     INSTRUCTIONS,
 )
-from bench.flexcad_controllability import (
+from harnesscad.eval.bench.flexcad_controllability import (
     model_validity,
     text_validity,
     prediction_validity,

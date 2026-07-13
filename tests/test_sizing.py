@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from sizing.calc import SizingCalc, default_formulas
+from harnesscad.domain.sizing.calc import SizingCalc, default_formulas
 
 
 class TestShaftDiameter(unittest.TestCase):

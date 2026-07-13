@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.pllm_pseudo_label_selection import (
+from harnesscad.data.dataengine.pllm_pseudo_label_selection import (
     Candidate, NEAR_TIE, accept_pseudo_label, executable_candidates,
     select_dataset, select_representative,
 )

@@ -1,6 +1,6 @@
 import unittest
 
-from numeric.cq_assembly_dof import (
+from harnesscad.domain.numeric.cq_assembly_dof import (
     BINARY_KINDS,
     DOF_REMOVED,
     UNARY_KINDS,

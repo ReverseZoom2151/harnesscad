@@ -8,15 +8,15 @@ Rewritten from bare pytest-style module functions (never collected by
 
 import unittest
 
-from bench.correction_trajectory import score as trajectory_score
-from bench.primitive_reconstruction_metrics import metrics as reconstruction_metrics
-from cisp.explicit_context import Context
-from quality.view_coverage import audit as view_audit
-from rag.cad_api_knowledge import API, chunks, validate as validate_apis
-from reconstruction.primitive_intersections import assemble
-from reconstruction.primitive_relations import Primitive, infer, project
-from reconstruction.primitive_stitch import stitch
-from reliability.code_error import normalize
+from harnesscad.eval.bench.correction_trajectory import score as trajectory_score
+from harnesscad.eval.bench.primitive_reconstruction_metrics import metrics as reconstruction_metrics
+from harnesscad.core.cisp.explicit_context import Context
+from harnesscad.eval.quality.view_coverage import audit as view_audit
+from harnesscad.agents.rag.cad_api_knowledge import API, chunks, validate as validate_apis
+from harnesscad.domain.reconstruction.primitive_intersections import assemble
+from harnesscad.domain.reconstruction.primitive_relations import Primitive, infer, project
+from harnesscad.domain.reconstruction.primitive_stitch import stitch
+from harnesscad.eval.reliability.code_error import normalize
 
 
 class ExplicitContextTest(unittest.TestCase):

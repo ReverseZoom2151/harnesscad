@@ -1,9 +1,9 @@
 import unittest
 
-from reconstruction import pointercad_indexing as idx
-from reconstruction import pointercad_metrics as m
-from reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
-from reconstruction.pointercad_pointer import CHAMFER, SKETCH, PointerCommand
+from harnesscad.domain.reconstruction import pointercad_indexing as idx
+from harnesscad.domain.reconstruction import pointercad_metrics as m
+from harnesscad.domain.reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
+from harnesscad.domain.reconstruction.pointercad_pointer import CHAMFER, SKETCH, PointerCommand
 
 
 class PointerAccuracyTest(unittest.TestCase):

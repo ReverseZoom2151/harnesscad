@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from drawings.sgraphs2_entity_render import (
+from harnesscad.domain.drawings.sgraphs2_entity_render import (
     TAU,
     arc_endpoints,
     arc_midpoint,
@@ -17,7 +17,7 @@ from drawings.sgraphs2_entity_render import (
     render_sketch,
     sample_entity,
 )
-from formats.sgraphs2_onshape_json import Arc, Circle, EntityType, Line, Point, Sketch
+from harnesscad.io.formats.sgraphs2_onshape_json import Arc, Circle, EntityType, Line, Point, Sketch
 
 
 class TestLine(unittest.TestCase):

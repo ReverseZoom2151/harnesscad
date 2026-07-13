@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from bench.neurcad_metrics import (
+from harnesscad.eval.bench.neurcad_metrics import (
     developability_ratio, mean_abs_gaussian_curvature,
     max_abs_gaussian_curvature, gaussian_curvature_mae,
     gaussian_curvature_rmse, gauss_bonnet_integral, gauss_bonnet_defect,

@@ -1,7 +1,7 @@
 """Tests for text-prompt design-variable encodings."""
 import unittest
 
-from exploration.llmdesopt_prompt_encoding import (
+from harnesscad.agents.exploration.llmdesopt_prompt_encoding import (
     WordSlot,
     BagOfWordsPrompt,
     TokenisationPrompt,

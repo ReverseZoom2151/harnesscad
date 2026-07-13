@@ -9,14 +9,14 @@ Rewritten from bare pytest-style module functions (never collected by
 import math
 import unittest
 
-from agent.iterative_edit_policy import IterativeEditPolicy
-from bench.spatial_challenge_set import fixtures, stratify
-from dataengine.edit_triplets import build
-from ingest.sketch_frame_tokens import SketchFrame, quantize
-from quality.directional_edit_alignment import alignment, rank
-from quality.edit_locality import locality
-from quality.frame_coherence import check
-from quality.spatial_sequence_accuracy import angle_error, score
+from harnesscad.agents.agent.iterative_edit_policy import IterativeEditPolicy
+from harnesscad.eval.bench.spatial_challenge_set import fixtures, stratify
+from harnesscad.data.dataengine.edit_triplets import build
+from harnesscad.io.ingest.sketch_frame_tokens import SketchFrame, quantize
+from harnesscad.eval.quality.directional_edit_alignment import alignment, rank
+from harnesscad.eval.quality.edit_locality import locality
+from harnesscad.eval.quality.frame_coherence import check
+from harnesscad.eval.quality.spatial_sequence_accuracy import angle_error, score
 
 
 class EditTripletsTest(unittest.TestCase):

@@ -9,18 +9,18 @@ plus the CADGymEnv reset/step contract.
 import json
 import unittest
 
-from cisp.ops import _REGISTRY
-from loop import HarnessSession
-from backends.stub import StubBackend
-from surfaces.mcp.annotations import (
+from harnesscad.core.cisp.ops import _REGISTRY
+from harnesscad.core.loop import HarnessSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.io.surfaces.mcp.annotations import (
     TIER_AUTO, TIER_NOTIFY, TIER_REQUIRE, annotate, approval_tier,
 )
-from surfaces.mcp.tools import (
+from harnesscad.io.surfaces.mcp.tools import (
     ToolCatalog, ToolDefinition, ToolResult,
     UnknownToolError, ToolValidationError, ToolExecutionError,
     reward_from_apply,
 )
-from surfaces.mcp.gym import CADGymEnv
+from harnesscad.io.surfaces.mcp.gym import CADGymEnv
 
 
 PLATE = [
@@ -179,7 +179,7 @@ class TestToolResultReward(unittest.TestCase):
     def test_verify_tool_reward_reflects_state(self):
         cat = ToolCatalog()
         session = HarnessSession(StubBackend())
-        session.apply_ops([__import__("cisp.ops", fromlist=["parse_op"]).parse_op(o)
+        session.apply_ops([__import__("harnesscad.core.cisp.ops", fromlist=["parse_op"]).parse_op(o)
                            for o in PLATE])
         res = cat.call("verify", {}, session=session)
         self.assertTrue(res.ok)
@@ -269,14 +269,14 @@ class TestGymEnv(unittest.TestCase):
 class TestRewardHelper(unittest.TestCase):
     def test_reward_from_apply_pass_positive(self):
         session = HarnessSession(StubBackend())
-        from cisp.ops import parse_op
+        from harnesscad.core.cisp.ops import parse_op
         result = session.apply_ops([parse_op(o) for o in PLATE])
         self.assertTrue(result.ok)
         self.assertGreater(reward_from_apply(result), 0.0)
 
     def test_reward_from_apply_fail_negative(self):
         session = HarnessSession(StubBackend())
-        from cisp.ops import parse_op
+        from harnesscad.core.cisp.ops import parse_op
         result = session.apply_ops([parse_op({"op": "extrude", "sketch": "x",
                                               "distance": 1.0})])
         self.assertFalse(result.ok)

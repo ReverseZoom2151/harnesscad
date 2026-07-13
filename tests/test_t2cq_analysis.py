@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs.t2cq_analysis import analyze, is_safe
+from harnesscad.domain.programs.t2cq_analysis import analyze, is_safe
 
 _CLEAN = (
     "import cadquery as cq\n"

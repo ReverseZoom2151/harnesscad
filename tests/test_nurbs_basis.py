@@ -2,7 +2,7 @@
 
 import unittest
 
-from numeric import nurbs_basis as nb
+from harnesscad.domain.numeric import nurbs_basis as nb
 
 
 class TestKnotHelpers(unittest.TestCase):

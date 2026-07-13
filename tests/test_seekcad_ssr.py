@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.seekcad_ssr import (
+from harnesscad.domain.geometry.seekcad_ssr import (
     BOOLEAN_OPS,
     REFINEMENT_FEATURES,
     SKETCH_FEATURES,

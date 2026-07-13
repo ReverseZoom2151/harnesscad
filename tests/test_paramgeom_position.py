@@ -3,9 +3,9 @@
 import unittest
 from fractions import Fraction
 
-from programs.paramgeom_handles import cube_handles, cylinder_handles, sphere_handles
-from programs.paramgeom_linform import LinearForm
-from programs.paramgeom_position import (
+from harnesscad.domain.programs.paramgeom_handles import cube_handles, cylinder_handles, sphere_handles
+from harnesscad.domain.programs.paramgeom_linform import LinearForm
+from harnesscad.domain.programs.paramgeom_position import (
     DerivationError,
     PrimitiveNode,
     delta_vector,

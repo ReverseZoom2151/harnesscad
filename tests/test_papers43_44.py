@@ -8,21 +8,21 @@ Rewritten from bare pytest-style module functions (never collected by
 
 import unittest
 
-from adapters.rhino_contract import (HostCapabilities, HostResult, HostScript,
+from harnesscad.io.adapters.rhino_contract import (HostCapabilities, HostResult, HostScript,
                                      validate_script)
-from agent.host_feedback import HostProposal, confirm, execute, preview, refine
-from agent.intent_resolution import resolve_intent
-from bench.evolution_dynamics import evolution_dynamics, lineage_stats
-from bench.nl_cad_casebook import evaluate_case, paper_casebook
-from bench.operator_profile import operator_profile
-from dataengine.template_collapse import identifier_leakage, template_collapse
-from datagen.cube_rotations import (apply_rotation, cube_rotations,
+from harnesscad.agents.agent.host_feedback import HostProposal, confirm, execute, preview, refine
+from harnesscad.agents.agent.intent_resolution import resolve_intent
+from harnesscad.eval.bench.evolution_dynamics import evolution_dynamics, lineage_stats
+from harnesscad.eval.bench.nl_cad_casebook import evaluate_case, paper_casebook
+from harnesscad.eval.bench.operator_profile import operator_profile
+from harnesscad.data.dataengine.template_collapse import identifier_leakage, template_collapse
+from harnesscad.data.datagen.cube_rotations import (apply_rotation, cube_rotations,
                                     inverse_rotation, rewrite_calls)
-from datagen.evolution import (GeneratorRecord, sample_parents, termination,
+from harnesscad.data.datagen.evolution import (GeneratorRecord, sample_parents, termination,
                                validate_lineage)
-from datagen.evolution_validation import canonical_seven_views, validate_candidate
-from datagen.parameter_qd import fill_archive
-from datagen.trace_slice import slice_trace, verify_slice
+from harnesscad.data.datagen.evolution_validation import canonical_seven_views, validate_candidate
+from harnesscad.data.datagen.parameter_qd import fill_archive
+from harnesscad.data.datagen.trace_slice import slice_trace, verify_slice
 
 
 class EvolutionLineageTest(unittest.TestCase):

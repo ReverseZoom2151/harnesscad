@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from bench.ssrl_representation_quality import (
+from harnesscad.eval.bench.ssrl_representation_quality import (
     alignment,
     uniformity,
     knn_classify,

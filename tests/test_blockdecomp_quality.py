@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from geometry.blockdecomp_domain import Shape
-from geometry.blockdecomp_cut import full_cut
-from geometry.blockdecomp_quality import (
+from harnesscad.domain.geometry.blockdecomp_domain import Shape
+from harnesscad.domain.geometry.blockdecomp_cut import full_cut
+from harnesscad.domain.geometry.blockdecomp_quality import (
     all_quads,
     aspect_ratio,
     area_variance_ratio,

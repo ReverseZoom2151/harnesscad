@@ -2,8 +2,8 @@
 
 import unittest
 
-from cisp.ops import Extrude, Fillet, NewSketch, Boolean
-from reliability.loopdetect import LoopDetector, signature
+from harnesscad.core.cisp.ops import Extrude, Fillet, NewSketch, Boolean
+from harnesscad.eval.reliability.loopdetect import LoopDetector, signature
 
 
 class TestSignature(unittest.TestCase):

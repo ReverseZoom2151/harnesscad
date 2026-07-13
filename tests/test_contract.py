@@ -12,10 +12,10 @@ Two backend regimes are exercised:
 
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from contract import (
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.core.contract import (
     Contract, Tolerance, MassSpec, ContractCheck,
     contract_from_brief_schema, register_predicate,
 )

@@ -5,8 +5,8 @@ from __future__ import annotations
 import random
 import unittest
 
-from drawings.picasso_rasterizer import Circle, Line, rasterize
-from drawings.picasso_self_supervision import (
+from harnesscad.domain.drawings.picasso_rasterizer import Circle, Line, rasterize
+from harnesscad.domain.drawings.picasso_self_supervision import (
     SelfSupervisionPair,
     generate_synthetic_sketch,
     make_self_supervision_dataset,

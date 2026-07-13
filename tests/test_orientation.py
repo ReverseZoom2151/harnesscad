@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from ingest.orientation import (
+from harnesscad.io.ingest.orientation import (
     OrientationDistribution,
     OrientationMode,
     Rotation,

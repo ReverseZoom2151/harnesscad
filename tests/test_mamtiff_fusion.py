@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from numeric.mamtiff_fusion import (
+from harnesscad.domain.numeric.mamtiff_fusion import (
     window_mask, softmax, masked_attention, sigmoid, adaptive_fusion,
     sequence_aware_pe, multiscale_attention_flops,
 )

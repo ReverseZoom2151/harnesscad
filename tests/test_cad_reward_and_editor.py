@@ -1,25 +1,25 @@
 import unittest
 
-from agent.cad_plan import parse_envelope
-from bench.cad_geometry_protocol import (
+from harnesscad.agents.agent.cad_plan import parse_envelope
+from harnesscad.eval.bench.cad_geometry_protocol import (
     GeometryProtocol, evaluate_geometry, normalize, squared_chamfer,
 )
-from bench.edit_alignment import (
+from harnesscad.eval.bench.edit_alignment import (
     aggregate_edits, directional_cosine, occupancy_jsd, slice_by_se,
 )
-from bench.edit_splits import balance_se, split_leakage
-from dataengine.cot_records import CoTRecord, cot_leakage
-from dataengine.edit_caption import caption_edit
-from dataengine.edit_filters import filter_edit
-from dataengine.selective_edits import (
+from harnesscad.eval.bench.edit_splits import balance_se, split_leakage
+from harnesscad.data.dataengine.cot_records import CoTRecord, cot_leakage
+from harnesscad.data.dataengine.edit_caption import caption_edit
+from harnesscad.data.dataengine.edit_filters import filter_edit
+from harnesscad.data.dataengine.selective_edits import (
     EditCandidateRecord, create_selection,
 )
-from datagen.edit_triplets import enumerate_pairs
-from datagen.geometry_triplets import quality_tier, select_triplet
-from editing.iterative_session import IterativeEditSession
-from editing.locate_infill import MASK, context_preserved, infill, locate_mask
-from quality.cad_reward import format_reward, geometric_reward, score_candidate
-from quality.sampling_guard import sampling_diagnostics
+from harnesscad.data.datagen.edit_triplets import enumerate_pairs
+from harnesscad.data.datagen.geometry_triplets import quality_tier, select_triplet
+from harnesscad.domain.editing.iterative_session import IterativeEditSession
+from harnesscad.domain.editing.locate_infill import MASK, context_preserved, infill, locate_mask
+from harnesscad.eval.quality.cad_reward import format_reward, geometric_reward, score_candidate
+from harnesscad.eval.quality.sampling_guard import sampling_diagnostics
 
 
 class CADRewardTests(unittest.TestCase):

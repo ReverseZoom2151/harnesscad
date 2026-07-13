@@ -11,18 +11,18 @@ no network, no API keys. Covers:
 
 import unittest
 
-from backends.stub import StubBackend
-from loop import HarnessSession
-from verifiers.verify import Severity
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
 
-from llm.base import CompletionResult
-from agents.roles import (
+from harnesscad.agents.llm.base import CompletionResult
+from harnesscad.agents.agents.roles import (
     Designer, Modeler, Verifier, DFMCritic, Reviewer, RedTeam,
     Finding, prioritize, findings_from,
 )
-from agents.supervisor import Supervisor, Trajectory
-from agents.overseer import AsyncOverseer, Halt
+from harnesscad.agents.agents.supervisor import Supervisor, Trajectory
+from harnesscad.agents.agents.overseer import AsyncOverseer, Halt
 
 from tests.test_llm import MockLLM, plate_ops_json
 from tests.test_planner import _over_constrained_plate_json

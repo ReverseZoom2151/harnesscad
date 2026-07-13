@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine import cmecad_advantage as a
+from harnesscad.data.dataengine import cmecad_advantage as a
 
 
 class TestBaselineAndAdvantages(unittest.TestCase):

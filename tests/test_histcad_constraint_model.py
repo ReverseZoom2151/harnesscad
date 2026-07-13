@@ -1,7 +1,7 @@
 import unittest
 
-from reconstruction.histcad_sequence import Line, Circle, Constraint
-from state.histcad_constraint_model import (
+from harnesscad.domain.reconstruction.histcad_sequence import Line, Circle, Constraint
+from harnesscad.core.state.histcad_constraint_model import (
     analyze, constraint_histogram, SketchStatus, CONSTRAINT_TYPES,
     PRIMITIVE_DOF, CONSTRAINT_DOF, MIN_REFS,
 )

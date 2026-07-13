@@ -1,6 +1,6 @@
 import unittest
 
-from bench.vlmcadcode_geomsolver import (
+from harnesscad.eval.bench.vlmcadcode_geomsolver import (
     CATEGORIES, geometric_properties, solver_feedback, verbalize,
 )
 

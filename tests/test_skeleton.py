@@ -2,11 +2,11 @@
 
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import AddPoint, NewSketch
-from loop import HarnessSession
-from sizing.calc import SizingCalc
-from skeleton.layout import Skeleton, build_skeleton
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import AddPoint, NewSketch
+from harnesscad.core.loop import HarnessSession
+from harnesscad.domain.sizing.calc import SizingCalc
+from harnesscad.domain.skeleton.layout import Skeleton, build_skeleton
 
 
 def _fresh_session():

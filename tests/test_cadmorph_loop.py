@@ -2,8 +2,8 @@
 import random
 import unittest
 
-from editing.cadmorph_loop import CADMorphLoop
-from editing.cadmorph_plan import MASK
+from harnesscad.domain.editing.cadmorph_loop import CADMorphLoop
+from harnesscad.domain.editing.cadmorph_plan import MASK
 
 
 # --------------------------------------------------------------------------- #

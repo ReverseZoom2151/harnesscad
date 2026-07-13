@@ -9,9 +9,9 @@ import os
 import tempfile
 import unittest
 
-from trace import JsonlTracer, monotonic_counter
+from harnesscad.core.trace import JsonlTracer, monotonic_counter
 
-from observe import (
+from harnesscad.core.observe import (
     Classification,
     FailureTaxonomy,
     Mean,
@@ -256,7 +256,7 @@ class TestFailureTaxonomy(unittest.TestCase):
         self.assertNotEqual(loop_c.remediation, regen_c.remediation)
 
     def test_every_category_has_remediation(self):
-        from observe import CATEGORIES, REMEDIATION
+        from harnesscad.core.observe import CATEGORIES, REMEDIATION
         for cat in CATEGORIES:
             self.assertIn(cat, REMEDIATION)
             self.assertTrue(REMEDIATION[cat])

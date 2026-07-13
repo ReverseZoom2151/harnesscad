@@ -13,8 +13,8 @@ Every new op is exercised three ways:
 
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
@@ -155,8 +155,8 @@ class TestStubApplies(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestRealGeometry(unittest.TestCase):
     def _cq_plate(self, w=20.0, h=10.0, t=5.0):
-        from backends.cadquery_backend import CadQueryBackend
-        from cisp.ops import Extrude
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.core.cisp.ops import Extrude
         b = CadQueryBackend()
         self.assertTrue(b.apply(NewSketch(plane="XY")).ok)
         self.assertTrue(b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=w, h=h)).ok)
@@ -164,7 +164,7 @@ class TestRealGeometry(unittest.TestCase):
         return b
 
     def test_revolve_makes_valid_solid_with_metrics(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         # rectangle offset from the Y axis -> a valid annular solid of revolution
@@ -226,7 +226,7 @@ class TestRealGeometry(unittest.TestCase):
         self.assertTrue(b.query("validity")["is_valid"])
 
     def test_draft_loft_sweep_are_typed_unsupported(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         b = self._cq_plate()
         d = b.apply(Draft(angle=5.0, neutral_plane="XY"))
         self.assertFalse(d.ok)

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from reconstruction import img2cadseq_gallery_dsl as g
+from harnesscad.domain.reconstruction import img2cadseq_gallery_dsl as g
 
 
 class TestVector7(unittest.TestCase):

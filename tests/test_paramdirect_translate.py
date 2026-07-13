@@ -1,7 +1,7 @@
 import unittest
 
-from editing.paramdirect_model import FeatureTree, ParametricFeature, PushPullEdit
-from editing.paramdirect_translate import (
+from harnesscad.domain.editing.paramdirect_model import FeatureTree, ParametricFeature, PushPullEdit
+from harnesscad.domain.editing.paramdirect_translate import (
     FaceParamLink, Translation, translate_push_pull, is_achievable, is_unique,
 )
 

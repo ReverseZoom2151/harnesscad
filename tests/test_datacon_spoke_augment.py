@@ -4,7 +4,7 @@ import math
 import random
 import unittest
 
-from datagen.datacon_spoke_augment import (
+from harnesscad.data.datagen.datacon_spoke_augment import (
     augment_spoke_design,
     design_is_balanced,
     few_shot_expand,

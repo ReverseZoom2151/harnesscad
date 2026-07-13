@@ -1,6 +1,6 @@
 import unittest
 
-from generation.cadvf_alternate_schedule import (
+from harnesscad.agents.generation.cadvf_alternate_schedule import (
     SL, VF, Stage, build_schedule, epochs_by_kind, stage_sequence,
     total_epochs, validate_schedule,
 )

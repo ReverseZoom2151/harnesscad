@@ -1,6 +1,6 @@
 import unittest
 
-from surfaces.confidence import build_overlays, confidence_level
+from harnesscad.io.surfaces.confidence import build_overlays, confidence_level
 
 
 class ConfidenceOverlayTests(unittest.TestCase):

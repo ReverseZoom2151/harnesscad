@@ -1,6 +1,6 @@
 import unittest
 
-from programs.cadtalk_parser import (
+from harnesscad.domain.programs.cadtalk_parser import (
     parse,
     identify_blocks,
     commentable_blocks,

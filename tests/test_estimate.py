@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import unittest
 
-from quality.estimate import (
+from harnesscad.eval.quality.estimate import (
     BOM, BOMEstimator, BudgetCheck, BudgetSpec, Material, MaterialTable,
     PartEstimate, estimate_part, resolve_metrics,
 )
-from verifiers.verify import Severity
+from harnesscad.eval.verifiers.verify import Severity
 
 
 # --------------------------------------------------------------------------- #

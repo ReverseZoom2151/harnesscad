@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from reconstruction.gencad2_loop_reorder import (
+from harnesscad.domain.reconstruction.gencad2_loop_reorder import (
     ARC,
     CIRCLE,
     LINE,

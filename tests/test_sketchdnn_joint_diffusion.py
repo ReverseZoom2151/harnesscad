@@ -1,7 +1,7 @@
 import random
 import unittest
 
-from numeric.sketchdnn_joint_diffusion import (
+from harnesscad.domain.numeric.sketchdnn_joint_diffusion import (
     continuous_slice,
     corrupt_primitive,
     corrupt_sketch,
@@ -9,7 +9,7 @@ from numeric.sketchdnn_joint_diffusion import (
     is_permutation_equivariant,
     joint_posterior_mean,
 )
-from reconstruction.sketchdnn_primitive_representation import (
+from harnesscad.domain.reconstruction.sketchdnn_primitive_representation import (
     FEATURE_DIM,
     decode_primitive,
     encode_primitive,

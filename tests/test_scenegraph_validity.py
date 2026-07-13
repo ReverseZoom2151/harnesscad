@@ -2,14 +2,14 @@
 
 import unittest
 
-from reconstruction.scenegraph_model import (
+from harnesscad.domain.reconstruction.scenegraph_model import (
     AABB,
     RelationEdge,
     RelationType,
     SceneGraph,
     SceneNode,
 )
-from reconstruction.scenegraph_validity import (
+from harnesscad.domain.reconstruction.scenegraph_validity import (
     check_acyclic,
     check_inverse_consistency,
     check_scene_graph,

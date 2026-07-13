@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction.sldprtnet_feature_tree import (
+from harnesscad.domain.reconstruction.sldprtnet_feature_tree import (
     FEATURE_TYPES,
     FeatureNode,
     FeatureTree,

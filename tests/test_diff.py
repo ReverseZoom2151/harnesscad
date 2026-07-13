@@ -8,12 +8,12 @@ different solids.
 
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, Extrude, Fillet, Chamfer, Hole,
 )
-from state.opdag import OpDAG
-from quality.diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.eval.quality.diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
 
 
 def _cadquery_available() -> bool:
@@ -154,7 +154,7 @@ class TestGeomDiffDegrades(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestGeomDiffReal(unittest.TestCase):
     def _plate(self, w, h, t):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=w, h=h))

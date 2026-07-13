@@ -1,6 +1,6 @@
 import unittest
 
-from drawings.annomap_parser import (
+from harnesscad.domain.drawings.annomap_parser import (
     CADFeature,
     DrawingEntity,
     ENTITY_ANGLE,

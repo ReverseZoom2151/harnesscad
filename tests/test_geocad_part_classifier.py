@@ -2,8 +2,8 @@
 
 import unittest
 
-from reconstruction.flexcad_text import curve, loop
-from reconstruction import geocad_part_classifier as pc
+from harnesscad.domain.reconstruction.flexcad_text import curve, loop
+from harnesscad.domain.reconstruction import geocad_part_classifier as pc
 
 
 def _lines(n):

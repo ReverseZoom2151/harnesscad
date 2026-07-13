@@ -1,6 +1,6 @@
 import unittest
 
-from bench.symcad_grouped_folds import (
+from harnesscad.eval.bench.symcad_grouped_folds import (
     augment_within_folds,
     group_leakage,
     grouped_kfold,

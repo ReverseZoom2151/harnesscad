@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from verifiers.cvcad_qa_comparison import (
+from harnesscad.eval.verifiers.cvcad_qa_comparison import (
     DimensionCheck,
     QAReport,
     check_by_percent,

@@ -11,8 +11,8 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import curv_sdf_primitives as P
-from geometry import curv_sdf_transforms as T
+from harnesscad.domain.geometry import curv_sdf_primitives as P
+from harnesscad.domain.geometry import curv_sdf_transforms as T
 
 
 def sphere(r):

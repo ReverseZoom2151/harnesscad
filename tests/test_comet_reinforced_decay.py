@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from memory.comet_reinforced_decay import (
+from harnesscad.agents.memory.comet_reinforced_decay import (
     Salience,
     decay_sweep,
     reinforce,

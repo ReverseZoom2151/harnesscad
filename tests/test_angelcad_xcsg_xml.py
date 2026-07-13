@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 
-from formats.angelcad_xcsg_xml import (
+from harnesscad.io.formats.angelcad_xcsg_xml import (
     XcsgError,
     dumps,
     flatten_transforms,
@@ -12,7 +12,7 @@ from formats.angelcad_xcsg_xml import (
     read_xcsg,
     write_xcsg,
 )
-from programs.angelcad_typed_csg import (
+from harnesscad.domain.programs.angelcad_typed_csg import (
     Node,
     TMatrix,
     check,

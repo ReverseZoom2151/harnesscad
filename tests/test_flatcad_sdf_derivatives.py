@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from numeric.flatcad_sdf_derivatives import (
+from harnesscad.domain.numeric.flatcad_sdf_derivatives import (
     central_gradient, central_hessian, mixed_stencil_uv,
     forward_mixed_uv, backward_mixed_uv,
 )

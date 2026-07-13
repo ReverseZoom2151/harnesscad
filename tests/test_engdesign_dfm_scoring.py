@@ -1,6 +1,6 @@
 import unittest
 
-from bench.engdesign_dfm_scoring import (
+from harnesscad.eval.bench.engdesign_dfm_scoring import (
     MACHINING_FEATURES, score_additive_design, additive_scorecard,
     feature_recognition, feature_scorecard,
 )

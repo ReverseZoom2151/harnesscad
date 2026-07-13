@@ -9,11 +9,11 @@ Two regimes, mirroring the Contract tests:
 
 import unittest
 
-from verifiers.verify import Severity
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from spec.formalize import Requirement, RequirementSet, formalize
-from verifiers.requirements import RequirementsCheck, with_requirements
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.domain.spec.formalize import Requirement, RequirementSet, formalize
+from harnesscad.eval.verifiers.requirements import RequirementsCheck, with_requirements
 
 
 def _codes(report):

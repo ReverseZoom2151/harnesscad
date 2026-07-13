@@ -10,14 +10,14 @@ Two halves, matching repair.py:
 
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import (
     Constrain, NewSketch, AddRectangle, AddCircle, Extrude,
 )
-from state.opdag import OpDAG
-from verifiers.verify import Diagnostic, Severity
-from reliability.repair import RepairAdvisor, RepairResult, RepairSuggestion, repair_solid
-from reliability.guardrails import ErrorRecovery
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
+from harnesscad.eval.reliability.repair import RepairAdvisor, RepairResult, RepairSuggestion, repair_solid
+from harnesscad.eval.reliability.guardrails import ErrorRecovery
 
 
 def _cadquery_available() -> bool:
@@ -180,7 +180,7 @@ class TestRepairSolidDegrades(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestRepairSolidWithCadquery(unittest.TestCase):
     def _plate(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         b = CadQueryBackend()
         self.assertTrue(b.apply(NewSketch(plane="XY")).ok)
         self.assertTrue(b.apply(AddRectangle(sketch="sk1", x=0, y=0, w=20, h=10)).ok)
@@ -204,8 +204,8 @@ class TestRepairSolidWithCadquery(unittest.TestCase):
     def test_repair_solid_never_raises_on_multi_solid_model(self):
         # Two disjoint solids in the backend -> _combined() is a Compound; the
         # heal path must handle it without crashing.
-        from backends.cadquery_backend import CadQueryBackend
-        from cisp.ops import Boolean
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
+        from harnesscad.core.cisp.ops import Boolean
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddCircle(sketch="sk1", cx=0, cy=0, r=5))

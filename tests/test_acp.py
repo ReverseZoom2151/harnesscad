@@ -22,15 +22,15 @@ Covers:
 
 import unittest
 
-from cisp.ops import AddRectangle, Extrude, NewSketch
-from cisp.protocol import ApplyOpsResult
-from llm.structured import ParsedOps
-from reliability.executor import ToolExecutor
+from harnesscad.core.cisp.ops import AddRectangle, Extrude, NewSketch
+from harnesscad.core.cisp.protocol import ApplyOpsResult
+from harnesscad.agents.llm.structured import ParsedOps
+from harnesscad.eval.reliability.executor import ToolExecutor
 
-from surfaces.acp.agent import ACPAgent, BridgingExecutor, PromptCancelled
-from surfaces.acp.bridge import ACPBridge, kind_for
-from surfaces.acp.jsonrpc import Connection
-from surfaces.ui.approval import ApprovalTier, tier_for
+from harnesscad.io.surfaces.acp.agent import ACPAgent, BridgingExecutor, PromptCancelled
+from harnesscad.io.surfaces.acp.bridge import ACPBridge, kind_for
+from harnesscad.io.surfaces.acp.jsonrpc import Connection
+from harnesscad.io.surfaces.ui.approval import ApprovalTier, tier_for
 
 
 # --- test doubles ----------------------------------------------------------

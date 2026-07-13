@@ -2,7 +2,7 @@
 
 import unittest
 
-from exploration.proccad_greedy_refine import (
+from harnesscad.agents.exploration.proccad_greedy_refine import (
     gradient_descent,
     match_target,
     multistart_local_optima,

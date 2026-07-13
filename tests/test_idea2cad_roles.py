@@ -2,8 +2,8 @@
 
 import unittest
 
-from agents.idea2cad_blackboard import VPhase
-from agents.idea2cad_roles import (
+from harnesscad.agents.agents.idea2cad_blackboard import VPhase
+from harnesscad.agents.agents.idea2cad_roles import (
     RequirementsEngineer,
     CadEngineer,
     QualityAssuranceEngineer,

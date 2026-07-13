@@ -2,13 +2,13 @@
 
 import unittest
 
-from bench.sldprtnet_statistics import SldprtNetStats, compute_statistics
-from dataengine.sldprtnet_record import (
+from harnesscad.eval.bench.sldprtnet_statistics import SldprtNetStats, compute_statistics
+from harnesscad.data.dataengine.sldprtnet_record import (
     STANDARD_VIEWS,
     CompositeImage,
     SldprtNetRecord,
 )
-from reconstruction.sldprtnet_feature_tree import (
+from harnesscad.domain.reconstruction.sldprtnet_feature_tree import (
     FEATURE_TYPES,
     FeatureNode,
     FeatureTree,

@@ -12,9 +12,9 @@ Covers, per the blueprint's third verifier family:
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.assembly import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.assembly import (
     MATE_DOF, mate_dof, Mate, AssemblyModel, AssemblyCheck,
     assembly_diagnostics, with_assembly,
 )

@@ -1,20 +1,20 @@
 import unittest
 
-from bench.edit_metrics import (
+from harnesscad.eval.bench.edit_metrics import (
     pass_at_k, relation_preservation, retention, symmetric_chamfer,
 )
-from dataengine.brep_edit_annotations import (
+from harnesscad.data.dataengine.brep_edit_annotations import (
     DirectionalAnnotation, validate_annotations,
 )
-from dataengine.edit_complexity import (
+from harnesscad.data.dataengine.edit_complexity import (
     balanced_sample, complexity_bin, complexity_score,
 )
-from datagen.brep_edit_pairs import synthesize_delete_add_pairs
-from editing.brep import (
+from harnesscad.data.datagen.brep_edit_pairs import synthesize_delete_add_pairs
+from harnesscad.domain.editing.brep import (
     EditCandidate, FaceDescriptor, canonicalize_faces, generate_candidates,
 )
-from ingest.brep_sequence import BrepEditSequence, BrepEditStep
-from surfaces.edit_views import best_view, projected_bbox, select_edit_context
+from harnesscad.io.ingest.brep_sequence import BrepEditSequence, BrepEditStep
+from harnesscad.io.surfaces.edit_views import best_view, projected_bbox, select_edit_context
 
 
 FACES = (

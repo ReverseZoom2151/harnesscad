@@ -5,7 +5,7 @@ from __future__ import annotations
 import itertools
 import unittest
 
-from reconstruction import gaussiancad_emd as emd
+from harnesscad.domain.reconstruction import gaussiancad_emd as emd
 
 
 def _brute_emd(a, b):

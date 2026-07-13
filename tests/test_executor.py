@@ -10,14 +10,14 @@ import unittest
 from dataclasses import dataclass
 from typing import ClassVar, List, Optional
 
-from cisp.ops import Op, NewSketch, Extrude
-from cisp.protocol import ApplyOpsResult
-from backends.base import ApplyResult
-from backends.stub import StubBackend
-from loop import HarnessSession
-from verifiers.verify import Diagnostic, Severity
+from harnesscad.core.cisp.ops import Op, NewSketch, Extrude
+from harnesscad.core.cisp.protocol import ApplyOpsResult
+from harnesscad.io.backends.base import ApplyResult
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 
-from reliability.executor import ExecResult, LogicalClock, ToolExecutor
+from harnesscad.eval.reliability.executor import ExecResult, LogicalClock, ToolExecutor
 
 
 # --- test doubles ----------------------------------------------------------

@@ -4,7 +4,7 @@ import math
 import random
 import unittest
 
-import numeric.cfd_integral_noise as n
+from harnesscad.domain.numeric import cfd_integral_noise as n
 
 
 class TestAggregation(unittest.TestCase):

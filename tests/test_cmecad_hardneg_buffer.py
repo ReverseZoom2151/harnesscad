@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine import cmecad_hardneg_buffer as hb
+from harnesscad.data.dataengine import cmecad_hardneg_buffer as hb
 
 
 class TestPartition(unittest.TestCase):

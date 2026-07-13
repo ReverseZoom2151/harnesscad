@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.pllm_confidence_score import (
+from harnesscad.data.dataengine.pllm_confidence_score import (
     DEFAULT_WEIGHTS, agreement_margin, conciseness, confidence_score,
     fidelity_from_chamfer, rank_candidates,
 )

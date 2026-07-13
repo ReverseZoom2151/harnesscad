@@ -1,6 +1,6 @@
 import unittest
 
-from quality.tag_ontology import ModelTagGraph, Tag, TagOntology
+from harnesscad.eval.quality.tag_ontology import ModelTagGraph, Tag, TagOntology
 
 
 def ontology():

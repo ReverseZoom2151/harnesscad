@@ -11,7 +11,7 @@ Covers:
 
 import unittest
 
-from context.spectiling_components import (
+from harnesscad.agents.context.spectiling_components import (
     ComponentSet,
     ngrams,
     tiling_ratio,
@@ -19,27 +19,27 @@ from context.spectiling_components import (
     union_components,
     weighted_size,
 )
-from rag.spectiling_greedy import (
+from harnesscad.agents.rag.spectiling_greedy import (
     dst_select,
     marginal_gain,
     uncovered_components,
 )
-from spec.spectiling_decompose import (
+from harnesscad.domain.spec.spectiling_decompose import (
     build_dependencies,
     decompose_spec,
     ordered_tiles,
     resolve_order,
 )
-from context.spectiling_prompt import (
+from harnesscad.agents.context.spectiling_prompt import (
     Exemplar,
     assemble_prompt,
     build_icl_prompt,
     select_for_query,
     select_per_tile,
 )
-from spec.spectiling_coverage import coverage_report
-from generation.spectiling_compose import TileFragment, compose_fragments
-from dataengine.spectiling_complexity import (
+from harnesscad.domain.spec.spectiling_coverage import coverage_report
+from harnesscad.agents.generation.spectiling_compose import TileFragment, compose_fragments
+from harnesscad.data.dataengine.spectiling_complexity import (
     ComplexitySample,
     Tier,
     complexity_scores,

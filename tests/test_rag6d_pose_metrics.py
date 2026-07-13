@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from bench.rag6d_pose_metrics import (
+from harnesscad.eval.bench.rag6d_pose_metrics import (
     add,
     add_recall,
     add_s,

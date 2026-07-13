@@ -1,6 +1,6 @@
 import unittest
 
-from vision.cadvlm_sketch_raster import (
+from harnesscad.domain.vision.cadvlm_sketch_raster import (
     RasterImage, rasterize_entity, rasterize_sketch,
 )
 

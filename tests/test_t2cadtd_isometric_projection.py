@@ -1,8 +1,8 @@
 import math
 import unittest
 
-from drawings.creft_projection import Box
-from drawings.t2cadtd_isometric_projection import (
+from harnesscad.domain.drawings.creft_projection import Box
+from harnesscad.domain.drawings.t2cadtd_isometric_projection import (
     PAPER_AZIMUTH_DEG, PAPER_ELEVATION_DEG, TRUE_ISO_ELEVATION_DEG,
     project_point, projected_axis_vectors, axis_foreshortening,
     project_box, convex_hull, isometric_outline, bounding_box_2d,

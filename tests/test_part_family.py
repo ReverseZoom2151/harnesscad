@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from library.family import (
+from harnesscad.domain.library.family import (
     FamilySpec,
     ParameterAxis,
     Validation,

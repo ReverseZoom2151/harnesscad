@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from verifiers import dlwheel_modal as dm
+from harnesscad.eval.verifiers import dlwheel_modal as dm
 
 
 class ModeTaxonomyTests(unittest.TestCase):

@@ -2,8 +2,8 @@
 
 import unittest
 
-from programs import openecad_script as oe
-from reconstruction import openecad_refplane as rp
+from harnesscad.domain.programs import openecad_script as oe
+from harnesscad.domain.reconstruction import openecad_refplane as rp
 
 
 class TestVectorPredicates(unittest.TestCase):

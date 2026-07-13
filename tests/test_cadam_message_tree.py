@@ -2,7 +2,7 @@
 
 import unittest
 
-from agents.cadam_message_tree import MessageTree, MessageNode
+from harnesscad.agents.agents.cadam_message_tree import MessageTree, MessageNode
 
 
 class Row:

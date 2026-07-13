@@ -15,11 +15,11 @@ Deterministic; stdlib + the harness only.
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.assembly import AssemblyModel, Mate
-from quality.kinematics import JointIntent, ROT_NEG, TRANS_POS
-from verifiers.functional import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.assembly import AssemblyModel, Mate
+from harnesscad.eval.quality.kinematics import JointIntent, ROT_NEG, TRANS_POS
+from harnesscad.eval.verifiers.functional import (
     FunctionalSpec, FunctionalCheck, functional_diagnostics, with_functional,
 )
 

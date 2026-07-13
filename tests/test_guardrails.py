@@ -2,9 +2,9 @@
 
 import unittest
 
-from cisp.ops import AddCircle, AddRectangle, Boolean, Extrude, Fillet, NewSketch
-from reliability.guardrails import ErrorRecovery, GuardrailGate, GuardrailLimits
-from verifiers.verify import Severity
+from harnesscad.core.cisp.ops import AddCircle, AddRectangle, Boolean, Extrude, Fillet, NewSketch
+from harnesscad.eval.reliability.guardrails import ErrorRecovery, GuardrailGate, GuardrailLimits
+from harnesscad.eval.verifiers.verify import Severity
 
 
 def _codes(diags):

@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from geometry.meshdiff_tet_grid import TetGrid
-from geometry.meshdiff_marching_tets import (
+from harnesscad.domain.geometry.meshdiff_tet_grid import TetGrid
+from harnesscad.domain.geometry.meshdiff_marching_tets import (
     marching_tets,
     edge_manifold_stats,
     is_watertight,

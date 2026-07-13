@@ -1,12 +1,12 @@
 import unittest
 
-from agent.tool_knowledge import (
+from harnesscad.agents.agent.tool_knowledge import (
     ToolExample,
     ToolKnowledgeCard,
     ToolKnowledgeCatalog,
     default_cisp_cards,
 )
-from research.role_ablation import compare_role_ablation
+from harnesscad.governance.research.role_ablation import compare_role_ablation
 
 
 class ToolKnowledgeCardTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.sketchdnn_primitive_representation import (
+from harnesscad.domain.reconstruction.sketchdnn_primitive_representation import (
     CLASS_NAMES,
     FEATURE_DIM,
     PARAM_DIMS,

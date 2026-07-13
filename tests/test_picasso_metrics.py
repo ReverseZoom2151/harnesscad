@@ -5,8 +5,8 @@ from __future__ import annotations
 import math
 import unittest
 
-from drawings.picasso_rasterizer import Circle, Line, rasterize
-from drawings.picasso_metrics import (
+from harnesscad.domain.drawings.picasso_rasterizer import Circle, Line, rasterize
+from harnesscad.domain.drawings.picasso_metrics import (
     chamfer_distance,
     foreground_iou,
     img_mse,

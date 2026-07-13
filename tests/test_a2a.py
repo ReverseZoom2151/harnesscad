@@ -9,7 +9,7 @@ artifact changes; and TaskStore retrieval by id and by context.
 import json
 import unittest
 
-from a2a.messages import (
+from harnesscad.agents.a2a.messages import (
     AgentCard,
     A2AMessage,
     Part,
@@ -21,7 +21,7 @@ from a2a.messages import (
     agent_message,
     user_message,
 )
-from a2a.task import (
+from harnesscad.agents.a2a.task import (
     EVENT_ARTIFACT_UPDATE,
     EVENT_STATUS_UPDATE,
     IllegalTransition,

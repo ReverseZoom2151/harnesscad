@@ -1,7 +1,7 @@
 import unittest
 
-from bench import img2cadseq_eval as e
-from reconstruction import img2cadseq_gallery_dsl as g
+from harnesscad.eval.bench import img2cadseq_eval as e
+from harnesscad.domain.reconstruction import img2cadseq_gallery_dsl as g
 
 
 def _cylinder(r=0.5, d=0.5):

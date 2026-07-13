@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from fabrication import mfgfeat_taxonomy as tax
+from harnesscad.domain.fabrication import mfgfeat_taxonomy as tax
 
 
 class TestHierarchy(unittest.TestCase):

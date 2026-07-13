@@ -1,12 +1,12 @@
 import unittest
 
-from datagen.complexity import measure_complexity, voxel_entropy
-from datagen.instruction_taxonomy import (
+from harnesscad.data.datagen.complexity import measure_complexity, voxel_entropy
+from harnesscad.data.datagen.instruction_taxonomy import (
     CATEGORIES, LENGTH_BUCKETS, STYLES, InstructionSample, quota_matrix,
     seeded_slots, deduplicate,
 )
-from dataengine.cascade_filter import FilterDecision, cascade_filter
-from dataengine.self_improvement import self_improve
+from harnesscad.data.dataengine.cascade_filter import FilterDecision, cascade_filter
+from harnesscad.data.dataengine.self_improvement import self_improve
 
 
 class TaxonomyTests(unittest.TestCase):

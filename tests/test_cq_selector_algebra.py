@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.cq_selector_algebra import (
+from harnesscad.domain.geometry.cq_selector_algebra import (
     AndSelector,
     AreaNthSelector,
     BoxSelector,

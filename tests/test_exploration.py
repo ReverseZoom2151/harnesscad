@@ -10,13 +10,13 @@ network, no geometry kernel.
 import unittest
 from typing import List, Optional
 
-from backends.stub import StubBackend
-from cisp.ops import Op, NewSketch, AddRectangle, AddCircle, Extrude
-from cisp.protocol import ApplyOpsResult
-from loop import HarnessSession
-from verifiers.verify import Diagnostic, Severity
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import Op, NewSketch, AddRectangle, AddCircle, Extrude
+from harnesscad.core.cisp.protocol import ApplyOpsResult
+from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 
-from exploration import (
+from harnesscad.agents.exploration import (
     EloRating,
     Leaderboard,
     Variant,

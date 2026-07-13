@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.intent2exec_reward import (
+from harnesscad.data.dataengine.intent2exec_reward import (
     DEFAULT_FAILURE_PENALTY,
     PARAMETRIC_MISASSIGNMENT,
     REFERENCE_FRAME_MISALIGNMENT,

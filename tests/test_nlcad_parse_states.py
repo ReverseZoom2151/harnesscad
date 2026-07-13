@@ -1,6 +1,6 @@
 import unittest
 
-from spec.nlcad_parse_states import (
+from harnesscad.domain.spec.nlcad_parse_states import (
     Sense, senses_of, parse, ParseState,
 )
 

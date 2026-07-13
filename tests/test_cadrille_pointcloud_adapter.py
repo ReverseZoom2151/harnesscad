@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction.cadrille_pointcloud_adapter import (
+from harnesscad.domain.reconstruction.cadrille_pointcloud_adapter import (
     normalize_unit_cube,
     furthest_point_sampling,
     prepare_point_input,

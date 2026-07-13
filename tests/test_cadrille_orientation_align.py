@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.cadrille_orientation_align import (
+from harnesscad.eval.bench.cadrille_orientation_align import (
     proper_axis_rotations,
     centroid,
     apply_rotation,

@@ -1,8 +1,8 @@
 import unittest
 
-from quality.mesh_stability import mesh_stability_metrics
-from quality.physics_schedule import GenerationPhase, PhysicsSchedule
-from verifiers.standability import evaluate_standability
+from harnesscad.eval.quality.mesh_stability import mesh_stability_metrics
+from harnesscad.eval.quality.physics_schedule import GenerationPhase, PhysicsSchedule
+from harnesscad.eval.verifiers.standability import evaluate_standability
 
 
 class StandabilityTests(unittest.TestCase):

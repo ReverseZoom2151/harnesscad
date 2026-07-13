@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from numeric.topodiff_cubical_persistence import (
+from harnesscad.domain.numeric.topodiff_cubical_persistence import (
     betti_curve,
     field_from_grid,
     persistence_pairs,

@@ -1,6 +1,6 @@
 import unittest
 
-from quality.design_alignment import (
+from harnesscad.eval.quality.design_alignment import (
     ConstraintEconomy,
     SolveCondition,
     SolveSnapshot,

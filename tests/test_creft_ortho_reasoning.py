@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.creft_ortho_reasoning import (
+from harnesscad.eval.bench.creft_ortho_reasoning import (
     COMPOSITE,
     COUNTING,
     RECOGNITION,

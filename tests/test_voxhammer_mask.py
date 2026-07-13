@@ -1,7 +1,7 @@
 """Tests for editing.voxhammer_mask."""
 import unittest
 
-from editing.voxhammer_mask import (
+from harnesscad.domain.editing.voxhammer_mask import (
     binary_mask,
     dilate,
     edit_voxels_in_box,

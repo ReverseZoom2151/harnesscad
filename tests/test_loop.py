@@ -2,9 +2,9 @@
 
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
-from backends.stub import StubBackend
-from loop import HarnessSession
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
 
 
 def _rect_setup():

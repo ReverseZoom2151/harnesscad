@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from numeric.mamtiff_complexity import (
+from harnesscad.domain.numeric.mamtiff_complexity import (
     effective_length, command_type_entropy, loop_structure,
     parameter_richness, transition_diversity, sequence_complexity,
     is_complex, multiscale_complexity_profile,

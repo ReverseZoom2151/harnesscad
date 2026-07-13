@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from generation.gaudi_building_assembly import (
+from harnesscad.agents.generation.gaudi_building_assembly import (
     Building,
     BuildingAssemblyError,
     PlacedPlate,

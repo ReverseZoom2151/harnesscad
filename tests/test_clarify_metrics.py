@@ -1,7 +1,7 @@
 import unittest
 
-from spec.clarify_ambiguity import CADSpec, Feature
-from spec.clarify_metrics import (
+from harnesscad.domain.spec.clarify_ambiguity import CADSpec, Feature
+from harnesscad.domain.spec.clarify_metrics import (
     efficiency, resolution, score_interaction, aggregate, ClarifierScore,
 )
 

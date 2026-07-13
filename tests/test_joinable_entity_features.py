@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from bench.joinable_joint_metrics import hit_at_top_k
-from reconstruction.joinable_entity_features import (
+from harnesscad.eval.bench.joinable_joint_metrics import hit_at_top_k
+from harnesscad.domain.reconstruction.joinable_entity_features import (
     CONVEXITY_TYPES,
     ENTITY_TYPES,
     EntityFeatureError,

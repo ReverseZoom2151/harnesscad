@@ -7,11 +7,11 @@ LLM-path test uses a tiny in-test MockLLM (no provider, no keys).
 import json
 import unittest
 
-from spec.formalize import (
+from harnesscad.domain.spec.formalize import (
     Requirement, RequirementSet, formalize, to_contract, requirement_schema,
 )
-from spec.interview import RequirementsInterview, Question
-from contract import Contract
+from harnesscad.domain.spec.interview import RequirementsInterview, Question
+from harnesscad.core.contract import Contract
 
 
 BRIEF = "an aluminium plate 100mm x 50mm x 8mm with 4 holes"
@@ -138,7 +138,7 @@ class _MockLLM:
 
     def complete(self, messages, tools=None, response_schema=None, **opts):
         self.calls.append(messages)
-        from llm.base import CompletionResult
+        from harnesscad.agents.llm.base import CompletionResult
         return CompletionResult(text=self._text)
 
     def stream(self, *a, **k):

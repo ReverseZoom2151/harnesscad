@@ -7,8 +7,8 @@ flips. It is pure: it reads only the recorded op list, never replays.
 
 import unittest
 
-from cisp.ops import NewSketch, AddCircle, AddRectangle, Extrude
-from state.opdag import OpDAG
+from harnesscad.core.cisp.ops import NewSketch, AddCircle, AddRectangle, Extrude
+from harnesscad.core.state.opdag import OpDAG
 
 
 def _fill(dag, ops):

@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs import openecad_script as oe
+from harnesscad.domain.programs import openecad_script as oe
 
 
 # A canonical OpenECAD program mirroring Algorithm 1 / Algorithm 3.

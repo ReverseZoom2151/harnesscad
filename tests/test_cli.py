@@ -5,7 +5,7 @@ import os
 import unittest
 from contextlib import redirect_stdout
 
-import cli
+from harnesscad.core import cli
 
 
 EXAMPLE = os.path.join(

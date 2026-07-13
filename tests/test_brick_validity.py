@@ -2,8 +2,8 @@
 
 import unittest
 
-from geometry.brick_structure import Brick, BrickStructure
-from verifiers.brick_validity import (
+from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
+from harnesscad.eval.verifiers.brick_validity import (
     build_with_validity_and_rollback,
     first_unstable_index,
     is_valid_brick,

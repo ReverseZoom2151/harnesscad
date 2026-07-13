@@ -2,7 +2,7 @@
 
 import unittest
 
-from quality import dlwheel_workflow as wf
+from harnesscad.eval.quality import dlwheel_workflow as wf
 
 
 class SchemaTests(unittest.TestCase):

@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from bench.topodiff_topology_consistency import (
+from harnesscad.eval.bench.topodiff_topology_consistency import (
     betti_match,
     betti_match_vectors,
     betti_vector_distance,

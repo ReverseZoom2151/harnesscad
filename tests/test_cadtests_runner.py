@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.cadtests_assertions import (
+from harnesscad.eval.bench.cadtests_assertions import (
     assert_aspect_ratio,
     assert_bbox_dimension,
     assert_face_count,
@@ -10,8 +10,8 @@ from bench.cadtests_assertions import (
     assert_valid_solid,
     assert_volume,
 )
-from bench.cadtests_model import CADModel, Edge, Face, similarity_augmentations
-from bench.cadtests_runner import (
+from harnesscad.eval.bench.cadtests_model import CADModel, Edge, Face, similarity_augmentations
+from harnesscad.eval.bench.cadtests_runner import (
     requirement_groups,
     run_passing_set,
     run_suite,

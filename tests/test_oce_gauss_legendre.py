@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from numeric.oce_gauss_legendre import (
+from harnesscad.domain.numeric.oce_gauss_legendre import (
     gauss_points_max,
     integrate,
     integrate_2d,

@@ -1,7 +1,7 @@
 import unittest
 
-from library.sketchconcept_library import ConceptCycleError, ConceptLibrary
-from reconstruction.sketchconcept_template import (
+from harnesscad.domain.library.sketchconcept_library import ConceptCycleError, ConceptLibrary
+from harnesscad.domain.reconstruction.sketchconcept_template import (
     Concept,
     Const,
     ConstraintSpec,

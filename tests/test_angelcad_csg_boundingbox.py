@@ -3,14 +3,14 @@
 import math
 import unittest
 
-from geometry.angelcad_csg_boundingbox import (
+from harnesscad.domain.geometry.angelcad_csg_boundingbox import (
     BBox3,
     BoundingBoxError,
     bounding_box,
     fits_within,
     is_provably_empty,
 )
-from programs.angelcad_typed_csg import (
+from harnesscad.domain.programs.angelcad_typed_csg import (
     Node,
     circle,
     cone,

@@ -3,8 +3,8 @@
 import hashlib
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, AddCircle, Constrain
-from state.opdag import OpDAG
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, AddCircle, Constrain
+from harnesscad.core.state.opdag import OpDAG
 
 _GENESIS = hashlib.sha256(b"harnesscad-genesis-v0").hexdigest()
 

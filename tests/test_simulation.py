@@ -11,10 +11,10 @@ Coverage:
 
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Extrude
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.simulation import (
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.simulation import (
     LoadCase, SimRules, SimulationCheck, FEASolver, with_simulation,
     rectangular_section, circular_section,
     beam_bending_stress, beam_max_deflection, beam_max_moment,

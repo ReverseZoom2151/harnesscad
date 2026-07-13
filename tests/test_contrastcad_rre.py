@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from datagen.contrastcad_rre import (
+from harnesscad.data.datagen.contrastcad_rre import (
     ARC,
     EXTRUDE,
     EXTRUDE_TYPES,

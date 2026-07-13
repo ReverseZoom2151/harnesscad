@@ -1,6 +1,6 @@
 import unittest
 
-from state.constraint_hierarchy import (
+from harnesscad.core.state.constraint_hierarchy import (
     ConstraintScope,
     LocalFrame,
     PrunedBranch,

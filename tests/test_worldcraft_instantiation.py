@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from reconstruction.worldcraft_layout_spec import LayoutSpec, ObjectPlacement, Pose
-from generation.worldcraft_instantiation import (
+from harnesscad.domain.reconstruction.worldcraft_layout_spec import LayoutSpec, ObjectPlacement, Pose
+from harnesscad.agents.generation.worldcraft_instantiation import (
     AssetDef,
     AssetLibrary,
     SceneInstance,

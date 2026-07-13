@@ -9,14 +9,14 @@ Deterministic; no network.
 
 import unittest
 
-from backends.stub import StubBackend
-from loop import HarnessSession
-from surfaces.mcp.jsonrpc import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
+from harnesscad.io.surfaces.mcp.jsonrpc import (
     INVALID_PARAMS,
     METHOD_NOT_FOUND,
     RESOURCE_NOT_FOUND,
 )
-from surfaces.mcp.server import (
+from harnesscad.io.surfaces.mcp.server import (
     PROTOCOL_VERSION,
     SERVER_NAME,
     MCPServer,

@@ -1,6 +1,6 @@
 import unittest
 
-from bench.engdesign_cad_rubric import (
+from harnesscad.eval.bench.engdesign_cad_rubric import (
     score_part_description, score_dimension_extraction, score_cad_features,
     iteration_trajectory,
 )

@@ -10,8 +10,8 @@ import unittest
 from dataclasses import dataclass
 from typing import ClassVar, Optional
 
-import grammar
-from cisp.ops import Op, _REGISTRY, CONSTRAINT_DOF
+from harnesscad.core import grammar
+from harnesscad.core.cisp.ops import Op, _REGISTRY, CONSTRAINT_DOF
 
 REGISTRY_TAGS = set(_REGISTRY)
 

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.sdfx_spiral_sdf import ArcSpiral, polar_dist2, to_polar
+from harnesscad.domain.geometry.sdfx_spiral_sdf import ArcSpiral, polar_dist2, to_polar
 
 
 class TestPolarHelpers(unittest.TestCase):

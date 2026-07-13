@@ -5,10 +5,10 @@ import os
 import tempfile
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
-from loop import HarnessSession
-from trace import InMemoryTracer, JsonlTracer, NullTracer, Tracer
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.core.loop import HarnessSession
+from harnesscad.core.trace import InMemoryTracer, JsonlTracer, NullTracer, Tracer
 
 
 def _rect_setup():

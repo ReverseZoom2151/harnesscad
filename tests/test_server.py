@@ -2,7 +2,7 @@
 
 import unittest
 
-from surfaces.server import CISPServer
+from harnesscad.io.surfaces.server import CISPServer
 
 
 PLATE_OPS = [

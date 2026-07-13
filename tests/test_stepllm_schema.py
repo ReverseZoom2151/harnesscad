@@ -1,7 +1,7 @@
 import unittest
 
-from formats.stepllm_parser import Entity, Enum, Real, Ref, serialize_entity
-from formats.stepllm_schema import (
+from harnesscad.io.formats.stepllm_parser import Entity, Enum, Real, Ref, serialize_entity
+from harnesscad.io.formats.stepllm_schema import (
     axis2_placement_3d, cartesian_point, check_attributes, circle,
     direction, entity_def, known, line, make, plane,
 )

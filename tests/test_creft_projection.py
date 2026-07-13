@@ -2,7 +2,7 @@
 
 import unittest
 
-from drawings.creft_projection import (
+from harnesscad.domain.drawings.creft_projection import (
     Box,
     Rect,
     View,

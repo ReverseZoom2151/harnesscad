@@ -1,11 +1,11 @@
 import unittest
 
-from editing.mrcad2_edit_degeneracy import (
+from harnesscad.domain.editing.mrcad2_edit_degeneracy import (
     canonicalize_design,
     move_point_resolved,
     resolve_curve,
 )
-from editing.mrcad_schema import Curve, Design, arc, circle, line
+from harnesscad.domain.editing.mrcad_schema import Curve, Design, arc, circle, line
 
 
 class TestResolveCurve(unittest.TestCase):

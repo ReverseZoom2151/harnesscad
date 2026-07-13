@@ -1,8 +1,8 @@
 import unittest
 
-from formats.stepllm_parser import Entity, Real, Ref, StepFile, parse, serialize
-from formats.stepllm_graph import validate
-from ingest.stepllm_reserialize import (
+from harnesscad.io.formats.stepllm_parser import Entity, Real, Ref, StepFile, parse, serialize
+from harnesscad.io.formats.stepllm_graph import validate
+from harnesscad.io.ingest.stepllm_reserialize import (
     annotate, branch_stats, dfs_order, format_real, normalize_reals,
     renumber, reserialize,
 )

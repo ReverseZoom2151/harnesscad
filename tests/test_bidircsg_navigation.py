@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs.bidircsg_ast import (
+from harnesscad.domain.programs.bidircsg_ast import (
     Difference,
     Intersection,
     Primitive,
@@ -10,8 +10,8 @@ from programs.bidircsg_ast import (
     Translate,
     Union,
 )
-from programs.bidircsg_forward import find_instance, get, leaves
-from editing.bidircsg_navigation import (
+from harnesscad.domain.programs.bidircsg_forward import find_instance, get, leaves
+from harnesscad.domain.editing.bidircsg_navigation import (
     consistency,
     forward_search,
     ghosts,

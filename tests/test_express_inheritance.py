@@ -2,8 +2,8 @@
 
 import unittest
 
-from spec.express_schema_parser import parse_schema
-from spec.express_inheritance import (
+from harnesscad.domain.spec.express_schema_parser import parse_schema
+from harnesscad.domain.spec.express_inheritance import (
     InheritanceError,
     build_inheritance,
     expand_select,

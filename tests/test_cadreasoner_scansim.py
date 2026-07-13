@@ -2,7 +2,7 @@
 
 import unittest
 
-from datagen.cadreasoner_scansim import (
+from harnesscad.data.datagen.cadreasoner_scansim import (
     ScanSimResult,
     simulate_scan,
     spherical_viewpoints,

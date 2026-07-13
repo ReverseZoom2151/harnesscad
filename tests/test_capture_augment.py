@@ -1,6 +1,6 @@
 import unittest
 
-from datagen.capture_augment import (
+from harnesscad.data.datagen.capture_augment import (
     CURRICULUM,
     CaptureProfile,
     augment_capture,

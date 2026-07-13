@@ -1,6 +1,6 @@
 import unittest
 
-from generation.cadsmith_escalation import (
+from harnesscad.agents.generation.cadsmith_escalation import (
     EscalationPolicy, Strategy, fingerprint_code,
 )
 

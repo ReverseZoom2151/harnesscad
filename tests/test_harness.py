@@ -8,14 +8,14 @@ No network, no wall clock.
 
 import unittest
 
-from cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
-from backends.stub import StubBackend
-from loop import HarnessSession
-from reliability.loopdetect import LoopDetector
-from llm.structured import ParsedOps
-from trace import InMemoryTracer
-from contract import Contract
-from harness import AgentHarness, HarnessRun, HARNESS_EVENT_KINDS
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.reliability.loopdetect import LoopDetector
+from harnesscad.agents.llm.structured import ParsedOps
+from harnesscad.core.trace import InMemoryTracer
+from harnesscad.core.contract import Contract
+from harnesscad.core.harness import AgentHarness, HarnessRun, HARNESS_EVENT_KINDS
 
 
 # --- fixtures --------------------------------------------------------------

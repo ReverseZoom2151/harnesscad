@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from formats.fcmcp_document_model import (
+from harnesscad.io.formats.fcmcp_document_model import (
     DocumentContext,
     DocumentInfo,
     FreeCADObject,

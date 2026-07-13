@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from geometry.graphcad_pattern import (
+from harnesscad.domain.geometry.graphcad_pattern import (
     GridPattern,
     Instance,
     PolarPattern,

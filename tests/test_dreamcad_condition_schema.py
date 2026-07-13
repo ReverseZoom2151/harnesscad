@@ -3,7 +3,7 @@
 import unittest
 from math import sqrt
 
-from reconstruction.dreamcad_condition_schema import (
+from harnesscad.domain.reconstruction.dreamcad_condition_schema import (
     ConditionSchema,
     Modality,
 )

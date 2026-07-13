@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from spec.t2cmain_srdf_semantics import (
+from harnesscad.domain.spec.t2cmain_srdf_semantics import (
     SrdfParseError,
     adjacent_collision_pairs,
     chain_joint_names,
@@ -12,7 +12,7 @@ from spec.t2cmain_srdf_semantics import (
     missing_adjacent_disables,
     parse_srdf,
 )
-from spec.t2cmain_urdf_parser import parse_urdf
+from harnesscad.domain.spec.t2cmain_urdf_parser import parse_urdf
 
 ROBOT_URDF = """
 <robot name="panda">

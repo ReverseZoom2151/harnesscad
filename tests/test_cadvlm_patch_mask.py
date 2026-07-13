@@ -1,6 +1,6 @@
 import unittest
 
-from vision.cadvlm_patch_mask import (
+from harnesscad.domain.vision.cadvlm_patch_mask import (
     MaskedImage, apply_mask, mask_count, masked_indices, masked_mse, mse,
     patch_count, patchify, unpatchify,
 )

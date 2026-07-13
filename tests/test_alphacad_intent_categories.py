@@ -1,6 +1,6 @@
 import unittest
 
-from spec.alphacad_intent_categories import (
+from harnesscad.domain.spec.alphacad_intent_categories import (
     CATEGORIES,
     map_to_categories,
     normalize_category,

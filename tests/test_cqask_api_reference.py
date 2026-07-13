@@ -2,7 +2,7 @@
 
 import unittest
 
-from generation.cqask_api_reference import (
+from harnesscad.agents.generation.cqask_api_reference import (
     ApiCard,
     parse_api_line,
     parse_reference,

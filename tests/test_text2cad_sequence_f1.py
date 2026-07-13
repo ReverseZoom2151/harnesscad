@@ -1,6 +1,6 @@
 import unittest
 
-from bench.text2cad_sequence_f1 import (
+from harnesscad.eval.bench.text2cad_sequence_f1 import (
     SequenceF1Error,
     aggregate_f1,
     evaluate_sequence,
@@ -8,7 +8,7 @@ from bench.text2cad_sequence_f1 import (
     invalidity_ratio,
     loop_primitive_counts,
 )
-from reconstruction.deepcad_command_spec import command
+from harnesscad.domain.reconstruction.deepcad_command_spec import command
 
 
 def _circle_seq():

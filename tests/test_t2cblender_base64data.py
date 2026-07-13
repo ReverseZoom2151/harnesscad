@@ -2,7 +2,7 @@ import base64
 import os
 import unittest
 
-from formats.t2cblender_base64data import (
+from harnesscad.io.formats.t2cblender_base64data import (
     Base64DecodeError,
     canonical_padding,
     decode_base64data,

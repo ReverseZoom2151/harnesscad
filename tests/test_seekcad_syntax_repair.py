@@ -1,6 +1,6 @@
 import unittest
 
-from programs.seekcad_syntax_repair import (
+from harnesscad.domain.programs.seekcad_syntax_repair import (
     balance_parentheses,
     normalise_identifier_case,
     repair,

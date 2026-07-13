@@ -2,7 +2,7 @@
 
 import unittest
 
-from programs.cadhub_param_schema import (
+from harnesscad.domain.programs.cadhub_param_schema import (
     INPUT_BOOLEAN,
     INPUT_CHOICE_NUMBER,
     INPUT_CHOICE_STRING,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction.brepground_grounding import (
+from harnesscad.domain.reconstruction.brepground_grounding import (
     BRepPrimitive,
     ParsedQuery,
     ground,

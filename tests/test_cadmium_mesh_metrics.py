@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from bench.cadmium_mesh_metrics import (
+from harnesscad.eval.bench.cadmium_mesh_metrics import (
     Mesh,
     compare,
     discrete_mean_curvature_difference,

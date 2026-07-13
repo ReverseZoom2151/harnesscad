@@ -1,7 +1,7 @@
 import unittest
 
-from quality.estimate import BOM, BOMLine, PartEstimate
-from quality.revision_delta import compare_revisions
+from harnesscad.eval.quality.estimate import BOM, BOMLine, PartEstimate
+from harnesscad.eval.quality.revision_delta import compare_revisions
 
 
 class Backend:

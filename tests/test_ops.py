@@ -2,7 +2,7 @@
 
 import unittest
 
-from cisp.ops import (
+from harnesscad.core.cisp.ops import (
     NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     Constrain, Extrude, Fillet, Boolean,
     parse_op, canonical_json,

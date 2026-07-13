@@ -1,6 +1,6 @@
 import unittest
 
-from generation.llm3dmodel_prompt_evolution import (
+from harnesscad.agents.generation.llm3dmodel_prompt_evolution import (
     REQUIRED_SCAFFOLD, build_initial_prompt, combine_terminal_log,
     refine_prompt, constraint_from_error, evolve, EvolutionResult)
 

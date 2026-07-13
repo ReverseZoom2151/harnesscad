@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.scadhs_csg_algebra import (
+from harnesscad.domain.geometry.scadhs_csg_algebra import (
     CHILDREN,
     ModuleCall,
     Prim,
@@ -12,7 +12,7 @@ from geometry.scadhs_csg_algebra import (
     transform,
     union_all,
 )
-from programs.scadhs_module_cse import (
+from harnesscad.domain.programs.scadhs_module_cse import (
     ModuleBuilder,
     ModuleDef,
     auto_modularize,

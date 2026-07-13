@@ -8,8 +8,8 @@ geometry kernel installed.
 import os
 import unittest
 
-from backends.stub import StubBackend
-from bench import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.bench import (
     DIFFICULTIES, Task, load_tasks, run_suite, run_task,
     assembly_mate_accuracy, cad_sequence_f1, collision_rate,
     dimension_match, program_execution_rate, sketch_editability,
@@ -150,7 +150,7 @@ class TestMetricsUnits(unittest.TestCase):
 
     def test_sketch_editability_fully_constrained(self):
         # Build a fully-constrained plate sketch on the stub (dof 4 - 4 == 0).
-        from cisp.ops import NewSketch, AddRectangle, Constrain
+        from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Constrain
         b = StubBackend()
         b.apply(NewSketch())
         b.apply(AddRectangle(sketch="sk1"))

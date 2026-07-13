@@ -2,13 +2,13 @@
 
 import unittest
 
-from bench.deepclustering_algorithms import (
+from harnesscad.eval.bench.deepclustering_algorithms import (
     agglomerative_clustering,
     jacobi_eigen,
     kmeans_plus_plus,
     spectral_clustering,
 )
-from bench.deepclustering_partition_metrics import clustering_accuracy
+from harnesscad.eval.bench.deepclustering_partition_metrics import clustering_accuracy
 
 
 # Three well-separated blobs in 2D.

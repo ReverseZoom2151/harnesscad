@@ -2,21 +2,21 @@
 
 import unittest
 
-from bench.cadtests_assertions import (
+from harnesscad.eval.bench.cadtests_assertions import (
     assert_aspect_ratio,
     assert_face_count,
     assert_typed_face_count,
     assert_valid_solid,
     assert_volume,
 )
-from bench.cadtests_model import CADModel, Edge, Face
-from bench.cadtests_metrics import (
+from harnesscad.eval.bench.cadtests_model import CADModel, Edge, Face
+from harnesscad.eval.bench.cadtests_metrics import (
     analyze_test_suite,
     benchmark_scores,
     evaluate_method,
     refinement_gain,
 )
-from bench.cadtests_runner import run_suite
+from harnesscad.eval.bench.cadtests_runner import run_suite
 
 
 def _box(volume=6.0, size=(2.0, 3.0, 1.0), faces=6, solids=1):

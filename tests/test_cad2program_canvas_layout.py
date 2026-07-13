@@ -1,10 +1,10 @@
 import unittest
 
-from reconstruction.cad2program_shape_program import ShapeProgram, make_instance
-from drawings.cad2program_canvas_layout import (
+from harnesscad.domain.reconstruction.cad2program_shape_program import ShapeProgram, make_instance
+from harnesscad.domain.drawings.cad2program_canvas_layout import (
     layout_program, PixelRect, CanvasLayout,
 )
-from drawings.cad2program_view_lifting import FRONT, TOP, SIDE
+from harnesscad.domain.drawings.cad2program_view_lifting import FRONT, TOP, SIDE
 
 
 def _prog():

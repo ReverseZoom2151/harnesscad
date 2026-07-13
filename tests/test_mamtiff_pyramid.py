@@ -1,6 +1,6 @@
 import unittest
 
-from numeric.mamtiff_pyramid import (
+from harnesscad.domain.numeric.mamtiff_pyramid import (
     scale_lengths, downsample, upsample, build_pyramid,
     laplacian_pyramid, reconstruct_laplacian, pyramid_pool_flops,
 )

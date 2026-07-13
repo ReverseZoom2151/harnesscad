@@ -1,6 +1,6 @@
 import unittest
 
-from dataengine.gift_threshold_selection import (  # noqa: F401
+from harnesscad.data.dataengine.gift_threshold_selection import (  # noqa: F401
     band_mass, empirical_cdf, fraction_below, quantile, select_gift_thresholds,
 )
 

@@ -2,7 +2,7 @@
 
 import unittest
 
-from procedural.shapegramm_lod import (
+from harnesscad.domain.procedural.shapegramm_lod import (
     projected_size, lod_level, select_lod_rule, resolve_lod,
 )
 

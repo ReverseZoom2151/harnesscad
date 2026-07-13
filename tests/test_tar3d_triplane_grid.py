@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.tar3d_triplane_grid import (
+from harnesscad.domain.geometry.tar3d_triplane_grid import (
     PLANES,
     TriplaneGrid,
     raster_cell,

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from vision.cvcad_pixel_calibration import (
+from harnesscad.domain.vision.cvcad_pixel_calibration import (
     Calibration,
     bounding_box,
     bounding_box_pixel_size,

@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from agent.attachments import (
+from harnesscad.agents.agent.attachments import (
     Attachment,
     AttachmentKind,
     AttachmentProvenance,

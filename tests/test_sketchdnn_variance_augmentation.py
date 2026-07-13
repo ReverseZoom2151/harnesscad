@@ -1,6 +1,6 @@
 import unittest
 
-from numeric.sketchdnn_variance_augmentation import (
+from harnesscad.domain.numeric.sketchdnn_variance_augmentation import (
     argmax_marginal,
     augmented_alpha,
     augmented_schedule,

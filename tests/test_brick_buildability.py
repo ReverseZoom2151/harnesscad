@@ -2,15 +2,15 @@
 
 import unittest
 
-from geometry.brick_structure import Brick, BrickStructure
-from verifiers.brick_buildability import (
+from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
+from harnesscad.eval.verifiers.brick_buildability import (
     find_buildable_order,
     is_assembly_stable,
     is_buildable,
     is_supported_order,
     raster_assembly_order,
 )
-from verifiers.brick_stability import is_stable
+from harnesscad.eval.verifiers.brick_stability import is_stable
 
 
 def struct(bricks):

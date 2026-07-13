@@ -1,13 +1,13 @@
 import unittest
 
-from dataengine.text2cad_prompt_generator import (
+from harnesscad.data.dataengine.text2cad_prompt_generator import (
     PromptGeneratorError,
     extract_aspects,
     generate_all_levels,
     generate_prompt,
 )
-from dataengine.text2cad_prompt_levels import classify_prompt_level
-from reconstruction.deepcad_command_spec import command
+from harnesscad.data.dataengine.text2cad_prompt_levels import classify_prompt_level
+from harnesscad.domain.reconstruction.deepcad_command_spec import command
 
 
 def _two_circle_extrude():

@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from geometry import nurbgen_curve as nc
-from numeric import nurbs_basis as nb
+from harnesscad.domain.geometry import nurbgen_curve as nc
+from harnesscad.domain.numeric import nurbs_basis as nb
 
 
 class TestStraightLine(unittest.TestCase):

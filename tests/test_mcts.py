@@ -9,13 +9,13 @@ offered at the root. No LLM, no network, no geometry kernel.
 import unittest
 from typing import Any, List, Optional
 
-from backends.stub import StubBackend
-from cisp.ops import Op, NewSketch, AddRectangle, Constrain, Extrude
-from cisp.protocol import ApplyOpsResult
-from loop import HarnessSession
-from verifiers.verify import Diagnostic, Severity, VerifyReport
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import Op, NewSketch, AddRectangle, Constrain, Extrude
+from harnesscad.core.cisp.protocol import ApplyOpsResult
+from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
-from reliability.strategies.mcts import (
+from harnesscad.eval.reliability.strategies.mcts import (
     mcts_search,
     MctsResult,
     MctsNode,

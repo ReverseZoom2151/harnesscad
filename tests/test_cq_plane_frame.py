@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from geometry.cq_plane_frame import Plane, PlaneError
+from harnesscad.domain.geometry.cq_plane_frame import Plane, PlaneError
 
 
 def close(a, b, tol=1e-9):

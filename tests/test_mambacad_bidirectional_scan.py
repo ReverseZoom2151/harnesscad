@@ -1,7 +1,7 @@
 import unittest
 
-from numeric.geofusion_state_space import selective_scan
-from numeric.mambacad_bidirectional_scan import (
+from harnesscad.domain.numeric.geofusion_state_space import selective_scan
+from harnesscad.domain.numeric.mambacad_bidirectional_scan import (
     reverse_seq, apply_order, invert_order, scan_direction,
     merge_directions, bidirectional_scan, multidirectional_scan,
 )

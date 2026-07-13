@@ -7,9 +7,9 @@ reference / model INFO-skips.
 
 import unittest
 
-from verifiers.verify import Severity
-from verifiers.reference import ReferenceMatchCheck, with_reference
-from ingest import ImportedPart
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.reference import ReferenceMatchCheck, with_reference
+from harnesscad.io.ingest import ImportedPart
 
 
 def _codes(report):

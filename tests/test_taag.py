@@ -1,6 +1,6 @@
 import unittest
 
-from quality.taag import (
+from harnesscad.eval.quality.taag import (
     EdgeSense,
     FeatureHypothesis,
     FeatureRecognizer,

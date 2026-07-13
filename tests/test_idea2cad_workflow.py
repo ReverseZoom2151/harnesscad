@@ -6,11 +6,11 @@ with heuristic role stand-ins -- no VLM, no CAD kernel.
 
 import unittest
 
-from agents.idea2cad_blackboard import DesignBlackboard
-from agents.idea2cad_roles import (
+from harnesscad.agents.agents.idea2cad_blackboard import DesignBlackboard
+from harnesscad.agents.agents.idea2cad_roles import (
     RequirementsEngineer, CadEngineer, QualityAssuranceEngineer, User,
 )
-from agents.idea2cad_workflow import Idea2CadWorkflow
+from harnesscad.agents.agents.idea2cad_workflow import Idea2CadWorkflow
 
 
 class TestRequirementsLoop(unittest.TestCase):
@@ -171,7 +171,7 @@ class TestFullWorkflow(unittest.TestCase):
         wf.run(None, "len=10", blackboard=bb)
         phases = {r.phase for r in bb.log}
         # all four V-model phases were entered
-        from agents.idea2cad_blackboard import VPhase
+        from harnesscad.agents.agents.idea2cad_blackboard import VPhase
         self.assertEqual(phases >= {VPhase.REQUIREMENTS, VPhase.DESIGN,
                                     VPhase.VERIFICATION, VPhase.VALIDATION}, True)
 

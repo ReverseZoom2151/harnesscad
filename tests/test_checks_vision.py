@@ -9,14 +9,14 @@ only when cadquery is installed.
 
 import unittest
 
-from verifiers.vision import (
+from harnesscad.eval.verifiers.vision import (
     VLMJudgeCheck, GEvalScore, JudgeVerdict,
     parse_judge_json, build_judge_messages, DEFAULT_RUBRIC,
 )
-from llm.base import CompletionResult
-from verifiers.verify import Severity
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.agents.llm.base import CompletionResult
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
 
 
 def _cadquery_available() -> bool:
@@ -58,7 +58,7 @@ def _stub_with_solid() -> StubBackend:
 
 
 def _cq_plate():
-    from backends.cadquery_backend import CadQueryBackend
+    from harnesscad.io.backends.cadquery_backend import CadQueryBackend
     b = CadQueryBackend()
     b.apply(NewSketch(plane="XY"))
     b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=20.0, h=10.0))
@@ -116,7 +116,7 @@ class TestHeadlessSkip(unittest.TestCase):
 class TestSwapAugmentation(unittest.TestCase):
     def test_two_passes_averaged(self):
         # Judge is stubbed at the render level: feed a fake RenderResult.
-        from surfaces.render import RenderResult
+        from harnesscad.io.surfaces.render import RenderResult
         result = RenderResult(images={"iso": b"<svg/>", "front": b"<svg/>"},
                              fmt="svg", note=None)
         llm = MockVisionLLM(['{"score": 0.2}', '{"score": 0.8}'])
@@ -126,7 +126,7 @@ class TestSwapAugmentation(unittest.TestCase):
         self.assertEqual(len(llm.calls), 2)  # both orderings judged
 
     def test_swap_disabled_single_pass(self):
-        from surfaces.render import RenderResult
+        from harnesscad.io.surfaces.render import RenderResult
         result = RenderResult(images={"iso": b"<svg/>", "front": b"<svg/>"},
                              fmt="svg", note=None)
         llm = MockVisionLLM(['{"score": 0.2}', '{"score": 0.8}'])

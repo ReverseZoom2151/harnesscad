@@ -1,7 +1,7 @@
 """Tests for the self-adaptive (mu,lambda)/(mu+lambda) evolution strategy."""
 import unittest
 
-from exploration.llmdesopt_es_optimizer import optimise, ESResult, Individual
+from harnesscad.agents.exploration.llmdesopt_es_optimizer import optimise, ESResult, Individual
 
 
 def sphere(x):

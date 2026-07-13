@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.muse_scorecard import (
+from harnesscad.eval.bench.muse_scorecard import (
     cascade_dropoff,
     evaluate_design,
     muse_scorecard,

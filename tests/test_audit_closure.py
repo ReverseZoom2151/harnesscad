@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from audit.closure import validate_register
+from harnesscad.governance.audit.closure import validate_register
 
 
 class AuditClosureTests(unittest.TestCase):

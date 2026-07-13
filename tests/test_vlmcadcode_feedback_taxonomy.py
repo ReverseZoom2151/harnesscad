@@ -1,6 +1,6 @@
 import unittest
 
-from generation.vlmcadcode_feedback_taxonomy import (
+from harnesscad.agents.generation.vlmcadcode_feedback_taxonomy import (
     FEEDBACK_TYPES, ERROR_TYPES, classify_feedback, feedback_distribution,
     normalize_error_type, error_distribution, majority_vote,
 )

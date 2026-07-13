@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from geometry.manifold_bvh import (
+from harnesscad.domain.geometry.manifold_bvh import (
     AABB,
     BVH,
     morton3,

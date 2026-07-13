@@ -1,7 +1,7 @@
 import unittest
 
-from reconstruction import pointercad_indexing as idx
-from reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
+from harnesscad.domain.reconstruction import pointercad_indexing as idx
+from harnesscad.domain.reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
 
 
 def _sample():

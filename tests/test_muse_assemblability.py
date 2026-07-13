@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.muse_assemblability import (
+from harnesscad.eval.bench.muse_assemblability import (
     graphs_isomorphic,
     hub_node,
     joint_constrained_dof,

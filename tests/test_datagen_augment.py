@@ -7,11 +7,11 @@ a fresh StubBackend session. Dependency-free (StubBackend only).
 
 import unittest
 
-from backends.stub import StubBackend
-from datagen import generate_dataset
-from datagen.augment import augment
-from datagen.pipeline import Sample
-from loop import HarnessSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.data.datagen import generate_dataset
+from harnesscad.data.datagen.augment import augment
+from harnesscad.data.datagen.pipeline import Sample
+from harnesscad.core.loop import HarnessSession
 
 
 def _op_tags(ops):

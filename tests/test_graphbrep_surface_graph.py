@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import graphbrep_surface_graph as gsg
+from harnesscad.domain.reconstruction import graphbrep_surface_graph as gsg
 
 
 class BuildAdjacencyTest(unittest.TestCase):

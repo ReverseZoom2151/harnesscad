@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.cadgpt_module_series import (
+from harnesscad.domain.geometry.cadgpt_module_series import (
     PREFERRED_MODULES,
     SECONDARY_MODULES,
     ALL_MODULES,

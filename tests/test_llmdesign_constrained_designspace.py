@@ -8,7 +8,7 @@ car design-space examples.
 
 import unittest
 
-from exploration.llmdesign_constrained_designspace import (
+from harnesscad.agents.exploration.llmdesign_constrained_designspace import (
     ParameterSpec,
     Inequality,
     Divisible,

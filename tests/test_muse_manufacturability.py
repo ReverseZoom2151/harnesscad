@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.muse_manufacturability import (
+from harnesscad.eval.bench.muse_manufacturability import (
     MATERIALS,
     PROCESSES,
     material_process_compatible,

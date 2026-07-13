@@ -1,7 +1,7 @@
 import unittest
 
-from reconstruction.cadparser_schema import command, pad_sequence, SOS, EOS
-from reconstruction.cadparser_sequence_stats import (
+from harnesscad.domain.reconstruction.cadparser_schema import command, pad_sequence, SOS, EOS
+from harnesscad.domain.reconstruction.cadparser_sequence_stats import (
     augment, length_distribution, operation_ratio, sequence_length, split_steps,
     truncate_last_step,
 )

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from geometry.t2cmain_exploded_view import (
+from harnesscad.domain.geometry.t2cmain_exploded_view import (
     Part,
     bounds_center,
     bounds_radius,

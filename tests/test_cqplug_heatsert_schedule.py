@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from standards.cqplug_heatsert_schedule import (
+from harnesscad.domain.standards.cqplug_heatsert_schedule import (
     HeatsertError,
     boss_ok,
     bore_depth,

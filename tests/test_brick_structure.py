@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.brick_structure import (
+from harnesscad.domain.geometry.brick_structure import (
     STANDARD_BRICKS,
     Brick,
     BrickStructure,

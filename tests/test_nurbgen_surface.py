@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry import nurbgen_surface as ns
+from harnesscad.domain.geometry import nurbgen_surface as ns
 
 
 def _flat_plane():

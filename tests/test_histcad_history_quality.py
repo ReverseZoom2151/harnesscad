@@ -1,10 +1,10 @@
 import unittest
 
-from reconstruction.histcad_sequence import (
+from harnesscad.domain.reconstruction.histcad_sequence import (
     Line, Circle, SketchPlane, Sketch, Constraint, Extrusion, Feature,
     ModelingSequence,
 )
-from bench.histcad_history_quality import (
+from harnesscad.eval.bench.histcad_history_quality import (
     sequence_length_stats, constraint_overhead, constraint_distribution,
     total_variation, flattening_ratio, hierarchy_free, REFERENCE_DISTRIBUTION,
 )

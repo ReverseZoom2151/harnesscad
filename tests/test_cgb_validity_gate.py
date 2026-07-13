@@ -2,8 +2,8 @@
 import math
 import unittest
 
-from bench.cgb_mesh_betti import MeshSurface
-from verifiers.cgb_validity_gate import (
+from harnesscad.eval.bench.cgb_mesh_betti import MeshSurface
+from harnesscad.eval.verifiers.cgb_validity_gate import (
     MAX_BREP_TOLERANCE_MM,
     MAX_FACE_ASPECT_RATIO,
     MIN_FACE_AREA_MM2,

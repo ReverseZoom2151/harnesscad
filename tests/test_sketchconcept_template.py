@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.sketchconcept_template import (
+from harnesscad.domain.reconstruction.sketchconcept_template import (
     Concept,
     ConceptInstance,
     Const,

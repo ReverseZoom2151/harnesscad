@@ -1,6 +1,6 @@
 import unittest
 
-from editing.s2cadsig_session import (
+from harnesscad.domain.editing.s2cadsig_session import (
     ModelingSession,
     OpRecord,
     SessionError,
@@ -8,8 +8,8 @@ from editing.s2cadsig_session import (
     replay,
     serialize_history,
 )
-from reconstruction.s2cadsig_op_router import spec_for
-from reconstruction.s2cadsig_param_decode import OrthoCamera, decode_operation
+from harnesscad.domain.reconstruction.s2cadsig_op_router import spec_for
+from harnesscad.domain.reconstruction.s2cadsig_param_decode import OrthoCamera, decode_operation
 
 SEED = [((0.0, 0.0, 0.0), (0.0, 0.0, 1.0))]
 CURVE = ((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (1.0, 1.0, 0.0))

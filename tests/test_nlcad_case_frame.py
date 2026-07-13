@@ -1,6 +1,6 @@
 import unittest
 
-from spec.nlcad_case_frame import (
+from harnesscad.domain.spec.nlcad_case_frame import (
     Nominal, classify, parse_command, verb_frame, known_verbs,
 )
 

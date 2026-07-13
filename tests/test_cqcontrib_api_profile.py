@@ -1,6 +1,6 @@
 import unittest
 
-from programs.cqcontrib_api_profile import (
+from harnesscad.domain.programs.cqcontrib_api_profile import (
     ApiProfile,
     arity_violations,
     format_profile,
@@ -88,7 +88,7 @@ class TestCorpusDiff(unittest.TestCase):
 
 class TestHarnessGap(unittest.TestCase):
     def test_gap_against_t2cq_ast(self):
-        from programs.t2cq_ast import CHAIN_METHODS
+        from harnesscad.domain.programs.t2cq_ast import CHAIN_METHODS
         p = profile_source(SRC)
         gaps = dict(unknown_methods(p, CHAIN_METHODS))
         # 'shell' is genuinely absent from the harness CHAIN_METHODS table.

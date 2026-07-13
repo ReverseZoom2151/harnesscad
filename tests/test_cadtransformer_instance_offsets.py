@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from reconstruction.cadtransformer_instance_offsets import (
+from harnesscad.domain.reconstruction.cadtransformer_instance_offsets import (
     SENTINEL,
     group_by_shifted_center,
     instance_centroids,

@@ -1,9 +1,9 @@
 import unittest
 
-from reconstruction.cad2program_shape_program import (
+from harnesscad.domain.reconstruction.cad2program_shape_program import (
     ShapeProgram, make_instance, PrimitiveInstance,
 )
-from reconstruction.cad2program_command_template import (
+from harnesscad.domain.reconstruction.cad2program_command_template import (
     quantize_value, dequantize_value, quantize_angle, dequantize_angle,
     encode_command, decode_command, encode_program, quantization_error,
     Command, DEFAULT_RESOLUTION, DEFAULT_N_BINS,

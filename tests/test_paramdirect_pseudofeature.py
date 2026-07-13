@@ -1,9 +1,9 @@
 import unittest
 
-from editing.paramdirect_model import (
+from harnesscad.domain.editing.paramdirect_model import (
     FeatureTree, ParametricFeature, Face, DirectBRep, ParameterEdit, PushPullEdit,
 )
-from editing.paramdirect_pseudofeature import (
+from harnesscad.domain.editing.paramdirect_pseudofeature import (
     append_pseudo_feature, regenerate, transform_to_feature_redefinition,
     RegenResult, PSEUDO_PARAM,
 )

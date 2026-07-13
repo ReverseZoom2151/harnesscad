@@ -2,7 +2,7 @@
 
 import unittest
 
-from dataengine.sldprtnet_cleaning import (
+from harnesscad.data.dataengine.sldprtnet_cleaning import (
     REASON_DUPLICATE,
     REASON_NO_SUPPORTED,
     CleaningReport,

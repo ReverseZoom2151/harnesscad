@@ -6,10 +6,10 @@ Rewritten from bare pytest-style module functions (never collected by
 
 import unittest
 
-from bench.tokenizer_frontier import evaluate, frontier
-from bench.tokenizer_split_audit import audit
-from grammar_fsa import State, run
-from quality.primitive_pooling import spans
+from harnesscad.eval.bench.tokenizer_frontier import evaluate, frontier
+from harnesscad.eval.bench.tokenizer_split_audit import audit
+from harnesscad.core.grammar_fsa import State, run
+from harnesscad.eval.quality.primitive_pooling import spans
 
 
 _SEQ = ("line", "curve_end", "loop_end", "face_end", "sketch_end", "add", "pad")

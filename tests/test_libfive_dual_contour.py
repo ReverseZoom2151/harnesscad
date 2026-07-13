@@ -5,9 +5,9 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import libfive_frep_ir as ir
-from geometry import libfive_dual_contour as dc
-from geometry.libfive_dual_contour import QEF
+from harnesscad.domain.geometry import libfive_frep_ir as ir
+from harnesscad.domain.geometry import libfive_dual_contour as dc
+from harnesscad.domain.geometry.libfive_dual_contour import QEF
 
 
 class TestQEF(unittest.TestCase):

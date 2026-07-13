@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.arcs_polyline_simplify import (
+from harnesscad.domain.geometry.arcs_polyline_simplify import (
     max_deviation,
     perpendicular_distance,
     polyline_length,

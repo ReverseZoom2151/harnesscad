@@ -2,8 +2,8 @@
 
 import unittest
 
-from reconstruction import rlcad_valid_actions as va
-from reconstruction.rlcad_command_spec import (
+from harnesscad.domain.reconstruction import rlcad_valid_actions as va
+from harnesscad.domain.reconstruction.rlcad_command_spec import (
     EXTRUDE, NEWBODY, REVOLVE, SUBTRACTION, UNION, ExtrudeCommand,
     RevolveCommand,
 )

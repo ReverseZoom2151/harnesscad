@@ -2,10 +2,10 @@
 
 import unittest
 
-from formats.stepllm_parser import parse
-from spec.express_schema_parser import parse_schema
-from spec.express_inheritance import build_inheritance
-from spec.express_p21_validator import validate_data
+from harnesscad.io.formats.stepllm_parser import parse
+from harnesscad.domain.spec.express_schema_parser import parse_schema
+from harnesscad.domain.spec.express_inheritance import build_inheritance
+from harnesscad.domain.spec.express_p21_validator import validate_data
 
 
 _SCHEMA = """

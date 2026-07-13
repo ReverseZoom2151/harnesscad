@@ -10,7 +10,7 @@ import os
 import tempfile
 import unittest
 
-from dataengine import (
+from harnesscad.data.dataengine import (
     Action,
     Step,
     SubGoal,
@@ -22,7 +22,7 @@ from dataengine import (
     flywheel_metrics,
     write_jsonl,
 )
-from dataengine.trajectory import (
+from harnesscad.data.dataengine.trajectory import (
     OUTCOME_APPLIED,
     OUTCOME_ROLLED_BACK,
     OUTCOME_REJECTED,

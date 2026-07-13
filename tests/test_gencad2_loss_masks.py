@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from bench.gencad2_loss_masks import (
+from harnesscad.eval.bench.gencad2_loss_masks import (
     ARC_IDX,
     ARGS_DIM,
     CIRCLE_IDX,

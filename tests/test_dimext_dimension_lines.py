@@ -1,12 +1,12 @@
 import unittest
 
-from drawings.dimext_dimension_lines import (
+from harnesscad.domain.drawings.dimext_dimension_lines import (
     DimensionMeasurement,
     angle_between,
     detect_dimensions,
     measurements_to_metric,
 )
-from vision.cvcad_pixel_calibration import calibrate_from_reference
+from harnesscad.domain.vision.cvcad_pixel_calibration import calibrate_from_reference
 
 
 class TestAngle(unittest.TestCase):

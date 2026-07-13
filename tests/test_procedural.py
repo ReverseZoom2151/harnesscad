@@ -1,6 +1,6 @@
 import unittest
 
-from exploration.procedural import (
+from harnesscad.agents.exploration.procedural import (
     Placement,
     PlacementRules,
     ProceduralTechnique,

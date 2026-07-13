@@ -1,6 +1,6 @@
 import unittest
 
-from ingest.brep_annotations import (
+from harnesscad.io.ingest.brep_annotations import (
     EntityAnnotation,
     EntityRecord,
     ExternalTag,

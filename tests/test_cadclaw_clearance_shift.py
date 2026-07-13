@@ -5,7 +5,7 @@ geometry against hand-computed overlaps.
 """
 import unittest
 
-from verifiers.cadclaw_clearance_shift import (
+from harnesscad.eval.verifiers.cadclaw_clearance_shift import (
     boxes_overlap, suggest_clearance_shift, ClearanceShift,
 )
 

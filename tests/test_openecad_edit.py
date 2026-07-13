@@ -2,8 +2,8 @@
 
 import unittest
 
-from programs import openecad_script as oe
-from programs import openecad_edit as ed
+from harnesscad.domain.programs import openecad_script as oe
+from harnesscad.domain.programs import openecad_edit as ed
 
 
 CODE = "\n".join([

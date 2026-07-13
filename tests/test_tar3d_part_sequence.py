@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction.tar3d_part_sequence import (
+from harnesscad.domain.reconstruction.tar3d_part_sequence import (
     PLANE_ORDER,
     TriplaneIndexGrid,
     build_sequence,

@@ -1,28 +1,28 @@
 import unittest
 
-from agent.cad_observation import CADObservation
-from agent.termination import TerminationDecision, gate_termination
-from bench.agent_cost import agent_cost
-from bench.cad_qa import grade_answer, qa_accuracy
-from bench.capability_retention import capability_retention
-from bench.code_execution import validate_cad_code, valid_syntax_rate
-from bench.image_conditioning import ImageCondition, evaluate_conditions
-from bench.sketch_metrics import sketch_f1
-from bench.solid_iou import best_solid_iou, inertia_scale, proper_axis_alignments
-from bench.tool_retrieval import evaluate_tool_retrieval
-from bench.tool_trajectory import audit_tool_trajectory
-from dataengine.code_complexity import analyze_code, overflow_route
-from dataengine.generation_manifest import GenerationManifest
-from datagen.cadquery_codegen import emit_cadquery
-from datagen.image_code_manifest import ImageCodeManifest, audit_manifests
-from ingest.cross_section import cross_section, triangle_plane_segment
-from llm.generation_contract import assess_generation
-from quality.cad_code_normalize import normalize_cad_code
-from quality.constraint_impact import analyze_constraint
-from quality.sketch_serialization import (
+from harnesscad.agents.agent.cad_observation import CADObservation
+from harnesscad.agents.agent.termination import TerminationDecision, gate_termination
+from harnesscad.eval.bench.agent_cost import agent_cost
+from harnesscad.eval.bench.cad_qa import grade_answer, qa_accuracy
+from harnesscad.eval.bench.capability_retention import capability_retention
+from harnesscad.eval.bench.code_execution import validate_cad_code, valid_syntax_rate
+from harnesscad.eval.bench.image_conditioning import ImageCondition, evaluate_conditions
+from harnesscad.eval.bench.sketch_metrics import sketch_f1
+from harnesscad.eval.bench.solid_iou import best_solid_iou, inertia_scale, proper_axis_alignments
+from harnesscad.eval.bench.tool_retrieval import evaluate_tool_retrieval
+from harnesscad.eval.bench.tool_trajectory import audit_tool_trajectory
+from harnesscad.data.dataengine.code_complexity import analyze_code, overflow_route
+from harnesscad.data.dataengine.generation_manifest import GenerationManifest
+from harnesscad.data.datagen.cadquery_codegen import emit_cadquery
+from harnesscad.data.datagen.image_code_manifest import ImageCodeManifest, audit_manifests
+from harnesscad.io.ingest.cross_section import cross_section, triangle_plane_segment
+from harnesscad.agents.llm.generation_contract import assess_generation
+from harnesscad.eval.quality.cad_code_normalize import normalize_cad_code
+from harnesscad.eval.quality.constraint_impact import analyze_constraint
+from harnesscad.eval.quality.sketch_serialization import (
     serialize_circle, serialize_line, serialize_sketch, validate_redundancy,
 )
-from surfaces.id_overlay import overlay_svg, place_labels
+from harnesscad.io.surfaces.id_overlay import overlay_svg, place_labels
 
 
 class AgentInfrastructureTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from bench.skexgen_dedup_hash import (
+from harnesscad.eval.bench.skexgen_dedup_hash import (
     BRANCHES, branch_tokens, dedup_report, deduplicate, duplicate_groups,
     duplicate_percent, record_hash, token_hash, unique_percent,
 )

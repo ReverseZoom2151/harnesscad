@@ -1,6 +1,6 @@
 import unittest
 
-from bench.symcad_choice_metrics import (
+from harnesscad.eval.bench.symcad_choice_metrics import (
     choice_accuracy,
     evaluate_strategy,
     is_optimal_choice,

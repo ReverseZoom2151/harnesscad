@@ -2,7 +2,7 @@
 
 import unittest
 
-from quality.ai_model_usability_standard import (
+from harnesscad.eval.quality.ai_model_usability_standard import (
     BASIC_DEFECT_CHECKS,
     POLYGON_BUDGETS,
     classify_variability,

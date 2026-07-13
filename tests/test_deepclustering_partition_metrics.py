@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.deepclustering_partition_metrics import (
+from harnesscad.eval.bench.deepclustering_partition_metrics import (
     adjusted_rand_index,
     clustering_accuracy,
     contingency_table,

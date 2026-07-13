@@ -2,7 +2,7 @@
 import random
 import unittest
 
-from exploration.evocad_evolution import (
+from harnesscad.agents.exploration.evocad_evolution import (
     average_rankings,
     ordering_to_ranks,
     rank_probabilities,
@@ -11,7 +11,7 @@ from exploration.evocad_evolution import (
     evolve,
     EvoResult,
 )
-from exploration.evocad_variation import (
+from harnesscad.agents.exploration.evocad_variation import (
     CadOp,
     CadProgram,
     crossover,

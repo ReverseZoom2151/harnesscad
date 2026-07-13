@@ -1,6 +1,6 @@
 import unittest
 
-from verifiers.opencad_kernel_preflight import (
+from harnesscad.eval.verifiers.opencad_kernel_preflight import (
     BoundingBox,
     ErrorCode,
     ShapeInfo,

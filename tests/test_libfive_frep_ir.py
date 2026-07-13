@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import libfive_frep_ir as ir
+from harnesscad.domain.geometry import libfive_frep_ir as ir
 
 
 class TestBuildAndEval(unittest.TestCase):

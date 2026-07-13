@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.hnc_rotation_codebook import (
+from harnesscad.domain.reconstruction.hnc_rotation_codebook import (
     ROTATION_FRAMES,
     NUM_FRAMES,
     clip_axis,

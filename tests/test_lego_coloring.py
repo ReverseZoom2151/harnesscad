@@ -1,7 +1,7 @@
 import unittest
 
-from fabrication.lego_brick_library import Brick
-from fabrication.lego_coloring import (
+from harnesscad.domain.fabrication.lego_brick_library import Brick
+from harnesscad.domain.fabrication.lego_coloring import (
     LEGO_PALETTE,
     assign_brick_colors,
     brick_color,

@@ -9,12 +9,12 @@ import os
 import tempfile
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, Extrude, AddRectangle
-from loop import HarnessSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, Extrude, AddRectangle
+from harnesscad.core.loop import HarnessSession
 
-from memory.store import MemoryStore, TokenOverlapSimilarity
-from memory.skills import (
+from harnesscad.agents.memory.store import MemoryStore, TokenOverlapSimilarity
+from harnesscad.agents.memory.skills import (
     Skill, SkillLibrary, plate_skill, bracket_skill, plate_ops,
     default_expanders, build_default_library,
 )

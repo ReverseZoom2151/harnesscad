@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.contrastcad_recon_accuracy import (
+from harnesscad.eval.bench.contrastcad_recon_accuracy import (
     N_PARAM_SLOTS,
     command_accuracy,
     parameter_accuracy,

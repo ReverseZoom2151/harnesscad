@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import curv_sdf_tpms as G
+from harnesscad.domain.geometry import curv_sdf_tpms as G
 
 
 def grad_mag(f, p, h=1e-6):

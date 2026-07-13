@@ -1,6 +1,6 @@
 import unittest
 
-from programs.blenderllm_bpy_script import (
+from harnesscad.domain.programs.blenderllm_bpy_script import (
     BpyCall,
     check_syntax,
     extract_calls,

@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from dataengine.creft_data_engine import (
+from harnesscad.data.dataengine.creft_data_engine import (
     build_cot_steps,
     corrupt_parameters,
     make_dichotomous_samples,

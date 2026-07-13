@@ -1,6 +1,6 @@
 import unittest
 
-from bench.s2proto_conceptset import (
+from harnesscad.eval.bench.s2proto_conceptset import (
     mean_pairwise_similarity, set_diversity, effective_concept_count,
     cross_modal_alignment, percentile_rank, percentile_value,
     rank_methods_by_diversity, conceptset_report,

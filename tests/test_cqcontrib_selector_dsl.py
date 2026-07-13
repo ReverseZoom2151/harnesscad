@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.cqcontrib_selector_dsl import (
+from harnesscad.domain.geometry.cqcontrib_selector_dsl import (
     And,
     DirMinMax,
     Entity,

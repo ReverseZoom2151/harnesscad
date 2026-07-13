@@ -2,8 +2,8 @@
 
 import unittest
 
-from agent.toolcad_tool_schema import ToolCall, default_toolcad_library
-from agent.toolcad_trajectory import (
+from harnesscad.agents.agent.toolcad_tool_schema import ToolCall, default_toolcad_library
+from harnesscad.agents.agent.toolcad_trajectory import (
     ToolTrajectory,
     check_format_order,
     parse_react_trajectory,

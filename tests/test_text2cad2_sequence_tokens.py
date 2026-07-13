@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction import text2cad2_sequence_tokens as t2
+from harnesscad.domain.reconstruction import text2cad2_sequence_tokens as t2
 
 
 class TestQuantization(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.cq_selector_algebra import (
+from harnesscad.domain.geometry.cq_selector_algebra import (
     AndSelector,
     CenterNthSelector,
     DirectionMinMaxSelector,
@@ -14,7 +14,7 @@ from geometry.cq_selector_algebra import (
     SumSelector,
     TypeSelector,
 )
-from geometry.cq_selector_grammar import (
+from harnesscad.domain.geometry.cq_selector_grammar import (
     GRAMMAR_FINDINGS,
     parse_selector,
     tokenize,

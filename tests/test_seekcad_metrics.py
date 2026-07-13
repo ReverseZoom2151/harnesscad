@@ -1,6 +1,6 @@
 import unittest
 
-from bench.seekcad_metrics import (
+from harnesscad.eval.bench.seekcad_metrics import (
     NO,
     UNSURE,
     YES,

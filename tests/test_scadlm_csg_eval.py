@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry.scadlm_csg_eval import (
+from harnesscad.domain.geometry.scadlm_csg_eval import (
     BoolNode,
     Primitive,
     ScadEvalError,

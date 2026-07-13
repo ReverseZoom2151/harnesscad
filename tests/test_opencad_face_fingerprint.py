@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.opencad_face_fingerprint import (
+from harnesscad.domain.geometry.opencad_face_fingerprint import (
     FaceRecord,
     Provenance,
     fingerprint,

@@ -13,9 +13,9 @@ Covers:
 
 import unittest
 
-from verifiers.assembly import AssemblyModel, Mate
-from verifiers.verify import Severity
-from quality.assemblyseq import (
+from harnesscad.eval.verifiers.assembly import AssemblyModel, Mate
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.quality.assemblyseq import (
     plan_assembly_sequence, AssemblySequence, SequenceCheck,
     sequence_diagnostics, with_sequence,
 )
@@ -129,7 +129,7 @@ class TestVerifierSkips(unittest.TestCase):
         self.assertIn("assembly-sequence-trivial", _codes(report))
 
     def test_stub_backend_info_skip(self):
-        from backends.stub import StubBackend
+        from harnesscad.io.backends.stub import StubBackend
         report = SequenceCheck().check(StubBackend(), None)
         self.assertTrue(report.ok)
         self.assertIn("assembly-sequence-skipped", _codes(report))

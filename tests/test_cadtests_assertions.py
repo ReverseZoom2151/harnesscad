@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.cadtests_assertions import (
+from harnesscad.eval.bench.cadtests_assertions import (
     CATEGORIES,
     CadTest,
     GEOMETRIC_TYPES,
@@ -25,7 +25,7 @@ from bench.cadtests_assertions import (
     assert_valid_solid,
     assert_volume,
 )
-from bench.cadtests_model import CADModel, Edge, Face
+from harnesscad.eval.bench.cadtests_model import CADModel, Edge, Face
 
 
 def _box():

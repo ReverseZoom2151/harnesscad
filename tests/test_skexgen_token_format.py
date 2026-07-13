@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.skexgen_token_format import (
+from harnesscad.domain.reconstruction.skexgen_token_format import (
     BIT, CURVE_END, FACE_END, LOOP_END, PAD, PIX_OFFSET, SE_END,
     center_vertices, command_vocab_size, coord_vocab_size, curve_points,
     curve_vertices, dequantize, encode_sketch, merge_se, normalize_scale,

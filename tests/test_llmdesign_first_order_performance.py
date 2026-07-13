@@ -6,7 +6,7 @@ against hand-computed reference values and their monotonicity/logic.
 
 import unittest
 
-from quality import llmdesign_first_order_performance as perf
+from harnesscad.eval.quality import llmdesign_first_order_performance as perf
 
 
 class ChairTest(unittest.TestCase):

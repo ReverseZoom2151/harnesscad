@@ -1,6 +1,6 @@
 import unittest
 
-from library.wian_name_normalizer import (
+from harnesscad.domain.library.wian_name_normalizer import (
     CleanDocument,
     clean_corpus,
     clean_document,

@@ -1,6 +1,6 @@
 import unittest
 
-from research.governance import Claim, Evidence, ResearchGovernance, Review
+from harnesscad.governance.research.governance import Claim, Evidence, ResearchGovernance, Review
 
 
 def ready_governance():

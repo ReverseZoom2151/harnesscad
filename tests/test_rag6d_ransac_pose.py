@@ -4,7 +4,7 @@ import math
 import random
 import unittest
 
-from geometry.rag6d_ransac_pose import PoseHypothesis, ransac_rigid_pose
+from harnesscad.domain.geometry.rag6d_ransac_pose import PoseHypothesis, ransac_rigid_pose
 
 
 def rot_z(deg):

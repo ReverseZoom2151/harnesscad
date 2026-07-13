@@ -4,12 +4,12 @@ validity metrics (paper 71, "Draw It Like Euclid")."""
 import math
 import unittest
 
-from geometry import euclid_construction as ec
-from geometry import euclid_dsl as dsl
-from geometry.euclid_compiler import (
+from harnesscad.domain.geometry import euclid_construction as ec
+from harnesscad.domain.geometry import euclid_dsl as dsl
+from harnesscad.domain.geometry.euclid_compiler import (
     Profile, assemble_profile, compile_profile, replay, ReplayError,
 )
-from geometry import euclid_validity as ev
+from harnesscad.domain.geometry import euclid_validity as ev
 
 
 P = ec.Point

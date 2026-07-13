@@ -1,6 +1,6 @@
 import unittest
 
-from library.sketchconcept_induction import (
+from harnesscad.domain.library.sketchconcept_induction import (
     ConceptCandidate,
     abstract_region,
     adjacency,
@@ -12,8 +12,8 @@ from library.sketchconcept_induction import (
     instance_cost,
     region_cost,
 )
-from reconstruction.sketchconcept_decompose import decompose, is_exact
-from reconstruction.sketchconcept_template import (
+from harnesscad.domain.reconstruction.sketchconcept_decompose import decompose, is_exact
+from harnesscad.domain.reconstruction.sketchconcept_template import (
     Constraint,
     Primitive,
     Sketch,

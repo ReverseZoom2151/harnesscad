@@ -2,7 +2,7 @@
 
 import unittest
 
-from bench.deepclustering_init_protocol import (
+from harnesscad.eval.bench.deepclustering_init_protocol import (
     annotation_budget_fraction,
     induced_known_edges,
     oversegment,

@@ -3,7 +3,7 @@
 import random
 import unittest
 
-import numeric.cfd_gradient_variance as gv
+from harnesscad.domain.numeric import cfd_gradient_variance as gv
 
 
 class TestScaledGradientVariance(unittest.TestCase):

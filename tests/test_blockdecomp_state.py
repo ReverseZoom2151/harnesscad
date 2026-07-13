@@ -3,9 +3,9 @@
 import random
 import unittest
 
-from geometry.blockdecomp_domain import Shape
-from geometry.blockdecomp_cut import CutAction
-from exploration.blockdecomp_state import (
+from harnesscad.domain.geometry.blockdecomp_domain import Shape
+from harnesscad.domain.geometry.blockdecomp_cut import CutAction
+from harnesscad.agents.exploration.blockdecomp_state import (
     DecompositionState,
     LocalObservation,
     observe,

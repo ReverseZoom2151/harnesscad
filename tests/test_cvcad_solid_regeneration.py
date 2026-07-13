@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from reconstruction.cvcad_solid_regeneration import (
+from harnesscad.domain.reconstruction.cvcad_solid_regeneration import (
     Solid,
     box_from_corners,
     close_contour,

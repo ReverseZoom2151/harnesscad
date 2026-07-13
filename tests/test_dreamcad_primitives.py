@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.dreamcad_primitives import (
+from harnesscad.domain.geometry.dreamcad_primitives import (
     Cone,
     Cylinder,
     Plane,

@@ -15,8 +15,8 @@ Deterministic; no network.
 import json
 import unittest
 
-from verifiers.verify import Diagnostic, Severity, VerifyReport
-from verifiers.report import ConformanceReport
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
+from harnesscad.eval.verifiers.report import ConformanceReport
 
 
 # --- fake verifiers --------------------------------------------------------

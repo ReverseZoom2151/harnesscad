@@ -6,7 +6,7 @@ offset and outside-in ordering checked against hand computations.
 import math
 import unittest
 
-from geometry.cadclaw_explode import (
+from harnesscad.domain.geometry.cadclaw_explode import (
     bbox_center, assembly_centroid, removal_axis, axis_offset,
     radial_offset, removal_order, RemovalStep,
 )

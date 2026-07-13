@@ -7,7 +7,7 @@ real geometric :class:`SolveSpaceSketch` solver.
 
 import unittest
 
-from constraints import (
+from harnesscad.core.constraints import (
     ConstraintGraph, ConstraintRef, RelaxationResult, SketchStatus,
     SolveSpaceSketch, solvespace_available,
 )

@@ -1,6 +1,6 @@
 import unittest
 
-from bench.query2cad_vqascore import (
+from harnesscad.eval.bench.query2cad_vqascore import (
     format_vqa_question, vqascore, meets_threshold, aggregate_vqascore,
     best_candidate, stopping_trajectory, DEFAULT_THRESHOLD,
 )

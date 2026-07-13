@@ -9,14 +9,14 @@ from __future__ import annotations
 
 import unittest
 
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, Extrude
-from loop import HarnessSession
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, Extrude
+from harnesscad.core.loop import HarnessSession
 
-from library.parts import (
+from harnesscad.domain.library.parts import (
     ModelCard, default_cards, flange_card, spur_gear_blank_card,
 )
-from library.catalog import PartCatalog, build_default_catalog
+from harnesscad.domain.library.catalog import PartCatalog, build_default_catalog
 
 
 def session_factory() -> HarnessSession:

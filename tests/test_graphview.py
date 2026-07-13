@@ -1,11 +1,11 @@
 import json
 import unittest
 
-from cisp.ops import AddRectangle, Extrude, NewSketch
-from quality.featuregraph import FeatureEdge, FeatureGraph, FeatureNode
-from state.opdag import OpDAG
-from surfaces.graphview import build_graph_view
-from verifiers.verify import Diagnostic, Severity
+from harnesscad.core.cisp.ops import AddRectangle, Extrude, NewSketch
+from harnesscad.eval.quality.featuregraph import FeatureEdge, FeatureGraph, FeatureNode
+from harnesscad.core.state.opdag import OpDAG
+from harnesscad.io.surfaces.graphview import build_graph_view
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 
 
 class GraphViewTests(unittest.TestCase):

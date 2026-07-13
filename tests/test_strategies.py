@@ -10,14 +10,14 @@ No LLM, no network, no geometry kernel.
 import unittest
 from typing import Any, Dict, List, Optional
 
-from backends.stub import StubBackend
-from cisp.ops import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddRectangle, Constrain, Extrude,
 )
-from loop import HarnessSession
-from memory.store import MemoryStore
+from harnesscad.core.loop import HarnessSession
+from harnesscad.agents.memory.store import MemoryStore
 
-from reliability.strategies import (
+from harnesscad.eval.reliability.strategies import (
     best_of_n,
     default_scorer,
     BestOfNResult,
@@ -177,8 +177,8 @@ class TestBestOfN(unittest.TestCase):
         self.assertIsNotNone(res.candidates[0].error)
 
     def test_default_scorer_ordering(self):
-        from cisp.protocol import ApplyOpsResult
-        from verifiers.verify import Diagnostic, Severity
+        from harnesscad.core.cisp.protocol import ApplyOpsResult
+        from harnesscad.eval.verifiers.verify import Diagnostic, Severity
         ok_clean = ApplyOpsResult(True, 3, "d", [])
         ok_warn = ApplyOpsResult(True, 3, "d",
                                  [Diagnostic(Severity.WARNING, "w", "m")])
@@ -292,17 +292,17 @@ class TestReflexion(unittest.TestCase):
 
 class TestHeuristicReflect(unittest.TestCase):
     def test_maps_known_codes(self):
-        from verifiers.verify import Diagnostic, Severity
+        from harnesscad.eval.verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "over-constrained", "sketch sk1 over-constrained")]
         self.assertIn("over-constrained", heuristic_reflect(d, "brief"))
 
     def test_coplanar_message_keyword_fallback(self):
-        from verifiers.verify import Diagnostic, Severity
+        from harnesscad.eval.verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "boolean-failed", "faces are coplanar")]
         self.assertIn("offset", heuristic_reflect(d, "brief"))
 
     def test_ignores_non_error_severity(self):
-        from verifiers.verify import Diagnostic, Severity
+        from harnesscad.eval.verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.WARNING, "under-constrained", "m")]
         # A warning-only report still returns a generic (never empty) insight.
         out = heuristic_reflect(d, "brief")
@@ -310,7 +310,7 @@ class TestHeuristicReflect(unittest.TestCase):
         self.assertNotIn("under-constrained", out)
 
     def test_unknown_code_generic_insight(self):
-        from verifiers.verify import Diagnostic, Severity
+        from harnesscad.eval.verifiers.verify import Diagnostic, Severity
         d = [Diagnostic(Severity.ERROR, "weird-code", "m")]
         out = heuristic_reflect(d, "brief")
         self.assertIn("weird-code", out)

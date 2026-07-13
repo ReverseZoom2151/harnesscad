@@ -1,8 +1,8 @@
 import unittest
 
-from reconstruction import pointercad_linkage as lk
-from reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
-from reconstruction.pointercad_pointer import CHAMFER, FILLET, PointerCommand, PointerError
+from harnesscad.domain.reconstruction import pointercad_linkage as lk
+from harnesscad.domain.reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
+from harnesscad.domain.reconstruction.pointercad_pointer import CHAMFER, FILLET, PointerCommand, PointerError
 
 
 class SketchExtrudeTest(unittest.TestCase):

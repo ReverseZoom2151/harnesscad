@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from drawings.autocad_dimension_geometry import (
+from harnesscad.domain.drawings.autocad_dimension_geometry import (
     aligned_dimension,
     rotated_dimension,
     angular_dimension,

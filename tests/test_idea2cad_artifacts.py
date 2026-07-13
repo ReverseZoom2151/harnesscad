@@ -2,7 +2,7 @@
 
 import unittest
 
-from agents.idea2cad_artifacts import (
+from harnesscad.agents.agents.idea2cad_artifacts import (
     SEVEN_VIEWS,
     default_view_set,
     parse_summary,

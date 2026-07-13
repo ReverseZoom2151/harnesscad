@@ -1,7 +1,7 @@
 """Tests for the Wu & Palmer taxonomy similarity metric."""
 import unittest
 
-from exploration.llmdesopt_wup_similarity import (
+from harnesscad.agents.exploration.llmdesopt_wup_similarity import (
     Taxonomy,
     wup_similarity,
     wup_distance,

@@ -1,6 +1,6 @@
 import unittest
 
-from reconstruction.img2cadsvg_representation import (
+from harnesscad.domain.reconstruction.img2cadsvg_representation import (
     Segment,
     Wireframe,
     build_wireframe,

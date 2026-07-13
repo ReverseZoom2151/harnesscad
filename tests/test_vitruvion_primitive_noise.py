@@ -4,13 +4,13 @@ import math
 import random
 import unittest
 
-from datagen.vitruvion_primitive_noise import (
+from harnesscad.data.datagen.vitruvion_primitive_noise import (
     PrimitiveNoiseConfig,
     noisify_entity,
     noisify_sketch,
     truncated_normal,
 )
-from geometry.vitruvion_sketch_norm import (
+from harnesscad.domain.geometry.vitruvion_sketch_norm import (
     VArc,
     VCircle,
     VLine,

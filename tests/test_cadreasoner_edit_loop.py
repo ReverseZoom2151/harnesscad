@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from bench.geometry_distance import symmetric_chamfer
-from editing.cadreasoner_edit_loop import EditLoopResult, run_edit_loop
+from harnesscad.eval.bench.geometry_distance import symmetric_chamfer
+from harnesscad.domain.editing.cadreasoner_edit_loop import EditLoopResult, run_edit_loop
 
 
 # A toy "program" is a float v; its render is the single point (v, 0, 0).

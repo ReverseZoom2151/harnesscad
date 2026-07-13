@@ -2,7 +2,7 @@
 
 import unittest
 
-from context.comet_progressive_tiers import (
+from harnesscad.agents.context.comet_progressive_tiers import (
     DETAIL,
     RAW,
     SUMMARY,

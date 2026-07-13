@@ -1,7 +1,7 @@
 import unittest
 
-from reconstruction.s2cadsig_op_router import spec_for
-from reconstruction.s2cadsig_param_decode import (
+from harnesscad.domain.reconstruction.s2cadsig_op_router import spec_for
+from harnesscad.domain.reconstruction.s2cadsig_param_decode import (
     DecodeError,
     OrthoCamera,
     PinholeCamera,

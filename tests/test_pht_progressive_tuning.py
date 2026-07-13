@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import pht_progressive_tuning as pht
+from harnesscad.domain.reconstruction import pht_progressive_tuning as pht
 
 
 class ScheduleTest(unittest.TestCase):

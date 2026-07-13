@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from geometry.gaudi_parametric_profile import (
+from harnesscad.domain.geometry.gaudi_parametric_profile import (
     ParametricExprError,
     compile_expr,
     dedupe_points,

@@ -6,7 +6,7 @@ import math
 import random
 import unittest
 
-from reconstruction.geomretr_augment import (
+from harnesscad.domain.reconstruction.geomretr_augment import (
     normalize_unit_sphere,
     subsample,
     rotate,

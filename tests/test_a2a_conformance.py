@@ -16,7 +16,7 @@ internal-convenience shapes exercised in test_a2a.py):
 import json
 import unittest
 
-from a2a.messages import (
+from harnesscad.agents.a2a.messages import (
     A2AMessage,
     AgentCard,
     AgentSkill,
@@ -25,7 +25,7 @@ from a2a.messages import (
     PART_FILE,
     ROLE_AGENT,
 )
-from a2a.task import (
+from harnesscad.agents.a2a.task import (
     EVENT_ARTIFACT_UPDATE,
     EVENT_STATUS_UPDATE,
     IllegalTransition,
@@ -50,7 +50,7 @@ class TestTaskStateWireValues(unittest.TestCase):
         self.assertEqual(TaskState.UNKNOWN.value, "unknown")
 
     def test_rejected_is_terminal(self):
-        from a2a.task import TERMINAL_STATES
+        from harnesscad.agents.a2a.task import TERMINAL_STATES
 
         self.assertIn(TaskState.REJECTED, TERMINAL_STATES)
 

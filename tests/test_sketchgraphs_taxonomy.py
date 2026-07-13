@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import sketchgraphs_taxonomy as tax
+from harnesscad.domain.reconstruction import sketchgraphs_taxonomy as tax
 
 
 class PrimitiveTaxonomyTests(unittest.TestCase):

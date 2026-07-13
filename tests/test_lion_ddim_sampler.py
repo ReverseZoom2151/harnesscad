@@ -3,7 +3,7 @@
 import unittest
 from math import sqrt
 
-from numeric.lion_ddim_sampler import (
+from harnesscad.domain.numeric.lion_ddim_sampler import (
     ddim_sample,
     ddim_step,
     diffuse_denoise_sample,

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import unittest
 
-from quality.estimate import PartEstimate
-from quality.fitness import (
+from harnesscad.eval.quality.estimate import PartEstimate
+from harnesscad.eval.quality.fitness import (
     Objective, PENALTY, Term, carbon_objective, cost_objective, dominates,
     mass_objective, multi_objective, target_dims_objective,
 )
-from verifiers.verify import Diagnostic, Severity, VerifyReport
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
 class MetricsBackend:

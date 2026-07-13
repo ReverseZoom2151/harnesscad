@@ -11,24 +11,24 @@ import os
 import tempfile
 import unittest
 
-from memory.errornotebook_store import (
+from harnesscad.agents.memory.errornotebook_store import (
     ErrorNotebook,
     ErrorNotebookEntry,
     char_similarity,
     jaccard_similarity,
 )
-from reliability.errornotebook_gc import (
+from harnesscad.eval.reliability.errornotebook_gc import (
     gc_check,
     gc_filter,
     extract_final_answer,
     build_corrected_trajectory,
 )
-from rag.partretr_rerank import (
+from harnesscad.agents.rag.partretr_rerank import (
     rerank_answer_sets,
     rerank_parts,
     select_top,
 )
-from bench.partretr_eval import (
+from harnesscad.eval.bench.partretr_eval import (
     relevance,
     exact_match,
     recall_at_k,

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "harnesscad"
-version = "0.0.1"
+version = "0.1.0"
 description = "Native agentic harness for engineering/mechanical text-to-CAD"
 requires-python = ">=3.10"
 # Core spine is stdlib-only — no required runtime dependencies (yet).
@@ -20,40 +20,15 @@ llm = ["litellm>=1.0", "instructor>=1.0"]
 # geometric solve via constraints.SolveSpaceSketch.
 constraints = ["python-solvespace"]
 
-# The product code is grouped into layer packages at the repo root, matching
-# the blueprint's architecture bands: verifiers/ (the plural verifier),
-# reliability/ (guardrails + strategies), surfaces/ (server/mcp/ui/render),
-# quality/ (analysis), with the core spine (loop/harness/pipeline/cli/...) and
-# the foundational packages (cisp/backends/state/...) alongside them.
-[tool.setuptools]
-# Only the core spine stays as root modules; paper-implementation modules
-# live in topical sub-domain packages (programs/generation/fabrication/
-# drawings/numeric and the existing spec/rag/quality/... packages).
-py-modules = [
-    "loop", "harness", "pipeline", "cli", "trace", "observe",
-    "contract", "constraints", "grammar", "grammar_fsa", "routing",
-]
-packages = [
-    # core spine + foundations
-    "cisp", "state", "backends", "adapters", "llm", "agent", "agents", "a2a",
-    # grounding
-    "context", "rag", "memory",
-    # the plural verifier
-    "verifiers",
-    # reliability (includes the search/repair strategies)
-    "reliability", "reliability.strategies",
-    # surfaces (incl. the MCP / A2A / ACP protocol adapters)
-    "surfaces", "surfaces.mcp", "surfaces.ui",
-    "surfaces.acp", "surfaces.a2a_server",
-    # quality / analysis
-    "quality",
-    # data engine + eval + generation
-    "dataengine", "datagen", "exploration", "bench",
-    # front-of-pipeline + ingestion + parts
-    "spec", "skeleton", "sizing", "ingest", "library", "standards",
-    "editing", "reconstruction",
-    # security and research governance
-    "security", "research", "audit", "vision", "procedural", "formats", "geometry",
-    # topical paper-implementation sub-domains
-    "programs", "generation", "fabrication", "drawings", "numeric",
-]
+[project.scripts]
+harnesscad = "harnesscad.core.cli:main"
+
+# src/ layout: a single `harnesscad` namespace with architectural layers.
+# Previously 39 generic names (geometry, state, context, bench, ...) were
+# claimed as top-level packages, which collided with the global namespace and
+# meant the project only imported when the repo root happened to be on sys.path.
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

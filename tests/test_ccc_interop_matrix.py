@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-from adapters import ccc_codecad_ecosystem as eco
-from adapters import ccc_interop_matrix as ix
+from harnesscad.io.adapters import ccc_codecad_ecosystem as eco
+from harnesscad.io.adapters import ccc_interop_matrix as ix
 
 
 class TestExplicitBridges(unittest.TestCase):

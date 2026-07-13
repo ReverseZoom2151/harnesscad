@@ -12,9 +12,9 @@ Covers:
 
 import unittest
 
-from rag.chunk import Chunk, chunk_document
-from rag.index import BM25Index, HashedVectorIndex, HashedEmbedder
-from rag.retriever import HybridRetriever, build_from_docs
+from harnesscad.agents.rag.chunk import Chunk, chunk_document
+from harnesscad.agents.rag.index import BM25Index, HashedVectorIndex, HashedEmbedder
+from harnesscad.agents.rag.retriever import HybridRetriever, build_from_docs
 
 
 MARKDOWN = """\

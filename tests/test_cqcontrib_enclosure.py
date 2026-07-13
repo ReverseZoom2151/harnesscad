@@ -2,7 +2,7 @@ import math
 import unittest
 from dataclasses import replace
 
-from geometry.cqcontrib_enclosure import (
+from harnesscad.domain.geometry.cqcontrib_enclosure import (
     EnclosureError,
     EnclosureSpec,
     fillet_order,

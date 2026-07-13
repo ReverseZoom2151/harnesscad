@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from numeric.opencad_param_expression import (
+from harnesscad.domain.numeric.opencad_param_expression import (
     CyclicParameterError,
     ExpressionError,
     ParameterTable,

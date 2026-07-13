@@ -2,7 +2,7 @@
 
 import unittest
 
-from exploration.datacon_designspace_sampler import (
+from harnesscad.agents.exploration.datacon_designspace_sampler import (
     validate_space,
     uniform_sample,
     stratified_sample,

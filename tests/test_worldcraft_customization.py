@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from reconstruction.worldcraft_layout_spec import ObjectPlacement, Pose
-from generation.worldcraft_customization import (
+from harnesscad.domain.reconstruction.worldcraft_layout_spec import ObjectPlacement, Pose
+from harnesscad.agents.generation.worldcraft_customization import (
     Color,
     CustomizationSchema,
     MaterialSpec,

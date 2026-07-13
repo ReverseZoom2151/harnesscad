@@ -1,8 +1,8 @@
 import unittest
 
-from drawings.annomap_parser import CADFeature, parse_callout
-from drawings.annomap_scoring import assign_features
-from drawings.annomap_spec import (
+from harnesscad.domain.drawings.annomap_parser import CADFeature, parse_callout
+from harnesscad.domain.drawings.annomap_scoring import assign_features
+from harnesscad.domain.drawings.annomap_spec import (
     METHOD_DETERMINISTIC,
     METHOD_HUMAN,
     MappingMetrics,

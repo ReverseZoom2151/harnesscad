@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.codetocad_cardinal_landmark import (
+from harnesscad.domain.geometry.codetocad_cardinal_landmark import (
     BoundaryAxis,
     BoundaryBox,
     CardinalError,

@@ -9,12 +9,12 @@ import os
 import tempfile
 import unittest
 
-from surfaces.render import (
+from harnesscad.io.surfaces.render import (
     STANDARD_VIEWS, DEFAULT_VIEWS, ViewSpec, RenderResult,
     render, render_views, save_views, resolve_views,
 )
-from backends.stub import StubBackend
-from cisp.ops import NewSketch, AddRectangle, Extrude
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.core.cisp.ops import NewSketch, AddRectangle, Extrude
 
 
 def _cadquery_available() -> bool:
@@ -80,7 +80,7 @@ class TestHeadlessSkip(unittest.TestCase):
 @unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
 class TestRealRender(unittest.TestCase):
     def _cq_plate(self):
-        from backends.cadquery_backend import CadQueryBackend
+        from harnesscad.io.backends.cadquery_backend import CadQueryBackend
         b = CadQueryBackend()
         b.apply(NewSketch(plane="XY"))
         b.apply(AddRectangle(sketch="sk1", x=0.0, y=0.0, w=20.0, h=10.0))

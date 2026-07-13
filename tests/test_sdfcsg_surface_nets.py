@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from geometry import sdfcsg_surface_nets as SN
+from harnesscad.domain.geometry import sdfcsg_surface_nets as SN
 
 
 def sphere_field(r):

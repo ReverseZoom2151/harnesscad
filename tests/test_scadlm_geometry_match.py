@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from bench.scadlm_geometry_match import (
+from harnesscad.eval.bench.scadlm_geometry_match import (
     MatchReport,
     bbox_iou,
     best_of_k,
@@ -14,7 +14,7 @@ from bench.scadlm_geometry_match import (
     voxel_iou,
     volume_ratio,
 )
-from geometry.scadlm_csg_eval import evaluate_source
+from harnesscad.domain.geometry.scadlm_csg_eval import evaluate_source
 
 
 class TestCompileMetrics(unittest.TestCase):

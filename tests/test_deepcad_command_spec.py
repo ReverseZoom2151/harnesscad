@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import deepcad_command_spec as spec
+from harnesscad.domain.reconstruction import deepcad_command_spec as spec
 
 
 class TestVocabulary(unittest.TestCase):

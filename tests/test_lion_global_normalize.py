@@ -2,7 +2,7 @@
 
 import unittest
 
-from geometry.lion_global_normalize import (
+from harnesscad.domain.geometry.lion_global_normalize import (
     bounding_box,
     global_normalize,
     global_stats,

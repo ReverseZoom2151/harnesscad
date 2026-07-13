@@ -1,21 +1,21 @@
 import unittest
 
-from bench.brep_robustness import mask_cases, evaluate_masking
-from bench.brep_splits import complexity, grouped_split
-from bench.resource_tradeoff import ResourceResult, pareto_frontier
-from bench.segmentation_metrics import face_segmentation_metrics
-from ingest.bezier_contracts import bezier_curve, bezier_triangle
-from ingest.brep_hierarchy import (
+from harnesscad.eval.bench.brep_robustness import mask_cases, evaluate_masking
+from harnesscad.eval.bench.brep_splits import complexity, grouped_split
+from harnesscad.eval.bench.resource_tradeoff import ResourceResult, pareto_frontier
+from harnesscad.eval.bench.segmentation_metrics import face_segmentation_metrics
+from harnesscad.io.ingest.bezier_contracts import bezier_curve, bezier_triangle
+from harnesscad.io.ingest.brep_hierarchy import (
     BRepHierarchy, Coedge, Edge, Face, Loop, Shell, Vertex,
 )
-from ingest.brep_tokens import canonical_cycle, loop_tokens
-from ingest.spatial_order import morton2, patch_order
-from ingest.tokenization_audit import audit_tokenization
-from quality.brep_descriptors import aggregate, hierarchy_descriptors
-from research.model_promotion import promotion_gate
-from research.resource_profile import profile
-from vision.embedding_cache import EmbeddingCache, embedding_key
-from vision.residual_guard import guard_residual
+from harnesscad.io.ingest.brep_tokens import canonical_cycle, loop_tokens
+from harnesscad.io.ingest.spatial_order import morton2, patch_order
+from harnesscad.io.ingest.tokenization_audit import audit_tokenization
+from harnesscad.eval.quality.brep_descriptors import aggregate, hierarchy_descriptors
+from harnesscad.governance.research.model_promotion import promotion_gate
+from harnesscad.governance.research.resource_profile import profile
+from harnesscad.domain.vision.embedding_cache import EmbeddingCache, embedding_key
+from harnesscad.domain.vision.residual_guard import guard_residual
 
 
 def hierarchy():

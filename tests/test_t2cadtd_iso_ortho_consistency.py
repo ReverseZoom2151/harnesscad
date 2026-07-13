@@ -1,7 +1,7 @@
 import unittest
 
-from drawings.creft_projection import Box, project_three_views
-from drawings.t2cadtd_iso_ortho_consistency import (
+from harnesscad.domain.drawings.creft_projection import Box, project_three_views
+from harnesscad.domain.drawings.t2cadtd_iso_ortho_consistency import (
     recover_extents_from_isometric, isometric_edge_lengths,
     check_iso_ortho_consistency, mirror_extents, IsoOrthoResult,
 )

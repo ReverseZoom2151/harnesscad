@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from geometry.blockdecomp_domain import Shape, Corner, classify_angle
+from harnesscad.domain.geometry.blockdecomp_domain import Shape, Corner, classify_angle
 
 
 class TestClassifyAngle(unittest.TestCase):

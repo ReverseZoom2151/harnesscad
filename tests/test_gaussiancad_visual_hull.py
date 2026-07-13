@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from reconstruction import gaussiancad_visual_hull as vh
+from harnesscad.domain.reconstruction import gaussiancad_visual_hull as vh
 
 
 def _ortho_xy(point):

@@ -1,22 +1,22 @@
 import unittest
 
-from bench.anomaly_splits import (
+from harnesscad.eval.bench.anomaly_splits import (
     few_shot, group_safe_split, normal_only_train, open_set, synthetic_transfer,
 )
-from bench.task_interaction import efficiency, interaction_report
-from bench.vision_metrics import (
+from harnesscad.eval.bench.task_interaction import efficiency, interaction_report
+from harnesscad.eval.bench.vision_metrics import (
     average_precision, box_iou, classification_metrics, detection_at_threshold,
     mask_iou, mean_average_precision, mean_iou, slice_metric, top_k_accuracy,
 )
-from dataengine.anomaly_distribution import audit_anomaly_distribution
-from dataengine.anomaly_schema import (
+from harnesscad.data.dataengine.anomaly_distribution import audit_anomaly_distribution
+from harnesscad.data.dataengine.anomaly_schema import (
     AnomalyAsset, Box, Mask, VisionTask, validate_hierarchy,
 )
-from dataengine.cross_task_consistency import validate_asset
-from dataengine.task_suitability import route_tasks
-from dataengine.visual_qc import inspect_visual
-from datagen.anomaly_pairs import compose_pair
-from security.image_privacy import PrivacyRegion, release_gate
+from harnesscad.data.dataengine.cross_task_consistency import validate_asset
+from harnesscad.data.dataengine.task_suitability import route_tasks
+from harnesscad.data.dataengine.visual_qc import inspect_visual
+from harnesscad.data.datagen.anomaly_pairs import compose_pair
+from harnesscad.governance.security.image_privacy import PrivacyRegion, release_gate
 
 
 def asset(i, *, kind="real", anomaly="crack", normal=False, group=""):

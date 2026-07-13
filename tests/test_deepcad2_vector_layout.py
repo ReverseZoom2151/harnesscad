@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import deepcad2_vector_layout as vl
+from harnesscad.domain.reconstruction import deepcad2_vector_layout as vl
 
 
 class TestConstants(unittest.TestCase):

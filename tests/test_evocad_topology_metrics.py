@@ -1,7 +1,7 @@
 """Tests for EvoCAD Euler-characteristic topology metrics."""
 import unittest
 
-from bench.evocad_topology_metrics import (
+from harnesscad.eval.bench.evocad_topology_metrics import (
     euler_characteristic,
     genus_from_euler,
     topology_error,

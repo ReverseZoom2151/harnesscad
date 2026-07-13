@@ -2,7 +2,7 @@
 
 import unittest
 
-from reconstruction import complexgen_chain_complex as cc
+from harnesscad.domain.reconstruction import complexgen_chain_complex as cc
 
 
 CUBE_CORNERS = [

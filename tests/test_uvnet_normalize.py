@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from geometry import uvnet_normalize as nz
-from geometry import uvnet_u_grid as ug
-from geometry import uvnet_uv_grid as uvg
+from harnesscad.domain.geometry import uvnet_normalize as nz
+from harnesscad.domain.geometry import uvnet_u_grid as ug
+from harnesscad.domain.geometry import uvnet_uv_grid as uvg
 
 
 def _plane_grid(origin=(0.0, 0.0, 0.0), u=(0.0, 4.0), v=(0.0, 2.0), loops=None):

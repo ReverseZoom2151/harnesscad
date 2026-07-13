@@ -15,9 +15,9 @@ two overlapping boxes as a hard ERROR.
 
 import unittest
 
-from backends.stub import StubBackend
-from verifiers.verify import Severity
-from verifiers.interference import (
+from harnesscad.io.backends.stub import StubBackend
+from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.eval.verifiers.interference import (
     InterferenceCheck, Clash, with_interference,
     _sweep_and_prune, _aabb_overlap, _overlap_dims,
 )

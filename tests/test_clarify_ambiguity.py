@@ -1,6 +1,6 @@
 import unittest
 
-from spec.clarify_ambiguity import (
+from harnesscad.domain.spec.clarify_ambiguity import (
     CADSpec, Feature, AmbiguityDetector, audit,
     UNDER_SPECIFIED, CONFLICTING, IMPOSSIBLE,
     under_specification_score, missing_slots, vague_phrases, question_for,
