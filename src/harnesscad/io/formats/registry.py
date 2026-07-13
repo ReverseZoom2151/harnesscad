@@ -344,9 +344,34 @@ def _write_xcsg(obj: Any, path: str, **kwargs: Any) -> None:
     xcsg_codec.write_xcsg(path, _csg_node(obj), **kwargs)
 
 
-def _write_svg(obj: Any, path: str, opts: Optional[dict] = None, **_: Any) -> None:
-    """SVG is write-only: project the model's wireframe edges to a 2D drawing."""
+def _write_svg(obj: Any, path: str, opts: Optional[dict] = None,
+               views: Any = None, **kwargs: Any) -> None:
+    """SVG is write-only. Two routes, and the caller picks:
+
+    *   default -- ``svg.get_svg``: one isometric wireframe of every mesh edge;
+    *   ``views=...`` -- :func:`harnesscad.io.drawing.orthographic_drawing`: a
+        real multi-view engineering drawing (first/third angle, feature edges,
+        dashed hidden lines, overall dimensions, one sheet scale).
+
+    ``views=True`` takes the standard three views; a sequence names them
+    (``["front", "top"]``). The default route is unchanged.
+    """
     mesh = to_mesh(obj)
+    if views:
+        from harnesscad.io import drawing as drawing_route
+
+        names = ("front", "top", "side") if views is True else tuple(views)
+        verts, faces = mesh.indexed()
+        if not faces:
+            raise ExportError("nothing to export: the model has no faces")
+        try:
+            text = drawing_route.orthographic_drawing((verts, faces), views=names,
+                                                      **kwargs)
+        except drawing_route.DrawingError as exc:
+            raise ExportError(str(exc)) from exc
+        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
+        return
     edges = [[a, b] for a, b in mesh.edges()]
     if not edges:
         raise ExportError("nothing to export: the model has no edges")
@@ -425,7 +450,9 @@ _ADAPTERS: Dict[str, _Adapter] = {
         read_symbols=(), write_symbols=("get_svg",),
         reader=None, writer=_write_svg, lossless=False,
         note="WRITE-ONLY: the codec projects 3D edges to a 2D wireframe drawing and "
-             "has no parser. A drawing cannot be read back into a model.",
+             "has no parser. A drawing cannot be read back into a model. Pass "
+             "views=True (or a view list) to take the orthographic engineering-"
+             "drawing route instead: first/third angle, hidden lines, dimensions.",
     ),
     "harnesscad.io.formats.dxf": _Adapter(
         extensions=(".dxf",), mime="image/vnd.dxf", kind="drawing",

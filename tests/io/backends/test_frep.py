@@ -10,6 +10,7 @@ Deterministic: no randomness, no wall clock, no third-party dependency.
 
 from __future__ import annotations
 
+import math
 import os
 import tempfile
 import unittest
@@ -17,6 +18,10 @@ import unittest
 from harnesscad.core.cisp.ops import parse_op
 from harnesscad.core.loop import HarnessSession
 from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
+from harnesscad.domain.geometry.mesh.winding_number import signed_volume as mesh_signed_volume
+from harnesscad.domain.numeric import interval_arithmetic
+from harnesscad.io.backends import frep
+from harnesscad.io.backends import frep_ir
 from harnesscad.io.backends.base import GeometryBackend
 from harnesscad.io.backends.frep import FRepBackend, eval_node
 from harnesscad.io.formats import stl as stl_fmt
@@ -287,6 +292,214 @@ class FRepNodeTest(unittest.TestCase):
         self.assertEqual(node.t, "extrude")
         # the SDF of a box is Euclidean: 5 units to the right of the x=20 face
         self.assertAlmostEqual(eval_node(node, (25.0, 5.0, 2.5)), 5.0, places=6)
+
+
+class FRepMesherChoiceTest(unittest.TestCase):
+    """marching_cubes and surface_nets are RIVALS: selectable, never blended."""
+
+    def test_marching_cubes_is_still_the_default(self):
+        backend, _ = _apply(PLATE_OPS)
+        self.assertEqual(backend.mesher, "marching_cubes")
+        self.assertEqual(frep.DEFAULT_MESHER, "marching_cubes")
+        self.assertEqual(backend.mesh(), backend.mesh(mesher="marching_cubes"))
+
+    def test_surface_nets_is_a_different_but_valid_mesh_of_the_same_field(self):
+        backend, _ = _apply(CUT_OPS)
+        mc_v, mc_f = backend.mesh(mesher="marching_cubes")
+        sn_v, sn_f = backend.mesh(mesher="surface_nets")
+        # different: a dual method puts one vertex per CELL, not on cell edges
+        self.assertNotEqual(sorted(mc_v), sorted(sn_v))
+        # valid: closed 2-manifold, and the same solid to within tessellation error
+        ok, issues = HalfedgeMesh(sn_v, sn_f).is_2manifold()
+        self.assertTrue(ok, [str(i) for i in issues[:5]])
+        self.assertTrue(HalfedgeMesh(sn_v, sn_f).is_closed())
+        expected = PLATE_VOLUME - 3.141592653589793 * 9.0 * 5.0
+        volume = abs(mesh_signed_volume(sn_v, sn_f))
+        self.assertAlmostEqual(volume / expected, 1.0, delta=0.05)
+
+    def test_an_unknown_mesher_is_refused(self):
+        backend, _ = _apply(PLATE_OPS)
+        with self.assertRaises(ValueError):
+            backend.mesh(mesher="dual_contouring")   # 2D only; not a 3D rival
+        with self.assertRaises(ValueError):
+            FRepBackend(mesher="nope")
+
+    def test_the_mesher_choice_survives_a_setparam_replay(self):
+        backend = FRepBackend(resolution=24, mesher="surface_nets", prune=True)
+        session = HarnessSession(backend)
+        session.apply_ops([parse_op(o) for o in PLATE_OPS])
+        r = session.apply_ops([parse_op({"op": "set_param", "target": 1,
+                                         "param": "w", "value": 30.0})])
+        self.assertTrue(r.ok, r.diagnostics)
+        self.assertEqual(backend.mesher, "surface_nets")
+        self.assertTrue(backend.prune)
+
+    def test_tolerance_drives_the_grid_resolution(self):
+        backend, _ = _apply(PLATE_OPS)
+        bounds = backend.bounds()
+        coarse = frep.resolution_for_tolerance(bounds, 1.0)
+        fine = frep.resolution_for_tolerance(bounds, 0.05)
+        self.assertGreater(fine, coarse)
+        self.assertTrue(backend.mesh(tolerance=0.5)[1])
+
+
+class FRepAutodiffNormalTest(unittest.TestCase):
+    """Exact (forward-AD) normals vs the finite-difference estimator."""
+
+    def test_the_default_normal_method_is_unchanged(self):
+        backend, _ = _apply(PLATE_OPS)
+        self.assertEqual(backend.normals, "finite_difference")
+        self.assertEqual(frep.DEFAULT_NORMALS, "finite_difference")
+
+    def test_autodiff_normals_match_finite_difference_normals(self):
+        backend, _ = _apply(CUT_OPS, resolution=24)
+        verts, _faces = backend.mesh()
+        self.assertTrue(verts)
+        worst = 0.0
+        for v in verts:
+            fd = backend.normal(v, method="finite_difference")
+            ad = backend.normal(v, method="autodiff")
+            worst = max(worst, math.dist(fd, ad))
+        self.assertLess(worst, 1e-4, "autodiff normal disagrees with the FD normal")
+
+    def test_the_autodiff_normal_of_a_box_face_is_exact(self):
+        backend, _ = _apply(PLATE_OPS)
+        # a point 2 units out from the x = 20 face: the true normal is +x
+        n = backend.normal((22.0, 5.0, 2.5), method="autodiff")
+        self.assertAlmostEqual(n[0], 1.0, places=9)
+        self.assertAlmostEqual(n[1], 0.0, places=9)
+        self.assertAlmostEqual(n[2], 0.0, places=9)
+
+    def test_the_ir_evaluates_to_the_same_field_as_the_python_tree(self):
+        backend, _ = _apply(CUT_OPS, resolution=16)
+        compiled = backend.ir()
+        self.assertIsNotNone(compiled)
+        node = backend.root()
+        for p in ((0.0, 0.0, 0.0), (10.0, 5.0, 2.5), (22.0, 5.0, 2.5),
+                  (10.0, 5.0, 9.0), (-3.0, 12.0, 1.0)):
+            self.assertAlmostEqual(compiled.value(p), eval_node(node, p), places=9)
+
+    def test_a_polygon_profile_is_honestly_reported_as_uncompilable(self):
+        # a sketch made of LINES has a winding-number sign test, which the
+        # arithmetic IR cannot express. It must say so, not fake a normal.
+        ops = [
+            {"op": "new_sketch", "plane": "XY"},
+            {"op": "add_line", "sketch": "sk1", "x1": 0.0, "y1": 0.0,
+             "x2": 10.0, "y2": 0.0},
+            {"op": "add_line", "sketch": "sk1", "x1": 10.0, "y1": 0.0,
+             "x2": 5.0, "y2": 8.0},
+            {"op": "add_line", "sketch": "sk1", "x1": 5.0, "y1": 8.0,
+             "x2": 0.0, "y2": 0.0},
+            {"op": "extrude", "sketch": "sk1", "distance": 4.0},
+        ]
+        backend, result = _apply(ops, resolution=20)
+        self.assertTrue(result.ok, result.diagnostics)
+        self.assertIsNone(backend.ir())
+        with self.assertRaises(ValueError):
+            backend.normal((1.0, 1.0, 1.0), method="autodiff")
+        # the finite-difference route still works, and so does meshing
+        self.assertTrue(backend.mesh()[1])
+        self.assertEqual(len(backend.normal((1.0, 1.0, 2.0))), 3)
+
+
+class FRepIntervalPruningTest(unittest.TestCase):
+    """Interval pruning must change the WORK, never the mesh."""
+
+    def test_pruning_is_off_by_default(self):
+        backend, _ = _apply(PLATE_OPS)
+        self.assertFalse(backend.prune)
+        stats = {}
+        backend.mesh(stats=stats)
+        self.assertEqual(stats["pruned_samples"], 0)
+        self.assertEqual(stats["field_evals"], stats["samples"])
+
+    def test_pruning_produces_the_identical_mesh_from_fewer_evaluations(self):
+        backend, _ = _apply(CUT_OPS, resolution=32)
+        plain_stats = {}
+        pruned_stats = {}
+        plain = backend.mesh(stats=plain_stats)
+        pruned = backend.mesh(prune=True, stats=pruned_stats)
+
+        # identical geometry: same vertices, same triangles, in the same order
+        self.assertEqual(plain[0], pruned[0])
+        self.assertEqual(plain[1], pruned[1])
+        self.assertTrue(plain[1])
+
+        # strictly less work: whole blocks of cells were never sampled
+        self.assertEqual(plain_stats["samples"], pruned_stats["samples"])
+        self.assertLess(pruned_stats["field_evals"], plain_stats["field_evals"])
+        self.assertGreater(pruned_stats["blocks_pruned"], 0)
+        self.assertLess(pruned_stats["blocks_pruned"], pruned_stats["blocks"])
+
+    def test_pruning_leaves_the_measured_volume_alone(self):
+        backend, _ = _apply(PLATE_OPS, resolution=24)
+        plain = backend.query("measure")["volume"]
+        backend.prune = True
+        backend._invalidate()
+        self.assertAlmostEqual(backend.query("measure")["volume"], plain, places=9)
+
+    def test_interval_classification_is_conservative(self):
+        backend, _ = _apply(PLATE_OPS)
+        compiled = backend.ir()
+        node = backend.root()
+        # a box deep inside the plate must be FILLED, one far away EMPTY, and one
+        # straddling the x = 20 face AMBIGUOUS
+        self.assertEqual(frep_ir.classify_box(compiled, (8.0, 4.0, 2.0),
+                                              (12.0, 6.0, 3.0)), frep_ir.FILLED)
+        self.assertEqual(frep_ir.classify_box(compiled, (100.0, 100.0, 100.0),
+                                              (110.0, 110.0, 110.0)), frep_ir.EMPTY)
+        self.assertEqual(frep_ir.classify_box(compiled, (18.0, 4.0, 2.0),
+                                              (22.0, 6.0, 3.0)), frep_ir.AMBIGUOUS)
+        # and the bound really does enclose the field over the box
+        box = interval_arithmetic.eval_interval(compiled.root, (0.0, 0.0, 0.0),
+                                                (25.0, 12.0, 6.0))
+        for p in ((0.0, 0.0, 0.0), (12.5, 6.0, 3.0), (25.0, 12.0, 6.0),
+                  (20.0, 10.0, 5.0)):
+            self.assertTrue(box.contains(eval_node(node, p)),
+                            "the interval must enclose the true field value")
+
+
+class FRepMassPropertiesTest(unittest.TestCase):
+    """Gauss-quadrature mass properties vs. closed-form values."""
+
+    def test_volume_and_inertia_of_a_box(self):
+        backend, _ = _apply(PLATE_OPS, resolution=32)
+        mp = backend.mass_properties(density=1.0)
+        verts, faces = backend.mesh()
+
+        # the quadrature volume is the EXACT volume of that tessellation: it must
+        # agree with the divergence-theorem volume to machine precision
+        self.assertAlmostEqual(mp["volume"] / abs(mesh_signed_volume(verts, faces)),
+                               1.0, places=9)
+        # ...and with the analytic box volume to within tessellation error
+        self.assertAlmostEqual(mp["volume"] / PLATE_VOLUME, 1.0, delta=0.03)
+
+        # centre of mass of a 20 x 10 x 5 box cornered at the origin
+        for got, want in zip(mp["center_of_mass"], (10.0, 5.0, 2.5)):
+            self.assertAlmostEqual(got, want, delta=0.05)
+
+        # inertia about the centre of mass: I_xx = m (b^2 + c^2) / 12
+        m = PLATE_VOLUME
+        ixx, iyy, izz = mp["principal_moments"]
+        self.assertAlmostEqual(ixx / (m * (10.0 ** 2 + 5.0 ** 2) / 12.0), 1.0, delta=0.05)
+        self.assertAlmostEqual(iyy / (m * (20.0 ** 2 + 5.0 ** 2) / 12.0), 1.0, delta=0.05)
+        self.assertAlmostEqual(izz / (m * (20.0 ** 2 + 10.0 ** 2) / 12.0), 1.0, delta=0.05)
+        # a box aligned with the axes has no products of inertia
+        self.assertAlmostEqual(mp["inertia_tensor"][0][1] / ixx, 0.0, places=3)
+        self.assertAlmostEqual(mp["inertia_tensor"][0][2] / ixx, 0.0, places=3)
+
+    def test_mass_scales_with_density(self):
+        backend, _ = _apply(PLATE_OPS, resolution=20)
+        a = backend.mass_properties(density=1.0)
+        b = backend.mass_properties(density=7.8)
+        self.assertAlmostEqual(b["mass"] / a["mass"], 7.8, places=6)
+        self.assertAlmostEqual(b["volume"], a["volume"], places=9)
+
+    def test_mass_properties_is_reachable_as_a_query(self):
+        backend, _ = _apply(PLATE_OPS, resolution=20)
+        q = backend.query("mass_properties")
+        self.assertIn("inertia_tensor", q)
+        self.assertEqual(len(q["inertia_tensor"]), 3)
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -28,6 +28,26 @@
         `--family` is mandatory and is never inferred -- the quantiser families
         are mutually incompatible (see domain/reconstruction/ingest_pipeline.py).
 
+    python cli.py reconstruct --list [--from point_cloud] [--to primitives]
+    python cli.py reconstruct --kinds | --rivals | --unadapted | --show <route>
+        Browse the reconstruction route registry
+        (domain/reconstruction/registry.py): every runnable inverse-leg
+        capability, keyed by (input kind -> output kind), so "what can turn a
+        point cloud into CAD?" has a real answer. Rival encodings (the quantiser
+        families, the three B-rep graph encodings, the three canonical sketch
+        orderings) are listed by name and are never blended.
+
+    python cli.py program --list
+    python cli.py program --lang cadquery|openscad|... --validate FILE
+    python cli.py program --lang openscad --review FILE [--reference GOLD]
+    python cli.py program --lang cadquery --emit ops.json
+    python cli.py program --operations | --unadapted
+        The code-CAD program surface (domain/programs/registry.py):
+        parse / validate / emit / review, DISPATCHED BY LANGUAGE. `--lang` is
+        mandatory and is never guessed -- CadQuery, OpenSCAD, OpenECAD, typed
+        CSG and the rest are different languages, not rival implementations, and
+        one language's parser is never used on another's source.
+
     python cli.py bench --list [--kind geometry|sequence|sketch|vision|...]
     python cli.py bench --suites | --rivals | --unadapted
     python cli.py bench --suite deepcad --input samples.json [--json]
@@ -36,6 +56,22 @@
         explicit: rival metrics (e.g. the unit-sphere vs bounding-box Chamfer
         protocols) are never averaged together, and every reported number carries
         the name of the metric and the module that produced it.
+
+    python cli.py report [--ops ops.json] [--brief "..."] [--extras extras.json]
+    python cli.py report --list | --rivals | --unadapted [--kind geometry|sequence|...]
+        The quality ANALYSIS surface (harnesscad.eval.quality.registry): run an op
+        stream, then measure it -- complexity level, mass properties, canonical pose,
+        intent graph, exposed parameters, anomaly score, traceability. Verifiers gate;
+        these analyse. An analyser whose input the state does not carry is SKIPPED,
+        never guessed, and rival analysers (three anomaly scorers, two reward
+        functions) are reported side by side and never averaged.
+
+    python cli.py dataset --pipeline text2cad --input records.json [--out data.jsonl]
+    python cli.py dataset --list | --presets | --rivals | --unadapted
+        The data engine (harnesscad.data.pipeline): generate/ingest -> annotate ->
+        curate -> augment -> emit, over the dataengine/datagen modules. Pipelines are
+        named and rival-free by construction: scale-invariant dedup and exact-token
+        dedup disagree by design, so a pipeline may select only one of them.
 
     python cli.py capabilities --list [--tag X] [--layer Y] [--package Z]
     python cli.py capabilities --search TEXT
@@ -246,12 +282,40 @@ def cmd_capabilities(args: argparse.Namespace) -> int:
     return registry.run(args)
 
 
+def cmd_reconstruct(args: argparse.Namespace) -> int:
+    # Imported here so the reconstruction fleet is only touched by `reconstruct`.
+    from harnesscad.domain.reconstruction import registry as reconstruction_registry
+
+    return reconstruction_registry.run_cli(args)
+
+
+def cmd_program(args: argparse.Namespace) -> int:
+    # Imported here so the programs tree is only touched by `program`.
+    from harnesscad.domain.programs import registry as programs_registry
+
+    return programs_registry.run_cli(args)
+
+
 def cmd_bench(args: argparse.Namespace) -> int:
     # Imported here so the metric registry (and the bench tree it adapts) is only
     # touched when the `bench` subcommand actually runs.
     from harnesscad.eval.bench import registry as bench_registry
 
     return bench_registry.run(args)
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    # Imported here so the quality fleet is only touched by `report`.
+    from harnesscad.eval.quality import registry as quality_registry
+
+    return quality_registry.run(args)
+
+
+def cmd_dataset(args: argparse.Namespace) -> int:
+    # Imported here so the data engine is only touched by `dataset`.
+    from harnesscad.data import pipeline as data_pipeline
+
+    return data_pipeline.run(args)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -313,6 +377,22 @@ def build_parser() -> argparse.ArgumentParser:
                                "(default) or refuse them")
     p_ingest.set_defaults(func=cmd_ingest)
 
+    p_reconstruct = sub.add_parser(
+        "reconstruct",
+        help="reconstruction route registry (input kind -> output kind)")
+    from harnesscad.domain.reconstruction import registry as _reconstruction_registry
+
+    _reconstruction_registry.add_arguments(p_reconstruct)
+    p_reconstruct.set_defaults(func=cmd_reconstruct)
+
+    p_program = sub.add_parser(
+        "program",
+        help="code-CAD program surface: parse/validate/emit/review, by --lang")
+    from harnesscad.domain.programs import registry as _programs_registry
+
+    _programs_registry.add_arguments(p_program)
+    p_program.set_defaults(func=cmd_program)
+
     p_bench = sub.add_parser(
         "bench",
         help="metric registry + suite runner (--list/--suites/--suite <name>)")
@@ -320,6 +400,22 @@ def build_parser() -> argparse.ArgumentParser:
 
     _bench_registry.add_arguments(p_bench)
     p_bench.set_defaults(func=cmd_bench)
+
+    p_report = sub.add_parser(
+        "report",
+        help="quality analysis surface (--list/--rivals/--unadapted, or analyse a model)")
+    from harnesscad.eval.quality import registry as _quality_registry
+
+    _quality_registry.add_arguments(p_report)
+    p_report.set_defaults(func=cmd_report)
+
+    p_dataset = sub.add_parser(
+        "dataset",
+        help="data-engine pipeline (--list/--presets/--rivals, or run a named pipeline)")
+    from harnesscad.data import pipeline as _data_pipeline
+
+    _data_pipeline.add_arguments(p_dataset)
+    p_dataset.set_defaults(func=cmd_dataset)
 
     p_caps = sub.add_parser(
         "capabilities",

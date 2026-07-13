@@ -116,12 +116,90 @@ def payload(scale: float, perturbed: bool) -> dict:
         "mask": [[1.0, 1.0, 0.0, 0.0], [1.0, 0.9, 0.0, 0.0],
                  [0.0, 0.0, 1.0, 1.0], [0.0, 0.0, 1.0, 0.8]],
         "depth": [1.0, 1.1, 1.2, 1.4, 1.9, 2.5],
-        "curvatures": [(0.0, 0.0), (0.01 * scale, 0.2), (-0.02, 0.1),
-                       (0.3, 0.4), (0.0, 0.0), (0.05, 0.05)],
+        # A curvature sample is (SDF gradient, Hessian): a plane (zero Hessian)
+        # is developable; the perturbed side bends one principal direction.
+        "curvatures": [
+            ((0.0, 0.0, 1.0), ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0),
+                               (0.0, 0.0, 0.0))),
+            ((0.0, 0.0, 1.0), ((0.1 * scale, 0.0, 0.0),
+                               (0.0, 0.0 if not perturbed else 0.2, 0.0),
+                               (0.0, 0.0, 0.0))),
+            ((1.0, 0.0, 0.0), ((0.0, 0.0, 0.0), (0.0, 0.05, 0.0),
+                               (0.0, 0.0, 0.05 * scale))),
+        ],
         "latents": [[0.1, 0.2, 0.3], [0.4, 0.1, 0.2], [0.2, 0.5, 0.1],
                     [0.3, 0.3, 0.4], [0.5, 0.2, 0.2]],
         "ranking": ([1.0, 1.0, 0.0, 0.0, 0.0] if perturbed
                     else [1.0, 0.0, 1.0, 0.0, 0.0]),
+        # -- payload kinds the second adapter wave needs ----------------------
+        "adjacency": {i: [j for j in (i - 1, i + 1) if 0 <= j < 6]
+                      for i in range(6)},
+        "labels": ([0, 0, 1, 1, 1, 2] if perturbed else [0, 0, 0, 1, 1, 2]),
+        "face_labels": ({0: 1, 1: 1, 2: 2, 3: 0} if perturbed
+                        else {0: 1, 1: 2, 2: 2, 3: 0}),
+        "cluster_labels": ([0, 0, 1, 1, 1] if perturbed else [0, 0, 0, 1, 1]),
+        "instances": ([[0, 1, 2], [3, 4], [5]] if perturbed
+                      else [[0, 1, 2, 3], [4], [5]]),
+        "symbol_instances": {
+            "lengths": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            "instances": ([{"class_id": 0, "indices": [0, 1], "score": 0.9},
+                           {"class_id": 1, "indices": [2, 3, 4], "score": 0.8}]
+                          if perturbed else
+                          [{"class_id": 0, "indices": [0, 1, 2], "score": 1.0},
+                           {"class_id": 1, "indices": [3, 4], "score": 1.0}]),
+        },
+        "bbox": [0.0, 20.0 * scale, 0.0, 10.0, 0.0, 5.0],
+        "scad": ("cube([22, 10, 5]);" if perturbed else "cube([20, 10, 5]);"),
+        "deepcad_commands": [
+            {"type": "SOL"},
+            {"type": "Line", "x": 0, "y": 0},
+            {"type": "Line", "x": int(10 * scale), "y": 0},
+            {"type": "Line", "x": int(10 * scale), "y": int(10 * scale)},
+        ] + ([] if perturbed else [{"type": "Line", "x": 0, "y": 10}]) + [
+            {"type": "Ext", "theta": 0, "phi": 0, "gamma": 0, "px": 0, "py": 0,
+             "pz": 0, "s": 1, "e1": int(2 * scale), "e2": 0, "b": 0, "u": 0},
+        ],
+        "text2cad_model": [{
+            "sketch": [[[
+                {"type": "line", "start": (0.0, 0.0), "end": (10.0 * scale, 0.0)},
+                {"type": "line", "start": (10.0 * scale, 0.0),
+                 "end": (10.0 * scale, 10.0)},
+                {"type": "line", "start": (10.0 * scale, 10.0), "end": (0.0, 10.0)},
+                {"type": "line", "start": (0.0, 10.0), "end": (0.0, 0.0)},
+            ]]],
+            "extrusion": {"extent_one": 0.75 * scale, "extent_two": 0.0,
+                          "origin": (0.0, 0.0, 0.0), "euler": (0.0, 0.0, 0.0),
+                          "sketch_size": 0.75, "boolean": 0},
+        }],
+        # DAVINCI 8-token blocks: t1 type, t2..t7 params in [1..64], t8 flag.
+        "primitive_tokens": ([[3, 1, 1, 40, 1, 1, 1, 0],
+                              [2, 32, 32, 16, 1, 1, 1, 0]] if perturbed else
+                             [[3, 1, 1, 32, 1, 1, 1, 0],
+                              [2, 32, 32, 16, 1, 1, 1, 0]]),
+        "pose": ({"R": [[1.0, 0.0, 0.0], [0.0, 0.996, -0.087],
+                        [0.0, 0.087, 0.996]], "t": [0.02, 0.0, 0.0]}
+                 if perturbed else
+                 {"R": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                  "t": [0.0, 0.0, 0.0]}),
+        "poses": [{"R": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                   "t": [0.0, 0.0, 0.0]},
+                  {"R": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                   "t": [1.0 * scale, 0.0, 0.0]},
+                  {"R": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+                   "t": [1.0 * scale, 1.0, 0.0]}],
+        "part_names": (["bolt.step", "nut.step", "washer.step"] if perturbed
+                       else ["bolt.step", "nut.step", "bracket.step"]),
+        "scored_candidates": {
+            "scores": [0.1, 0.9, 0.4, 0.2] if perturbed else [0.9, 0.1, 0.4, 0.2],
+            "labels": [1, 0, 0, 0],
+        },
+        "similarity": ([[1.0, 0.8, 0.2], [0.8, 1.0, 0.3], [0.2, 0.3, 1.0]]
+                       if perturbed else
+                       [[1.0, 0.4, 0.1], [0.4, 1.0, 0.2], [0.1, 0.2, 1.0]]),
+        "design": {"curves": [
+            {"kind": "line", "points": [(0.0, 0.0), (10.0 * scale, 0.0)]},
+            {"kind": "line", "points": [(10.0 * scale, 0.0), (10.0 * scale, 10.0)]},
+        ]},
     }
 
 
@@ -330,6 +408,221 @@ class ErrorHandlingTest(unittest.TestCase):
         result = bench.run_metric(BROKEN, sample())
         self.assertEqual(result.status, "error")
         self.assertIsNone(result.value)
+
+
+#: The metrics added by the second adapter wave. Each name must resolve to a
+#: Metric whose ``dotted`` is a really-indexed bench module (asserted below).
+WAVE_TWO = (
+    "geometry.boundary_fscore",
+    "geometry.chamfer_refinement_2d",
+    "geometry.dimension_accuracy",
+    "geometry.program_shape_match",
+    "sequence.sequence_f1",
+    "sequence.code_validity",
+    "sequence.primitive_f1_null_class",
+    "sketch.set_prediction_f1",
+    "vision.face_segmentation",
+    "vision.pointwise_semantic",
+    "vision.instance_segmentation",
+    "vision.length_weighted_panoptic",
+    "vision.point_weighted_panoptic",
+    "vision.object_pose_add",
+    "vision.camera_pose_trajectory",
+    "retrieval.clustering_external",
+    "retrieval.clustering_internal",
+    "retrieval.graded_retrieval",
+    "retrieval.gallery_retrieval",
+    "retrieval.image_retrieval_accuracy",
+    "retrieval.latent_alignment",
+    "retrieval.part_retrieval",
+    "retrieval.joint_prediction_ranking",
+    "generative.diversity_similarity_matrix",
+)
+
+#: The rival families the second wave introduced (or joined). Every one of these
+#: must be enforced: two members in one suite is a RivalBlendError.
+WAVE_TWO_RIVALS = {
+    "chamfer_distance_2d": ("sketch.chamfer_2d", "geometry.chamfer_refinement_2d",
+                            "sketch.set_prediction_f1"),
+    "primitive_f1": ("sequence.command_f1", "sequence.sequence_f1",
+                     "sequence.primitive_f1_null_class"),
+    "labelwise_agreement": ("vision.face_segmentation", "vision.pointwise_semantic"),
+    "panoptic_quality": ("vision.instance_segmentation",
+                         "vision.length_weighted_panoptic",
+                         "vision.point_weighted_panoptic"),
+    "validity_rate": ("sequence.invalidity_ratio", "sequence.code_validity"),
+    "latent_retrieval_accuracy": ("retrieval.graded_retrieval",
+                                  "retrieval.gallery_retrieval",
+                                  "retrieval.image_retrieval_accuracy",
+                                  "retrieval.latent_alignment"),
+    "set_diversity": ("generative.diversity",
+                      "generative.diversity_similarity_matrix"),
+    "volumetric_iou": ("geometry.voxel_iou_points", "geometry.program_shape_match"),
+}
+
+
+class SecondWaveDiscoveryTest(unittest.TestCase):
+    """The newly adapted metrics are discovered and bound to real modules."""
+
+    def test_every_new_metric_is_discovered(self):
+        known = {m.name: m for m in bench.metrics()}
+        for name in WAVE_TWO:
+            self.assertIn(name, known, f"{name} was not discovered")
+
+    def test_every_new_metric_maps_to_a_real_indexed_module(self):
+        from harnesscad import registry as capability_registry
+        indexed = {e.dotted for e in capability_registry.find(package="bench")}
+        for name in WAVE_TWO:
+            m = bench.metric(name)
+            self.assertIn(m.dotted, indexed, f"{name} adapts an unindexed module")
+            self.assertIn(m.kind, bench.KINDS)
+            for key in m.inputs:
+                self.assertIn(key, bench.INPUT_KINDS, f"{name} needs unknown {key}")
+
+    def test_new_metrics_do_not_reuse_an_already_adapted_module(self):
+        # Except by design: two metrics may share a module only when they are
+        # DIFFERENT protocols over it (as voxel_iou_points / voxel_iou_grid are).
+        counts = {}
+        for m in bench.metrics():
+            counts.setdefault(m.dotted, []).append(m.name)
+        for dotted, names in counts.items():
+            if len(names) > 1:
+                self.assertEqual(sorted(names),
+                                 sorted(["geometry.voxel_iou_grid",
+                                         "geometry.voxel_iou_points"]),
+                                 f"{dotted} is adapted twice: {names}")
+
+    def test_registry_grew_and_the_unadapted_list_shrank(self):
+        # 51 metrics over 48 modules before the second wave; 132 bench orphans.
+        self.assertGreaterEqual(len(bench.metrics()), 51 + len(WAVE_TWO))
+        adapted_modules = {m.dotted for m in bench.metrics()}
+        self.assertGreaterEqual(len(adapted_modules), 48 + len(WAVE_TWO))
+        self.assertFalse(adapted_modules.intersection(bench.unadapted()))
+        # Every module we adapted really left the unadapted list.
+        for name in WAVE_TWO:
+            self.assertNotIn(bench.metric(name).dotted, bench.unadapted())
+
+    def test_every_stated_reason_names_a_still_unadapted_module(self):
+        unadapted = set(bench.unadapted())
+        self.assertTrue(bench.reasons())
+        for dotted, reason in bench.UNADAPTED_REASONS:
+            self.assertIn(dotted, unadapted,
+                          f"{dotted} has a reason but IS adapted")
+            self.assertTrue(reason.strip(), f"{dotted} has an empty reason")
+
+    def test_unadapted_report_is_listed_with_reasons_in_the_cli(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = cli.main(["bench", "--unadapted"])
+        self.assertEqual(code, 0)
+        text = out.getvalue()
+        self.assertIn("without an adapter", text)
+        self.assertIn("reason:", text)
+
+
+class SecondWaveScoringTest(unittest.TestCase):
+    """A sample of the new metrics really score on the synthetic sample."""
+
+    def test_every_new_metric_scores_without_error(self):
+        s = sample()
+        for name in WAVE_TWO:
+            result = bench.run_metric(bench.metric(name), s)
+            self.assertEqual(result.status, "ok", f"{name}: {result.error}")
+            self.assertTrue(bench._numeric_fields(result.value),
+                            f"{name} produced no numbers")
+
+    def test_selected_new_metrics_produce_the_expected_numbers(self):
+        s = sample()
+        value = lambda name: bench.run_metric(bench.metric(name), s).value
+
+        # A 3-part boundary shifted by one node: the boundary sets still touch.
+        self.assertIn("boundary_f1", value("geometry.boundary_fscore"))
+
+        # The pred bbox is 10% wider than the gold one -> width accuracy 0.9.
+        self.assertAlmostEqual(
+            value("geometry.dimension_accuracy")["accuracy_width"], 0.9, places=6)
+
+        # The CadQuery snippet has no `solid = ...` assignment: contract fails.
+        self.assertEqual(value("sequence.code_validity")["valid"], 0.0)
+
+        # The prediction drops one line of the rectangle -> line F1 below 1.
+        self.assertLess(value("sequence.sequence_f1")["line"], 1.0)
+
+        # Paired latents: pred[i] IS gold[i], so top-1 retrieval is perfect.
+        self.assertEqual(value("retrieval.latent_alignment")["top1_accuracy"], 1.0)
+
+        # The gold part set differs by one filename -> not an exact match.
+        self.assertEqual(value("retrieval.part_retrieval")["exact_match"], 0.0)
+
+    def test_new_metrics_are_deterministic(self):
+        s = sample()
+        for name in WAVE_TWO:
+            a = bench.run_metric(bench.metric(name), s).to_dict()
+            b = bench.run_metric(bench.metric(name), s).to_dict()
+            self.assertEqual(json.dumps(a, sort_keys=True),
+                             json.dumps(b, sort_keys=True), name)
+
+    def test_new_suites_run_clean(self):
+        s = sample()
+        for name in ("text2cad", "sympoint", "cluster3d"):
+            report = bench.run_suite(name, [s])
+            self.assertFalse(report.errors(), [r.error for r in report.errors()])
+            self.assertTrue(report.aggregates(), name)
+
+    def test_a_new_metric_that_raises_is_captured_not_fatal(self):
+        broken = bench.Metric(
+            name="vision.zzz_broken", kind="vision",
+            dotted="harnesscad.eval.bench.vision.face_segmentation",
+            inputs=("face_labels",), adapter=_boom)
+        report = bench.run_suite("sympoint", [sample()], extra_metrics=[broken])
+        self.assertEqual(len(report.errors()), 1)
+        self.assertTrue(report.ok())
+
+
+class SecondWaveRivalTest(unittest.TestCase):
+    """Every rival the second wave introduced is registered AND enforced."""
+
+    def test_each_new_rival_is_in_its_family(self):
+        families = bench.rivals()
+        for family, members in WAVE_TWO_RIVALS.items():
+            self.assertIn(family, families, f"{family} is not a rival family")
+            for name in members:
+                self.assertIn(name, families[family],
+                              f"{name} is not registered in {family}")
+
+    def test_two_members_of_a_family_cannot_be_run_together(self):
+        s = sample()
+        for family, members in WAVE_TWO_RIVALS.items():
+            first, second = bench.metric(members[0]), bench.metric(members[1])
+            # An ad-hoc suite of two rivals is refused at run time...
+            with self.assertRaises(bench.RivalBlendError, msg=family):
+                bench.run_suite("geometry_smoke", [s],
+                                extra_metrics=[first, second])
+            # ... and the conflict is attributed to the right family.
+            conflicts = dict(bench._rival_conflicts([first.name, second.name]))
+            self.assertIn(family, conflicts)
+
+    def test_a_suite_definition_blending_new_rivals_is_refused(self):
+        for family, members in WAVE_TWO_RIVALS.items():
+            conflicts = bench._rival_conflicts(list(members))
+            self.assertTrue(conflicts, f"{family} is not enforced")
+
+    def test_new_rivals_disagree_on_the_same_input(self):
+        s = sample()
+        # Three panoptic protocols, three different PQ numbers on one sample.
+        pq = []
+        for name in WAVE_TWO_RIVALS["panoptic_quality"]:
+            result = bench.run_metric(bench.metric(name), s)
+            self.assertEqual(result.status, "ok", result.error)
+            pq.append(result.value["pq"])
+        self.assertEqual(len(set(pq)), len(pq), f"panoptic rivals agree: {pq}")
+
+    def test_no_suite_selects_two_members_of_any_new_family(self):
+        for name in bench.suites():
+            chosen = set(bench.suite(name).metric_names)
+            for family, members in WAVE_TWO_RIVALS.items():
+                self.assertLessEqual(len(chosen.intersection(members)), 1,
+                                     f"suite {name!r} blends {family!r}")
 
 
 class CliTest(unittest.TestCase):

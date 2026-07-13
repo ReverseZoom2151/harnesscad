@@ -62,12 +62,15 @@ from harnesscad.domain.geometry.sdf import combinators as comb
 from harnesscad.domain.geometry.sdf import field_transforms as xf
 from harnesscad.domain.geometry.sdf import polygon as poly
 from harnesscad.domain.geometry.sdf import primitives as prim
+from harnesscad.domain.geometry.parametric.chord_tolerance import segments_for_tolerance
 from harnesscad.domain.geometry.volumes.marching_cubes import marching_cubes
 from harnesscad.domain.geometry.volumes.surface_nets import (
     ScalarGrid, sample_sdf_grid, surface_nets,
 )
+from harnesscad.domain.numeric import quadrature
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
+from harnesscad.io.backends import frep_ir
 from harnesscad.io.backends.base import ApplyResult
 from harnesscad.io.formats import glb as glb_fmt
 from harnesscad.io.formats import stl as stl_fmt
@@ -78,6 +81,27 @@ Mesh = Tuple[List[Vec3], List[Tuple[int, int, int]]]
 # Default number of Marching-Cubes cells along the model's longest axis.
 DEFAULT_RESOLUTION = 48
 _INF = float("inf")
+
+#: The iso-surface extractors this backend can drive. They are RIVALS, never
+#: blended: ``marching_cubes`` is and stays the default (it is the one every
+#: existing digest/mesh expectation was recorded against); ``surface_nets`` is a
+#: dual method that puts one vertex per cell and produces a different -- also
+#: valid -- mesh of the same field. Choose with ``mesher=``; nothing mixes them.
+MESHERS: Tuple[str, ...] = ("marching_cubes", "surface_nets")
+DEFAULT_MESHER = "marching_cubes"
+
+#: How a surface normal is obtained. ``finite_difference`` is the default (it is
+#: what the mesh writers have always used, via the codecs); ``autodiff`` compiles
+#: the CSG tree to the arithmetic f-rep IR and reads the exact gradient off a
+#: forward-mode dual-number pass. Rivals, selectable, never blended.
+NORMAL_METHODS: Tuple[str, ...] = ("finite_difference", "autodiff")
+DEFAULT_NORMALS = "finite_difference"
+
+#: Number of grid CELLS per side of an interval-pruning block. Small blocks
+#: bound the field tightly (interval arithmetic loses precision over wide boxes)
+#: at the cost of more interval evaluations; 4 is the point where a typical part
+#: prunes most of its interior and its surrounding air.
+PRUNE_BLOCK = 4
 
 
 def _err(code: str, msg: str, where: Optional[str] = None) -> ApplyResult:
@@ -521,16 +545,9 @@ def blend_tree(node: Node, kind: str, k: float) -> Node:
 # --------------------------------------------------------------------------
 # tessellation
 # --------------------------------------------------------------------------
-def sample_grid(field: Callable[[Sequence[float]], float],
-                bounds: Tuple[Vec3, Vec3],
-                resolution: int = DEFAULT_RESOLUTION) -> ScalarGrid:
-    """Sample ``field`` on a padded regular grid sized from ``bounds``.
-
-    The grid is padded by three cells on every side so the zero level set is
-    strictly interior (the extracted mesh is therefore closed), and exact zeros
-    at sample points are nudged outward so that no two Marching-Cubes crossings
-    can land on the same grid corner (which would produce duplicate vertices).
-    """
+def grid_extent(bounds: Tuple[Vec3, Vec3],
+                resolution: int = DEFAULT_RESOLUTION) -> Tuple[Vec3, Vec3, Tuple[int, int, int], float]:
+    """The padded sampling box, its per-axis CELL counts, and the cell size."""
     lo, hi = bounds
     size = [max(hi[i] - lo[i], 1e-9) for i in range(3)]
     cell = max(size) / float(max(int(resolution), 4))
@@ -538,16 +555,145 @@ def sample_grid(field: Callable[[Sequence[float]], float],
     # axis-aligned faces off the sample planes, where exact zeros would make
     # Marching Cubes emit degenerate crossings.
     pad = 3.25 * cell
-    mn = tuple(lo[i] - pad for i in range(3))
-    mx = tuple(hi[i] + pad for i in range(3))
+    mn = (lo[0] - pad, lo[1] - pad, lo[2] - pad)
+    mx = (hi[0] + pad, hi[1] + pad, hi[2] + pad)
     res = tuple(max(4, int(math.ceil((mx[i] - mn[i]) / cell))) for i in range(3))
-    grid = sample_sdf_grid(field, mn, mx, res)
+    return mn, mx, res, cell  # type: ignore[return-value]
+
+
+def resolution_for_tolerance(bounds: Tuple[Vec3, Vec3], tolerance: float) -> int:
+    """Cells along the longest axis needed to hold a chord (sagitta) error.
+
+    A tessellation is only as honest as its chord error: the sagitta of the arc
+    a facet chords off. ``chord_tolerance.segments_for_tolerance`` answers that
+    question for an arc of radius ``r``; the model's bounding sphere is the
+    worst-case curvature radius here, so the number of segments it demands for a
+    full turn is the number of cells the longest axis must carry.
+    """
+    if tolerance <= 0.0:
+        raise ValueError("tolerance must be > 0")
+    lo, hi = bounds
+    diag = math.sqrt(sum((hi[i] - lo[i]) ** 2 for i in range(3)))
+    radius = max(diag / 2.0, tolerance)
+    segments = segments_for_tolerance(radius, 2.0 * math.pi, float(tolerance))
+    return max(4, int(segments))
+
+
+def sample_grid(field: Callable[[Sequence[float]], float],
+                bounds: Tuple[Vec3, Vec3],
+                resolution: int = DEFAULT_RESOLUTION,
+                prune: Optional[frep_ir.CompiledField] = None,
+                stats: Optional[dict] = None) -> ScalarGrid:
+    """Sample ``field`` on a padded regular grid sized from ``bounds``.
+
+    The grid is padded by three cells on every side so the zero level set is
+    strictly interior (the extracted mesh is therefore closed), and exact zeros
+    at sample points are nudged outward so that no two Marching-Cubes crossings
+    can land on the same grid corner (which would produce duplicate vertices).
+
+    ``prune`` (an IR-compiled copy of the same field) switches on interval
+    pruning: blocks of cells whose interval bound proves the surface cannot pass
+    through them are never sampled -- see :func:`_sample_pruned`. The extracted
+    mesh is bit-for-bit the mesh of the unpruned grid; only the number of field
+    evaluations changes. ``stats`` (a dict) receives the evaluation counters.
+    """
+    mn, mx, res, cell = grid_extent(bounds, resolution)
+    if prune is None:
+        grid = sample_sdf_grid(field, mn, mx, res)
+        if stats is not None:
+            n = (res[0] + 1) * (res[1] + 1) * (res[2] + 1)
+            stats.update({"samples": n, "field_evals": n, "pruned_samples": 0,
+                          "blocks": 0, "blocks_pruned": 0})
+    else:
+        grid = _sample_pruned(field, prune, mn, mx, res, cell, stats)
     eps = 1e-9 * cell
     vals = grid.values
     for i, v in enumerate(vals):
         if -eps < v < eps:
             vals[i] = eps
     return grid
+
+
+def _sample_pruned(field: Callable[[Sequence[float]], float],
+                   compiled: frep_ir.CompiledField,
+                   mn: Vec3, mx: Vec3, res: Tuple[int, int, int], cell: float,
+                   stats: Optional[dict]) -> ScalarGrid:
+    """Sample the grid, skipping blocks the interval bound proves are uncrossed.
+
+    The sample lattice is cut into blocks of :data:`PRUNE_BLOCK` cells. For each
+    block the interval evaluator bounds the field over the block's *closed* world
+    box; ``FILLED`` (bound wholly negative) and ``EMPTY`` (wholly positive) blocks
+    cannot contain the zero level set, so none of the cells inside them can emit a
+    triangle whatever their exact sample values are.
+
+    Correctness: every sample on the closed boundary of an AMBIGUOUS block is
+    still evaluated exactly, and every marching-cubes cell lies inside exactly one
+    block. So a cell in an ambiguous block sees the same eight exact corner values
+    as it would without pruning, and a cell in a pruned block sees eight
+    same-signed placeholders -- which produce, as they would have, no triangles.
+    The resulting mesh is therefore identical; only the work changes.
+    """
+    nx, ny, nz = res[0] + 1, res[1] + 1, res[2] + 1
+    spacing = ((mx[0] - mn[0]) / res[0], (mx[1] - mn[1]) / res[1],
+               (mx[2] - mn[2]) / res[2])
+
+    def world(i: int, j: int, k: int) -> Vec3:
+        return (mn[0] + i * spacing[0], mn[1] + j * spacing[1], mn[2] + k * spacing[2])
+
+    # A margin big enough to swallow any float disagreement between the IR's
+    # evaluation of the field and the backend's, but far below one cell.
+    margin = 1e-6 * cell
+    exact = bytearray(nx * ny * nz)
+    fill = [0.0] * (nx * ny * nz)
+    outside = float(max(mx[i] - mn[i] for i in range(3)))
+    blocks = 0
+    pruned = 0
+    b = int(PRUNE_BLOCK)
+
+    for k0 in range(0, res[2], b):
+        k1 = min(k0 + b, res[2])
+        for j0 in range(0, res[1], b):
+            j1 = min(j0 + b, res[1])
+            for i0 in range(0, res[0], b):
+                i1 = min(i0 + b, res[0])
+                blocks += 1
+                verdict = frep_ir.classify_box(
+                    compiled, world(i0, j0, k0), world(i1, j1, k1), margin=margin)
+                ambiguous = verdict == frep_ir.AMBIGUOUS
+                if not ambiguous:
+                    pruned += 1
+                value = -outside if verdict == frep_ir.FILLED else outside
+                for k in range(k0, k1 + 1):
+                    for j in range(j0, j1 + 1):
+                        base = nx * (j + ny * k)
+                        for i in range(i0, i1 + 1):
+                            idx = base + i
+                            if ambiguous:
+                                exact[idx] = 1
+                            elif not exact[idx]:
+                                fill[idx] = value
+
+    values = [0.0] * (nx * ny * nz)
+    evals = 0
+    for k in range(nz):
+        for j in range(ny):
+            base = nx * (j + ny * k)
+            for i in range(nx):
+                idx = base + i
+                if exact[idx]:
+                    values[idx] = float(field(world(i, j, k)))
+                    evals += 1
+                else:
+                    values[idx] = fill[idx]
+    if stats is not None:
+        stats.update({
+            "samples": nx * ny * nz,
+            "field_evals": evals,
+            "pruned_samples": nx * ny * nz - evals,
+            "blocks": blocks,
+            "blocks_pruned": pruned,
+        })
+    return ScalarGrid(values, (nx, ny, nz), mn, spacing)
 
 
 def weld(verts: Sequence[Vec3], faces: Sequence[Sequence[int]],
@@ -584,9 +730,20 @@ def weld(verts: Sequence[Vec3], faces: Sequence[Sequence[int]],
 def tessellate(field: Callable[[Sequence[float]], float],
                bounds: Tuple[Vec3, Vec3],
                resolution: int = DEFAULT_RESOLUTION,
-               algorithm: str = "marching_cubes") -> Mesh:
-    """Sample the field and extract a welded iso-surface triangle mesh."""
-    grid = sample_grid(field, bounds, resolution)
+               algorithm: str = DEFAULT_MESHER,
+               prune: Optional[frep_ir.CompiledField] = None,
+               stats: Optional[dict] = None) -> Mesh:
+    """Sample the field and extract a welded iso-surface triangle mesh.
+
+    ``algorithm`` selects one of :data:`MESHERS`. They are rivals: marching cubes
+    puts vertices on cell EDGES (primal), surface nets puts one vertex per CELL
+    (dual). Both are valid extractions of the same field; neither is a refinement
+    of the other, and nothing here blends them.
+    """
+    if algorithm not in MESHERS:
+        raise ValueError("unknown mesher %r (supported: %s)"
+                         % (algorithm, ", ".join(MESHERS)))
+    grid = sample_grid(field, bounds, resolution, prune=prune, stats=stats)
     if algorithm == "surface_nets":
         verts, quads = surface_nets(grid, 0.0)
         faces: List[Tuple[int, int, int]] = []
@@ -616,8 +773,20 @@ class FRepBackend:
     #: exports this backend can produce
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "sdf")
 
-    def __init__(self, resolution: int = DEFAULT_RESOLUTION) -> None:
+    def __init__(self, resolution: int = DEFAULT_RESOLUTION,
+                 mesher: str = DEFAULT_MESHER,
+                 normals: str = DEFAULT_NORMALS,
+                 prune: bool = False) -> None:
+        if mesher not in MESHERS:
+            raise ValueError("unknown mesher %r (supported: %s)"
+                             % (mesher, ", ".join(MESHERS)))
+        if normals not in NORMAL_METHODS:
+            raise ValueError("unknown normal method %r (supported: %s)"
+                             % (normals, ", ".join(NORMAL_METHODS)))
         self.resolution = int(resolution)
+        self.mesher = str(mesher)
+        self.normals = str(normals)
+        self.prune = bool(prune)
         self.reset()
 
     # -- state -------------------------------------------------------------
@@ -631,6 +800,7 @@ class FRepBackend:
         self._bodies: List[dict] = []   # [{"id": fid, "node": Node}]
         self._oplog: list = []
         self._mesh_cache: Optional[Tuple[str, Mesh]] = None
+        self._ir_cache: Dict[str, Optional[frep_ir.CompiledField]] = {}
         self._n = {"sk": 0, "e": 0, "f": 0, "i": 0}
 
     def _new_id(self, kind: str) -> str:
@@ -639,6 +809,7 @@ class FRepBackend:
 
     def _invalidate(self) -> None:
         self._mesh_cache = None
+        self._ir_cache = {}
 
     # -- op dispatch -------------------------------------------------------
     def apply(self, op: Op) -> ApplyResult:
@@ -968,7 +1139,8 @@ class FRepBackend:
         new_log, err = edit_oplog(self._oplog, op)
         if err is not None:
             return _err(*err)
-        trial = type(self)(resolution=self.resolution)
+        trial = type(self)(resolution=self.resolution, mesher=self.mesher,
+                           normals=self.normals, prune=self.prune)
         for logged in new_log:
             r = trial.apply(logged)
             if not r.ok:
@@ -997,17 +1169,101 @@ class FRepBackend:
         node = self.root()
         return None if node is None else node_bounds(node)
 
+    # -- the arithmetic f-rep IR ------------------------------------------
+    def ir(self, smooth: bool = False) -> Optional[frep_ir.CompiledField]:
+        """The model as an arithmetic f-rep expression graph, or None.
+
+        ``None`` means the tree is not IR-expressible (today: a sketch profile
+        built from line segments -- its inside/outside test is a winding number,
+        not arithmetic). Callers that want exact normals or interval pruning must
+        degrade gracefully; they all do.
+
+        ``smooth=True`` returns the graph to DIFFERENTIATE, ``smooth=False`` the
+        graph to BOUND: the same function in two encodings (see
+        ``frep_ir._Builder``).
+        """
+        node = self.root()
+        if node is None:
+            return None
+        key = "%s|%d" % (self.state_digest(), 1 if smooth else 0)
+        cache = self._ir_cache or {}
+        if isinstance(cache, dict) and key in cache:
+            return cache[key]
+        compiled = frep_ir.try_compile(node, smooth=smooth)
+        if not isinstance(cache, dict):
+            cache = {}
+        cache[key] = compiled
+        self._ir_cache = cache
+        return compiled
+
+    def normal(self, p: Sequence[float], method: Optional[str] = None,
+               h: float = 1e-6) -> Vec3:
+        """Unit outward surface normal of the field at ``p``.
+
+        ``method='finite_difference'`` (the default) uses the central-difference
+        estimator; ``method='autodiff'`` compiles the model to the f-rep IR and
+        reads the exact gradient off a forward-mode dual-number pass. They are
+        rivals: the AD normal is exact, the FD normal is an O(h^2) approximation
+        of it. Nothing blends them, and the default is unchanged.
+        """
+        how = self.normals if method is None else str(method)
+        if how not in NORMAL_METHODS:
+            raise ValueError("unknown normal method %r (supported: %s)"
+                             % (how, ", ".join(NORMAL_METHODS)))
+        node = self.root()
+        if node is None:
+            raise ValueError("no solid: the model has no field to differentiate")
+        if how == "autodiff":
+            compiled = self.ir(smooth=True)
+            if compiled is None:
+                raise ValueError(
+                    "this model is not f-rep-IR-expressible (polygon sketch "
+                    "profile); use method='finite_difference'")
+            return frep_ir.exact_normal(compiled, p)
+        gx = (eval_node(node, (p[0] + h, p[1], p[2]))
+              - eval_node(node, (p[0] - h, p[1], p[2]))) / (2.0 * h)
+        gy = (eval_node(node, (p[0], p[1] + h, p[2]))
+              - eval_node(node, (p[0], p[1] - h, p[2]))) / (2.0 * h)
+        gz = (eval_node(node, (p[0], p[1], p[2] + h))
+              - eval_node(node, (p[0], p[1], p[2] - h))) / (2.0 * h)
+        mag = math.sqrt(gx * gx + gy * gy + gz * gz)
+        if mag == 0.0:
+            return (0.0, 0.0, 0.0)
+        return (gx / mag, gy / mag, gz / mag)
+
+    # -- tessellation ------------------------------------------------------
     def mesh(self, resolution: Optional[int] = None,
-             algorithm: str = "marching_cubes") -> Mesh:
-        """Tessellate the model.  Cached against the state digest."""
+             algorithm: Optional[str] = None,
+             mesher: Optional[str] = None,
+             prune: Optional[bool] = None,
+             tolerance: Optional[float] = None,
+             stats: Optional[dict] = None) -> Mesh:
+        """Tessellate the model.  Cached against the state digest.
+
+        ``mesher`` (alias: ``algorithm``) picks one of :data:`MESHERS`; the
+        default stays ``marching_cubes``. ``tolerance`` sizes the grid from a
+        chord-error budget instead of a cell count. ``prune`` turns on interval
+        pruning, which changes only the amount of work, never the mesh.
+        """
         node = self.root()
         if node is None:
             return ([], [])
-        res = self.resolution if resolution is None else int(resolution)
-        key = "%s|%d|%s" % (self.state_digest(), res, algorithm)
-        if self._mesh_cache is not None and self._mesh_cache[0] == key:
+        how = mesher or algorithm or self.mesher
+        if how not in MESHERS:
+            raise ValueError("unknown mesher %r (supported: %s)"
+                             % (how, ", ".join(MESHERS)))
+        bounds = node_bounds(node)
+        if tolerance is not None:
+            res = resolution_for_tolerance(bounds, float(tolerance))
+        else:
+            res = self.resolution if resolution is None else int(resolution)
+        do_prune = self.prune if prune is None else bool(prune)
+        compiled = self.ir() if do_prune else None
+        key = "%s|%d|%s|%d" % (self.state_digest(), res, how, 1 if compiled else 0)
+        if stats is None and self._mesh_cache is not None and self._mesh_cache[0] == key:
             return self._mesh_cache[1]
-        m = tessellate(lambda p: eval_node(node, p), node_bounds(node), res, algorithm)
+        m = tessellate(lambda p: eval_node(node, p), bounds, res, how,
+                       prune=compiled, stats=stats)
         self._mesh_cache = (key, m)
         return m
 
@@ -1048,6 +1304,8 @@ class FRepBackend:
             return {"volume": m["volume"], "bbox": m["bbox"]}
         if q == "metrics":
             return self._metrics()
+        if q == "mass_properties":
+            return self.mass_properties()
         if q == "mesh":
             verts, faces = self.mesh()
             return {"vertex_count": len(verts), "triangle_count": len(faces)}
@@ -1095,6 +1353,110 @@ class FRepBackend:
             "center_of_mass": [cx, cy, cz],
             "triangle_count": len(faces),
             "vertex_count": len(verts),
+        }
+
+    def mass_properties(self, density: float = 1.0, order: int = 3,
+                        resolution: Optional[int] = None,
+                        mesher: Optional[str] = None) -> dict:
+        """Volume, centroid and the full inertia tensor, by Gauss quadrature.
+
+        The mesh-based ``metrics`` query reports a volume and a *vertex-average*
+        "centre of mass", which is not the centre of mass of a solid at all. This
+        is the real thing: each mass integral is turned into a surface integral by
+        the divergence theorem
+
+            V     = 1/3 . closed-integral(p . n) dA
+            C_i   = 1/(2V) . closed-integral(p_i^2 n_i) dA
+            I_ii  = 1/3 . closed-integral(p_j^3 n_j + p_k^3 n_k) dA
+            P_ij  = 1/2 . closed-integral(p_i p_j^2 n_j) dA
+
+        and each triangle's surface integral is evaluated with an ``order``-point
+        Gauss-Legendre rule (:mod:`harnesscad.domain.numeric.quadrature`) on the
+        unit square mapped onto the triangle by the Duffy transform. The
+        integrands are cubic, so order 3 (exact through degree 5) integrates them
+        exactly: the answer is the exact mass property OF THE TESSELLATION, with
+        no quadrature error of its own.
+
+        The inertia tensor is reported about the centre of mass (the parallel-axis
+        shift is applied), which is the convention every CAD kernel uses.
+        """
+        verts, faces = self.mesh(resolution=resolution, mesher=mesher)
+        if not faces:
+            return {}
+        nodes, weights = quadrature.nodes_and_weights(int(order))
+
+        v_int = 0.0
+        m1 = [0.0, 0.0, 0.0]            # closed-integral p_i^2 n_i dA
+        m3 = [0.0, 0.0, 0.0]            # closed-integral p_i^3 n_i dA
+        prod = [0.0, 0.0, 0.0]          # xy, yz, xz products
+        for (ia, ib, ic) in faces:
+            a, b, c = verts[ia], verts[ib], verts[ic]
+            e1 = (b[0] - a[0], b[1] - a[1], b[2] - a[2])
+            e2 = (c[0] - a[0], c[1] - a[1], c[2] - a[2])
+            cr = (e1[1] * e2[2] - e1[2] * e2[1],
+                  e1[2] * e2[0] - e1[0] * e2[2],
+                  e1[0] * e2[1] - e1[1] * e2[0])
+            twice_area = math.sqrt(cr[0] ** 2 + cr[1] ** 2 + cr[2] ** 2)
+            if twice_area == 0.0:
+                continue
+            n = (cr[0] / twice_area, cr[1] / twice_area, cr[2] / twice_area)
+            for gu, wu in zip(nodes, weights):
+                # Gauss nodes live on [-1, 1]; map to [0, 1] (weight halves).
+                u = 0.5 * (gu + 1.0)
+                for gv, wv in zip(nodes, weights):
+                    t = 0.5 * (gv + 1.0)
+                    s = t * (1.0 - u)              # Duffy: square -> triangle
+                    # dA = 2A * (1-u) * (du dt);  the 0.5*0.5 folds the [-1,1] map
+                    jac = 0.25 * wu * wv * twice_area * (1.0 - u)
+                    px = a[0] + e1[0] * u + e2[0] * s
+                    py = a[1] + e1[1] * u + e2[1] * s
+                    pz = a[2] + e1[2] * u + e2[2] * s
+                    v_int += jac * (px * n[0] + py * n[1] + pz * n[2])
+                    m1[0] += jac * px * px * n[0]
+                    m1[1] += jac * py * py * n[1]
+                    m1[2] += jac * pz * pz * n[2]
+                    m3[0] += jac * px ** 3 * n[0]
+                    m3[1] += jac * py ** 3 * n[1]
+                    m3[2] += jac * pz ** 3 * n[2]
+                    prod[0] += jac * px * py * py * n[1]     # 2 * integral xy dV
+                    prod[1] += jac * py * pz * pz * n[2]     # 2 * integral yz dV
+                    prod[2] += jac * px * pz * pz * n[2]     # 2 * integral xz dV
+
+        volume = v_int / 3.0
+        sign = -1.0 if volume < 0.0 else 1.0          # tolerate inward normals
+        volume = abs(volume)
+        if volume == 0.0:
+            return {}
+        cx = sign * m1[0] / (2.0 * volume)
+        cy = sign * m1[1] / (2.0 * volume)
+        cz = sign * m1[2] / (2.0 * volume)
+        ixx = sign * (m3[1] + m3[2]) / 3.0
+        iyy = sign * (m3[0] + m3[2]) / 3.0
+        izz = sign * (m3[0] + m3[1]) / 3.0
+        pxy = sign * prod[0] / 2.0
+        pyz = sign * prod[1] / 2.0
+        pxz = sign * prod[2] / 2.0
+        # parallel-axis shift to the centre of mass
+        ixx -= volume * (cy * cy + cz * cz)
+        iyy -= volume * (cx * cx + cz * cz)
+        izz -= volume * (cx * cx + cy * cy)
+        pxy -= volume * cx * cy
+        pyz -= volume * cy * cz
+        pxz -= volume * cx * cz
+        d = float(density)
+        tensor = [
+            [ixx * d, -pxy * d, -pxz * d],
+            [-pxy * d, iyy * d, -pyz * d],
+            [-pxz * d, -pyz * d, izz * d],
+        ]
+        return {
+            "volume": volume,
+            "mass": volume * d,
+            "center_of_mass": [cx, cy, cz],
+            "inertia_tensor": tensor,
+            "principal_moments": [ixx * d, iyy * d, izz * d],
+            "quadrature_order": int(order),
+            "triangle_count": len(faces),
         }
 
     def _assembly(self) -> dict:

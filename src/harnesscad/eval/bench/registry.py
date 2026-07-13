@@ -79,6 +79,8 @@ __all__ = [
     "suite",
     "rivals",
     "unadapted",
+    "UNADAPTED_REASONS",
+    "reasons",
     "run_metric",
     "run_suite",
     "add_arguments",
@@ -111,13 +113,32 @@ INPUT_KINDS: Tuple[str, ...] = (
     "depth",         # list[float]
     "latents",       # list[list[float]]
     "ranking",       # list[float]                     -- graded relevance, ranked
-    "curvatures",    # list[(g, H)]                    -- Gaussian term + mean curvature
+    "curvatures",    # list[(grad3, hess3x3)]          -- SDF gradient + Hessian samples
     "slot_rows",     # list[[cmd, a0..a15]]            -- DeepCAD 17-slot int rows
     "op_matrix",     # list[[op_type, params...]]      -- int op matrix
     "code",          # str                             -- CadQuery/Python source
     "cad_sequence",  # {"curves": [...], "extrusion": {...}}
     "sketch_map",    # {sketch_id: [primitive_tuple, ...]}
     "mask_pixels",   # list[(i, j)]                    -- occupied pixel ids
+    # -- kinds added with the second adapter wave -------------------------------
+    "adjacency",     # {node_id: [neighbour_id, ...]}  -- element adjacency graph
+    "labels",        # list[int]                       -- per-element semantic label
+    "face_labels",   # {face_id: label}                -- stable-id face labelling
+    "cluster_labels",# list[int]                       -- per-latent cluster id
+    "instances",     # list[[element_id, ...]]         -- instance masks (id sets)
+    "symbol_instances",  # {"lengths": [float], "instances":
+                     #   [{"class_id": int, "indices": [int], "score": float}]}
+    "bbox",          # [min_x, max_x, min_y, max_y, min_z, max_z]
+    "scad",          # str                             -- OpenSCAD source
+    "deepcad_commands",  # list[{"type": str, **params}] -- DeepCAD command rows
+    "text2cad_model",    # list[{"sketch": [[curve, ...]], "extrusion": {...}}]
+    "primitive_tokens",  # list[[t1..t8]]              -- DAVINCI 8-token blocks
+    "pose",          # {"R": [[3x3]], "t": [3]}        -- one rigid 6D pose
+    "poses",         # list[{"R": [[3x3]], "t": [3]}]  -- a camera trajectory
+    "part_names",    # list[str]                       -- retrieved part filenames
+    "scored_candidates",  # {"scores": [float], "labels": [0|1]}
+    "similarity",    # list[list[float]]               -- pairwise similarity matrix
+    "design",        # {"curves": [{"kind": str, "points": [(x, y), ...]}, ...]}
 )
 
 
@@ -371,11 +392,6 @@ def _complex_chamfer(pred: dict, gold: dict):
     return float(m.chamfer_distance(pred["points"], gold["points"]))
 
 
-def _refinement_chamfer(pred: dict, gold: dict):
-    from harnesscad.eval.bench.geometry import refinement_convergence as m
-    return float(m.chamfer_symmetric(pred["points2d"], gold["points2d"]))
-
-
 def _factorization_symmetry(pred: dict, gold: dict):
     from harnesscad.eval.bench.geometry import factorization_fidelity as m
     return {
@@ -475,10 +491,13 @@ def _mesh_topology(pred: dict, gold: dict):
 
 def _curvature_developability(pred: dict, gold: dict):
     from harnesscad.eval.bench.geometry import curvature_developability as m
-    # A curvature sample is the module's ``(g, H)`` pair (Gaussian term, mean
-    # curvature), not a scalar -- pass it through untouched.
-    samples = [tuple(float(v) for v in s) for s in pred["curvatures"]]
-    reference = [tuple(float(v) for v in s) for s in gold["curvatures"]]
+    # A curvature sample is the module's ``(grad, hess)`` pair: a 3-vector SDF
+    # gradient and its 3x3 Hessian. Pass both through untouched.
+    to_samples = lambda payload: [
+        ([float(v) for v in grad], [[float(v) for v in row] for row in hess])
+        for grad, hess in payload["curvatures"]]
+    samples = to_samples(pred)
+    reference = to_samples(gold)
     return {
         "developability_ratio": float(m.developability_ratio(samples)),
         "mean_abs_gaussian_curvature": float(m.mean_abs_gaussian_curvature(samples)),
@@ -714,6 +733,314 @@ def _diversity_feature_space(pred: dict, gold: dict):
 
 
 # ---------------------------------------------------------------------------
+# Second adapter wave. Same rules: the modules are untouched, every adaptation
+# lives here, and an adapter declares only inputs a sample can honestly carry.
+# ---------------------------------------------------------------------------
+
+def _numbers(payload: dict) -> Dict[str, float]:
+    """Every scalar in a metric's dict/dataclass return, as floats."""
+    if not isinstance(payload, dict):
+        payload = getattr(payload, "__dict__", {})
+    return {k: float(v) for k, v in payload.items()
+            if isinstance(v, (int, float, bool))}
+
+
+def _adjacency(payload: dict) -> Dict[int, set]:
+    return {int(node): {int(n) for n in neighbours}
+            for node, neighbours in payload["adjacency"].items()}
+
+
+# -- geometry (wave 2)
+
+def _design(payload: dict):
+    from harnesscad.domain.editing import sketch_edit_schema as schema
+    curves = tuple(
+        schema.Curve(kind=str(c["kind"]),
+                     points=tuple((float(p[0]), float(p[1])) for p in c["points"]))
+        for c in payload["design"]["curves"])
+    return schema.Design(curves=curves)
+
+
+def _chamfer_refinement_2d(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import refinement_convergence as m
+    return float(m.chamfer_symmetric(_design(pred), _design(gold)))
+
+
+def _boundary_fscore(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import boundary_fscore as m
+    adjacency = _adjacency(pred)
+    precision, recall, f1 = m.boundary_prf(adjacency, list(pred["labels"]),
+                                           list(gold["labels"]))
+    return {"boundary_precision": float(precision),
+            "boundary_recall": float(recall),
+            "boundary_f1": float(f1)}
+
+
+def _dimension_accuracy(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import dimension_accuracy as m
+    expected = m.measure_bbox_dimensions(*[float(v) for v in gold["bbox"]])
+    result = m.measure_and_score(tuple(float(v) for v in pred["bbox"]), expected)
+    out = {"average_accuracy": float(result.average_accuracy),
+           "all_within_tolerance": float(result.all_within_tolerance)}
+    out.update({("accuracy_" + name): float(cmp_.accuracy)
+                for name, cmp_ in result.comparisons.items()})
+    return out
+
+
+def _program_shape_match(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import program_shape_match as m
+    report = m.score(pred["scad"], gold["scad"])
+    return {"compiles": float(report.compiles),
+            "voxel_iou": float(report.voxel_iou),
+            "volume_ratio": float(report.volume_ratio),
+            "bbox_iou": float(report.bbox_iou),
+            "centroid_offset": float(report.centroid_offset)}
+
+
+# -- sequence (wave 2)
+
+def _deepcad_commands(payload: dict) -> list:
+    from harnesscad.domain.reconstruction.tokens import deepcad_commands as dc
+    out = []
+    for row in payload["deepcad_commands"]:
+        params = {k: v for k, v in row.items() if k != "type"}
+        out.append(dc.command(row["type"], **params))
+    return out
+
+
+def _sequence_f1(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sequence import sequence_f1 as m
+    evaluation = m.evaluate_sequence(_deepcad_commands(pred),
+                                     _deepcad_commands(gold))
+    return {k: float(v) for k, v in m.aggregate_f1([evaluation]).items()}
+
+
+def _code_validity(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sequence import code_validity as m
+    result = m.validate_cad_code(pred["code"])
+    rate = m.valid_syntax_rate([result])
+    return {"valid": float(bool(result["valid"])),
+            "valid_syntax_rate": float(rate if rate is not None else 0.0)}
+
+
+def _primitive_f1_null_class(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import primitive_f1_null_class as m
+    report = m.evaluate_model(list(gold["text2cad_model"]),
+                              list(pred["text2cad_model"]))
+    out = {"type_accuracy": float(report.accuracy),
+           "macro_f1": float(report.macro["f1"]),
+           "micro_f1": float(report.micro["f1"]),
+           "extrusion_f1": float(report.extrusion.f1)}
+    out.update({(name + "_f1"): float(score.f1)
+                for name, score in report.curves.items()})
+    return out
+
+
+# -- sketch (wave 2)
+
+def _set_prediction_f1(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sketch import set_prediction_f1 as m
+    result = m.evaluate([list(t) for t in pred["primitive_tokens"]],
+                        [list(t) for t in gold["primitive_tokens"]])
+    out: Dict[str, float] = {}
+    for key, item in result.items():
+        if isinstance(item, (int, float, bool)):
+            out[key] = float(item)
+        elif isinstance(item, dict):
+            out.update({f"{key}_{k}": float(v) for k, v in item.items()
+                        if isinstance(v, (int, float, bool))})
+    return out
+
+
+# -- vision (wave 2)
+
+def _face_segmentation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import face_segmentation as m
+    result = m.face_segmentation_metrics(dict(gold["face_labels"]),
+                                         dict(pred["face_labels"]))
+    if not result.get("available"):
+        raise ValueError(f"face ids differ: {result.get('error')}")
+    return {"accuracy": float(result["accuracy"]),
+            "macro_iou": float(result["macro_iou"])}
+
+
+def _pointwise_semantic(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import pointwise_semantic_eval as m
+    p = [int(v) for v in pred["labels"]]
+    g = [int(v) for v in gold["labels"]]
+    n_classes = max(p + g) + 1
+    result = m.point_wise_eval(p, g, num_classes=n_classes,
+                               ignore_label=n_classes)
+    return {k: float(v) for k, v in result.items()
+            if isinstance(v, (int, float))}
+
+
+def _instance_segmentation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import instance_segmentation as m
+    result = m.instance_metrics([set(inst) for inst in pred["instances"]],
+                                [set(inst) for inst in gold["instances"]])
+    return {k: float(v) for k, v in result.items()}
+
+
+def _weighted_instances(payload: dict) -> list:
+    lengths = [float(v) for v in payload["symbol_instances"]["lengths"]]
+    return [(int(inst["class_id"]),
+             {int(i): lengths[int(i)] for i in inst["indices"]})
+            for inst in payload["symbol_instances"]["instances"]]
+
+
+def _length_weighted_panoptic(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import length_weighted_panoptic as m
+    p, g = _weighted_instances(pred), _weighted_instances(gold)
+    out = {k: float(v) for k, v in m.panoptic_quality(p, g).items()}
+    micro = m.per_class_f1(p, g).get("micro", {})
+    out.update({("micro_" + k): float(v) for k, v in micro.items()
+                if isinstance(v, (int, float))})
+    return out
+
+
+def _point_weighted_panoptic(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import point_weighted_panoptic as m
+    lengths = [float(v) for v in pred["symbol_instances"]["lengths"]]
+    predictions = [(int(i["class_id"]), float(i.get("score", 1.0)),
+                    [int(x) for x in i["indices"]])
+                   for i in pred["symbol_instances"]["instances"]]
+    truth = [(int(i["class_id"]), [int(x) for x in i["indices"]])
+             for i in gold["symbol_instances"]["instances"]]
+    classes = [c for c, _, _ in predictions] + [c for c, _ in truth]
+    n_classes = max(classes) + 1 if classes else 1
+    report = m.evaluate(predictions, truth, lengths, num_classes=n_classes,
+                        thing_classes=tuple(range(n_classes)), stuff_classes=())
+    overall = report.get("all", report)
+    return {k: float(v) for k, v in overall.items()
+            if isinstance(v, (int, float))}
+
+
+def _object_pose_add(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import object_pose_add as m
+    r_p, t_p = pred["pose"]["R"], pred["pose"]["t"]
+    r_g, t_g = gold["pose"]["R"], gold["pose"]["t"]
+    model_points = [tuple(float(c) for c in p) for p in gold["points"]]
+    return {
+        "add": float(m.add(r_p, t_p, r_g, t_g, model_points)),
+        "add_s": float(m.add_s(r_p, t_p, r_g, t_g, model_points)),
+        "rotation_error_deg": float(m.rotation_angle_error_deg(r_p, r_g)),
+        "translation_error": float(m.translation_error(t_p, t_g)),
+        "accuracy_5cm_5deg": float(m.pose_accuracy_5cm_5deg(r_p, t_p, r_g, t_g)),
+    }
+
+
+def _camera_pose_trajectory(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import camera_pose_trajectory as m
+    to_poses = lambda payload: [(p["R"], p["t"]) for p in payload["poses"]]
+    return {k: float(v)
+            for k, v in m.evaluate_trajectory(to_poses(pred),
+                                              to_poses(gold)).items()
+            if isinstance(v, (int, float))}
+
+
+# -- retrieval (wave 2)
+
+def _clustering_external(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import clustering_external_indices as m
+    p = [int(v) for v in pred["cluster_labels"]]
+    g = [int(v) for v in gold["cluster_labels"]]
+    return {"nmi": float(m.normalized_mutual_information(p, g)),
+            "adjusted_rand_index": float(m.adjusted_rand_index(p, g)),
+            "rand_index": float(m.rand_index(p, g)),
+            "clustering_accuracy": float(m.clustering_accuracy(p, g)),
+            "purity": float(m.purity(p, g))}
+
+
+def _clustering_internal(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import clustering_internal_indices as m
+    points = [list(v) for v in pred["latents"]]
+    labels = [int(v) for v in pred["cluster_labels"]]
+    return {"davies_bouldin": float(m.davies_bouldin_index(points, labels)),
+            "calinski_harabasz": float(m.calinski_harabasz_index(points, labels)),
+            "dunn": float(m.dunn_index(points, labels))}
+
+
+def _graded_retrieval(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import graded_retrieval_eval as m
+    # Paired protocol: pred latent i is the query, gold latent i is its ONE
+    # relevant database entry (the sample's own pairing -- no relevance labels
+    # are invented).
+    queries = [list(v) for v in pred["latents"]]
+    database = [list(v) for v in gold["latents"]]
+    relevant = [[i] for i in range(len(queries))]
+    report = m.evaluate_retrieval(queries, database, relevant, ks=(1, 5))
+    out = {f"recall_at_{k}": float(v) for k, v in report.recall.items()}
+    out.update({f"ndcg_at_{k}": float(v) for k, v in report.ndcg.items()})
+    return out
+
+
+def _gallery_retrieval(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import gallery_retrieval_eval as m
+    report = m.evaluate_retrieval([list(v) for v in pred["latents"]],
+                                  [int(c) for c in pred["cluster_labels"]],
+                                  [list(v) for v in gold["latents"]],
+                                  [int(c) for c in gold["cluster_labels"]])
+    return {"nn_accuracy": float(report.nn_accuracy),
+            "nn_f1": float(report.nn_f1),
+            "ndcg": float(report.ndcg),
+            "macro_map": float(report.macro_map),
+            "micro_map": float(report.micro_map)}
+
+
+def _image_retrieval_accuracy(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import image_retrieval_accuracy as m
+    image = [list(v) for v in pred["latents"]]
+    cad = [list(v) for v in gold["latents"]]
+    batch = min(len(image), len(cad))
+    if batch < 2:
+        raise ValueError("batch retrieval needs at least two paired latents")
+    mean, std = m.retrieval_accuracy(image, cad, batch_size=batch,
+                                     repeats=4, seed=0)
+    return {"retrieval_accuracy": float(mean), "retrieval_std": float(std),
+            "random_guess": float(m.random_guess_accuracy(batch))}
+
+
+def _latent_alignment(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import latent_alignment as m
+    quality = m.alignment_quality([list(v) for v in pred["latents"]],
+                                  [list(v) for v in gold["latents"]])
+    return {"mean_paired_cosine": float(quality.mean_paired_cosine),
+            "mean_cross_cosine": float(quality.mean_cross_cosine),
+            "top1_accuracy": float(quality.top1_accuracy),
+            "mean_reciprocal_rank": float(quality.mean_reciprocal_rank)}
+
+
+def _part_retrieval(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import part_retrieval_eval as m
+    p = [str(n) for n in pred["part_names"]]
+    g = [str(n) for n in gold["part_names"]]
+    out = {k: float(v) for k, v in m.relevance(p, g).items()}
+    out["exact_match"] = float(m.exact_match(p, g))
+    return out
+
+
+def _joint_prediction_ranking(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import joint_prediction_ranking as m
+    scores = [float(s) for s in pred["scored_candidates"]["scores"]]
+    labels = [int(v) for v in gold["scored_candidates"]["labels"]]
+    rank = m.rank_of_first_hit(scores, labels)
+    return {"hit_at_1": float(m.hit_at_top_k(scores, labels, 1)),
+            "hit_at_5": float(m.hit_at_top_k(scores, labels, 5)),
+            "reciprocal_rank": float(1.0 / rank) if rank else 0.0}
+
+
+# -- generative (wave 2)
+
+def _diversity_similarity_matrix(pred: dict, gold: dict):
+    from harnesscad.eval.bench.generative import diversity_similarity_matrix as m
+    report = m.conceptset_report([[float(v) for v in row]
+                                  for row in pred["similarity"]])
+    return {k: float(v) for k, v in report.items()
+            if isinstance(v, (int, float, bool))}
+
+
+# ---------------------------------------------------------------------------
 # The adapter table: metric name -> (module dotted, kind, inputs, adapter).
 #
 # It binds adapters to MODULES; the metric objects themselves are materialised
@@ -832,6 +1159,113 @@ _ADAPTER_TABLE: Tuple[Tuple[str, str, str, Tuple[str, ...], Adapter], ...] = (
      ("latents",), _one_nna),
     ("generative.diversity", _P + "generative.diversity_feature_space", "generative",
      ("latents",), _diversity_feature_space),
+
+    # -- second adapter wave ---------------------------------------------------
+    ("geometry.chamfer_refinement_2d", _P + "geometry.refinement_convergence",
+     "geometry", ("design",), _chamfer_refinement_2d),
+    ("geometry.boundary_fscore", _P + "geometry.boundary_fscore", "geometry",
+     ("adjacency", "labels"), _boundary_fscore),
+    ("geometry.dimension_accuracy", _P + "geometry.dimension_accuracy", "geometry",
+     ("bbox",), _dimension_accuracy),
+    ("geometry.program_shape_match", _P + "geometry.program_shape_match", "geometry",
+     ("scad",), _program_shape_match),
+
+    ("sequence.sequence_f1", _P + "sequence.sequence_f1", "sequence",
+     ("deepcad_commands",), _sequence_f1),
+    ("sequence.code_validity", _P + "sequence.code_validity", "sequence",
+     ("code",), _code_validity),
+    ("sequence.primitive_f1_null_class", _P + "protocols.primitive_f1_null_class",
+     "sequence", ("text2cad_model",), _primitive_f1_null_class),
+
+    ("sketch.set_prediction_f1", _P + "sketch.set_prediction_f1", "sketch",
+     ("primitive_tokens",), _set_prediction_f1),
+
+    ("vision.face_segmentation", _P + "vision.face_segmentation", "vision",
+     ("face_labels",), _face_segmentation),
+    ("vision.pointwise_semantic", _P + "vision.pointwise_semantic_eval", "vision",
+     ("labels",), _pointwise_semantic),
+    ("vision.instance_segmentation", _P + "vision.instance_segmentation", "vision",
+     ("instances",), _instance_segmentation),
+    ("vision.length_weighted_panoptic", _P + "vision.length_weighted_panoptic",
+     "vision", ("symbol_instances",), _length_weighted_panoptic),
+    ("vision.point_weighted_panoptic", _P + "vision.point_weighted_panoptic",
+     "vision", ("symbol_instances",), _point_weighted_panoptic),
+    ("vision.object_pose_add", _P + "vision.object_pose_add", "vision",
+     ("pose", "points"), _object_pose_add),
+    ("vision.camera_pose_trajectory", _P + "vision.camera_pose_trajectory", "vision",
+     ("poses",), _camera_pose_trajectory),
+
+    ("retrieval.clustering_external", _P + "retrieval.clustering_external_indices",
+     "retrieval", ("cluster_labels",), _clustering_external),
+    ("retrieval.clustering_internal", _P + "retrieval.clustering_internal_indices",
+     "retrieval", ("latents", "cluster_labels"), _clustering_internal),
+    ("retrieval.graded_retrieval", _P + "retrieval.graded_retrieval_eval",
+     "retrieval", ("latents",), _graded_retrieval),
+    ("retrieval.gallery_retrieval", _P + "retrieval.gallery_retrieval_eval",
+     "retrieval", ("latents", "cluster_labels"), _gallery_retrieval),
+    ("retrieval.image_retrieval_accuracy", _P + "retrieval.image_retrieval_accuracy",
+     "retrieval", ("latents",), _image_retrieval_accuracy),
+    ("retrieval.latent_alignment", _P + "retrieval.latent_alignment", "retrieval",
+     ("latents",), _latent_alignment),
+    ("retrieval.part_retrieval", _P + "retrieval.part_retrieval_eval", "retrieval",
+     ("part_names",), _part_retrieval),
+    ("retrieval.joint_prediction_ranking", _P + "retrieval.joint_prediction_ranking",
+     "retrieval", ("scored_candidates",), _joint_prediction_ranking),
+
+    ("generative.diversity_similarity_matrix",
+     _P + "generative.diversity_similarity_matrix", "generative",
+     ("similarity",), _diversity_similarity_matrix),
+)
+
+
+#: Bench modules deliberately left unadapted, with the reason. A module listed
+#: here needs an input a per-sample ``pred``/``gold`` pair cannot honestly supply
+#: (a corpus, an execution trace, a human rating, an injected CAD kernel), or its
+#: semantics cannot be read off its public API. Faking such an input would produce
+#: a number that means nothing, so these stay in :func:`unadapted`.
+UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
+    (_P + "geometry.compositional_metrics",
+     "aggregates externally-computed CD/IV/PR values; takes no pred/gold input"),
+    (_P + "geometry.interface_match",
+     "needs STEP mating sub-volumes plus an injected IoU-at-pose kernel"),
+    (_P + "geometry.solid_iou",
+     "needs an injected solid-modelling adapter (inertia frames, symmetry search)"),
+    (_P + "geometry.primitive_fidelity",
+     "no docstring; the meaning of its five positional arguments is not recoverable"),
+    (_P + "geometry.edit_boundary_coherence",
+     "needs an edit/keep voxel-mask partition and a source shape, not a pred/gold pair"),
+    (_P + "geometry.design_distance_curve",
+     "needs mrCAD Design objects (stroke geometry), which the sample schema lacks"),
+    (_P + "sequence.error_taxonomy",
+     "classifies a FreeCAD execution stderr string; requires running the code"),
+    (_P + "sequence.controllability",
+     "needs a FlexCAD mask target plus the pre-edit model; a pred/gold pair has neither"),
+    (_P + "retrieval.nt_xent_loss",
+     "a training objective over dropout views, not a prediction-vs-ground-truth metric"),
+    (_P + "retrieval.graph_nt_xent_loss",
+     "a training objective over augmented graph views; needs an embed_fn, not a sample"),
+    (_P + "retrieval.metric_learning_losses",
+     "VICReg/MMCL training losses over paired augmentations, not an evaluation metric"),
+    (_P + "retrieval.clustering_algorithms",
+     "clustering inference algorithms (k-means/spectral), not an evaluation metric"),
+    (_P + "retrieval.openset_recognition",
+     "needs a set of KNOWN and a set of UNKNOWN query scores; a sample carries neither"),
+    (_P + "retrieval.fewshot_scaling",
+     "a dataset-level scaling protocol over train/test splits and repeats"),
+    (_P + "retrieval.grounding_metrics",
+     "needs the model's SELECTED id set alongside the ranking; the schema has no such field"),
+    (_P + "generative.brep_set_metrics",
+     "set-level COV/MMD/JSD over a generated corpus vs a training corpus"),
+    (_P + "generative.sequence_set_ratios",
+     "set-level unique/novel ratios over a generated corpus vs a training corpus"),
+    (_P + "generative.prompt_similarity",
+     "cross-product similarity between generation SETTINGS; needs an embed function"),
+    (_P + "generative.render_distribution",
+     "no docstring; needs an injected feature-distance function over a corpus"),
+    (_P + "sequence.loss_masks",
+     "training-time loss masking, not an evaluation metric"),
+    (_P + "sequence.tokenizer_frontier",
+     "no docstring; a tokenizer-vocabulary sweep, not a pred/gold metric"),
 )
 
 
@@ -934,6 +1368,7 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
         "geometry.voxel_iou_points",          # voxelise sampled points, Jaccard
         "geometry.voxel_iou_grid",            # supplied occupancy grids, Jaccard
         "geometry.chamfer_bbox_judged",       # also reports its own IoU protocol
+        "geometry.program_shape_match",       # CSG lattice voxel IoU + bbox IoU
     )),
     ("sequence_accuracy", (
         "sequence.reconstruction_accuracy",   # DeepCAD ACC_cmd / ACC_param (eta=3)
@@ -948,7 +1383,47 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
         "sketch.raster_vectorization",        # binary ink IoU/PRF
         "vision.mask_iou",                    # detection-style mask IoU
     )),
+    # -- families introduced with the second adapter wave ---------------------
+    ("chamfer_distance_2d", (
+        "sketch.chamfer_2d",                  # plain symmetric 2D chamfer
+        "geometry.chamfer_refinement_2d",     # mrCAD refinement chamfer
+        "sketch.set_prediction_f1",           # DAVINCI CD: chamfer over SAMPLED
+                                              # points of Hungarian-matched primitives
+    )),
+    ("primitive_f1", (
+        "sequence.command_f1",                # per-command-family F1, positional
+        "sequence.sequence_f1",               # CAD-SIGNet: Hungarian loop matching
+        "sequence.primitive_f1_null_class",   # Text2CAD: bbox matching + Null class
+    )),
+    ("labelwise_agreement", (
+        "vision.face_segmentation",           # per-face accuracy + macro IoU
+        "vision.pointwise_semantic",          # SymPoint mIoU/fwIoU/mAcc/pACC
+    )),
+    ("panoptic_quality", (
+        "vision.instance_segmentation",       # mask-IoU greedy PQ/RQ/SQ
+        "vision.length_weighted_panoptic",    # CADTransformer log-length weighted PQ
+        "vision.point_weighted_panoptic",     # SymPoint point-weighted PQ
+    )),
+    ("validity_rate", (
+        "sequence.invalidity_ratio",          # structural CAD-sequence invalidity
+        "sequence.code_validity",             # static AST safety/output contract
+    )),
+    ("latent_retrieval_accuracy", (
+        "retrieval.graded_retrieval",         # GC-CAD graded Recall@k / NDCG@k
+        "retrieval.gallery_retrieval",        # query/gallery 1-NN accuracy + mAP
+        "retrieval.image_retrieval_accuracy", # GenCAD batch retrieval accuracy R_B
+        "retrieval.latent_alignment",         # GenCAD-3D full-library Top-1 / MRR
+    )),
+    ("set_diversity", (
+        "generative.diversity",               # mean pairwise DISTANCE in feature space
+        "generative.diversity_similarity_matrix",  # 1 - mean pairwise SIMILARITY
+    )),
 )
+
+
+def reasons() -> Dict[str, str]:
+    """dotted -> why that bench module is deliberately left unadapted."""
+    return {dotted: reason for dotted, reason in UNADAPTED_REASONS}
 
 
 def rivals() -> Dict[str, Tuple[str, ...]]:
@@ -1036,6 +1511,23 @@ _SUITE_DEFS: Tuple[Tuple[str, str, Tuple[str, ...]], ...] = (
     ("generative",
      "Generative protocol: FID over CAD latents, 1-NNA, feature-space diversity.",
      ("generative.fid", "generative.one_nna", "generative.diversity")),
+
+    ("text2cad",
+     "Text2CAD protocol (Khan et al., NeurIPS 2024, Sec. 5.1): the reference "
+     "generate_report -- bbox-matched primitive F1 with a Null class, extrusion "
+     "F1 -- plus the invalidity ratio. Rivals the DeepCAD command F1.",
+     ("sequence.primitive_f1_null_class", "sequence.invalidity_ratio")),
+
+    ("sympoint",
+     "SymPoint symbol-spotting protocol (ECCV 2024): the point-weighted panoptic "
+     "half and the point-wise semantic half of the same benchmark.",
+     ("vision.point_weighted_panoptic", "vision.pointwise_semantic")),
+
+    ("cluster3d",
+     "Cluster3D protocol (Sec. 4.2-4.3): external agreement indices (NMI/ARI/ACC) "
+     "against a reference labelling plus internal validity indices on the "
+     "embedding itself.",
+     ("retrieval.clustering_external", "retrieval.clustering_internal")),
 
     ("geometry_smoke",
      "Every geometry metric that only needs a point cloud, EXCEPT the rivals: one "
@@ -1188,9 +1680,12 @@ def run(args: argparse.Namespace) -> int:
         return 0
 
     if getattr(args, "unadapted", False):
+        why = reasons()
         for dotted in unadapted():
-            print(dotted)
-        print(f"-- {len(unadapted())} bench modules without an adapter")
+            reason = why.get(dotted, "")
+            print(f"{dotted}" + (f"\n    reason: {reason}" if reason else ""))
+        print(f"-- {len(unadapted())} bench modules without an adapter "
+              f"({len(why)} with a stated reason)")
         return 0
 
     if getattr(args, "list", False) or not getattr(args, "suite", None):
