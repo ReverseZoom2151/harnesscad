@@ -124,10 +124,32 @@ class TestLazyLoad(unittest.TestCase):
 
 
 class TestOrphans(unittest.TestCase):
-    def test_orphans_is_large_and_contains_known_islands(self):
+    def test_orphans_is_a_live_measurement_not_a_fixed_list(self):
+        """The orphan set must never be pinned to specific modules.
+
+        This test used to assert that sdf.primitives was an orphan. Wiring the
+        f-rep backend made that false -- which is the whole point of the wiring.
+        A test that names orphans fights its own project: every module we connect
+        would break it, so it would pressure us to leave modules disconnected.
+
+        Assert the invariant instead: orphans are exactly the modules no other
+        product module imports, computed from the live import graph.
+        """
         orph = set(registry.orphans())
-        self.assertGreater(len(orph), 500)
-        self.assertIn("harnesscad.domain.geometry.sdf.primitives", orph)
+        graph = registry.import_graph()
+        imported = {t for targets in graph.values() for t in targets}
+        indexed = {e.dotted for e in registry.index()}
+        self.assertEqual(orph, indexed - imported - {"harnesscad.registry"})
+
+    def test_wired_modules_are_not_orphans(self):
+        """Regression for the seams: these are imported by real product code."""
+        orph = set(registry.orphans())
+        for dotted in (
+            "harnesscad.domain.geometry.sdf.primitives",       # f-rep backend
+            "harnesscad.domain.geometry.volumes.marching_cubes",  # f-rep backend
+            "harnesscad.io.formats.stl",                       # format registry
+        ):
+            self.assertNotIn(dotted, orph, f"{dotted} should be wired in")
 
     def test_orphans_excludes_imported_modules(self):
         graph = registry.import_graph()

@@ -711,7 +711,11 @@ class CadQueryBackend:
         if fmt == "step":
             return self._export_text(exporters, wp, "STEP", ".step")
         if fmt == "stl":
-            return self._export_text(exporters, wp, "STL", ".stl")
+            # ASCII: export() defaults to *binary* STL, which cannot survive being
+            # read back as text (the bytes get mangled by the utf-8 decode) and so
+            # was not parseable by any STL reader.
+            return self._export_text(exporters, wp, "STL", ".stl",
+                                     opt={"ascii": True})
         if fmt == "iges":
             return self._export_iges(shape)
         raise ValueError(f"unsupported export format '{fmt}'")
@@ -737,11 +741,11 @@ class CadQueryBackend:
                 pass
 
     @staticmethod
-    def _export_text(exporters, wp, export_type: str, suffix: str) -> str:
+    def _export_text(exporters, wp, export_type: str, suffix: str, opt=None) -> str:
         fd, path = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
         try:
-            exporters.export(wp, path, exportType=export_type)
+            exporters.export(wp, path, exportType=export_type, opt=opt)
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 return fh.read()
         finally:

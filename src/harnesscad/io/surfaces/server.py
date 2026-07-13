@@ -26,10 +26,19 @@ from typing import Any, Dict, List, Optional, TextIO, Tuple
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.core.cisp.ops import _REGISTRY, parse_op
 from harnesscad.core.loop import HarnessSession
+from harnesscad.eval.verifiers.registry import LINT, PHYSICS, DOMAIN
 from harnesscad.eval.verifiers.verify import VerifyReport
 
 
+# The `verify` method runs the whole advisory fleet (everything but CORE, which
+# the session's own verifiers already cover).
+FLEET_TIERS = (LINT, PHYSICS, DOMAIN)
+
+
 # --- backend selection -----------------------------------------------------
+BACKENDS = ("stub", "cadquery", "frep")
+
+
 def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
     """Return (backend, resolved_name, note). Falls back to stub with a note."""
     if name == "cadquery":
@@ -39,6 +48,10 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",
                     f"cadquery backend unavailable ({exc}); fell back to stub")
+    if name == "frep":
+        # Kernel-free SDF backend: real geometry, zero third-party dependencies.
+        from harnesscad.io.backends.frep import FRepBackend
+        return FRepBackend(), "frep", None
     return StubBackend(), "stub", None
 
 
@@ -55,9 +68,9 @@ class CISPServer:
 
     METHODS = ("initialize", "applyOps", "query", "verify", "export")
 
-    def __init__(self, backend: str = "stub") -> None:
+    def __init__(self, backend: str = "stub", verify_level: str = "core") -> None:
         self.backend, self.backend_name, self.backend_note = _make_backend(backend)
-        self.session = HarnessSession(self.backend)
+        self.session = HarnessSession(self.backend, verify_level=verify_level)
 
     # --- CISP methods -----------------------------------------------------
     def initialize(self) -> Dict[str, Any]:
@@ -97,13 +110,22 @@ class CISPServer:
         return {"what": what, "result": self.backend.query(what)}
 
     def verify(self) -> Dict[str, Any]:
+        """Core verifiers + the full discovered fleet.
+
+        ``ok`` is still decided by the CORE verifiers alone -- they are what gate
+        the transaction. The fleet's findings are surfaced under ``fleet`` (and
+        appended to ``diagnostics``) so an agent can act on them without the
+        advisory tiers flipping a valid model to not-ok.
+        """
         diags = []
         for v in self.session.verifiers:
             diags += v.check(self.backend, self.session.opdag).diagnostics
         report = VerifyReport(diags)
+        fleet = self.session.run_fleet(tiers=FLEET_TIERS)
         return {
             "ok": report.ok,
-            "diagnostics": [d.to_dict() for d in report.diagnostics],
+            "diagnostics": [d.to_dict() for d in report.diagnostics + fleet],
+            "fleet": [d.to_dict() for d in fleet],
         }
 
     def export(self, fmt: str = "step") -> Dict[str, Any]:
@@ -169,7 +191,7 @@ class CISPServer:
 def main(argv: Optional[List[str]] = None) -> int:
     import argparse
     parser = argparse.ArgumentParser(description="CISP stdio server")
-    parser.add_argument("--backend", default="stub", choices=["stub", "cadquery"])
+    parser.add_argument("--backend", default="stub", choices=list(BACKENDS))
     args = parser.parse_args(argv)
     CISPServer(backend=args.backend).serve_stdio()
     return 0
