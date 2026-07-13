@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.meshtron_mesh_quality import (
+from harnesscad.eval.bench.geometry.meshtron_mesh_quality import (
     distribution_summary,
     edge_ratio,
     face_area,

@@ -1,0 +1,1 @@
+"""geometry.parametric: Parametric curve and surface geometry: NURBS/Bezier/Catmull-Rom evaluation, knot refinement, analytic surface families and their least-squares fitting, arcs and polylines, offsets/simplification/closest-point, tessellation tolerance, UV/U parameter grids, curve-and-surface accuracy metrics."""

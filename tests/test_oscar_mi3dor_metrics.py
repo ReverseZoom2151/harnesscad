@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.oscar_mi3dor_metrics import (
+from harnesscad.eval.bench.retrieval.oscar_mi3dor_metrics import (
     nearest_neighbour,
     first_tier,
     second_tier,

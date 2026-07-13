@@ -28,7 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Iterable, Optional, Sequence
 
-from harnesscad.domain.geometry.brick_structure import (
+from harnesscad.domain.geometry.assembly.brick_structure import (
     STANDARD_BRICKS,
     Brick,
     BrickStructure,

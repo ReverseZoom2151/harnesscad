@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.eval.bench.cadtransformer_panoptic import (
+from harnesscad.eval.bench.vision.cadtransformer_panoptic import (
     instance_from_lengths,
     log_length_weight,
     match_instances,

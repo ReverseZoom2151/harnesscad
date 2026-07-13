@@ -3,14 +3,14 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.manifold_winding import (
+from harnesscad.domain.geometry.mesh.manifold_winding import (
     solid_angle,
     winding_number,
     is_inside,
     signed_volume,
     surface_area,
 )
-from harnesscad.domain.geometry.manifold_halfedge import tetrahedron_mesh, cube_mesh
+from harnesscad.domain.geometry.mesh.manifold_halfedge import tetrahedron_mesh, cube_mesh
 
 
 def _mesh_arrays(m):

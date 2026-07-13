@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.feasibility import (
+from harnesscad.eval.bench.harness.feasibility import (
     FeasibilityResult,
     FeasibilityTracker,
     Percentiles,

@@ -1,0 +1,1 @@
+"""geometry.transforms: Rigid/affine transform algebra and coordinate frames: 4x4 transform stacks, named plane frames, orientation/rotation resolution, pose estimation and shape alignment (Umeyama, RANSAC, inertia frames), and dataset/solid normalisation."""

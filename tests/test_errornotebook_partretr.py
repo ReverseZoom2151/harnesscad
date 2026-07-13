@@ -28,7 +28,7 @@ from harnesscad.agents.rag.partretr_rerank import (
     rerank_parts,
     select_top,
 )
-from harnesscad.eval.bench.partretr_eval import (
+from harnesscad.eval.bench.retrieval.partretr_eval import (
     relevance,
     exact_match,
     recall_at_k,

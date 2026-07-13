@@ -1,0 +1,1 @@
+"""geometry.mesh: Explicit polygon/triangle meshes: half-edge connectivity and manifoldness, triangle-triangle intersection, winding number and mass properties, surface sampling, smoothing, deformation, colouring, part segmentation, block/quad decomposition and mesh-quality metrics, robust integer vertex geometry."""

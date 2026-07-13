@@ -5,15 +5,15 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.eval.bench.ssgnn_graph_contrastive import (
+from harnesscad.eval.bench.retrieval.ssgnn_graph_contrastive import (
     build_pretext_views,
     graph_nt_xent,
     graph_nt_xent_anchor,
     pretext_loss,
     similarity_matrix,
 )
-from harnesscad.domain.reconstruction.ssgnn_graph_augment import build_graph
-from harnesscad.domain.reconstruction.ssgnn_graph_descriptors import descriptor_vector
+from harnesscad.domain.reconstruction.recognize.ssgnn_graph_augment import build_graph
+from harnesscad.domain.reconstruction.recognize.ssgnn_graph_descriptors import descriptor_vector
 
 
 def _ring(n: int):

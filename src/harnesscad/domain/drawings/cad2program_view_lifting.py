@@ -32,7 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.reconstruction.cad2program_shape_program import Bbox
+from harnesscad.domain.reconstruction.translate.cad2program_shape_program import Bbox
 
 FRONT = "front"
 TOP = "top"

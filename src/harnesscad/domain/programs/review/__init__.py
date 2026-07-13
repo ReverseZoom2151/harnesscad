@@ -1,0 +1,1 @@
+"""programs.review: Error-centric program work: the error taxonomy, block segmentation for review, error injection, detection, correction, spatial-value quantization, syntax repair, and the review report/score."""

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry import geocad_vertex_caption as vc
+from harnesscad.domain.geometry.sketch import geocad_vertex_caption as vc
 
 
 class TriangleTest(unittest.TestCase):

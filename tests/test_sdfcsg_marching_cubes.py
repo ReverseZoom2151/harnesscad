@@ -11,8 +11,8 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry import sdfcsg_marching_cubes as MC
-from harnesscad.domain.geometry import sdfcsg_surface_nets as SN
+from harnesscad.domain.geometry.volumes import sdfcsg_marching_cubes as MC
+from harnesscad.domain.geometry.volumes import sdfcsg_surface_nets as SN
 
 
 def sphere_field(r):

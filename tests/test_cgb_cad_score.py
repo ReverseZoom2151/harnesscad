@@ -1,7 +1,7 @@
 """Tests for CAD Score composition and editing no-op renormalization."""
 import unittest
 
-from harnesscad.eval.bench.cgb_cad_score import (
+from harnesscad.eval.bench.protocols.cgb_cad_score import (
     EDIT_HEADROOM_FLOOR,
     EDITING_AXIS_WEIGHTS,
     GENERATION_AXIS_WEIGHTS,

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.contrastcad_latent_metrics import (
+from harnesscad.eval.bench.retrieval.contrastcad_latent_metrics import (
     average_set_distance,
     distance_matrix,
     euclidean_distance,

@@ -4,14 +4,14 @@ import math
 import unittest
 from collections import Counter
 
-from harnesscad.domain.geometry.solidpy_screw_thread import (
+from harnesscad.domain.geometry.features.solidpy_screw_thread import (
     default_thread_section,
     map_segment,
     thread,
     thread_scad,
 )
-from harnesscad.domain.programs.scadlm_ast import parse
-from harnesscad.domain.programs.solidpy_scad_emit import scad_render
+from harnesscad.domain.programs.ast.scadlm_ast import parse
+from harnesscad.domain.programs.emit.solidpy_scad_emit import scad_render
 
 SECTION = default_thread_section(tooth_height=2.0, tooth_depth=1.0)
 

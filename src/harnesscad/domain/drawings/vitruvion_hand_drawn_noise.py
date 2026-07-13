@@ -48,7 +48,7 @@ import math
 import random
 from typing import List, Optional, Sequence, Tuple
 
-from harnesscad.domain.geometry.vitruvion_sketch_norm import VArc, VCircle, VLine, VPoint
+from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VArc, VCircle, VLine, VPoint
 
 Vec2 = Tuple[float, float]
 

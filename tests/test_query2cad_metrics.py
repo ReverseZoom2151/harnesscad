@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.query2cad_metrics import (
+from harnesscad.eval.bench.protocols.query2cad_metrics import (
     benchmark_composition, success_rate, per_difficulty_success,
     refinement_curve, improvement_deltas, first_refinement_dominates,
     failure_breakdown, PAPER_BINS, DIFFICULTIES, FAILURE_MODES,

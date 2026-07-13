@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.jointsdf_joint_metrics import (
+from harnesscad.eval.bench.harness.jointsdf_joint_metrics import (
     pearson,
     correlation_table,
     part_count_agreement,

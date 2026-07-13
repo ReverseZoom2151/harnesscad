@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.eval.bench.ranked_retrieval_metrics import (
+from harnesscad.eval.bench.retrieval.ranked_retrieval_metrics import (
     dcg_at_k,
     ndcg_at_k,
     reciprocal_rank,

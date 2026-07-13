@@ -28,7 +28,7 @@ from __future__ import annotations
 import math
 from typing import Dict, Tuple
 
-from harnesscad.domain.geometry import libfive_frep_ir as ir
+from harnesscad.domain.geometry.sdf import libfive_frep_ir as ir
 
 Vec3 = Tuple[float, float, float]
 

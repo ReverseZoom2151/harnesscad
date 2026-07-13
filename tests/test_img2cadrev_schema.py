@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction.img2cadrev_schema import (
+from harnesscad.domain.reconstruction.sequences.img2cadrev_schema import (
     LINE, ARC, CIRCLE, EXTRUDE_JOIN, EXTRUDE_CUT,
     COMMAND_TYPES, ATTRIBUTE_DIM,
     is_sketch_command, is_extrude_command, is_command_type,

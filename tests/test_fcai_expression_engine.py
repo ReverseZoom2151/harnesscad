@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.programs.fcai_expression_engine import (
+from harnesscad.domain.programs.expressions.fcai_expression_engine import (
     Expression,
     ExpressionError,
     Reference,

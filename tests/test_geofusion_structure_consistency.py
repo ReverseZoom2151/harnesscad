@@ -1,10 +1,10 @@
 import unittest
 
-from harnesscad.domain.reconstruction.geofusion_hierarchy import (
+from harnesscad.domain.reconstruction.tokens.geofusion_hierarchy import (
     Curve, Loop, Face, Sketch, Extrusion, SePair, Solid, Token,
     serialize, EC, ELOOP,
 )
-from harnesscad.eval.bench.geofusion_structure_consistency import (
+from harnesscad.eval.bench.sequence.geofusion_structure_consistency import (
     closure_valid, valid_ratio, structure_signature, structure_match,
     structure_f1,
 )

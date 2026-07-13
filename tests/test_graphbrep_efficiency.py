@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction import graphbrep_efficiency as ge
-from harnesscad.domain.reconstruction import graphbrep_surface_graph as gsg
+from harnesscad.domain.reconstruction.evaluate import graphbrep_efficiency as ge
+from harnesscad.domain.reconstruction.brep import graphbrep_surface_graph as gsg
 
 
 class SequenceLengthTest(unittest.TestCase):

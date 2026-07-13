@@ -1,0 +1,1 @@
+"""reconstruction.sequences: Command-sequence structure: schemas of ordered ops, construction/replay order, validity grammars, action generation, reveal/cascade schedules, pointer resolution against accumulated state."""

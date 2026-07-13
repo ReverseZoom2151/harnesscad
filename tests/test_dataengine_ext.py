@@ -5,13 +5,13 @@ design-intent capture. Dependency-free: synthetic op-dicts + hand-built records.
 
 import unittest
 
-from harnesscad.data.dataengine.distribution_audit import audit_distribution, op_tags, family_of
-from harnesscad.data.dataengine.active_learning import (
+from harnesscad.data.dataengine.audit.distribution_audit import audit_distribution, op_tags, family_of
+from harnesscad.data.dataengine.selftrain.active_learning import (
     select_informative, uncertainty_of, signature, uncertainty_scorer,
 )
-from harnesscad.data.dataengine.consensus import consensus_label
-from harnesscad.data.dataengine.intent import IntentAnnotation, attach_intent, intents_of
-from harnesscad.data.dataengine.trajectory import Action, Step, Trajectory
+from harnesscad.data.dataengine.annotation.consensus import consensus_label
+from harnesscad.data.dataengine.trace.intent import IntentAnnotation, attach_intent, intents_of
+from harnesscad.data.dataengine.trace.trajectory import Action, Step, Trajectory
 
 
 def _op(tag, **kw):

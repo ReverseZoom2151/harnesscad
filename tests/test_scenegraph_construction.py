@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scenegraph_model import AABB, RelationType
-from harnesscad.domain.reconstruction.scenegraph_construction import (
+from harnesscad.domain.reconstruction.scene.scenegraph_model import AABB, RelationType
+from harnesscad.domain.reconstruction.scene.scenegraph_construction import (
     ConstructionConfig,
     Primitive,
     build_scene_graph,

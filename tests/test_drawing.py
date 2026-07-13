@@ -22,7 +22,7 @@ except Exception:  # noqa: BLE001
     Hole = None
     HAVE_HOLE = False
 
-from harnesscad.eval.quality.drawing import Drawing, make_drawing
+from harnesscad.eval.quality.report.drawing import Drawing, make_drawing
 
 
 def _cadquery_available() -> bool:

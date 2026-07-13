@@ -5,8 +5,8 @@ from harnesscad.data.datagen.instruction_taxonomy import (
     CATEGORIES, LENGTH_BUCKETS, STYLES, InstructionSample, quota_matrix,
     seeded_slots, deduplicate,
 )
-from harnesscad.data.dataengine.cascade_filter import FilterDecision, cascade_filter
-from harnesscad.data.dataengine.self_improvement import self_improve
+from harnesscad.data.dataengine.curation.cascade_filter import FilterDecision, cascade_filter
+from harnesscad.data.dataengine.selftrain.self_improvement import self_improve
 
 
 class TaxonomyTests(unittest.TestCase):

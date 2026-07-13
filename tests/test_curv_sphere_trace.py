@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry import curv_sdf_primitives as P
+from harnesscad.domain.geometry.sdf import curv_sdf_primitives as P
 from harnesscad.domain.numeric import curv_sphere_trace as R
 
 

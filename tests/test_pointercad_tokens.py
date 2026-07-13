@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction import pointercad_tokens as t
+from harnesscad.domain.reconstruction.tokens import pointercad_tokens as t
 
 
 class TokenRangesTest(unittest.TestCase):

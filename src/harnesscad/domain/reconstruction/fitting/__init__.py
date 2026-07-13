@@ -1,0 +1,1 @@
+"""reconstruction.fitting: Recovering geometry/parameters from observations: point clouds, silhouettes/visual hulls, images, raster sketches, 2D drawings -- wireframe binding, map decoding, residual guidance, candidate selection against a target."""

@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.magic3d_template_deform import (
+from harnesscad.domain.geometry.mesh.magic3d_template_deform import (
     icosphere,
     apply_offsets,
     vertex_normals,

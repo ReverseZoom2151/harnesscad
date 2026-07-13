@@ -9,7 +9,7 @@ from harnesscad.domain.numeric.sketchdnn_joint_diffusion import (
     is_permutation_equivariant,
     joint_posterior_mean,
 )
-from harnesscad.domain.reconstruction.sketchdnn_primitive_representation import (
+from harnesscad.domain.reconstruction.tokens.sketchdnn_primitive_representation import (
     FEATURE_DIM,
     decode_primitive,
     encode_primitive,

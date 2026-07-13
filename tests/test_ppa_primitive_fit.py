@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction import ppa_primitive as pp
-from harnesscad.domain.geometry import ppa_primitive_fit as fit
+from harnesscad.domain.reconstruction.sketch import ppa_primitive as pp
+from harnesscad.domain.geometry.sketch import ppa_primitive_fit as fit
 
 
 class TestFitPoint(unittest.TestCase):

@@ -1,18 +1,18 @@
 import unittest
 
-from harnesscad.eval.bench.compositional_metrics import aggregate, evaluate_sample, slice_metrics
-from harnesscad.eval.bench.contact_heatmap import contact_heatmap
-from harnesscad.data.dataengine.assembly_caption_workflow import caption_assembly
-from harnesscad.data.dataengine.assembly_pair_record import (
+from harnesscad.eval.bench.geometry.compositional_metrics import aggregate, evaluate_sample, slice_metrics
+from harnesscad.eval.bench.geometry.contact_heatmap import contact_heatmap
+from harnesscad.data.dataengine.annotation.assembly_caption_workflow import caption_assembly
+from harnesscad.data.dataengine.schemas.assembly_pair_record import (
     AssemblyPairRecord, audit_pairs, reverse_pair,
 )
-from harnesscad.data.dataengine.knitcad_filters import KnitLimits, filter_record, rejection_distribution
+from harnesscad.data.dataengine.curation.knitcad_filters import KnitLimits, filter_record, rejection_distribution
 from harnesscad.agents.exploration.guided_contact_search import guided_step, pareto_evidence
 from harnesscad.io.ingest.assembly_normalization import fit_condition_transform
 from harnesscad.io.ingest.contact_faces import contact_evidence
-from harnesscad.eval.quality.assembly_interaction import classify_interactions
-from harnesscad.eval.quality.contact_correspondence import assign
-from harnesscad.eval.quality.contact_objective import (
+from harnesscad.eval.quality.assembly.assembly_interaction import classify_interactions
+from harnesscad.eval.quality.assembly.contact_correspondence import assign
+from harnesscad.eval.quality.assembly.contact_objective import (
     bbox_geometry_cost, edge_shape_cost, position_cost, scheduled_weights,
 )
 

@@ -1,0 +1,1 @@
+"""reconstruction.recognize: Analysing an existing model rather than reconstructing it: part segmentation, instance grouping, machining-feature recognition, label transfer, shape/graph descriptors, similarity distances and dedup/clustering for retrieval."""

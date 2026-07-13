@@ -12,13 +12,13 @@ Public surface::
 
 from __future__ import annotations
 
-from harnesscad.eval.bench.task import DIFFICULTIES, Task, load_task, load_tasks
-from harnesscad.eval.bench.metrics import (
+from harnesscad.eval.bench.data.task import DIFFICULTIES, Task, load_task, load_tasks
+from harnesscad.eval.bench.protocols.metrics import (
     assembly_mate_accuracy, brep_validity, cad_sequence_f1, collision_rate,
     dimension_match, program_execution, program_execution_rate,
     sketch_editability, trajectory_efficiency,
 )
-from harnesscad.eval.bench.runner import (
+from harnesscad.eval.bench.harness.runner import (
     DifficultyReport, SuiteReport, TaskResult,
     reference_solver, run_suite, run_task,
 )

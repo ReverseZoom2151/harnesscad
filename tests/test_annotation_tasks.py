@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.annotation_tasks import decompose_annotation
+from harnesscad.data.dataengine.annotation.annotation_tasks import decompose_annotation
 
 
 class AnnotationTaskTests(unittest.TestCase):

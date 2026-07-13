@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harnesscad.domain.geometry.lasdiff_patch_stitch import (
+from harnesscad.domain.geometry.views.lasdiff_patch_stitch import (
     provenance,
     rect_patches,
     region_patches,

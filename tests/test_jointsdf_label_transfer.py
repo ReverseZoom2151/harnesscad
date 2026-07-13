@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.jointsdf_label_transfer import (
+from harnesscad.domain.reconstruction.recognize.jointsdf_label_transfer import (
     transfer_labels,
     overlap_counts,
     match_labels,

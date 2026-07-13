@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.spatialhero_dim_accuracy import (
+from harnesscad.eval.bench.geometry.spatialhero_dim_accuracy import (
     dimension_accuracy,
     measure_and_score,
     measure_bbox_dimensions,

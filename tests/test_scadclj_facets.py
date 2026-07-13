@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.scadclj_facets import (
+from harnesscad.domain.geometry.parametric.scadclj_facets import (
     DEFAULT_FA,
     DEFAULT_FS,
     GRID_FINE,
@@ -14,7 +14,7 @@ from harnesscad.domain.geometry.scadclj_facets import (
     get_fragments_from_r,
     sphere_rings,
 )
-from harnesscad.domain.programs.scadclj_data_ir import circle, cylinder, sphere, with_fn
+from harnesscad.domain.programs.ast.scadclj_data_ir import circle, cylinder, sphere, with_fn
 
 
 class GetFragmentsTest(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.mambacad_length_metrics import (
+from harnesscad.eval.bench.sequence.mambacad_length_metrics import (
     effective_length, average_length, length_distribution,
     long_sequence_ratio, length_report, DEEPCAD_BUCKETS,
 )

@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.brepground_grounding import BRepPrimitive, ground_one
-from harnesscad.domain.reconstruction.brepground_describe import (
+from harnesscad.domain.reconstruction.translate.brepground_grounding import BRepPrimitive, ground_one
+from harnesscad.domain.reconstruction.translate.brepground_describe import (
     describe,
     describe_all,
     describe_detailed,

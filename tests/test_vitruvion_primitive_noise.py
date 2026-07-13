@@ -10,7 +10,7 @@ from harnesscad.data.datagen.vitruvion_primitive_noise import (
     noisify_sketch,
     truncated_normal,
 )
-from harnesscad.domain.geometry.vitruvion_sketch_norm import (
+from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import (
     VArc,
     VCircle,
     VLine,

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.data.dataengine import cmecad_collab as c
+from harnesscad.data.dataengine.reward import cmecad_collab as c
 
 
 class TestAverageReward(unittest.TestCase):

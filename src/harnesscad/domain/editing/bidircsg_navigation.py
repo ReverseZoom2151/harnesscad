@@ -29,8 +29,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
-from harnesscad.domain.programs.bidircsg_ast import Node, Path, node_at
-from harnesscad.domain.programs.bidircsg_forward import GeomNode, get, iter_geom
+from harnesscad.domain.programs.ast.bidircsg_ast import Node, Path, node_at
+from harnesscad.domain.programs.runtime.bidircsg_forward import GeomNode, get, iter_geom
 
 
 # --------------------------------------------------------------------------

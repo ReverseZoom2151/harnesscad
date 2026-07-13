@@ -1,0 +1,1 @@
+"""dataengine.schemas: Record and dataset schemas: the typed rows, manifests and serialisation contracts a sample must satisfy (multimodal records, submission packages, ontologies, provenance/lineage fields)."""

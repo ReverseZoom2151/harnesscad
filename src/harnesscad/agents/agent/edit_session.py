@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional, Sequence
 
 from harnesscad.core.cisp.ops import Op, canonical_json
-from harnesscad.eval.quality.diff import OpDiff, op_diff
+from harnesscad.eval.quality.edit.diff import OpDiff, op_diff
 
 
 @dataclass(frozen=True)

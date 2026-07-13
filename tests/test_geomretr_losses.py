@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.eval.bench.geomretr_losses import (
+from harnesscad.eval.bench.retrieval.geomretr_losses import (
     variance_loss,
     covariance_loss,
     invariance_loss,

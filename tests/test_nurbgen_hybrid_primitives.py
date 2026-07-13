@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry import nurbgen_hybrid_primitives as hp
+from harnesscad.domain.geometry.parametric import nurbgen_hybrid_primitives as hp
 
 
 class TestLine(unittest.TestCase):

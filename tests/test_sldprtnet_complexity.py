@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.sldprtnet_complexity import (
+from harnesscad.data.dataengine.curation.sldprtnet_complexity import (
     COMPLEXITY_LEVELS,
     REFERENCE_COUNTS,
     ComplexityItem,

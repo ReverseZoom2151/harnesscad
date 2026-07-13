@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.pyocc_topology_explorer import (
+from harnesscad.domain.geometry.topology.pyocc_topology_explorer import (
     FORWARD,
     REVERSED,
     Shape,

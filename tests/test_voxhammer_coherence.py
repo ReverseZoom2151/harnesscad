@@ -1,7 +1,7 @@
 """Tests for bench.voxhammer_coherence."""
 import unittest
 
-from harnesscad.eval.bench.voxhammer_coherence import (
+from harnesscad.eval.bench.geometry.voxhammer_coherence import (
     boundary_discontinuity,
     boundary_pairs,
     coherence_report,

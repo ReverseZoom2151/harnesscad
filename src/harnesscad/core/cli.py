@@ -15,7 +15,7 @@
 
     python cli.py capabilities --list [--tag X] [--layer Y] [--package Z]
     python cli.py capabilities --search TEXT
-    python cli.py capabilities --show harnesscad.domain.geometry.curv_sdf_primitives
+    python cli.py capabilities --show harnesscad.domain.geometry.sdf.curv_sdf_primitives
     python cli.py capabilities --stats | --orphans | --rebuild
         Browse the static capability registry (harnesscad.registry): every product
         module, its tags, docstring summary and public symbols, indexed by AST

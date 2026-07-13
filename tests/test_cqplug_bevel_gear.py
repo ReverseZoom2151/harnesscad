@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.cqplug_bevel_gear import (
+from harnesscad.domain.geometry.kinematics.cqplug_bevel_gear import (
     BevelGear,
     BevelGearError,
     BevelGearPair,

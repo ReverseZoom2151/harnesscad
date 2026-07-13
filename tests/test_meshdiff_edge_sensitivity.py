@@ -3,9 +3,9 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.meshdiff_tet_grid import TetGrid
-from harnesscad.domain.geometry.meshdiff_dmtet import DMTet
-from harnesscad.domain.geometry.meshdiff_edge_sensitivity import (
+from harnesscad.domain.geometry.volumes.meshdiff_tet_grid import TetGrid
+from harnesscad.domain.geometry.volumes.meshdiff_dmtet import DMTet
+from harnesscad.domain.geometry.volumes.meshdiff_edge_sensitivity import (
     mesh_generating_edges,
     edge_crossing_sensitivity,
     max_crossing_sensitivity,

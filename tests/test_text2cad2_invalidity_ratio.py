@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench import text2cad2_invalidity_ratio as ir
+from harnesscad.eval.bench.sequence import text2cad2_invalidity_ratio as ir
 
 
 class TestCurveValidity(unittest.TestCase):

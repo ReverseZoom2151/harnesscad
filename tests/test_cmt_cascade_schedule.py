@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.cmt_cascade_schedule import (
+from harnesscad.domain.reconstruction.sequences.cmt_cascade_schedule import (
     Stage, cascade_stages, validate_stage_order,
     cosine_reveal_counts, reveal_order, mar_schedule,
 )

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.tar3d_voxel_parts import (
+from harnesscad.domain.geometry.assembly.tar3d_voxel_parts import (
     VoxelPart,
     assemble,
     connected_parts,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.brepground_metrics import (
+from harnesscad.eval.bench.retrieval.brepground_metrics import (
     GroundingCase,
     average_precision,
     evaluate,
@@ -114,7 +114,7 @@ class TestAggregate(unittest.TestCase):
 
 class TestGrounderIntegration(unittest.TestCase):
     def test_from_grounder_output(self):
-        from harnesscad.domain.reconstruction.brepground_grounding import BRepPrimitive, ground
+        from harnesscad.domain.reconstruction.translate.brepground_grounding import BRepPrimitive, ground
         prims = [
             BRepPrimitive(0, "face", "cylindrical", (0.0, 0.0, 0.0), 8.0,
                           is_hole=True),

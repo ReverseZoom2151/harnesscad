@@ -1,0 +1,1 @@
+"""geometry.sdf: Functional-representation geometry: exact/approximate signed-distance primitives, Boolean and smooth-blend combinators, level-set and domain transforms, f-rep/CSG expression trees and their evaluation, and differential analysis (curvature, developability) of implicit fields."""

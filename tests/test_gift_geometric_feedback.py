@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.gift_geometric_feedback import (
+from harnesscad.data.dataengine.selftrain.gift_geometric_feedback import (
     Candidate, augment_example, build_augmented_dataset, build_fda_dataset,
     build_srs_dataset, feedback_category, fda_indicator, geometric_agreement,
     geometric_feedback, partition_candidates, srs_indicator,

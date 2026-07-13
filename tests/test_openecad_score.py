@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.programs import openecad_script as oe
-from harnesscad.eval.bench import openecad_score as sc
+from harnesscad.domain.programs.ast import openecad_script as oe
+from harnesscad.eval.bench.sketch import openecad_score as sc
 
 
 def line():

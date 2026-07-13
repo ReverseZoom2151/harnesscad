@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from typing import Dict, FrozenSet, Iterable, List, Optional, Sequence, Set, Tuple
 
 from harnesscad.domain.library.sketchconcept_library import ConceptLibrary
-from harnesscad.domain.reconstruction.sketchconcept_template import (
+from harnesscad.domain.reconstruction.sketch.sketchconcept_template import (
     Concept,
     ConstraintSpec,
     Member,

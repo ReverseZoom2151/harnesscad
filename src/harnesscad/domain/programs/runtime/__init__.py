@@ -1,0 +1,1 @@
+"""programs.runtime: Executing and observing a program: forward evaluation into a traced geometry tree, module-registry sandboxing across re-executions, result/show_object collection, and bill-of-materials extraction from an evaluated tree."""

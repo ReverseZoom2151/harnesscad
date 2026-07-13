@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.llm3dmodel_complexity_scale import (
+from harnesscad.eval.bench.data.llm3dmodel_complexity_scale import (
     REFERENCE_LEVELS, BANDS, band_of, score_description, band_histogram,
     ComplexityEstimate)
 

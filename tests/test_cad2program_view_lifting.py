@@ -4,7 +4,7 @@ from harnesscad.domain.drawings.cad2program_view_lifting import (
     Rect, parse_rect, parse_view, lift_three_views, check_three_view_consistency,
     extrude_profile, lift_matched_components, FRONT, TOP, SIDE,
 )
-from harnesscad.domain.reconstruction.cad2program_shape_program import Bbox
+from harnesscad.domain.reconstruction.translate.cad2program_shape_program import Bbox
 
 
 class ParseTest(unittest.TestCase):

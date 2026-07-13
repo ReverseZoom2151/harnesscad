@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.scadhs_csg_algebra import (
+from harnesscad.domain.geometry.sdf.scadhs_csg_algebra import (
     CHILDREN,
     Children,
     Difference,

@@ -1,0 +1,1 @@
+"""programs.annotate: Semantic commenting and labelling of code blocks: hierarchical commentable-block parsing, label transfer from geometry/point clouds, multi-view label voting, and commenting metrics."""

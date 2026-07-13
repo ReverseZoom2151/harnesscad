@@ -2,7 +2,7 @@ import json
 import math
 import unittest
 
-from harnesscad.eval.quality.invariance import (
+from harnesscad.eval.quality.geometry.invariance import (
     ContractMetadata,
     InvarianceContract,
     PerturbationCase,

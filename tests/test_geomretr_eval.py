@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.geomretr_eval import (
+from harnesscad.eval.bench.retrieval.geomretr_eval import (
     cosine_distance,
     rank_gallery,
     retrieval_ranking,

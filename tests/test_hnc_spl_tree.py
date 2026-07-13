@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.hnc_spl_tree import (
+from harnesscad.domain.reconstruction.tokens.hnc_spl_tree import (
     ARC,
     CIRCLE,
     LINE,

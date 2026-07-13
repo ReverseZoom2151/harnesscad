@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
+from harnesscad.domain.geometry.assembly.brick_structure import Brick, BrickStructure
 from harnesscad.eval.verifiers.brick_buildability import (
     find_buildable_order,
     is_assembly_stable,

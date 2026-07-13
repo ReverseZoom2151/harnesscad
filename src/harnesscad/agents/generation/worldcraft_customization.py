@@ -38,7 +38,7 @@ import math
 from dataclasses import dataclass, field, replace
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.reconstruction.worldcraft_layout_spec import ObjectPlacement, Pose
+from harnesscad.domain.reconstruction.scene.worldcraft_layout_spec import ObjectPlacement, Pose
 
 
 # --------------------------------------------------------------------------- #

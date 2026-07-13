@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.img2cadrev_factorization import (
+from harnesscad.domain.reconstruction.sequences.img2cadrev_factorization import (
     normalize_model, factorize, assemble, round_trip,
     structure_command_count, structure_attribute_dim, validate_structure,
     structure_signature, part_signature,

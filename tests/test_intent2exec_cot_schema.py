@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.intent2exec_cot_schema import (
+from harnesscad.data.dataengine.schemas.intent2exec_cot_schema import (
     INPUT_NATURAL,
     INPUT_STRUCTURED,
     CoTTrace,

@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.joinable_joint_axis import axis_lines_colinear, dot
-from harnesscad.domain.geometry.joinable_joint_motion import (
+from harnesscad.domain.geometry.kinematics.joinable_joint_axis import axis_lines_colinear, dot
+from harnesscad.domain.geometry.kinematics.joinable_joint_motion import (
     JOINT_TYPES,
     JointPose,
     UnknownJointType,
@@ -19,7 +19,7 @@ from harnesscad.domain.geometry.joinable_joint_motion import (
     project_pose,
     sample_joint_motion,
 )
-from harnesscad.domain.geometry.joinable_joint_transform import (
+from harnesscad.domain.geometry.kinematics.joinable_joint_transform import (
     apply_joint_transform_to_axis,
     transform_point,
 )

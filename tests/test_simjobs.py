@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.quality.simjobs import (
+from harnesscad.eval.quality.physics.simjobs import (
     FEASolverAdapter,
     JobState,
     SimulationJobs,

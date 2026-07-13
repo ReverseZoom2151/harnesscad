@@ -41,7 +41,7 @@ import xml.etree.ElementTree as ElementTree
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.geometry.t2cmain_urdf_kinematics import (
+from harnesscad.domain.geometry.kinematics.t2cmain_urdf_kinematics import (
     IDENTITY_TRANSFORM,
     Joint,
     JointMimic,

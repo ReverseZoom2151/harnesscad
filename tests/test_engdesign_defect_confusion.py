@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.engdesign_defect_confusion import (
+from harnesscad.eval.bench.protocols.engdesign_defect_confusion import (
     DEFECT_CLASSES, confusion_metrics, f1_from_matrix, defect_scorecard,
     perfect_prediction_tally,
 )

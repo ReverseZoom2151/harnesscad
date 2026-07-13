@@ -2,7 +2,7 @@ import unittest
 
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.core.cisp.ops import AddCircle, AddInstance, Extrude, NewSketch
-from harnesscad.eval.quality.nextop import (
+from harnesscad.eval.quality.reward.nextop import (
     NextOperationRanker,
     reciprocal_rank,
     rank_next_operations,

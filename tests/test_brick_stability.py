@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
+from harnesscad.domain.geometry.assembly.brick_structure import Brick, BrickStructure
 from harnesscad.eval.verifiers.brick_stability import (
     analyze_stability,
     is_stable,

@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction import sketchgraphs_graph as sg
-from harnesscad.domain.reconstruction import sketchgraphs_sequence as seq
+from harnesscad.domain.reconstruction.sketch import sketchgraphs_graph as sg
+from harnesscad.domain.reconstruction.sequences import sketchgraphs_sequence as seq
 
 
 def _triangle():

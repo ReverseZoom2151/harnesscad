@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.engdesign_taxonomy import (
+from harnesscad.eval.bench.protocols.engdesign_taxonomy import (
     benchmark_taxonomy, experiment_index, total_max_score, stage_max_scores,
     aggregate_scorecard, experiment_leaders, model_win_counts,
 )

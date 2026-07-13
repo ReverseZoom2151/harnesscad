@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.cadparser_brep_graph import (
+from harnesscad.domain.reconstruction.brep.cadparser_brep_graph import (
     BRep, EdgeDef, FaceDef, adjacency_matrix, build_graph, coedge_feature,
     edge_feature, face_feature, node_features, CURVE_TYPES, SURFACE_TYPES,
 )

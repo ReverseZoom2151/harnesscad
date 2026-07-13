@@ -1,0 +1,1 @@
+"""reconstruction.evaluate: Metrics, validity checks and diagnostics on reconstructions: precision/recall/F1, IoU/EMD, topological validity, pointer accuracy, failure taxonomies, coverage/efficiency reports, losses used as scores."""

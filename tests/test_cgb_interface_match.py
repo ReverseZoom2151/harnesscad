@@ -1,7 +1,7 @@
 """Tests for the keep-in / keep-out interface-match axis."""
 import unittest
 
-from harnesscad.eval.bench.cgb_interface_match import (
+from harnesscad.eval.bench.geometry.cgb_interface_match import (
     DEFAULT_N_SAMPLES,
     INTERFACE_FULL_SCORE_IOU,
     INTERFACE_ZERO_SCORE_IOU,

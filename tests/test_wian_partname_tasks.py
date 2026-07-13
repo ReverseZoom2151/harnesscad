@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.wian_partname_tasks import (
+from harnesscad.eval.bench.data.wian_partname_tasks import (
     FEATURE_KEYS,
     SPLIT_NAMES,
     build_corpus,

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.histcad_sequence import Line, Circle, Arc, Constraint
+from harnesscad.domain.reconstruction.sequences.histcad_sequence import Line, Circle, Arc, Constraint
 from harnesscad.eval.verifiers.histcad_edit_consistency import (
     constraint_residual, check_constraints, edit_consistency,
     propagate_equal_radius,

@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from harnesscad.eval.bench.gencad_retrieval import (
+from harnesscad.eval.bench.retrieval.gencad_retrieval import (
     batch_retrieval_hit,
     retrieval_accuracy,
     random_guess_accuracy,

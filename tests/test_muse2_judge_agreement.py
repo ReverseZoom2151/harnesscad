@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.muse2_judge_agreement import (
+from harnesscad.eval.bench.judges.muse2_judge_agreement import (
     agreement_report,
     bootstrap_ci,
     kendall_tau_b,

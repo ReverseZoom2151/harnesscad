@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.geometry_distance import symmetric_chamfer
+from harnesscad.eval.bench.geometry.geometry_distance import symmetric_chamfer
 from harnesscad.domain.editing.cadreasoner_edit_loop import EditLoopResult, run_edit_loop
 
 

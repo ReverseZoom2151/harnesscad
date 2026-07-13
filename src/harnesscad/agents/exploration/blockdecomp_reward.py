@@ -35,8 +35,8 @@ import math
 from dataclasses import dataclass
 from typing import Sequence
 
-from harnesscad.domain.geometry.blockdecomp_domain import Shape
-from harnesscad.domain.geometry.blockdecomp_quality import area_variance_ratio, quad_fraction
+from harnesscad.domain.geometry.mesh.blockdecomp_domain import Shape
+from harnesscad.domain.geometry.mesh.blockdecomp_quality import area_variance_ratio, quad_fraction
 
 _EPS = 1e-9
 

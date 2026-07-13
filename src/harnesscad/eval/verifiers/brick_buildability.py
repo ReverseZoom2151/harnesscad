@@ -31,8 +31,8 @@ from __future__ import annotations
 
 from typing import Callable, Optional
 
-from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
-from harnesscad.domain.geometry.brick_connectivity import (
+from harnesscad.domain.geometry.assembly.brick_structure import Brick, BrickStructure
+from harnesscad.domain.geometry.assembly.brick_connectivity import (
     connection_area,
     grounds,
     is_interconnected,

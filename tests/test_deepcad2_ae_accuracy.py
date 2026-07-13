@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.eval.bench import deepcad2_ae_accuracy as acc
-from harnesscad.domain.reconstruction import deepcad2_vector_layout as vl
+from harnesscad.eval.bench.sequence import deepcad2_ae_accuracy as acc
+from harnesscad.domain.reconstruction.tokens import deepcad2_vector_layout as vl
 
 
 def _ext(**over):

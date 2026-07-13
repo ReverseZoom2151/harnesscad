@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.quality.chatcadplus_prob2text import (
+from harnesscad.eval.quality.report.chatcadplus_prob2text import (
     Band,
     BandScheme,
     SCHEMES,

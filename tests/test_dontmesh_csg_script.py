@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.dontmesh_halfspace_csg import (
+from harnesscad.domain.geometry.sdf.dontmesh_halfspace_csg import (
     CSGModel,
     Cylinder,
     HalfSpace,
@@ -10,7 +10,7 @@ from harnesscad.domain.geometry.dontmesh_halfspace_csg import (
     axis_box_cell,
     axis_cylinder_cell,
 )
-from harnesscad.domain.programs.dontmesh_csg_script import (
+from harnesscad.domain.programs.ast.dontmesh_csg_script import (
     ScriptSyntaxError,
     all_splits,
     build_training_pair,

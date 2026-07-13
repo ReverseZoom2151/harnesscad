@@ -32,7 +32,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Sequence, Tuple
 
 from harnesscad.domain.drawings.cad2program_view_lifting import FRONT, SIDE, TOP
-from harnesscad.domain.reconstruction.cad2program_shape_program import Bbox, ShapeProgram
+from harnesscad.domain.reconstruction.translate.cad2program_shape_program import Bbox, ShapeProgram
 
 # Which (axis_min, axis_max) of a box map to (h, v) of each view, plus the
 # view's placement quadrant on the canvas.

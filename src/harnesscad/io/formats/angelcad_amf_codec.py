@@ -51,7 +51,7 @@ import zipfile
 import xml.etree.ElementTree as ET
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.geometry.angelcad_polyhedron import Polyhedron
+from harnesscad.domain.geometry.mesh.angelcad_polyhedron import Polyhedron
 
 __all__ = [
     "AmfError",

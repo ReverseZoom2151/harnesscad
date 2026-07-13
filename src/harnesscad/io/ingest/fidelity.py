@@ -30,7 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from harnesscad.eval.quality.diff import geom_diff
+from harnesscad.eval.quality.edit.diff import geom_diff
 
 
 # Metrics compared between the two sides. Scalars use a relative tolerance; the

@@ -1,29 +1,29 @@
 import unittest
 
-from harnesscad.eval.bench.feasibility_novelty import (
+from harnesscad.eval.bench.judges.feasibility_novelty import (
     mann_whitney, pareto_items, rating_qc, spearman,
 )
-from harnesscad.eval.bench.mesh_topology import (
+from harnesscad.eval.bench.geometry.mesh_topology import (
     dangling_edge_length, flux_enclosure_error, segment_error,
     self_intersection_ratio,
 )
-from harnesscad.eval.bench.modality_robustness import (
+from harnesscad.eval.bench.data.modality_robustness import (
     complementarity_delta, eliminate_points, gaussian_noise,
 )
-from harnesscad.eval.bench.omnicad_splits import audit_omnicad_splits
-from harnesscad.eval.bench.perceived_actual_gap import feasibility_gap
-from harnesscad.eval.bench.prompt_similarity import similarity_matrix
-from harnesscad.data.dataengine.cad_prompt_record import CADPromptRecord, audit_prompt_records
-from harnesscad.data.dataengine.modality_schedule import (
+from harnesscad.eval.bench.data.omnicad_splits import audit_omnicad_splits
+from harnesscad.eval.bench.judges.perceived_actual_gap import feasibility_gap
+from harnesscad.eval.bench.generative.prompt_similarity import similarity_matrix
+from harnesscad.data.dataengine.schemas.cad_prompt_record import CADPromptRecord, audit_prompt_records
+from harnesscad.data.dataengine.curation.modality_schedule import (
     combination_balance, modality_combinations, modality_curriculum,
 )
-from harnesscad.data.dataengine.omnicad_record import OmniCADRecord, PointNormal, ViewAsset
+from harnesscad.data.dataengine.schemas.omnicad_record import OmniCADRecord, PointNormal, ViewAsset
 from harnesscad.data.datagen.command_prefixes import assert_split_before_expand, post_solid_prefixes
 from harnesscad.data.datagen.modifier_ablation import ablate_modifiers
 from harnesscad.data.datagen.multimodal_capture import DEFAULT_CAMERAS, capture_manifest, choose_views
 from harnesscad.agents.exploration.image_prompt_sweep import sweep
-from harnesscad.eval.quality.design_stage_policy import recommend_stage
-from harnesscad.eval.quality.modality_fusion import fusion_policy
+from harnesscad.eval.quality.report.design_stage_policy import recommend_stage
+from harnesscad.eval.quality.perception.modality_fusion import fusion_policy
 from harnesscad.agents.rag.cad_render_retrieval import retrieve_render
 
 

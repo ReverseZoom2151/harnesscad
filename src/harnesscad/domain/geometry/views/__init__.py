@@ -1,0 +1,1 @@
+"""geometry.views: Camera- and image-space geometry: camera rigs, intrinsics/extrinsics and projection, Gaussian splatting and compositing, image edge extraction and edge-point processing, patch/positional encodings, and planar prompt detection."""

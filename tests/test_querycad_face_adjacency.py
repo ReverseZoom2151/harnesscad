@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.querycad_face_adjacency import FaceAdjacencyGraph
+from harnesscad.domain.geometry.topology.querycad_face_adjacency import FaceAdjacencyGraph
 
 
 class BuildTest(unittest.TestCase):

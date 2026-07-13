@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.graphcad_orientation import (
+from harnesscad.domain.geometry.transforms.graphcad_orientation import (
     IDENTITY,
     align_z_to,
     apply,

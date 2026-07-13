@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.programs import cadreview_taxonomy as tax
-from harnesscad.domain.programs.cadreview_detect import detect
+from harnesscad.domain.programs.review import cadreview_taxonomy as tax
+from harnesscad.domain.programs.review.cadreview_detect import detect
 
 PROGRAM = """
 $fn = 32;

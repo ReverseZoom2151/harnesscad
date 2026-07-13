@@ -1,0 +1,1 @@
+"""geometry.volumes: Discretely sampled volumetric encodings and the extraction of surfaces from them: voxel/TSDF/occupancy grids, octrees, tetrahedral grids, triplane grids, marching cubes/tetrahedra, dual contouring, surface nets, voxel topology invariants."""

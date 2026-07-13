@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.reconstruction.deepcad_command_spec import Command, command
+from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import Command, command
 from harnesscad.eval.reliability.gencadrepair_sequence import repair_sequence
 from harnesscad.eval.reliability.gencadrepair_taxonomy import is_feasible
 

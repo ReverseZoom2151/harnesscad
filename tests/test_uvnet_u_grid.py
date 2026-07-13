@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry import uvnet_u_grid as ug
-from harnesscad.domain.geometry import uvnet_uv_grid as uvg
+from harnesscad.domain.geometry.parametric import uvnet_u_grid as ug
+from harnesscad.domain.geometry.parametric import uvnet_uv_grid as uvg
 
 
 class LineTest(unittest.TestCase):

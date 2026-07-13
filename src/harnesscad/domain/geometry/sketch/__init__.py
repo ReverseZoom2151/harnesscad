@@ -1,0 +1,1 @@
+"""geometry.sketch: The 2-D sketch/profile domain: sketch entity schemas and quantisation, ruler-and-compass construction, geometric constraints, loop closure and profile validity, normalisation, symmetry, captioning, and polygon/profile builders."""

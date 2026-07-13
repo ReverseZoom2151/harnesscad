@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.cadmcp_command_parser import (
+from harnesscad.domain.programs.extract.cadmcp_command_parser import (
     extract_coordinates,
     extract_keyword_value,
     extract_numbers,

@@ -1,19 +1,19 @@
 import unittest
 
-from harnesscad.eval.bench.cadvlm_metrics import cadvlm_metrics, sliced_metrics
-from harnesscad.eval.bench.task_modality_ablation import ablation_matrix, promotion
-from harnesscad.data.dataengine.sketch_constraint_ontology import (
+from harnesscad.eval.bench.sketch.cadvlm_metrics import cadvlm_metrics, sliced_metrics
+from harnesscad.eval.bench.harness.task_modality_ablation import ablation_matrix, promotion
+from harnesscad.data.dataengine.schemas.sketch_constraint_ontology import (
     KINDS, resolve, validate_constraint,
 )
-from harnesscad.data.dataengine.sketch_modal_record import SketchModalRecord
+from harnesscad.data.dataengine.schemas.sketch_modal_record import SketchModalRecord
 from harnesscad.data.datagen.paired_sketch_prefix import paired_prefixes
 from harnesscad.data.datagen.sketch_image_conditions import image_conditions
 from harnesscad.io.ingest.cadvlm_codec import (
     CONSTRAINT_TOKENS, VERSION, decode_constraint, decode_entity,
     encode_constraint, encode_entity, fit_frame,
 )
-from harnesscad.eval.quality.constraint_label_stability import constraint_label_stability
-from harnesscad.eval.quality.sketch_crossmodal import crossmodal_consistency
+from harnesscad.eval.quality.sketch.constraint_label_stability import constraint_label_stability
+from harnesscad.eval.quality.perception.sketch_crossmodal import crossmodal_consistency
 
 
 class CadVLMContractsTests(unittest.TestCase):

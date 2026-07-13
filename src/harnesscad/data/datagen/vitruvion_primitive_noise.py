@@ -40,7 +40,7 @@ import random
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
-from harnesscad.domain.geometry.vitruvion_sketch_norm import (
+from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import (
     VArc,
     entity_from_params,
     parameterize_entity,

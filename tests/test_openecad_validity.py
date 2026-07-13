@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.programs import openecad_script as oe
-from harnesscad.domain.programs import openecad_validity as val
+from harnesscad.domain.programs.ast import openecad_script as oe
+from harnesscad.domain.programs.validate import openecad_validity as val
 
 
 def line(a, b):

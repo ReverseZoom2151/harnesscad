@@ -9,23 +9,23 @@ Rewritten from bare pytest-style module functions (never collected by
 import math
 import unittest
 
-from harnesscad.eval.bench.appearance_invariance import appearance_invariance
-from harnesscad.eval.bench.candidate_scaling import candidate_scaling
-from harnesscad.eval.bench.geometry_prompted_segmentation import GeometrySegmentationCase, audit_cases
-from harnesscad.eval.bench.instance_segmentation import instance_metrics
-from harnesscad.eval.bench.point_budget import point_budget_report
-from harnesscad.eval.bench.pointcloud_robustness import corrupt_cloud, robustness_curve
-from harnesscad.data.dataengine.code_modularity import code_modularity
+from harnesscad.eval.bench.protocols.appearance_invariance import appearance_invariance
+from harnesscad.eval.bench.harness.candidate_scaling import candidate_scaling
+from harnesscad.eval.bench.data.geometry_prompted_segmentation import GeometrySegmentationCase, audit_cases
+from harnesscad.eval.bench.vision.instance_segmentation import instance_metrics
+from harnesscad.eval.bench.harness.point_budget import point_budget_report
+from harnesscad.eval.bench.data.pointcloud_robustness import corrupt_cloud, robustness_curve
+from harnesscad.data.dataengine.audit.code_modularity import code_modularity
 from harnesscad.data.datagen.domain_randomization import RandomAxis, draw_scene, independence_audit
 from harnesscad.data.datagen.reverse_engineering import build_reverse_sample
 from harnesscad.data.datagen.sketch_boolean import realize_recipe, sketch_recipe
 from harnesscad.io.ingest.fourier_features import fourier_features
 from harnesscad.io.ingest.point_cloud import canonicalize_cloud
-from harnesscad.eval.quality.cad_abstraction import accept_abstraction, propose_abstraction
-from harnesscad.eval.quality.parameter_exposure import expose_parameters
-from harnesscad.eval.quality.quantization_risk import quantization_risks
-from harnesscad.domain.reconstruction.expressivity import expressivity_report
-from harnesscad.domain.reconstruction.pointcloud_candidates import select_pointcloud_candidate
+from harnesscad.eval.quality.graph.cad_abstraction import accept_abstraction, propose_abstraction
+from harnesscad.eval.quality.report.parameter_exposure import expose_parameters
+from harnesscad.eval.quality.sequence.quantization_risk import quantization_risks
+from harnesscad.domain.reconstruction.evaluate.expressivity import expressivity_report
+from harnesscad.domain.reconstruction.fitting.pointcloud_candidates import select_pointcloud_candidate
 from harnesscad.io.surfaces.canonical_views import canonical_views
 from harnesscad.domain.vision.geometry_prompt import GeometryPrompt, PromptView
 from harnesscad.domain.vision.instance_matching import mask_iou, mask_nms, one_to_many

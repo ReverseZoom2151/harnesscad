@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.geometry.llmdesign_sketch_extrude_dsl import (
+from harnesscad.domain.geometry.features.llmdesign_sketch_extrude_dsl import (
     CapPlane,
     Circle,
     Interpreter,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.muse_functionality import (
+from harnesscad.eval.bench.protocols.muse_functionality import (
     muse_functionality,
     parameters_within_omega,
     score_functional,

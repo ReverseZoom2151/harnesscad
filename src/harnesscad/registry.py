@@ -25,7 +25,7 @@ Typical use::
     for e in registry.find(tag="sdf"):
         print(e.dotted, e.summary)
 
-    mod = registry.load("harnesscad.domain.geometry.curv_sdf_primitives")
+    mod = registry.load("harnesscad.domain.geometry.sdf.curv_sdf_primitives")
     mod.sphere_sdf(...)
 
 Everything here is stdlib-only and deterministic (no wall clock, no randomness).

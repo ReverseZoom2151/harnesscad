@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.cadhub_diagnostics import (
+from harnesscad.domain.programs.validate.cadhub_diagnostics import (
     SEVERITY_ERROR,
     SEVERITY_WARNING,
     UnknownDialect,

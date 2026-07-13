@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.wian_partname_pairs import (
+from harnesscad.eval.bench.data.wian_partname_pairs import (
     NamePair,
     best_threshold,
     build_pairs,

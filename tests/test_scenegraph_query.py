@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.scenegraph_model import AABB, RelationType, SceneGraph, SceneNode
-from harnesscad.domain.reconstruction.scenegraph_query import (
+from harnesscad.domain.reconstruction.scene.scenegraph_model import AABB, RelationType, SceneGraph, SceneNode
+from harnesscad.domain.reconstruction.scene.scenegraph_query import (
     connected_component,
     connected_components,
     count_by_type,

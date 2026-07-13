@@ -34,7 +34,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence
 
-from harnesscad.eval.bench.cgb_mesh_betti import MeshSurface, mesh_gate_errors
+from harnesscad.eval.bench.geometry.cgb_mesh_betti import MeshSurface, mesh_gate_errors
 
 # Advisory (never gating) thresholds.
 MIN_FACE_AREA_MM2 = 0.001

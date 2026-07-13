@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.engdesign_description_match import (
+from harnesscad.eval.bench.protocols.engdesign_description_match import (
     score_trial, random_baseline, case_scorecard, match_scorecard,
 )
 

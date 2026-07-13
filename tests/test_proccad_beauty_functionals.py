@@ -3,7 +3,7 @@
 import unittest
 from math import cos, sin, tau
 
-from harnesscad.domain.geometry.proccad_beauty_functionals import (
+from harnesscad.domain.geometry.parametric.proccad_beauty_functionals import (
     StyleSheet,
     apply_to_region,
     arc_length,

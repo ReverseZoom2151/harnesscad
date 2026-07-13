@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.gencad3d_seqlen_norm import (
+from harnesscad.eval.bench.harness.gencad3d_seqlen_norm import (
     NormalizedMetric,
     compare_normalized,
     per_length_means,

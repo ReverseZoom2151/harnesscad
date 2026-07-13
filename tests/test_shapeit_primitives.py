@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.shapeit_heightfield import HeightField
-from harnesscad.domain.geometry import shapeit_primitives as prim
+from harnesscad.domain.geometry.features.shapeit_heightfield import HeightField
+from harnesscad.domain.geometry.features import shapeit_primitives as prim
 
 
 class TestRectangle(unittest.TestCase):

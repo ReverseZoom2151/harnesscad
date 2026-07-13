@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.dontmesh_halfspace_csg import CSGModel, axis_box_cell
-from harnesscad.domain.reconstruction.dontmesh_cell_graph import (
+from harnesscad.domain.geometry.sdf.dontmesh_halfspace_csg import CSGModel, axis_box_cell
+from harnesscad.domain.reconstruction.sequences.dontmesh_cell_graph import (
     build_cell_graph,
     is_plausible_sequence,
     plausible_sequences,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.quality.spatialhero_composite_reward import (
+from harnesscad.eval.quality.reward.spatialhero_composite_reward import (
     CompositeReward,
     composite_reward,
 )

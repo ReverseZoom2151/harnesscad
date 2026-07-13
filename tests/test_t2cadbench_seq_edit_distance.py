@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.t2cadbench_seq_edit_distance import (
+from harnesscad.eval.bench.sequence.t2cadbench_seq_edit_distance import (
     levenshtein,
     mean_sequence_similarity,
     sequence_edit_distance,

@@ -38,7 +38,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.reconstruction.s2cadsig_op_router import spec_for
+from harnesscad.domain.reconstruction.fitting.s2cadsig_op_router import spec_for
 
 Vec3 = Tuple[float, float, float]
 

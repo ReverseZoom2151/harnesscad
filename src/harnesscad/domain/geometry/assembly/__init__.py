@@ -1,0 +1,1 @@
+"""geometry.assembly: Multi-part spatial arrangement: relative placement and alignment, grid/polar patterns, exploded views, bounding boxes and spatial indices used for layout, collision/contact auditing, brick and voxel-part assembly, and shared-geometry instancing."""

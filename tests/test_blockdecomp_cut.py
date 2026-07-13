@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.blockdecomp_domain import Shape
-from harnesscad.domain.geometry.blockdecomp_cut import (
+from harnesscad.domain.geometry.mesh.blockdecomp_domain import Shape
+from harnesscad.domain.geometry.mesh.blockdecomp_cut import (
     CutAction,
     cut_candidates,
     cut_from_vertex,

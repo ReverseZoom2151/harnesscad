@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.programs.scadclj_data_ir import (
+from harnesscad.domain.programs.ast.scadclj_data_ir import (
     background,
     call,
     circle,

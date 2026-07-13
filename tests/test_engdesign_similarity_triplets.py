@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.engdesign_similarity_triplets import (
+from harnesscad.eval.bench.judges.engdesign_similarity_triplets import (
     enumerate_triplets, triplet_count, self_consistency, transitive_violations,
 )
 

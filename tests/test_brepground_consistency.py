@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.brepground_grounding import BRepPrimitive
-from harnesscad.domain.reconstruction.brepground_consistency import (
+from harnesscad.domain.reconstruction.translate.brepground_grounding import BRepPrimitive
+from harnesscad.domain.reconstruction.translate.brepground_consistency import (
     ConsistencyReport,
     FeatureStep,
     check_program,

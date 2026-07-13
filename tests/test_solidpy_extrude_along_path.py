@@ -4,7 +4,7 @@ import math
 import unittest
 from collections import Counter
 
-from harnesscad.domain.geometry.solidpy_extrude_along_path import (
+from harnesscad.domain.geometry.features.solidpy_extrude_along_path import (
     centroid_endcap,
     extrude_along_path,
     extrude_along_path_scad,
@@ -13,7 +13,7 @@ from harnesscad.domain.geometry.solidpy_extrude_along_path import (
     look_at_frame,
     transform_points_to_frame,
 )
-from harnesscad.domain.programs.scadlm_ast import parse
+from harnesscad.domain.programs.ast.scadlm_ast import parse
 
 
 def square_shape(r=1.0, n=4):
@@ -197,7 +197,7 @@ class TestExtrude(unittest.TestCase):
     def test_scad_node_parses(self):
         node = extrude_along_path_scad(square_shape(n=4),
                                        [(0, 0, 0), (0, 0, 5)])
-        from harnesscad.domain.programs.solidpy_scad_emit import scad_render
+        from harnesscad.domain.programs.emit.solidpy_scad_emit import scad_render
         src = scad_render(node)
         self.assertIn("polyhedron(", src)
         self.assertIn("convexity = 2", src)

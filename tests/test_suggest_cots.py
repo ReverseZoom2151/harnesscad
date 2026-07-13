@@ -11,7 +11,7 @@ from harnesscad.io.backends.stub import StubBackend
 from harnesscad.core.loop import HarnessSession
 
 from harnesscad.domain.library.catalog import build_default_catalog
-from harnesscad.eval.quality.suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
+from harnesscad.eval.quality.report.suggest_cots import suggest_cots, Suggestion, FASTENERS, BEARINGS
 
 
 def session_factory() -> HarnessSession:

@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.geometry.solidtype_integer_geometry import (
+from harnesscad.domain.geometry.mesh.solidtype_integer_geometry import (
     NANO_PER_MM,
     MAX_COORD,
     CoordRangeError,

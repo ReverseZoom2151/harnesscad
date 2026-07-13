@@ -3,13 +3,13 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.scadclj_line import (
+from harnesscad.domain.geometry.parametric.scadclj_line import (
     direction_rotation,
     line,
     lines,
     segment_length,
 )
-from harnesscad.domain.programs.scadclj_data_ir import write_scad
+from harnesscad.domain.programs.ast.scadclj_data_ir import write_scad
 
 
 class SegmentLengthTest(unittest.TestCase):

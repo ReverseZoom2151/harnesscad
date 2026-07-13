@@ -1,0 +1,1 @@
+"""geometry.features: Solid feature modelling and procedural part geometry: sketch-extrude/revolve/sweep kernels, holes and counterbores, screw threads, enclosures, self-supporting profiles, refinement-triple representations, and named part generators (airfoil, serpentine spring, pin-grid height patterns)."""

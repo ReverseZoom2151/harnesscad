@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.data.dataengine.cadvf_visual_score import Component
-from harnesscad.data.dataengine.cadvf_preference_pipeline import (
+from harnesscad.data.dataengine.reward.cadvf_visual_score import Component
+from harnesscad.data.dataengine.preference.cadvf_preference_pipeline import (
     Candidate, build_preference_dataset, build_prompt_pair,
 )
 

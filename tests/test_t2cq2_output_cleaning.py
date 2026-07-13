@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.programs.t2cq2_output_cleaning import (
+from harnesscad.domain.programs.extract.t2cq2_output_cleaning import (
     EOS_TOKEN,
     REASON_EMPTY,
     REASON_NO_EOS,

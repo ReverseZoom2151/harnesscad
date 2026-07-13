@@ -1,20 +1,20 @@
 import unittest
 
-from harnesscad.eval.bench.command_metrics import command_metrics
-from harnesscad.eval.bench.compiler_judge import (
+from harnesscad.eval.bench.sequence.command_metrics import command_metrics
+from harnesscad.eval.bench.judges.compiler_judge import (
     CompilerJudge, VerificationLevel, component_scorecard, pareto_scorecards,
 )
-from harnesscad.eval.bench.judge_calibration import calibrate_threshold, select_threshold
-from harnesscad.eval.bench.judge_efficiency import judge_efficiency
-from harnesscad.eval.bench.morphology_report import morphology_report
-from harnesscad.eval.bench.review_iterations import review_iteration_report
-from harnesscad.eval.bench.reward_hacking import reward_hacking_audit
-from harnesscad.data.dataengine.binary_preferences import (
+from harnesscad.eval.bench.judges.judge_calibration import calibrate_threshold, select_threshold
+from harnesscad.eval.bench.judges.judge_efficiency import judge_efficiency
+from harnesscad.eval.bench.harness.morphology_report import morphology_report
+from harnesscad.eval.bench.harness.review_iterations import review_iteration_report
+from harnesscad.eval.bench.protocols.reward_hacking import reward_hacking_audit
+from harnesscad.data.dataengine.preference.binary_preferences import (
     BinaryPreference, audit_preferences,
 )
-from harnesscad.data.dataengine.binary_sampling import sample_binary
-from harnesscad.data.dataengine.kto import implied_reward, kto_row, kto_utility
-from harnesscad.domain.geometry.mesh_sampling import sample_mesh, triangle_area
+from harnesscad.data.dataengine.preference.binary_sampling import sample_binary
+from harnesscad.data.dataengine.preference.kto import implied_reward, kto_row, kto_utility
+from harnesscad.domain.geometry.mesh.mesh_sampling import sample_mesh, triangle_area
 from harnesscad.eval.reliability.compiler_diagnostics import normalize_compiler_error
 from harnesscad.governance.research.judge_ablation import judge_ablation
 

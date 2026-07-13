@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.reconstruction.mfgfeat_rule_detector import (
+from harnesscad.domain.reconstruction.recognize.mfgfeat_rule_detector import (
     Face, Detection, detect_features, feature_counts,
 )
 

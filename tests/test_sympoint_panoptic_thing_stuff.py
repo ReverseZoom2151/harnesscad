@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.sympoint_panoptic_thing_stuff import (
+from harnesscad.eval.bench.vision.sympoint_panoptic_thing_stuff import (
     DEFAULT_IGNORE_LABEL,
     IOU_THRESHOLD,
     MIN_OBJ_SCORE,

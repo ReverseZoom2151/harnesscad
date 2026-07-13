@@ -12,7 +12,7 @@ from harnesscad.io.formats.angelcad_xcsg_xml import (
     read_xcsg,
     write_xcsg,
 )
-from harnesscad.domain.programs.angelcad_typed_csg import (
+from harnesscad.domain.programs.ast.angelcad_typed_csg import (
     Node,
     TMatrix,
     check,

@@ -35,7 +35,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Sequence, Tuple
 
-from harnesscad.domain.reconstruction.deepcad_command_spec import (
+from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import (
     ARC,
     CIRCLE,
     COMMAND_INDEX,

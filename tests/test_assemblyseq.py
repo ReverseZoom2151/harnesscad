@@ -15,7 +15,7 @@ import unittest
 
 from harnesscad.eval.verifiers.assembly import AssemblyModel, Mate
 from harnesscad.eval.verifiers.verify import Severity
-from harnesscad.eval.quality.assemblyseq import (
+from harnesscad.eval.quality.assembly.assemblyseq import (
     plan_assembly_sequence, AssemblySequence, SequenceCheck,
     sequence_diagnostics, with_sequence,
 )

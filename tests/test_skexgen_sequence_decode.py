@@ -1,11 +1,11 @@
 import unittest
 
-from harnesscad.domain.reconstruction.skexgen_extrude_tokens import encode_extrude
-from harnesscad.domain.reconstruction.skexgen_sequence_decode import (
+from harnesscad.domain.reconstruction.tokens.skexgen_extrude_tokens import encode_extrude
+from harnesscad.domain.reconstruction.tokens.skexgen_sequence_decode import (
     SkexGenParseError, VertexTable, circle_from_rim, circumcenter, decode_sketch,
     invalid_percent, is_valid, obj_records, parse_tokens, split_se,
 )
-from harnesscad.domain.reconstruction.skexgen_token_format import encode_sketch, merge_se
+from harnesscad.domain.reconstruction.tokens.skexgen_token_format import encode_sketch, merge_se
 
 EXT_KW = dict(
     extrude_value=(0.5, 0.0),

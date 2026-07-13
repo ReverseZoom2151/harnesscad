@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.geometry.octfusion_octree import Octree
-from harnesscad.domain.geometry.octfusion_mpu import (
+from harnesscad.domain.geometry.volumes.octfusion_octree import Octree
+from harnesscad.domain.geometry.volumes.octfusion_mpu import (
     bspline_weight,
     leaf_records_from_octree,
     local_coords,

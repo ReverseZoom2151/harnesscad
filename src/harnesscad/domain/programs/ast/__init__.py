@@ -1,0 +1,1 @@
+"""programs.ast: Program representations: tokenizers, parsers, syntax trees and typed/data IRs for CAD program languages (OpenSCAD, CadQuery subset, CSG scripts, editable CAD scripts), plus serialisation and round-trip."""

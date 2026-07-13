@@ -12,10 +12,10 @@ from harnesscad.io.adapters.rhino_contract import (HostCapabilities, HostResult,
                                      validate_script)
 from harnesscad.agents.agent.host_feedback import HostProposal, confirm, execute, preview, refine
 from harnesscad.agents.agent.intent_resolution import resolve_intent
-from harnesscad.eval.bench.evolution_dynamics import evolution_dynamics, lineage_stats
-from harnesscad.eval.bench.nl_cad_casebook import evaluate_case, paper_casebook
-from harnesscad.eval.bench.operator_profile import operator_profile
-from harnesscad.data.dataengine.template_collapse import identifier_leakage, template_collapse
+from harnesscad.eval.bench.harness.evolution_dynamics import evolution_dynamics, lineage_stats
+from harnesscad.eval.bench.data.nl_cad_casebook import evaluate_case, paper_casebook
+from harnesscad.eval.bench.data.operator_profile import operator_profile
+from harnesscad.data.dataengine.audit.template_collapse import identifier_leakage, template_collapse
 from harnesscad.data.datagen.cube_rotations import (apply_rotation, cube_rotations,
                                     inverse_rotation, rewrite_calls)
 from harnesscad.data.datagen.evolution import (GeneratorRecord, sample_parents, termination,

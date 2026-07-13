@@ -1,0 +1,1 @@
+"""quality.report: Human-facing outputs and advisories: part description and QA, drawings, cost/BOM estimation, traceability, parameter exposure, COTS suggestions, verbalisation, stage advice, claim auditing."""

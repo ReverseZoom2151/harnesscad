@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.data.dataengine.datacon_lowdata_dedup import (
+from harnesscad.data.dataengine.curation.datacon_lowdata_dedup import (
     canonical_signature,
     construction_report,
     dedup_by_scale,

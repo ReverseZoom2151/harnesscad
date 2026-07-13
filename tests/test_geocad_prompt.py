@@ -2,10 +2,10 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction.flexcad_text import (
+from harnesscad.domain.reconstruction.translate.flexcad_text import (
     curve, loop, face, sketch, extrusion, se, model, LOOP_MASK, infill, tokenize,
 )
-from harnesscad.data.dataengine import geocad_prompt as gp
+from harnesscad.data.dataengine.annotation import geocad_prompt as gp
 
 
 def _two_loop_model():

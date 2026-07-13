@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.domain.programs.scadlm_ast import (
+from harnesscad.domain.programs.ast.scadlm_ast import (
     Argument,
     Assign,
     Binary,

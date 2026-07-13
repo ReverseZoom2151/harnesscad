@@ -44,7 +44,7 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.programs.angelcad_typed_csg import OPS, Node, TMatrix, identity
+from harnesscad.domain.programs.ast.angelcad_typed_csg import OPS, Node, TMatrix, identity
 
 __all__ = [
     "XcsgError",

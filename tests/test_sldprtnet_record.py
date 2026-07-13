@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.sldprtnet_record import (
+from harnesscad.data.dataengine.schemas.sldprtnet_record import (
     MODALITIES,
     STANDARD_VIEWS,
     CompositeImage,

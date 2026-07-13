@@ -31,8 +31,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Deque, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.geometry.blockdecomp_domain import Corner, Shape, Vec2, classify_angle
-from harnesscad.domain.geometry.blockdecomp_cut import CutAction, split_step
+from harnesscad.domain.geometry.mesh.blockdecomp_domain import Corner, Shape, Vec2, classify_angle
+from harnesscad.domain.geometry.mesh.blockdecomp_cut import CutAction, split_step
 
 _EPS = 1e-9
 
@@ -123,7 +123,7 @@ class DecompositionState:
         return self.queue[0] if self.queue else None
 
     def legal_actions(self) -> List[CutAction]:
-        from harnesscad.domain.geometry.blockdecomp_cut import cut_candidates
+        from harnesscad.domain.geometry.mesh.blockdecomp_cut import cut_candidates
 
         cur = self.current()
         return cut_candidates(cur) if cur is not None else []

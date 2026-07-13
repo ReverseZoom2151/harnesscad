@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.geofusion_hierarchy import (
+from harnesscad.domain.reconstruction.tokens.geofusion_hierarchy import (
     Curve, Loop, Face, Sketch, Extrusion, SePair, Solid, Token,
     serialize, deserialize, quantize, dequantize,
     count_nodes, tree_depth, type_paths,

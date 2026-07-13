@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.eval.bench.magic3d_silhouette_iou import (
+from harnesscad.eval.bench.vision.magic3d_silhouette_iou import (
     soft_intersection,
     soft_union,
     soft_iou,

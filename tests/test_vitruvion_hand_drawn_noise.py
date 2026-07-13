@@ -8,7 +8,7 @@ from harnesscad.domain.drawings.vitruvion_hand_drawn_noise import (
     cholesky,
     matern_kernel,
 )
-from harnesscad.domain.geometry.vitruvion_sketch_norm import VArc, VCircle, VPoint, entity_from_params
+from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VArc, VCircle, VPoint, entity_from_params
 
 RES = 32  # small kernel keeps the pure-Python Cholesky fast in tests
 

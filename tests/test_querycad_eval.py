@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.querycad_eval import (
+from harnesscad.eval.bench.judges.querycad_eval import (
     Grade, grade, aggregate, ERROR_CATEGORIES, CORRECT, PARTIAL, WRONG,
 )
-from harnesscad.domain.reconstruction.querycad_answer_engine import Answer
+from harnesscad.domain.reconstruction.scene.querycad_answer_engine import Answer
 
 
 class TestNumericGrading(unittest.TestCase):

@@ -3,7 +3,7 @@
 import unittest
 from math import pi
 
-from harnesscad.eval.quality.llmdesign_primitive_massprops import (
+from harnesscad.eval.quality.physics.llmdesign_primitive_massprops import (
     Assembly,
     Box,
     Cylinder,

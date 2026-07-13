@@ -1,5 +1,5 @@
 import unittest
-from harnesscad.domain.reconstruction.fewshot_partseg_features import (
+from harnesscad.domain.reconstruction.recognize.fewshot_partseg_features import (
     knn_indices, symmetric_eigenvalues, covariance_descriptors,
     edge_feature, point_features, _covariance,
 )

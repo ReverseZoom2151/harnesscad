@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.contrastcad_contrastive import (
+from harnesscad.eval.bench.retrieval.contrastcad_contrastive import (
     contrastive_loss,
     cosine_similarity,
     dropout_view,

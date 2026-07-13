@@ -1,0 +1,1 @@
+"""geometry.kinematics: Joints and mechanisms: joint axes, degrees of freedom, joint limits and pose transforms, URDF forward kinematics, and gear geometry (involute, bevel, module series, gear trains and couplings)."""

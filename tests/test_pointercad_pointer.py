@@ -1,8 +1,8 @@
 import unittest
 
-from harnesscad.domain.reconstruction import pointercad_indexing as idx
-from harnesscad.domain.reconstruction import pointercad_pointer as pc
-from harnesscad.domain.reconstruction.pointercad_indexing import EdgeRecord, FaceRecord
+from harnesscad.domain.reconstruction.brep import pointercad_indexing as idx
+from harnesscad.domain.reconstruction.sequences import pointercad_pointer as pc
+from harnesscad.domain.reconstruction.brep.pointercad_indexing import EdgeRecord, FaceRecord
 
 
 class CommandShapeTest(unittest.TestCase):

@@ -2,7 +2,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.neurcad_developability import (
+from harnesscad.domain.geometry.sdf.neurcad_developability import (
     point_developability_defect, developability_energy,
     developability_energy_squared,
     double_trough_coeffs, double_trough, double_trough_deriv,

@@ -22,7 +22,7 @@ from harnesscad.data.dataengine import (
     flywheel_metrics,
     write_jsonl,
 )
-from harnesscad.data.dataengine.trajectory import (
+from harnesscad.data.dataengine.trace.trajectory import (
     OUTCOME_APPLIED,
     OUTCOME_ROLLED_BACK,
     OUTCOME_REJECTED,

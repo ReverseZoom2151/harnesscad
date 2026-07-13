@@ -42,7 +42,7 @@ from dataclasses import dataclass, field
 from math import pi
 from typing import Dict, List, Sequence, Set, Tuple
 
-from harnesscad.domain.reconstruction.deepcad_command_spec import (
+from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import (
     ARC,
     CIRCLE,
     COMMAND_INDEX,

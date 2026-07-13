@@ -19,7 +19,7 @@ except Exception:  # noqa: BLE001
     Hole = None
     HAVE_HOLE = False
 
-from harnesscad.eval.quality.describe import describe_part, answer_query
+from harnesscad.eval.quality.report.describe import describe_part, answer_query
 
 
 def _plate(backend, n_holes=0, fillet=False):

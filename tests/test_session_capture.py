@@ -2,7 +2,7 @@ import json
 import unittest
 
 from harnesscad.core.cisp.ops import Extrude, NewSketch
-from harnesscad.data.dataengine.session_capture import Consent, ModelingSessionCapture
+from harnesscad.data.dataengine.trace.session_capture import Consent, ModelingSessionCapture
 
 
 class SessionCaptureTests(unittest.TestCase):

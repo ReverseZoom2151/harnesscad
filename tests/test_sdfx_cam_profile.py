@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdfx_cam_profile import (
+from harnesscad.domain.geometry.sdf.sdfx_cam_profile import (
     FlatFlankCam,
     ThreeArcCam,
     make_flat_flank_cam,

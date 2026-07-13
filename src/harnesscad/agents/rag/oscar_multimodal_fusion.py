@@ -41,7 +41,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
-from harnesscad.eval.bench.geomretr_eval import cosine_distance
+from harnesscad.eval.bench.retrieval.geomretr_eval import cosine_distance
 
 Vector = Sequence[float]
 

@@ -18,7 +18,7 @@ import unittest
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.eval.verifiers.assembly import AssemblyModel, Mate
 from harnesscad.eval.verifiers.verify import Severity
-from harnesscad.eval.quality.kinematics import (
+from harnesscad.eval.quality.physics.kinematics import (
     ROT_NEG, ROT_POS, TRANS_POS,
     JointIntent, MotionSpec, MechanismGraph, KinematicsCheck,
     kinematics_diagnostics, with_kinematics,

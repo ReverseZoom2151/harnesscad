@@ -37,7 +37,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
-from harnesscad.domain.programs.bidircsg_ast import (
+from harnesscad.domain.programs.ast.bidircsg_ast import (
     Node,
     Path,
     Primitive,
@@ -51,7 +51,7 @@ from harnesscad.domain.programs.bidircsg_ast import (
     replace_at,
     wrap_at,
 )
-from harnesscad.domain.programs.bidircsg_forward import GeomNode, find_instance, get
+from harnesscad.domain.programs.runtime.bidircsg_forward import GeomNode, find_instance, get
 
 _EPS = 1e-9
 

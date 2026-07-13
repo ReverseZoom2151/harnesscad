@@ -33,7 +33,7 @@ from harnesscad.domain.numeric.sketchdnn_gaussian_softmax import (
     gs_posterior_mean,
     softmax,
 )
-from harnesscad.domain.reconstruction.sketchdnn_primitive_representation import (
+from harnesscad.domain.reconstruction.tokens.sketchdnn_primitive_representation import (
     CLASS_DIM,
     CONSTRUCTION_DIM,
     FEATURE_DIM,

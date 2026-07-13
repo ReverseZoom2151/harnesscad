@@ -3,7 +3,7 @@
 import unittest
 from fractions import Fraction
 
-from harnesscad.domain.programs.paramgeom_handles import (
+from harnesscad.domain.programs.expressions.paramgeom_handles import (
     circle_handles,
     cube_handles,
     cylinder_handles,
@@ -12,7 +12,7 @@ from harnesscad.domain.programs.paramgeom_handles import (
     sphere_handles_from_radius,
     square_handles,
 )
-from harnesscad.domain.programs.paramgeom_linform import LinearForm
+from harnesscad.domain.programs.expressions.paramgeom_linform import LinearForm
 
 
 class CubeHandlesTest(unittest.TestCase):

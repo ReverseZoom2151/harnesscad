@@ -8,15 +8,15 @@ Rewritten from bare pytest-style module functions (never collected by
 
 import unittest
 
-from harnesscad.eval.bench.render_distribution import summarize
-from harnesscad.data.dataengine.prior_cache import PriorCache, cache_key
+from harnesscad.eval.bench.generative.render_distribution import summarize
+from harnesscad.data.dataengine.trace.prior_cache import PriorCache, cache_key
 from harnesscad.domain.procedural.cad_patterns import grid, linear, pipe, radial
 from harnesscad.domain.procedural.lazy_scene import expand
 from harnesscad.domain.procedural.shape_grammar import Production, derive
-from harnesscad.eval.quality.camera_pruning import CameraSample, prune
-from harnesscad.eval.quality.grammar_compression import compression
-from harnesscad.eval.quality.multiview_consistency import consistency
-from harnesscad.eval.quality.render_stages import assess
+from harnesscad.eval.quality.perception.camera_pruning import CameraSample, prune
+from harnesscad.eval.quality.sequence.grammar_compression import compression
+from harnesscad.eval.quality.perception.multiview_consistency import consistency
+from harnesscad.eval.quality.perception.render_stages import assess
 
 
 class CADPatternsTest(unittest.TestCase):

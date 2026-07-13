@@ -1,7 +1,7 @@
 import unittest
 from random import Random
 
-from harnesscad.domain.programs.cqeditor_show_object import (
+from harnesscad.domain.programs.runtime.cqeditor_show_object import (
     DEFAULT_COLOR_SEED,
     infer_object_name,
     collect_shown_objects,

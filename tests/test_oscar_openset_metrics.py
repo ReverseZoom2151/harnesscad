@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.bench.oscar_openset_metrics import (
+from harnesscad.eval.bench.retrieval.oscar_openset_metrics import (
     auroc,
     openset_confusion,
     openset_f_measure,

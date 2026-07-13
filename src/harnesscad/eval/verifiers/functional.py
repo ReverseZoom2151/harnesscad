@@ -35,7 +35,7 @@ from typing import Dict, List, Optional
 
 from harnesscad.eval.verifiers.assembly import AssemblyModel
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
-from harnesscad.eval.quality.kinematics import JointIntent, MechanismGraph
+from harnesscad.eval.quality.physics.kinematics import JointIntent, MechanismGraph
 
 
 # --------------------------------------------------------------------------- #

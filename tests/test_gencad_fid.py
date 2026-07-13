@@ -3,7 +3,7 @@
 import random
 import unittest
 
-from harnesscad.eval.bench.gencad_fid import (
+from harnesscad.eval.bench.generative.gencad_fid import (
     mean_vector,
     covariance_matrix,
     jacobi_eigen,

@@ -4,7 +4,7 @@ import math
 import unittest
 from collections import Counter
 
-from harnesscad.domain.geometry.solidpy_catmull_rom import (
+from harnesscad.domain.geometry.parametric.solidpy_catmull_rom import (
     affine_combination,
     catmull_rom_patch,
     catmull_rom_points,
@@ -14,8 +14,8 @@ from harnesscad.domain.geometry.solidpy_catmull_rom import (
     catmull_rom_segment,
     centroid,
 )
-from harnesscad.domain.programs.scadlm_ast import parse
-from harnesscad.domain.programs.solidpy_scad_emit import scad_render
+from harnesscad.domain.programs.ast.scadlm_ast import parse
+from harnesscad.domain.programs.emit.solidpy_scad_emit import scad_render
 
 
 def edge_counts(faces):

@@ -5,8 +5,8 @@ import unittest
 from harnesscad.core.cisp.ops import AddRectangle, Extrude, NewSketch
 from harnesscad.data.dataengine import EditPairStore, capture_edit_pair, to_preference
 from harnesscad.io.ingest import import_fidelity, roundtrip_fidelity
-from harnesscad.eval.quality.ask import ask
-from harnesscad.eval.quality.pareto import Objective, pareto_front, pareto_rank
+from harnesscad.eval.quality.report.ask import ask
+from harnesscad.eval.quality.reward.pareto import Objective, pareto_front, pareto_rank
 from harnesscad.eval.reliability import RetrievalFallback
 
 

@@ -1,0 +1,1 @@
+"""quality.perception: Visual and multimodal evidence quality: camera pruning, view coverage, render staging, multi-view consistency, cross-modal sketch evidence, scan label audit, modality fusion."""

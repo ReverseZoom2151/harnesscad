@@ -1,7 +1,7 @@
 import unittest
 
-from harnesscad.domain.reconstruction.img2cadrev_shared_attributes import SharedAttributePrior
-from harnesscad.domain.reconstruction.img2cadrev_factorization import factorize, assemble
+from harnesscad.domain.reconstruction.sequences.img2cadrev_shared_attributes import SharedAttributePrior
+from harnesscad.domain.reconstruction.sequences.img2cadrev_factorization import factorize, assemble
 
 
 def chair(leg_radius, seat_ext):

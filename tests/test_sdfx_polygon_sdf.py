@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdfx_polygon_sdf import (
+from harnesscad.domain.geometry.sdf.sdfx_polygon_sdf import (
     point_in_polygon,
     polygon_area,
     polygon_centroid,

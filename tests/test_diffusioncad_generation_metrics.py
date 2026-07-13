@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.eval.bench.diffusioncad_generation_metrics import (
+from harnesscad.eval.bench.generative.diffusioncad_generation_metrics import (
     ARC,
     CIRCLE,
     EOS,

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.data.dataengine.vitruvion_sequence_filter import (
+from harnesscad.data.dataengine.curation.vitruvion_sequence_filter import (
     FilterConfig,
     filter_indices,
     filter_sketch,
@@ -10,7 +10,7 @@ from harnesscad.data.dataengine.vitruvion_sequence_filter import (
     sketch_is_renderable,
     unique_indices,
 )
-from harnesscad.domain.geometry.vitruvion_sketch_norm import VArc, VCircle, VPoint, entity_from_params
+from harnesscad.domain.geometry.sketch.vitruvion_sketch_norm import VArc, VCircle, VPoint, entity_from_params
 
 
 def _grid_sketch(count):

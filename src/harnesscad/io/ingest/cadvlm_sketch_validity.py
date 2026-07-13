@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from harnesscad.data.dataengine.sketch_constraint_ontology import BY_TOKEN, resolve
+from harnesscad.data.dataengine.schemas.sketch_constraint_ontology import BY_TOKEN, resolve
 from harnesscad.io.ingest.cadvlm_codec import HIGH, LOW
 
 

@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harnesscad.eval.bench.lasdiff_sketch_metrics import (
+from harnesscad.eval.bench.sketch.lasdiff_sketch_metrics import (
     chamfer_2d,
     histogram,
     nna_gap_to_half,

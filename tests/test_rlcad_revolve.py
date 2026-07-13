@@ -3,7 +3,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry import rlcad_revolve as rr
+from harnesscad.domain.geometry.features import rlcad_revolve as rr
 
 
 class TestProfileMeasures(unittest.TestCase):

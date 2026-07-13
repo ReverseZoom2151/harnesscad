@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.domain.geometry import sdfcsg_primitives as P
+from harnesscad.domain.geometry.sdf import sdfcsg_primitives as P
 
 
 def grad_mag(f, p, h=1e-5):

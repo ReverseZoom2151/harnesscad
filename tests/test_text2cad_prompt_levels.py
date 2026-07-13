@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.data.dataengine.text2cad_prompt_levels import (
+from harnesscad.data.dataengine.annotation.text2cad_prompt_levels import (
     ASPECT_EXTRUSION,
     ASPECT_SHAPE,
     ASPECT_SKETCH,

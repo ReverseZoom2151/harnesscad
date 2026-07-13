@@ -5,7 +5,7 @@ untagged-numeric detection plus negation- and context-awareness.
 """
 import unittest
 
-from harnesscad.eval.quality.cadclaw_claim_audit import (
+from harnesscad.eval.quality.report.cadclaw_claim_audit import (
     audit_text, ClaimReport, ClaimFinding, DEFAULT_FORBIDDEN_ABSOLUTES,
 )
 

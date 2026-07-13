@@ -39,7 +39,7 @@ from harnesscad.agents.context.spectiling_prompt import (
 )
 from harnesscad.domain.spec.spectiling_coverage import coverage_report
 from harnesscad.agents.generation.spectiling_compose import TileFragment, compose_fragments
-from harnesscad.data.dataengine.spectiling_complexity import (
+from harnesscad.data.dataengine.curation.spectiling_complexity import (
     ComplexitySample,
     Tier,
     complexity_scores,

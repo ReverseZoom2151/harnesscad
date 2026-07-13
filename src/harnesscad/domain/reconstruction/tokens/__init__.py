@@ -1,0 +1,1 @@
+"""reconstruction.tokens: Tokenisation, quantisation, codebooks and command/token codecs. The mutually-incompatible schemes (DeepCAD, SkexGen, HNC, Text2CAD, Vitruvion, CADParser, Pointer-CAD, RLCAD, PPA...) live side by side so their differences are visible."""

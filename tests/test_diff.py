@@ -13,7 +13,7 @@ from harnesscad.core.cisp.ops import (
     NewSketch, AddRectangle, Extrude, Fillet, Chamfer, Hole,
 )
 from harnesscad.core.state.opdag import OpDAG
-from harnesscad.eval.quality.diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
+from harnesscad.eval.quality.edit.diff import op_diff, geom_diff, diff_checkpoints, OpDiff, GeomDiff
 
 
 def _cadquery_available() -> bool:

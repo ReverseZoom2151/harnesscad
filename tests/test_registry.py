@@ -29,9 +29,9 @@ class TestIndex(unittest.TestCase):
 
     def test_known_islands_are_indexed(self):
         for dotted in (
-            "harnesscad.domain.geometry.curv_sdf_primitives",
-            "harnesscad.domain.geometry.manifold_bvh",
-            "harnesscad.domain.geometry.sdfcsg_marching_cubes",
+            "harnesscad.domain.geometry.sdf.curv_sdf_primitives",
+            "harnesscad.domain.geometry.mesh.manifold_bvh",
+            "harnesscad.domain.geometry.volumes.sdfcsg_marching_cubes",
         ):
             self.assertEqual(registry.get(dotted).dotted, dotted)
 
@@ -64,7 +64,7 @@ class TestTags(unittest.TestCase):
             self.assertIn("geometry", e.tags)
 
     def test_tagging_is_a_pure_function_of_name_package_doc(self):
-        e = registry.get("harnesscad.domain.geometry.curv_sdf_primitives")
+        e = registry.get("harnesscad.domain.geometry.sdf.curv_sdf_primitives")
         again = registry._tags_for(e.package, e.name, e.summary)
         self.assertEqual(e.tags, again)
 
@@ -79,21 +79,21 @@ class TestQueries(unittest.TestCase):
 
     def test_find_by_name_substring(self):
         hits = {e.dotted for e in registry.find(name="marching_cubes")}
-        self.assertIn("harnesscad.domain.geometry.sdfcsg_marching_cubes", hits)
+        self.assertIn("harnesscad.domain.geometry.volumes.sdfcsg_marching_cubes", hits)
 
     def test_search_matches_symbols(self):
         hits = {e.dotted for e in registry.search("rounded_box")}
-        self.assertIn("harnesscad.domain.geometry.curv_sdf_primitives", hits)
+        self.assertIn("harnesscad.domain.geometry.sdf.curv_sdf_primitives", hits)
 
     def test_symbols_are_public_only(self):
-        syms = registry.symbols("harnesscad.domain.geometry.curv_sdf_primitives")
+        syms = registry.symbols("harnesscad.domain.geometry.sdf.curv_sdf_primitives")
         self.assertIn("sphere", syms)
         self.assertFalse([s for s in syms if s.startswith("_")])
 
 
 class TestLazyLoad(unittest.TestCase):
     def test_load_returns_a_working_module(self):
-        mod = registry.load("harnesscad.domain.geometry.curv_sdf_primitives")
+        mod = registry.load("harnesscad.domain.geometry.sdf.curv_sdf_primitives")
         self.assertTrue(hasattr(mod, "sphere"))
         # centre of a unit-diameter sphere is 0.5 inside it.
         self.assertAlmostEqual(mod.sphere((0.0, 0.0, 0.0), 1.0), -0.5, places=9)
@@ -107,7 +107,7 @@ class TestOrphans(unittest.TestCase):
     def test_orphans_is_large_and_contains_known_islands(self):
         orph = set(registry.orphans())
         self.assertGreater(len(orph), 500)
-        self.assertIn("harnesscad.domain.geometry.curv_sdf_primitives", orph)
+        self.assertIn("harnesscad.domain.geometry.sdf.curv_sdf_primitives", orph)
 
     def test_orphans_excludes_imported_modules(self):
         graph = registry.import_graph()
@@ -189,7 +189,7 @@ class TestCli(unittest.TestCase):
         self.assertEqual(registry.main(["--list", "--tag", "sdf"]), 0)
         self.assertEqual(registry.main(["--search", "marching"]), 0)
         self.assertEqual(
-            registry.main(["--show", "harnesscad.domain.geometry.curv_sdf_primitives"]), 0)
+            registry.main(["--show", "harnesscad.domain.geometry.sdf.curv_sdf_primitives"]), 0)
 
     def test_show_unknown_module_exits_nonzero(self):
         self.assertEqual(registry.main(["--show", "harnesscad.nope"]), 2)

@@ -2,7 +2,7 @@
 
 import unittest
 
-from harnesscad.domain.programs.bidircsg_ast import (
+from harnesscad.domain.programs.ast.bidircsg_ast import (
     Difference,
     Intersection,
     Primitive,

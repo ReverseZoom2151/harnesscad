@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.hnc_cad_vec_codec import (
+from harnesscad.domain.reconstruction.tokens.hnc_cad_vec_codec import (
     SKETCH_END, FACE_END, LOOP_END, LINE, ARC, CIRCLE,
     PARAM_WIDTH, SENTINEL,
     OP_ADD, OP_CUT, OP_INTERSECT,

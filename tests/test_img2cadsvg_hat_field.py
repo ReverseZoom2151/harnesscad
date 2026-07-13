@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.img2cadsvg_hat_field import (
+from harnesscad.domain.geometry.views.img2cadsvg_hat_field import (
     HatVector,
     encode,
     decode,

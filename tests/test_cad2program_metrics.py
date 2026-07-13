@@ -1,9 +1,9 @@
 import unittest
 
-from harnesscad.domain.reconstruction.cad2program_shape_program import (
+from harnesscad.domain.reconstruction.translate.cad2program_shape_program import (
     Bbox, ShapeProgram, make_instance,
 )
-from harnesscad.domain.reconstruction.cad2program_metrics import (
+from harnesscad.domain.reconstruction.evaluate.cad2program_metrics import (
     box_iou_3d, hungarian, match_primitives, reconstruction_prf,
     model_retrieval_accuracy, parameter_estimation_accuracy, evaluate,
 )

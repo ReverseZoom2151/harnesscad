@@ -46,7 +46,7 @@ import math
 from dataclasses import dataclass, field
 from typing import List, Sequence, Tuple
 
-from harnesscad.domain.geometry.gaudi_parametric_profile import (
+from harnesscad.domain.geometry.sketch.gaudi_parametric_profile import (
     dedupe_points,
     is_degenerate,
     sample_curve,

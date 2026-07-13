@@ -1,0 +1,1 @@
+"""programs.extract: Recovering a structured, runnable program from raw text: pulling bare source out of an LLM reply, cleaning generated scripts into executable form, and parsing free-text commands into structured CAD calls."""

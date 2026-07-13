@@ -1,11 +1,11 @@
 import unittest
 
-from harnesscad.eval.bench.criteria import (
+from harnesscad.eval.bench.protocols.criteria import (
     Criterion, Dimension, Modality, Subdimension, aggregate,
     render_failure_rate, route_and_evaluate, syntax_failure_rate,
 )
-from harnesscad.eval.bench.splits import SplitEntry, audit_splits
-from harnesscad.data.dataengine.annotation_workflow import (
+from harnesscad.eval.bench.data.splits import SplitEntry, audit_splits
+from harnesscad.data.dataengine.annotation.annotation_workflow import (
     AnnotationItem, adjudicate, decision_distribution, qc_sample,
 )
 from harnesscad.governance.research.agreement import cohen_kappa

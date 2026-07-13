@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.img2cadsvg_loi_align import (
+from harnesscad.domain.reconstruction.fitting.img2cadsvg_loi_align import (
     psi,
     loi_sample,
     decoupled_groups,

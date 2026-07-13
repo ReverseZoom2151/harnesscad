@@ -1,5 +1,5 @@
 import unittest
-from harnesscad.domain.reconstruction.fewshot_partseg_episodes import (
+from harnesscad.domain.reconstruction.recognize.fewshot_partseg_episodes import (
     Sample, Episode, BACKGROUND, split_classes, remap_labels,
     build_episode, flatten_support,
 )

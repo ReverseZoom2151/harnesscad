@@ -1,0 +1,1 @@
+"""programs.validate: Execution-free checking of a CAD program: syntax/compile gates, API existence and arity checks, fluent state-machine legality, operation-vocabulary conformance, loop/profile validity, and toolchain diagnostic parsing."""

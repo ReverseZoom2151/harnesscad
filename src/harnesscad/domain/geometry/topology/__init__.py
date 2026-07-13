@@ -1,0 +1,1 @@
+"""geometry.topology: B-Rep entity structure and how entities are addressed: sub-shape maps and topology explorers, face/edge adjacency and convexity graphs, persistent face naming, plus the selector languages (string DSLs, selector algebra, region selectors, cardinal landmarks) used to pick entities out of a solid."""

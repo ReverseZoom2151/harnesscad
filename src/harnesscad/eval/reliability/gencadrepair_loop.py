@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, List, Optional, Sequence
 
-from harnesscad.domain.reconstruction.deepcad_command_spec import Command
+from harnesscad.domain.reconstruction.tokens.deepcad_command_spec import Command
 from harnesscad.eval.reliability.gencadrepair_sequence import repair_sequence
 from harnesscad.eval.reliability.gencadrepair_taxonomy import diagnose
 

@@ -1,5 +1,5 @@
 import unittest
-from harnesscad.domain.reconstruction.fewshot_partseg_metrics import (
+from harnesscad.domain.reconstruction.recognize.fewshot_partseg_metrics import (
     confusion, per_class_iou, mean_iou, instance_miou, accuracy,
 )
 

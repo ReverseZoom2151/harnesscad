@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.domain.reconstruction import pointercad_sketchplane as sp
+from harnesscad.domain.reconstruction.sketch import pointercad_sketchplane as sp
 
 
 class DirectionMapTest(unittest.TestCase):

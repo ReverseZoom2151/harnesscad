@@ -1,13 +1,13 @@
 import unittest
 
 from harnesscad.domain.library.sketchconcept_library import ConceptLibrary
-from harnesscad.domain.reconstruction.sketchconcept_decompose import (
+from harnesscad.domain.reconstruction.sketch.sketchconcept_decompose import (
     decompose,
     find_matches,
     is_exact,
     reconstruct,
 )
-from harnesscad.domain.reconstruction.sketchconcept_template import (
+from harnesscad.domain.reconstruction.sketch.sketchconcept_template import (
     Concept,
     Const,
     Constraint,
@@ -134,7 +134,7 @@ class TestFindMatches(unittest.TestCase):
         self.assertEqual(a, b)
 
     def test_hierarchical_rejected(self):
-        from harnesscad.domain.reconstruction.sketchconcept_template import SubInstance
+        from harnesscad.domain.reconstruction.sketch.sketchconcept_template import SubInstance
         with self.assertRaises(ValueError):
             find_matches(Concept(name="h", subs=(SubInstance.make("s", "pair"),)),
                          sketch_two_equal_circles())

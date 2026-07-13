@@ -2,8 +2,8 @@
 
 import unittest
 
-from harnesscad.domain.reconstruction import complexgen_chain_complex as cc
-from harnesscad.domain.reconstruction import complexgen_complex_nms as nms
+from harnesscad.domain.reconstruction.brep import complexgen_chain_complex as cc
+from harnesscad.domain.reconstruction.brep import complexgen_complex_nms as nms
 from tests.test_complexgen_chain_complex import cube_complex
 
 

@@ -34,7 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
-from harnesscad.domain.reconstruction.sketchconcept_template import (
+from harnesscad.domain.reconstruction.sketch.sketchconcept_template import (
     Concept,
     Const,
     ConstraintSpec,

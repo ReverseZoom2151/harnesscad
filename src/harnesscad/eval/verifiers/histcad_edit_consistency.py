@@ -26,7 +26,7 @@ import math
 from dataclasses import dataclass, replace
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.domain.reconstruction.histcad_sequence import Line, Circle, Arc, Constraint
+from harnesscad.domain.reconstruction.sequences.histcad_sequence import Line, Circle, Arc, Constraint
 
 _TOL = 1e-6
 

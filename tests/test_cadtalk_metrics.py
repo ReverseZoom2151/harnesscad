@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.programs.cadtalk_metrics import (
+from harnesscad.domain.programs.annotate.cadtalk_metrics import (
     apply_synonyms,
     block_accuracy,
     semantic_iou,

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from harnesscad.eval.bench.img2cadsvg_multiview_consistency import (
+from harnesscad.eval.bench.vision.img2cadsvg_multiview_consistency import (
     one_way_anova,
     f_critical,
     is_consistent,

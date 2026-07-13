@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.cad2program_shape_program import ShapeProgram, make_instance
+from harnesscad.domain.reconstruction.translate.cad2program_shape_program import ShapeProgram, make_instance
 from harnesscad.domain.drawings.cad2program_canvas_layout import (
     layout_program, PixelRect, CanvasLayout,
 )

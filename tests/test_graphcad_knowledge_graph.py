@@ -1,6 +1,6 @@
 import unittest
 
-from harnesscad.domain.reconstruction.graphcad_knowledge_graph import (
+from harnesscad.domain.reconstruction.scene.graphcad_knowledge_graph import (
     GraphNode,
     KnowledgeGraph,
     Material,

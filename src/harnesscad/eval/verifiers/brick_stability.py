@@ -45,8 +45,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
-from harnesscad.domain.geometry.brick_structure import Brick, BrickStructure
-from harnesscad.domain.geometry.brick_connectivity import grounded_bricks
+from harnesscad.domain.geometry.assembly.brick_structure import Brick, BrickStructure
+from harnesscad.domain.geometry.assembly.brick_connectivity import grounded_bricks
 
 _EPS = 1e-7
 

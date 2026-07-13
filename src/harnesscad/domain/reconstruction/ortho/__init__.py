@@ -1,0 +1,1 @@
+"""reconstruction.ortho: The in-house orthographic/SVG reconstruction pipeline: SVG parsing, edge normalisation, projection-pattern matching, wireframe topology, primitive relations/stitching, geometry merge, staged pipeline and its value objects."""

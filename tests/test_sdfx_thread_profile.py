@@ -3,8 +3,8 @@
 import math
 import unittest
 
-from harnesscad.domain.geometry.sdfx_polygon_sdf import polygon_area, polygon_sdf
-from harnesscad.domain.geometry.sdfx_thread_profile import (
+from harnesscad.domain.geometry.sdf.sdfx_polygon_sdf import polygon_area, polygon_sdf
+from harnesscad.domain.geometry.features.sdfx_thread_profile import (
     acme_thread,
     ansi_buttress_thread,
     iso_thread,

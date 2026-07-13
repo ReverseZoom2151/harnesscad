@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from harnesscad.eval.quality.estimate import (
+from harnesscad.eval.quality.report.estimate import (
     BOM, BOMEstimator, BudgetCheck, BudgetSpec, Material, MaterialTable,
     PartEstimate, estimate_part, resolve_metrics,
 )

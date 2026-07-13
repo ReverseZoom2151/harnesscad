@@ -18,7 +18,7 @@ record the blueprint calls for and exports it to the named training formats.
 
 from __future__ import annotations
 
-from harnesscad.data.dataengine.trajectory import (
+from harnesscad.data.dataengine.trace.trajectory import (
     Action,
     REWARD_FAIL,
     REWARD_NEUTRAL,
@@ -28,14 +28,14 @@ from harnesscad.data.dataengine.trajectory import (
     Trajectory,
     from_events,
 )
-from harnesscad.data.dataengine.export import (
+from harnesscad.data.dataengine.trace.export import (
     flywheel_metrics,
     to_dpo,
     to_grpo,
     to_star,
     write_jsonl,
 )
-from harnesscad.data.dataengine.edit_pairs import (
+from harnesscad.data.dataengine.edits.edit_pairs import (
     EditPair,
     EditPairStore,
     capture_edit_pair,

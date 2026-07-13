@@ -8,7 +8,7 @@ floating-tabletop should-touch auditor plus the all-pairs protrusion scan.
 
 import unittest
 
-from harnesscad.domain.geometry.llmdesign_box_contact import (
+from harnesscad.domain.geometry.assembly.llmdesign_box_contact import (
     Box,
     audit_should_touch,
     classify_boxes,

@@ -4,7 +4,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harnesscad.domain.geometry.lasdiff_sparse_subdivision import (
+from harnesscad.domain.geometry.volumes.lasdiff_sparse_subdivision import (
     fill_gaussian_noise,
     mask_sdf_to_shell,
     reserve_occupied,
