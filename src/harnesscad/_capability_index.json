@@ -2078,6 +2078,82 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.agents.agent.attachments",
+        "harnesscad.agents.agent.attachments.Attachment",
+        "harnesscad.agents.agent.attachments.DeterministicEncoder",
+        "harnesscad.agents.agent.attachments.condition_attachment",
+        "harnesscad.agents.agent.edit_session",
+        "harnesscad.agents.agent.edit_session.EditSession",
+        "harnesscad.agents.agent.host_feedback",
+        "harnesscad.agents.agent.host_feedback.confirm",
+        "harnesscad.agents.agent.host_feedback.refine",
+        "harnesscad.agents.agent.intent_resolution",
+        "harnesscad.agents.agent.intent_resolution.resolve_intent",
+        "harnesscad.agents.agent.iterative_edit_policy",
+        "harnesscad.agents.agent.iterative_edit_policy.IterativeEditPolicy",
+        "harnesscad.agents.agent.observation",
+        "harnesscad.agents.agent.observation.CADObservation",
+        "harnesscad.agents.agent.plan_envelope",
+        "harnesscad.agents.agent.plan_envelope.parse_envelope",
+        "harnesscad.agents.agent.termination",
+        "harnesscad.agents.agent.termination.TerminationDecision",
+        "harnesscad.agents.agent.termination.gate_termination",
+        "harnesscad.agents.agent.tool_knowledge",
+        "harnesscad.agents.agent.tool_knowledge.ToolKnowledgeCatalog",
+        "harnesscad.agents.agent.tool_knowledge.default_cisp_cards",
+        "harnesscad.agents.agent.tool_metrics",
+        "harnesscad.agents.agent.tool_metrics.summarize",
+        "harnesscad.agents.agent.tool_reward",
+        "harnesscad.agents.agent.tool_reward.aggregate_reward",
+        "harnesscad.agents.agent.tool_schema",
+        "harnesscad.agents.agent.tool_schema.default_toolcad_library",
+        "harnesscad.agents.agent.tool_trajectory",
+        "harnesscad.agents.agent.tool_trajectory.rollout",
+        "harnesscad.agents.agents.message_tree",
+        "harnesscad.agents.agents.message_tree.MessageTree",
+        "harnesscad.agents.agents.overseer",
+        "harnesscad.agents.agents.overseer.AsyncOverseer",
+        "harnesscad.agents.llm.generation_contract",
+        "harnesscad.agents.llm.generation_contract.assess_generation",
+        "harnesscad.registry"
+      ],
+      "layer": "agents",
+      "name": "registry",
+      "package": "",
+      "summary": "The AGENT surface -- the deterministic half of the agent, dispatchable.",
+      "symbols": [
+        "AgentError",
+        "add_arguments",
+        "attachment",
+        "discover",
+        "dispatch_tools",
+        "edit_policy",
+        "edit_session",
+        "envelope",
+        "generation",
+        "halt",
+        "host_confirm",
+        "intent",
+        "main",
+        "message_tree",
+        "metrics",
+        "observation",
+        "reward",
+        "routed_modules",
+        "run_cli",
+        "terminate",
+        "tool_catalog",
+        "trajectory",
+        "unadapted"
+      ],
+      "tags": [
+        "agent"
+      ]
+    },
+    {
       "dotted": "harnesscad.core.cisp.annotations",
       "imports": [],
       "layer": "core",
@@ -2174,13 +2250,17 @@
       "dotted": "harnesscad.core.cli",
       "imports": [
         "harnesscad",
+        "harnesscad.agents",
         "harnesscad.agents.exploration",
         "harnesscad.agents.exploration.registry",
         "harnesscad.agents.generation",
         "harnesscad.agents.generation.registry",
+        "harnesscad.agents.registry",
+        "harnesscad.core",
         "harnesscad.core.pipeline",
         "harnesscad.core.pipeline.BuildError",
         "harnesscad.core.pipeline.build",
+        "harnesscad.core.registry",
         "harnesscad.core.trace",
         "harnesscad.core.trace.JsonlTracer",
         "harnesscad.data",
@@ -2202,15 +2282,27 @@
         "harnesscad.domain.reconstruction.registry",
         "harnesscad.domain.spec",
         "harnesscad.domain.spec.registry",
+        "harnesscad.domain.vision",
+        "harnesscad.domain.vision.registry",
         "harnesscad.eval.bench",
         "harnesscad.eval.bench.registry",
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.cli",
         "harnesscad.eval.quality",
         "harnesscad.eval.quality.registry",
         "harnesscad.governance",
         "harnesscad.governance.registry",
+        "harnesscad.io",
+        "harnesscad.io.adapters",
+        "harnesscad.io.adapters.registry",
         "harnesscad.io.formats",
         "harnesscad.io.formats.registry",
+        "harnesscad.io.render",
+        "harnesscad.io.render.VIEW_PRESETS",
+        "harnesscad.io.surfaces",
+        "harnesscad.io.surfaces.registry",
         "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.BACKENDS",
         "harnesscad.io.surfaces.server.CISPServer",
         "harnesscad.registry"
       ],
@@ -2220,13 +2312,16 @@
       "summary": "harnesscad CLI \u2014 drive a HarnessSession from the command line.",
       "symbols": [
         "build_parser",
+        "cmd_agent",
         "cmd_apply",
         "cmd_bench",
         "cmd_build",
         "cmd_capabilities",
         "cmd_catalog",
+        "cmd_core",
         "cmd_dataset",
         "cmd_demo",
+        "cmd_ecosystem",
         "cmd_edit",
         "cmd_export",
         "cmd_fabricate",
@@ -2234,13 +2329,18 @@
         "cmd_generate",
         "cmd_govern",
         "cmd_ingest",
+        "cmd_pressure",
         "cmd_procedural",
         "cmd_program",
         "cmd_reconstruct",
+        "cmd_render",
         "cmd_report",
         "cmd_search",
         "cmd_spec",
-        "main"
+        "cmd_ui",
+        "cmd_vision",
+        "main",
+        "render_views"
       ],
       "tags": []
     },
@@ -2483,6 +2583,60 @@
         "io",
         "llm"
       ]
+    },
+    {
+      "dotted": "harnesscad.core.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.core.cisp.annotations",
+        "harnesscad.core.cisp.annotations.remap_annotations",
+        "harnesscad.core.cisp.explicit_context",
+        "harnesscad.core.cisp.explicit_context.Context",
+        "harnesscad.core.grammar",
+        "harnesscad.core.grammar.allowed_ops_for_state",
+        "harnesscad.core.grammar.constraint_for_state",
+        "harnesscad.core.grammar_fsa",
+        "harnesscad.core.grammar_fsa.State",
+        "harnesscad.core.grammar_fsa.allowed",
+        "harnesscad.core.grammar_fsa.run",
+        "harnesscad.core.routing",
+        "harnesscad.core.routing.CostTable",
+        "harnesscad.core.routing.HeuristicClassifier",
+        "harnesscad.core.state.constraint_hierarchy",
+        "harnesscad.core.state.constraint_hierarchy.solve_hierarchy",
+        "harnesscad.core.state.feature_tree",
+        "harnesscad.core.state.feature_tree.FeatureNode",
+        "harnesscad.core.state.feature_tree.FeatureTree",
+        "harnesscad.core.state.feature_tree.add_feature",
+        "harnesscad.core.state.feature_tree.rebuild",
+        "harnesscad.registry"
+      ],
+      "layer": "core",
+      "name": "registry",
+      "package": "",
+      "summary": "The CORE capability surface -- the guards around the loop.",
+      "symbols": [
+        "CoreError",
+        "UnknownConstraint",
+        "add_arguments",
+        "allowed_ops",
+        "check_op",
+        "check_tokens",
+        "classify",
+        "constraints",
+        "context",
+        "discover",
+        "estimate_cost",
+        "feature_tree",
+        "main",
+        "rebuild",
+        "remap_annotations",
+        "routed_modules",
+        "run_cli",
+        "solve_scoped",
+        "unadapted"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.core.routing",
@@ -12099,6 +12253,7 @@
         "harnesscad",
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddRectangle",
         "harnesscad.core.cisp.ops.Extrude",
         "harnesscad.core.cisp.ops.NewSketch",
@@ -22524,6 +22679,216 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.pressure.briefs",
+      "imports": [],
+      "layer": "eval",
+      "name": "briefs",
+      "package": "pressure",
+      "summary": "The pressure-test brief corpus \u2014 28 briefs, deterministic and checked in.",
+      "symbols": [
+        "Brief",
+        "Expect",
+        "OpSpec",
+        "brief_by_id",
+        "briefs_for"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.cache",
+      "imports": [],
+      "layer": "eval",
+      "name": "cache",
+      "package": "pressure",
+      "summary": "Content-addressed disk cache for model outputs.",
+      "symbols": [
+        "CompletionCache",
+        "cache_key"
+      ],
+      "tags": [
+        "infra"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.cli",
+      "imports": [
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.BRIEFS",
+        "harnesscad.eval.pressure.briefs.CATEGORIES",
+        "harnesscad.eval.pressure.briefs.briefs_for",
+        "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.BLIND",
+        "harnesscad.eval.pressure.loops.HARNESS",
+        "harnesscad.eval.pressure.loops.LOOPS",
+        "harnesscad.eval.pressure.report",
+        "harnesscad.eval.pressure.runner"
+      ],
+      "layer": "eval",
+      "name": "cli",
+      "package": "pressure",
+      "summary": "`harnesscad pressure` \u2014 run the A/B, or print the report from a results file.",
+      "symbols": [
+        "add_arguments",
+        "run"
+      ],
+      "tags": [
+        "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.loops",
+      "imports": [
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.Brief",
+        "harnesscad.eval.pressure.metrics",
+        "harnesscad.eval.pressure.metrics.AttemptRecord",
+        "harnesscad.eval.pressure.metrics.BriefResult",
+        "harnesscad.eval.pressure.metrics.grade",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.extract_ops",
+        "harnesscad.eval.pressure.model.ops_to_dicts",
+        "harnesscad.eval.pressure.prompts",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "loops",
+      "package": "pressure",
+      "summary": "The two loops. They are the same loop.",
+      "symbols": [
+        "run_brief"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.metrics",
+      "imports": [
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.Brief",
+        "harnesscad.eval.pressure.briefs.Expect",
+        "harnesscad.eval.pressure.briefs.OpSpec",
+        "harnesscad.eval.pressure.prompts",
+        "harnesscad.eval.pressure.prompts.is_actionable",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "metrics",
+      "package": "pressure",
+      "summary": "Grading and metrics.",
+      "symbols": [
+        "AttemptRecord",
+        "BriefResult",
+        "Grade",
+        "grade"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.model",
+      "imports": [
+        "harnesscad.agents.llm.structured",
+        "harnesscad.agents.llm.structured.ParsedOps",
+        "harnesscad.agents.llm.structured.validate_raw",
+        "harnesscad.eval.pressure.cache",
+        "harnesscad.eval.pressure.cache.CompletionCache",
+        "harnesscad.eval.pressure.cache.cache_key"
+      ],
+      "layer": "eval",
+      "name": "model",
+      "package": "pressure",
+      "summary": "The model seam for the pressure test.",
+      "symbols": [
+        "CachedClient",
+        "Client",
+        "OllamaClient",
+        "ScriptedClient",
+        "extract_ops",
+        "ops_to_dicts"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.prompts",
+      "imports": [],
+      "layer": "eval",
+      "name": "prompts",
+      "package": "pressure",
+      "summary": "The prompt both arms share, and the two feedback formatters that differ.",
+      "symbols": [
+        "format_blind",
+        "format_parse_error",
+        "format_typed",
+        "is_actionable",
+        "user_prompt"
+      ],
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.report",
+      "imports": [
+        "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.BLIND",
+        "harnesscad.eval.pressure.loops.HARNESS",
+        "harnesscad.eval.pressure.loops.LOOPS"
+      ],
+      "layer": "eval",
+      "name": "report",
+      "package": "pressure",
+      "summary": "Aggregation and the tables.",
+      "symbols": [
+        "aggregate",
+        "fleet_holes",
+        "headline",
+        "per_brief",
+        "render_all",
+        "render_split",
+        "render_table"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.runner",
+      "imports": [
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.Brief",
+        "harnesscad.eval.pressure.briefs.briefs_for",
+        "harnesscad.eval.pressure.cache",
+        "harnesscad.eval.pressure.cache.CompletionCache",
+        "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.BLIND",
+        "harnesscad.eval.pressure.loops.DEFAULT_MAX_ATTEMPTS",
+        "harnesscad.eval.pressure.loops.HARNESS",
+        "harnesscad.eval.pressure.loops.LOOPS",
+        "harnesscad.eval.pressure.loops.run_brief",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.CachedClient",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.OllamaClient"
+      ],
+      "layer": "eval",
+      "name": "runner",
+      "package": "pressure",
+      "summary": "The orchestrator: (models x briefs x loops), resumable, seeded, cached.",
+      "symbols": [
+        "load_results",
+        "run",
+        "save_results"
+      ],
+      "tags": [
+        "infra"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.quality.assembly.contact_correspondence",
       "imports": [],
       "layer": "eval",
@@ -25763,7 +26128,45 @@
       "summary": "GeometryBackend \u2014 the swappable kernel interface.",
       "symbols": [
         "ApplyResult",
+        "BackendUnavailable",
         "GeometryBackend"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.blender",
+      "imports": [
+        "harnesscad.domain.geometry.parametric",
+        "harnesscad.domain.geometry.parametric.facets",
+        "harnesscad.domain.programs.validate",
+        "harnesscad.domain.programs.validate.bpy_script",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.DEFAULT_SEGMENTS",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.blend_radius",
+        "harnesscad.io.backends.external.cache_dir",
+        "harnesscad.io.backends.external.ccw",
+        "harnesscad.io.backends.external.find_executable",
+        "harnesscad.io.backends.external.plane_axes",
+        "harnesscad.io.backends.external.plane_normal",
+        "harnesscad.io.backends.external.profile_loops",
+        "harnesscad.io.backends.external.program_digest",
+        "harnesscad.io.backends.external.segments_for",
+        "harnesscad.io.backends.external.slab",
+        "harnesscad.io.backends.external.to_world",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.Node"
+      ],
+      "layer": "io",
+      "name": "blender",
+      "package": "backends",
+      "summary": "BlenderBackend \u2014 CISP ops driven through a headless Blender.",
+      "symbols": [
+        "BlenderBackend",
+        "prism",
+        "revolve_mesh"
       ],
       "tags": []
     },
@@ -25806,16 +26209,116 @@
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.backends.base",
-        "harnesscad.io.backends.base.ApplyResult"
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable"
       ],
       "layer": "io",
       "name": "cadquery",
       "package": "backends",
       "summary": "CadQueryBackend \u2014 a real-geometry GeometryBackend over CadQuery (OCCT).",
       "symbols": [
-        "CadQueryBackend"
+        "CadQueryBackend",
+        "solid_volume"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.external",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.domain.geometry.mesh.halfedge",
+        "harnesscad.domain.geometry.mesh.halfedge.HalfedgeMesh",
+        "harnesscad.domain.geometry.parametric",
+        "harnesscad.domain.geometry.parametric.facets",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.FRepBackend",
+        "harnesscad.io.backends.frep.Node",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.glb",
+        "harnesscad.io.formats.stl"
+      ],
+      "layer": "io",
+      "name": "external",
+      "package": "backends",
+      "summary": "ExternalToolBackend \u2014 the shared spine of the out-of-process CAD backends.",
+      "symbols": [
+        "ExternalToolBackend",
+        "blend_radius",
+        "cache_dir",
+        "ccw",
+        "circle_loop",
+        "find_executable",
+        "plane_axes",
+        "plane_normal",
+        "profile_loops",
+        "program_digest",
+        "rect_loop",
+        "segments_for",
+        "signed_area",
+        "slab",
+        "to_world"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.freecad",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.domain.programs.expressions",
+        "harnesscad.domain.programs.expressions.freecad_expressions",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.adapters.freecad_catalog",
+        "harnesscad.io.adapters.freecad_catalog.default_catalog",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.DEFAULT_TIMEOUT",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.blend_radius",
+        "harnesscad.io.backends.external.cache_dir",
+        "harnesscad.io.backends.external.find_executable",
+        "harnesscad.io.backends.external.program_digest",
+        "harnesscad.io.backends.freecad_driver",
+        "harnesscad.io.backends.freecad_driver.DRIVER_SOURCE",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.freecad_document"
+      ],
+      "layer": "io",
+      "name": "freecad",
+      "package": "backends",
+      "summary": "FreeCADBackend \u2014 a real parametric B-rep GeometryBackend over FreeCAD.",
+      "symbols": [
+        "FreeCADBackend"
+      ],
+      "tags": [
+        "benchmark",
+        "parametric"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.backends.freecad_driver",
+      "imports": [],
+      "layer": "io",
+      "name": "freecad_driver",
+      "package": "backends",
+      "summary": "The FreeCAD-side driver: lowers an F-rep CSG spec onto real Part B-rep solids.",
+      "symbols": [],
+      "tags": [
+        "csg"
+      ]
     },
     {
       "dotted": "harnesscad.io.backends.frep",
@@ -25951,6 +26454,44 @@
         "build_catalog_from_headers",
         "module_of",
         "parse_ocp_config"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.openscad",
+      "imports": [
+        "harnesscad.domain.fabrication",
+        "harnesscad.domain.fabrication.openscad_export",
+        "harnesscad.domain.programs.emit",
+        "harnesscad.domain.programs.emit.openscad_emit",
+        "harnesscad.domain.programs.validate",
+        "harnesscad.domain.programs.validate.openscad_check",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.ccw",
+        "harnesscad.io.backends.external.circle_loop",
+        "harnesscad.io.backends.external.find_executable",
+        "harnesscad.io.backends.external.plane_axes",
+        "harnesscad.io.backends.external.plane_normal",
+        "harnesscad.io.backends.external.profile_loops",
+        "harnesscad.io.backends.external.rect_loop",
+        "harnesscad.io.backends.external.segments_for",
+        "harnesscad.io.backends.external.slab",
+        "harnesscad.io.backends.external.to_world",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.Node"
+      ],
+      "layer": "io",
+      "name": "openscad",
+      "package": "backends",
+      "summary": "OpenScadBackend \u2014 CISP ops driven through the OpenSCAD binary.",
+      "symbols": [
+        "OpenScadBackend",
+        "OpenScadError",
+        "lower",
+        "render"
       ],
       "tags": []
     },
@@ -26411,6 +26952,7 @@
         "harnesscad.io.formats.stl",
         "harnesscad.io.formats.svg",
         "harnesscad.io.formats.xcsg",
+        "harnesscad.io.render",
         "harnesscad.registry"
       ],
       "layer": "io",
@@ -27200,6 +27742,49 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.render",
+      "imports": [
+        "harnesscad.agents.generation",
+        "harnesscad.agents.generation.three_view",
+        "harnesscad.data.dataengine.annotation",
+        "harnesscad.data.dataengine.annotation.visual_qc",
+        "harnesscad.eval.quality.perception",
+        "harnesscad.eval.quality.perception.view_coverage",
+        "harnesscad.io",
+        "harnesscad.io.drawing",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.registry"
+      ],
+      "layer": "io",
+      "name": "render",
+      "package": "",
+      "summary": "Software rasteriser: a shaded-solid image codec for meshes (stdlib-only PNG).",
+      "symbols": [
+        "Camera",
+        "Framebuffer",
+        "Light",
+        "Material",
+        "RenderError",
+        "encode_png",
+        "look_at",
+        "png_size",
+        "preset_camera",
+        "qc",
+        "render",
+        "render_session",
+        "three_view",
+        "visibility_audit",
+        "write_png"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "meshing",
+        "render",
+        "vision"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.surfaces.a2a_server.__main__",
       "imports": [
         "harnesscad.agents.llm.structured",
@@ -27895,9 +28480,17 @@
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.VerifyReport",
         "harnesscad.io.backends",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.blender",
+        "harnesscad.io.backends.blender.BlenderBackend",
         "harnesscad.io.backends.cadquery",
+        "harnesscad.io.backends.freecad",
+        "harnesscad.io.backends.freecad.FreeCADBackend",
         "harnesscad.io.backends.frep",
         "harnesscad.io.backends.frep.FRepBackend",
+        "harnesscad.io.backends.openscad",
+        "harnesscad.io.backends.openscad.OpenScadBackend",
         "harnesscad.io.backends.stub",
         "harnesscad.io.backends.stub.StubBackend"
       ],
