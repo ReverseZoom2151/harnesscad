@@ -36,7 +36,14 @@ FLEET_TIERS = (LINT, PHYSICS, DOMAIN)
 
 
 # --- backend selection -----------------------------------------------------
-BACKENDS = ("stub", "cadquery", "frep")
+#: Every backend the harness can drive. `stub` and `frep` always work (no
+#: dependency at all); `cadquery` needs the CadQuery/OCCT wheel; `blender`,
+#: `openscad` and `freecad` shell out to a real external kernel and are only
+#: available when that binary is installed -- when it is not, they raise
+#: BackendUnavailable and we fall back to the stub WITH A NOTE rather than
+#: crashing. `cadquery` and `freecad` are the two real B-rep kernels (exact
+#: volumes, STEP in and out); the rest are meshes or fields.
+BACKENDS = ("stub", "cadquery", "frep", "blender", "openscad", "freecad")
 
 
 def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
@@ -52,6 +59,33 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         # Kernel-free SDF backend: real geometry, zero third-party dependencies.
         from harnesscad.io.backends.frep import FRepBackend
         return FRepBackend(), "frep", None
+    if name == "blender":
+        # Headless Blender: real mesh booleans (exact solver), bevel, solidify.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.blender import BlenderBackend
+        try:
+            return BlenderBackend(), "blender", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"blender backend unavailable ({exc}); fell back to stub")
+    if name == "openscad":
+        # The OpenSCAD binary: exact CGAL CSG (no grid, no sampling error).
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.openscad import OpenScadBackend
+        try:
+            return OpenScadBackend(), "openscad", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"openscad backend unavailable ({exc}); fell back to stub")
+    if name == "freecad":
+        # Headless FreeCAD: real parametric B-rep (OCCT) + a feature tree.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.freecad import FreeCADBackend
+        try:
+            return FreeCADBackend(), "freecad", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"freecad backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
 
 
