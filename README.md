@@ -59,18 +59,30 @@ closed 2-manifold: yes    genus: 0
 Signed distance fields compose the ops, marching cubes meshes them, a half-edge
 structure proves the result is watertight. No OCCT anywhere in that path.
 
-The harness also draws its own output. This is a real multi-view engineering
-drawing, generated from the mesh above by `harnesscad export part.svg`: feature
-edges extracted, hidden lines removed with a BVH, dimensions taken in model units.
+The harness renders and draws its own output. Both of the images below are
+produced by the harness itself, from that mesh, with no external renderer and no
+numpy: a z-buffered rasteriser with Lambert shading and crease-aware normals, and
+a multi-view drawing with BVH hidden-line removal.
+
+```bash
+harnesscad render part.png --view hero    # shaded solid
+harnesscad export part.svg                # engineering drawing
+```
 
 <p align="center">
-  <img src="assets/bracket.svg" width="700" alt="Three-view orthographic drawing of a 40x24x8 bracket with two 6mm holes">
+  <img src="assets/bracket-hero.png" width="620" alt="Shaded render of a 40x24x8 bracket with two 6mm through-holes">
 </p>
 
-The holes facet because marching cubes samples a uniform grid, and a 6 mm hole
-spans only ten cells on a 40 mm part. Raising the resolution smooths them at the
-cost of a denser mesh. That trade is the honest shape of a kernel-free backend,
-and it is why OCCT remains available as an optional extra.
+<p align="center">
+  <img src="assets/bracket.svg" width="700" alt="Three-view orthographic drawing of the same bracket">
+</p>
+
+Look closely at the hole rims and you can see the cost of a kernel-free backend.
+Marching cubes samples a uniform grid, so a 6 mm hole spanning ten cells on a
+40 mm part facets, and the grid meets the top face at a shallow angle. Raising the
+resolution smooths it at the price of a denser mesh. That trade is the honest
+shape of an SDF pipeline, and it is why OCCT remains available as an optional
+extra.
 
 ## The finding
 
