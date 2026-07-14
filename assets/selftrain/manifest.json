@@ -1,0 +1,137 @@
+{
+  "acceptance": {
+    "by_policy": {
+      "envelope_only": {
+        "acceptance_rate": 0.2644230769230769,
+        "accepted": 55,
+        "briefs_covered": 8,
+        "unique_streams": 19
+      },
+      "full": {
+        "acceptance_rate": 0.20192307692307693,
+        "accepted": 42,
+        "briefs_covered": 7,
+        "unique_streams": 13
+      },
+      "gate_only": {
+        "acceptance_rate": 0.7596153846153846,
+        "accepted": 158,
+        "briefs_covered": 12,
+        "unique_streams": 73
+      }
+    },
+    "many_to_one_gap": 13,
+    "many_to_one_note": "13 candidate(s) pass the ENVELOPE grader and fail the SHAPE metric. Each is a part with the right bounding box, the right volume, the right probe answers, and the wrong geometry. Every one of them would have been a training pair under the v1 grader.",
+    "parsed": 208,
+    "trajectories": 223
+  },
+  "counts": {
+    "dpo_pairs": 66,
+    "kto_records": 208,
+    "parsed": 208,
+    "rationalized_records": 5,
+    "rft_records": 13,
+    "trajectories": 223,
+    "unparseable": 15
+  },
+  "distribution_warning": "This corpus is the exhaust of one experiment: 6 Ollama models, 12 briefs, one prompt, temperature 0.0, one seed. RFT on it teaches the model OUR habits -- our op vocabulary, our plan length, our three part families (plate / bracket / flange). It cannot teach anything no sampled model ever emitted, and it will make rare-but-correct constructions RARER. Treat a score gain on these 12 briefs as evidence of nothing until it is measured on a held-out corpus written by a different hand (eval/corpus/).",
+  "divergence": {
+    "first_divergence_by_op": {
+      "boolean": 4,
+      "chamfer": 3,
+      "extrude": 49,
+      "fillet": 21,
+      "hole": 38,
+      "shell": 46
+    },
+    "mean_first_divergence_index": 4.236024844720497,
+    "streams_clean": 47,
+    "streams_with_a_divergence": 161
+  },
+  "oracle_ledger": [
+    {
+      "can_see": [
+        "an op stream that is not well-defined across six independent kernels",
+        "an op stream that crashes a kernel",
+        "a volume/bbox disagreement between engines"
+      ],
+      "cannot_see": [
+        "whether the well-defined part is the part the brief asked for",
+        "a bug shared by all six engines"
+      ],
+      "module": "harnesscad.eval.selftest.differential",
+      "name": "differential",
+      "reference_free": true
+    },
+    {
+      "can_see": [
+        "a non-watertight, non-manifold, inverted or self-intersecting solid",
+        "a shell that grew the bounding box (the bug that shipped)",
+        "a cut that added volume",
+        "a first extrude whose height is not the declared distance"
+      ],
+      "cannot_see": [
+        "an op stream that declares the WRONG intent perfectly",
+        "anything about the brief; it audits the harness, not the model"
+      ],
+      "module": "harnesscad.io.gate",
+      "name": "gate",
+      "reference_free": true
+    },
+    {
+      "can_see": [
+        "bounding box outside the brief's tolerance",
+        "volume outside the brief's band",
+        "a probe point that should be material and is air, or vice versa",
+        "a plan missing a required op, or with an op parameter out of range"
+      ],
+      "cannot_see": [
+        "MANY-TO-ONE: a feature displaced to an unprobed location",
+        "anything at all for a brief with no hand-written Expect (i.e. everything a user will ever type)"
+      ],
+      "module": "harnesscad.eval.pressure.metrics",
+      "name": "envelope",
+      "reference_free": false
+    },
+    {
+      "can_see": [
+        "a feature in the wrong place (world-coordinate volumetric IoU)"
+      ],
+      "cannot_see": [
+        "a small feature of the wrong SIZE: the 14b's 8mm-for-12mm hole scores IoU 0.963, above the 0.90 threshold",
+        "the difference between an error and legitimate variation from the reference, which is ONE correct answer and not THE correct answer"
+      ],
+      "module": "harnesscad.eval.pressure.shape",
+      "name": "shape",
+      "reference_free": false
+    }
+  ],
+  "preference": {
+    "dpo_briefs_covered": 6,
+    "dpo_pairs": 66,
+    "kto_desirable": 42,
+    "kto_imbalance": 0.20192307692307693,
+    "kto_records": 208,
+    "kto_undesirable": 166,
+    "robust_dpo": "If DPO is run, use loss_type='robust' (H2 sec. 6.9.2) with label_smoothing set to the fleet's MEASURED false-positive rate from eval/selftest/fleet_audit.py -- HarnessCAD is one of very few systems that can measure its own epsilon instead of guessing it. But note that this corpus's labels come from the ORACLE, not the fleet, so the correct epsilon for THESE pairs is the oracle's error rate, which is bounded below by the shape metric's size-blindness and is not zero. See selftrain.ledger."
+  },
+  "reference_bound_instruments": [
+    "envelope",
+    "shape"
+  ],
+  "reference_free_instruments": [
+    "differential",
+    "gate"
+  ],
+  "reward": {
+    "alpha": 1.0,
+    "beta": 1.0,
+    "gamma": 1.0,
+    "mean_format": 0.0,
+    "mean_outcome": 0.20192307692307693,
+    "mean_step": 0.887728243978244,
+    "mean_total": 1.089651320901321,
+    "note": "tool_reward.aggregate_reward is R = alpha*R_ORM + beta*mean(R_step) + gamma*R_format. R_format is identically 0 across this corpus: it measures TOOLCAD's ReAct tag order and the pressure prompt asks for a bare JSON array. The term is wired, not faked."
+  },
+  "schema": "selftrain/1"
+}
