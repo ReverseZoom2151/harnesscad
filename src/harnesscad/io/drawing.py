@@ -76,7 +76,16 @@ VIEWS: Dict[str, Tuple[int, int, Vec3]] = {
     "front": (0, 2, (0.0, -1.0, 0.0)),   # look along +Y: sees XZ
     "top": (0, 1, (0.0, 0.0, 1.0)),      # look along -Z: sees XY
     "side": (1, 2, (1.0, 0.0, 0.0)),     # look along -X: sees YZ
+    # A pictorial view. The three orthographic views are the CAD deliverable,
+    # but none of them shows the part as a solid, so a reader cannot see the
+    # shape. `iso` is a true isometric projection (not an axis pick), viewed
+    # from (1, 1, 1); the -1 index marks it for _project.
+    "iso": (-1, -1, (1.0, 1.0, 1.0)),
 }
+
+# cos(30), sin(30): the isometric foreshortening.
+_ISO_C = 0.8660254037844387
+_ISO_S = 0.5
 
 _EPS = 1e-9
 
@@ -202,6 +211,9 @@ class _Visibility:
 
 def _project(p: Vec3, view: str) -> Vec2:
     iu, iv, _ = VIEWS[view]
+    if iu < 0:  # isometric: a real projection, not an axis pick
+        x, y, z = p
+        return ((x - y) * _ISO_C, (x + y) * _ISO_S + z)
     return (p[iu], p[iv])
 
 
@@ -241,6 +253,16 @@ def orthographic_drawing(mesh: Mesh,
     if not edges:
         raise DrawingError("nothing to draw: the mesh has no feature edges")
     oracle = _Visibility(mesh) if show_hidden else None
+
+    # `iso` is a pictorial, not one of the projected views, so the first/third
+    # angle convention has no cell for it. Put it in the free diagonal cell.
+    if "iso" in views and "iso" not in placements:
+        taken = {placements[v] for v in views if v in placements}
+        placements = dict(placements)
+        placements["iso"] = next(
+            ((c, r) for r in range(3) for c in range(3) if (c, r) not in taken),
+            (1, 1),
+        )
 
     # one scale for the whole sheet: the largest view drives it
     cols = sorted({placements[v][0] for v in views})
