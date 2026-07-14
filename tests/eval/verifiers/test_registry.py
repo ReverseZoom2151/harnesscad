@@ -103,6 +103,58 @@ class TestDiscovery(unittest.TestCase):
                 self.assertIn(v.dotted, indexed, v.name)
 
 
+class _MeasuredBackend(StubBackend):
+    """A stub that also answers `measure` with a bbox we dictate (extents)."""
+
+    def __init__(self, bbox):
+        super().__init__()
+        self._bbox = list(bbox)
+
+    def query(self, what):
+        if what == "measure":
+            return {"volume": 1.0, "bbox": list(self._bbox)}
+        return super().query(what)
+
+
+class TestShellEnvelope(unittest.TestCase):
+    """`shell-envelope`: a shell must not GROW the part (bbox_after <= before)."""
+
+    OPS = [
+        NewSketch(),
+        AddRectangle(sketch="sk1", x=0.0, y=0.0, w=60.0, h=40.0),
+        Extrude(sketch="sk1", distance=20.0),
+        Shell(faces=(), thickness=3.0),
+    ]
+
+    def _run(self, backend, ops):
+        session = HarnessSession(backend)
+        session.apply_ops(ops)
+        state = vr.model_state(backend, session.opdag)
+        return vr.run_all(state, only=["shell-envelope"])
+
+    def test_shell_that_grows_the_part_is_flagged(self):
+        # The dilated bbox the two-sided F-rep shell used to produce.
+        diags = self._run(_MeasuredBackend((63.0, 43.0, 23.0)), self.OPS)
+        codes = [d.code for d in diags]
+        self.assertIn("shell-grew-part", codes)
+        grew = [d for d in diags if d.code == "shell-grew-part"]
+        self.assertEqual(len(grew), 3)                       # X, Y and Z
+        for d in grew:
+            self.assertIs(d.severity, Severity.ERROR)
+
+    def test_a_shell_that_removes_material_is_silent(self):
+        diags = self._run(_MeasuredBackend((60.0, 40.0, 20.0)), self.OPS)
+        self.assertEqual([d.code for d in diags], [])
+
+    def test_the_check_abstains_without_a_shell(self):
+        backend = _MeasuredBackend((999.0, 999.0, 999.0))
+        session = HarnessSession(backend)
+        session.apply_ops(_plate_ops())
+        state = vr.model_state(backend, session.opdag)
+        v = next(x for x in vr.discover() if x.name == "shell-envelope")
+        self.assertFalse(v.applies_to(state))
+
+
 class TestRunAll(unittest.TestCase):
     def test_run_all_returns_diagnostics(self):
         session = _session()

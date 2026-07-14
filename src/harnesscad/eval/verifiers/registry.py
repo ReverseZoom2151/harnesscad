@@ -40,6 +40,7 @@ import inspect
 from typing import Any, Dict, Iterable, List, Optional, Protocol, Sequence, Tuple
 
 from harnesscad import registry as capability_registry
+from harnesscad.eval.verifiers import soundness as _soundness
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 __all__ = [
@@ -238,7 +239,14 @@ def model_state(backend: Any, opdag: Any) -> ModelState:
 # ---------------------------------------------------------------------------
 
 class Verifier(Protocol):
-    """What the dispatcher needs from anything it runs."""
+    """What the dispatcher needs from anything it runs.
+
+    ``tier`` is the COST/SCOPE tier (core / lint / physics / domain: when to run
+    it). ``soundness`` is the TRUST tier (proven / measured / heuristic: whether
+    its word may be given to a model as an instruction). They are orthogonal and
+    must not be confused -- the pressure experiment lost 8.3 points precisely
+    because the fleet had the first and not the second.
+    """
 
     name: str
     tier: str
@@ -256,6 +264,11 @@ class NativeVerifier:
         self.tier = tier
         self.dotted = dotted
         self.name = str(getattr(inner, "name", type(inner).__name__))
+
+    @property
+    def soundness(self):
+        """Declared trust tier (quarantined as HEURISTIC when undeclared)."""
+        return _soundness.soundness_or_untrusted(self.name)
 
     def applies_to(self, state: ModelState) -> bool:  # noqa: ARG002 - always eligible
         return True
@@ -277,6 +290,11 @@ class FunctionVerifier:
         self.dotted = dotted
         self._applies = applies
         self._run = run
+
+    @property
+    def soundness(self):
+        """Declared trust tier (quarantined as HEURISTIC when undeclared)."""
+        return _soundness.soundness_or_untrusted(self.name)
 
     def applies_to(self, state: ModelState) -> bool:
         return bool(self._applies(state))
@@ -311,6 +329,40 @@ def _num(v: float) -> str:
 # breaking the import of this dispatcher.
 # ---------------------------------------------------------------------------
 
+def _preflight_message(fail, thickness: Optional[float], min_extent: float) -> str:
+    """Message text for a kernel-preflight finding, phrased by soundness tier.
+
+    The two PROVEN findings (a shell that leaves no cavity; a feature on a body
+    of zero volume) are the ones allowed to reach a model, so they are the ones
+    that must not read as ORDERS. They lead with the observation, attach the
+    arithmetic as evidence, and carry the kernel's imperative last, marked as a
+    suggestion (see verifiers.soundness.observe). A capable model can reason
+    from evidence; it can only obey an order -- which is exactly how the 14b
+    obeyed a false one and destroyed a correct washer.
+
+    The HEURISTIC findings (RADIUS_TOO_LARGE above all) keep their original text
+    verbatim. They never reach a model, and the humans who do read them are
+    already used to that wording.
+    """
+    code = str(fail.code)
+    if code == "THICKNESS_TOO_LARGE" and thickness is not None:
+        return _soundness.observe(
+            fail.message,
+            f"the shell offsets every wall inward by the thickness, so two walls "
+            f"on opposite sides of an extent of {_num(min_extent)} mm meet when "
+            f"2 x thickness >= that extent; here 2 x {_num(thickness)} = "
+            f"{_num(2.0 * thickness)} >= {_num(min_extent)}, leaving a cavity of "
+            f"zero volume (the operation cannot produce a hollow body)",
+            fail.suggestion)
+    if code == "ZERO_VOLUME":
+        return _soundness.observe(
+            fail.message,
+            "at least one extent of the body is zero, so the feature has no "
+            "material to act on",
+            fail.suggestion)
+    return f"{fail.message} ({fail.suggestion})"
+
+
 def _adapter_kernel_preflight() -> FunctionVerifier:
     """`kernel_preflight` -- would this feature blow up the kernel?
 
@@ -318,6 +370,14 @@ def _adapter_kernel_preflight() -> FunctionVerifier:
     radius exceeds the part, a shell thicker than the wall, a degenerate body.
     These are the failures OCCT reports as an opaque exception; catching them
     here turns them into a fixable diagnostic.
+
+    Soundness is per-code, not per-verifier (see verifiers.soundness):
+    ``preflight-THICKNESS_TOO_LARGE`` and ``preflight-ZERO_VOLUME`` are PROVEN
+    theorems and are fed back to the model -- the shell one is the harness's
+    only structural advantage over a blind loop. ``preflight-RADIUS_TOO_LARGE``
+    is HEURISTIC (it measures a fillet against half the smallest extent of the
+    whole body, but a fillet acts on an EDGE, which need not span that extent),
+    so it is logged for humans and never instructs the model.
     """
 
     def applies(state: ModelState) -> bool:
@@ -335,30 +395,92 @@ def _adapter_kernel_preflight() -> FunctionVerifier:
             return []
         box = BoundingBox(bb[0], bb[1], bb[2], bb[3], bb[4], bb[5])
         shape = ShapeInfo(id="model", bbox=box, volume=box.volume, manifold=True)
+        min_extent = box.min_extent()
         diags: List[Diagnostic] = []
 
         fail = check_nonzero_volume(shape)
         if fail is not None:
-            diags.append(_warn("preflight-" + fail.code, f"{fail.message} ({fail.suggestion})",
+            diags.append(_warn("preflight-" + fail.code,
+                               _preflight_message(fail, None, min_extent),
                                "model"))
 
         for i, op in enumerate(state.ops()):
+            thickness: Optional[float] = None
             if isinstance(op, Fillet):
                 fail = preflight_fillet(shape, float(op.radius))
             elif isinstance(op, Chamfer):
                 fail = preflight_fillet(shape, float(op.distance))
             elif isinstance(op, Shell):
-                fail = preflight_shell(shape, float(op.thickness))
+                thickness = float(op.thickness)
+                fail = preflight_shell(shape, thickness)
             else:
                 continue
             if fail is not None:
                 diags.append(_warn("preflight-" + fail.code,
-                                   f"{fail.message} ({fail.suggestion})",
+                                   _preflight_message(fail, thickness, min_extent),
                                    f"op[{i}]:{type(op).__name__.lower()}"))
         return diags
 
     return FunctionVerifier("kernel-preflight", LINT, applies, run,
                             "harnesscad.eval.verifiers.kernel_preflight")
+
+
+def _adapter_shell_envelope() -> FunctionVerifier:
+    """`shell-envelope` -- a Shell must not GROW the part.
+
+    A CAD shell removes material: ``bbox_after(shell) <= bbox_before(shell)``.
+    Nothing in the fleet asserted that, and the F-rep backend's two-sided Curv
+    shell (``|f| - t/2``) dilated every shelled part by ``t/2`` per side -- a
+    60x40x20 box shelled at 3 mm measured 63x43x23 with zero diagnostics. The
+    backend is fixed (it now hollows inward); this is the backstop that catches
+    any backend which regresses, by comparing the MEASURED bbox against the
+    op-stream envelope (which is shell-free by construction).
+
+    It only speaks when the comparison is sound: a Shell must be present, and
+    every op in the plan must be one the envelope already bounds (sketch
+    primitives, extrude, boolean, hole, fillet, chamfer, shell). Ops that
+    legitimately push geometry outside the envelope -- mirror, pattern, sweep,
+    loft, draft, instances -- make the check abstain rather than lie.
+    """
+
+    _BOUNDED = (
+        "NewSketch", "AddPoint", "AddLine", "AddCircle", "AddRectangle",
+        "Constrain", "Extrude", "Boolean", "Hole", "Fillet", "Chamfer",
+        "Shell", "SetParam",
+    )
+
+    def _shell_ops(state: ModelState) -> List[Any]:
+        return [o for o in state.ops() if type(o).__name__ == "Shell"]
+
+    def applies(state: ModelState) -> bool:
+        if not _shell_ops(state):
+            return False
+        if state.envelope() is None:
+            return False
+        return all(type(o).__name__ in _BOUNDED for o in state.ops())
+
+    def run(state: ModelState) -> List[Diagnostic]:
+        env = state.envelope()
+        measured = state.query("measure").get("bbox")
+        if env is None or not measured or len(measured) < 3:
+            return []
+        before = (env[3] - env[0], env[4] - env[1], env[5] - env[2])
+        after = tuple(float(v) for v in measured[:3])
+        diags: List[Diagnostic] = []
+        for axis, b, a in zip(("X", "Y", "Z"), before, after):
+            # Mesh extraction is a sampled approximation: allow 0.5% slack.
+            if b <= 0.0 or a <= b * 1.005 + 1e-9:
+                continue
+            diags.append(_err(
+                "shell-grew-part",
+                f"the shell GREW the part along {axis}: {_num(b)} mm before, "
+                f"{_num(a)} mm after. A shell hollows a solid inward and can "
+                "only remove material; the outside dimensions are now wrong.",
+                "shell"))
+        return diags
+
+    return FunctionVerifier("shell-envelope", LINT, applies, run,
+                            "harnesscad.eval.verifiers.registry")
 
 
 def _adapter_plausibility() -> FunctionVerifier:
@@ -673,6 +795,7 @@ def _adapter_drag_proxy() -> FunctionVerifier:
 _ADAPTERS = (
     _adapter_clearance_shift,
     _adapter_kernel_preflight,
+    _adapter_shell_envelope,
     _adapter_plausibility,
     _adapter_standability,
     _adapter_tolerance_stack,
@@ -790,6 +913,12 @@ def run_all(state: ModelState,
 
     Never raises. A verifier that blows up becomes a WARNING diagnostic and the
     run continues, so the fleet can never take the loop down.
+
+    Every diagnostic is STAMPED with the soundness tier of the verifier that
+    produced it (``Diagnostic.soundness``). The dispatcher is the only place
+    that knows the provenance of a diagnostic, so it is the only place that can
+    honestly attribute one; downstream, ``soundness.model_facing`` uses the
+    stamp to decide what may be spoken to a model.
     """
     wanted = tuple(tiers) if tiers is not None else tuple(t for t in TIERS if t != CORE)
     skipset = set(skip)
@@ -810,13 +939,16 @@ def run_all(state: ModelState,
                 continue
             produced = v.check(state)
         except Exception as exc:  # noqa: BLE001 - THE point of this dispatcher
-            diags.append(_warn("verifier-error",
-                               f"verifier '{name}' raised {type(exc).__name__}: {exc}",
-                               name))
+            crash = _warn("verifier-error",
+                          f"verifier '{name}' raised {type(exc).__name__}: {exc}",
+                          name)
+            # A crashed verifier tells the model nothing it can act on.
+            crash.soundness = _soundness.HEURISTIC
+            diags.append(crash)
             continue
         for d in produced or []:
             if isinstance(d, Diagnostic):
-                diags.append(d)
+                diags.append(_soundness.stamp(d, name))
     return diags
 
 
