@@ -45,6 +45,19 @@ class TestLevelSet(unittest.TestCase):
         self.assertAlmostEqual(sh((0.8, 0.0, 0.0)), 0.0, places=9)
         self.assertAlmostEqual(sh((1.2, 0.0, 0.0)), 0.0, places=9)
 
+    def test_shell_inward_never_leaves_the_original_surface(self):
+        # The CAD shell: material between the surface and an inward offset t.
+        f = sphere(1.0)
+        sh = lambda p: T.shell_inward(f(p), 0.4)
+        # the original surface is still the boundary (0), not mid-wall
+        self.assertAlmostEqual(sh((1.0, 0.0, 0.0)), 0.0, places=9)
+        # inside the wall -> negative; inside the cavity -> positive
+        self.assertLess(sh((0.8, 0.0, 0.0)), 0.0)
+        self.assertGreater(sh((0.5, 0.0, 0.0)), 0.0)
+        # nothing outside the original surface is ever solid (no dilation)
+        self.assertGreater(sh((1.0001, 0.0, 0.0)), 0.0)
+        self.assertGreater(sh((1.2, 0.0, 0.0)), 0.0)
+
     def test_morph(self):
         self.assertAlmostEqual(T.morph(2.0, 4.0, 0.0), 2.0)
         self.assertAlmostEqual(T.morph(2.0, 4.0, 1.0), 4.0)

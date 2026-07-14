@@ -5,7 +5,10 @@ Two families of operators (``lib/curv/std.curv``):
 **Distance-field (level-set) transforms** act on the *value* of a field:
 
 * ``offset(d, field) = field - d``            -- inflate (``d>0``) / deflate.
-* ``shell(t, field) = |field| - t/2``         -- hollow shell of thickness ``t``.
+* ``shell(t, field) = |field| - t/2``         -- Curv's shell: a wall of
+  thickness ``t`` *centred* on the boundary (it dilates the part by ``t/2``).
+* ``shell_inward(t, field) = max(field, -(field + t))`` -- the CAD ``Shell``
+  feature: hollow inward, bounding box unchanged.
 * ``round(r, field) = field - r``             -- round convex features (exact
   fields only); identical maths to ``offset`` but named for intent.
 * ``morph(t, a, b) = lerp(a, b, t)``          -- linear field interpolation.
@@ -56,8 +59,27 @@ def offset(dist: float, d: float) -> float:
 
 
 def shell(dist: float, thickness: float) -> float:
-    """Hollow shell of ``thickness`` centred on the boundary: ``|dist| - t/2``."""
+    """Curv's shell: ``|dist| - t/2`` — a wall *centred* on the boundary.
+
+    Two-sided: it keeps ``t/2`` of material outside the original surface, so the
+    part GROWS by ``t/2`` in every direction. That is Curv's documented meaning
+    and is kept as-is; it is NOT the CAD ``Shell`` feature, which hollows
+    inward — use :func:`shell_inward` for that.
+    """
     return abs(dist) - thickness / 2.0
+
+
+def shell_inward(dist: float, thickness: float) -> float:
+    """CAD shell: hollow a solid inward to a wall ``thickness``.
+
+    Keeps the material between the original surface and an inward offset of
+    ``t``: ``max(dist, -(dist + t))``, i.e. the region ``-t <= dist <= 0``. The
+    outer surface (``dist == 0``) is untouched, so the bounding box is exactly
+    preserved — a shell removes material, it never adds any. When the solid is
+    thinner than ``2t`` no cavity opens and the solid survives unchanged (which
+    is the infeasible case the shell-thickness preflight rejects).
+    """
+    return max(dist, -(dist + thickness))
 
 
 def round_field(dist: float, r: float) -> float:
