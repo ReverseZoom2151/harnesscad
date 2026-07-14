@@ -9,9 +9,17 @@
         -> STEP export
 
 It is deliberately thin: every hard part already lives in a tested module
-(`agent.runner.run` drives the correction loop, `HarnessSession` owns the
-transactional spine, the backends produce geometry + digests). This module just
-assembles those pieces and normalises the outcome into a plain result dict.
+(`core.harness.AgentHarness` drives the correction loop, `HarnessSession` owns
+the transactional spine, the backends produce geometry + digests). This module
+just assembles those pieces and normalises the outcome into a plain result dict.
+
+THE SHIPPING PATH IS THE GOOD PATH. This module used to construct the weakest of
+the repository's agent loops (`agent.runner.run`: no loop detection, no context
+pre-flight, no write gate, no contract, no trajectory) while the fully-configured
+`AgentHarness` was reachable only through the ACP editor integration. It now
+builds the same harness every other surface builds: loop detection, the
+guardrail + human-approval write gate, the soundness feedback gate, context
+pre-flight and a replayable trajectory, all on by default.
 
 Provider keys are never read or hardcoded here beyond passing a model name to
 `LiteLLMClient`. When no `llm` is injected and no API key is present in the
@@ -25,11 +33,18 @@ import os
 from typing import Any, Dict, List, Optional
 
 from harnesscad.agents.agent.planner import Planner
-from harnesscad.agents.agent.runner import run
+from harnesscad.agents.agent.trace_reward import (
+    first_divergence,
+    reward_for_session,
+    step_accuracy,
+)
+from harnesscad.agents.context.manager import ContextManager
+from harnesscad.core.harness import AgentHarness
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.agents.llm.base import LLM
 from harnesscad.core.loop import HarnessSession
 from harnesscad.core.trace import Tracer
+from harnesscad.eval.reliability.loopdetect import LoopDetector
 
 
 # The default model used only when the caller injects no `llm`. Kept as a
@@ -39,6 +54,11 @@ DEFAULT_MODEL = "anthropic/claude-sonnet-4-5"
 # Env vars we consider proof that a live provider call can succeed. We only
 # *check* for their presence; we never read their values (litellm does that).
 _API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY")
+
+#: The context window the pre-flight budgets against. Conservative on purpose:
+#: the counter is still a heuristic (see audit gap #8), so the budget it guards
+#: is stated smaller than any model we route to.
+CONTEXT_BUDGET_TOKENS = 100_000
 
 
 class BuildError(RuntimeError):
@@ -123,6 +143,21 @@ def _export_step(backend, ok: bool) -> Optional[str]:
         return None
 
 
+#: The loop strategies `build` can run.
+#:
+#: "refine"     -- plan -> apply -> feed the (soundness-gated) diagnostics back ->
+#:                 replan. The harness's historical single strategy, and the one
+#:                 that LOST the controlled experiment in assets/pressure/report.md
+#:                 by 8.3 points to blind resampling.
+#: "best-of-n"  -- draw N independent plans, apply each in a FRESH session, and let
+#:                 the deterministic verifier pick the winner. No feedback channel
+#:                 at all, therefore no poisoning surface. `P(success) = 1 - (1-p)^N`.
+#:                 `eval/reliability/strategies/best_of_n.py` implemented this and
+#:                 was an orphan: the budget went to typed feedback, which lost,
+#:                 while the mechanism that scales with the oracle sat unreachable.
+STRATEGIES = ("refine", "best-of-n")
+
+
 def build(
     brief: str,
     *,
@@ -131,6 +166,8 @@ def build(
     model: Optional[str] = None,
     max_iters: int = 5,
     tracer: Optional[Tracer] = None,
+    strategy: str = "refine",
+    n: int = 4,
 ) -> Dict[str, Any]:
     """Build a part from a natural-language `brief`.
 
@@ -169,24 +206,146 @@ def build(
     BuildError:
         If no `llm` is provided and no provider API key is present.
     """
+    if strategy not in STRATEGIES:
+        raise BuildError(
+            f"unknown strategy {strategy!r}; expected one of {STRATEGIES!r}")
     resolved_llm = _resolve_llm(llm, model)
+
+    if strategy == "best-of-n":
+        return _build_best_of_n(brief, llm=resolved_llm, backend=backend,
+                                n=n, tracer=tracer)
 
     backend_instance, backend_name, backend_note = _make_backend(backend)
     session = HarnessSession(backend_instance, tracer=tracer)
     planner = Planner(resolved_llm)
 
-    result = run(session, planner, brief, max_iters=max_iters)
+    # THE ONE LOOP, fully configured. `executor=None` means the harness mints its
+    # own SessionToolExecutor: guardrail hard gate -> human-approval tier ->
+    # apply-with-retry/backoff -> output truncation, ahead of the session's own
+    # block-and-correct + transactional verify. The feedback channel is gated on
+    # soundness at the harness boundary. Both were absent from this path.
+    harness = AgentHarness(
+        session,
+        planner,
+        context=ContextManager(budget=CONTEXT_BUDGET_TOKENS),
+        loop_detector=LoopDetector(),
+        tracer=tracer,
+        max_iterations=max_iters,
+    )
+    run_result = harness.run(brief)
 
-    diagnostics: List[dict] = [d.to_dict() for d in result.diagnostics]
-    step = _export_step(backend_instance, result.ok)
+    diagnostics: List[dict] = list(run_result.diagnostics)
+    step = _export_step(backend_instance, run_result.ok)
 
     return {
-        "ok": result.ok,
-        "applied": result.applied,
-        "digest": result.digest,
+        "ok": run_result.ok,
+        "applied": run_result.applied,
+        "digest": run_result.digest,
         "diagnostics": diagnostics,
         "summary": session.summary(),
         "step": step,
         "backend": backend_name,
         "backend_note": backend_note,
+        # The replayable audit trail of the run: per-iteration ops, dispatch
+        # verdicts, diagnostics and digests. Previously the shipping path
+        # produced no trajectory at all.
+        "trajectory": run_result.trajectory,
+        "stop_reason": run_result.stop_reason,
+        "run_id": run_result.run_id,
+        # The live session, so a caller that means to WRITE the STEP can put it
+        # through the output gate (harnesscad.io.gate) against the geometry the
+        # backend actually built, rather than trusting the text above.
+        "session": session,
+        "strategy": "refine",
+        # PROCESS SUPERVISION. The loop used to hand back one scalar about the
+        # finished solid and attribute nothing: a six-op plan that failed
+        # condemned ops 1-5 equally. `step_rewards` is the per-op vector,
+        # `first_divergence` is the single op that broke the trajectory, and
+        # `reward` is the full R = a*R_ORM + b*mean(R_step) + c*R_format from
+        # `agents/agent/tool_reward.py` -- which was implemented, tested, and
+        # imported by nothing but a dispatch table.
+        #
+        # `orm_verdict` here is the LOOP's verdict (did every op apply and
+        # verify), not an oracle's. A caller with an oracle -- selftest.golden,
+        # selftest.differential, or a grader -- should re-score with
+        # `trace_reward.reward_for_session(session, orm_verdict=<oracle>)`. The
+        # fleet must never be used as the ORM: its false-positive rate is
+        # measured and non-zero.
+        "step_rewards": list(session.step_rewards),
+        "first_divergence": first_divergence(session.step_rewards),
+        "step_accuracy": step_accuracy(session.step_rewards),
+        "reward": reward_for_session(session, orm_verdict=run_result.ok).__dict__,
+    }
+
+
+def _build_best_of_n(
+    brief: str,
+    *,
+    llm: LLM,
+    backend: str,
+    n: int,
+    tracer: Optional[Tracer] = None,
+) -> Dict[str, Any]:
+    """BEST-OF-N: draw N plans, apply each in a fresh session, let the verifier pick.
+
+    The audit's finding, in one sentence: *we spent the budget on typed feedback
+    and lost, while Best-of-N sat orphaned.* This is the wiring. There is NO
+    feedback channel here — a candidate is drawn, applied and scored, and the
+    selector is the deterministic verifier, not a diagnostic the model has to
+    believe. A wrong rule cannot poison a loop that never speaks to the model.
+
+    Candidates are generated sequentially and are side-effect isolated (a fresh
+    backend + session each), so a caller may trivially parallelise them.
+    """
+    from harnesscad.eval.reliability.strategies.best_of_n import best_of_n
+
+    if n < 1:
+        raise BuildError(f"best-of-n needs n >= 1 (got {n})")
+
+    planner = Planner(llm)
+    sessions: List[HarnessSession] = []
+    names: List[str] = []
+    notes: List[Optional[str]] = []
+
+    def session_factory() -> HarnessSession:
+        inst, name, note = _make_backend(backend)
+        sess = HarnessSession(inst, tracer=tracer)
+        sessions.append(sess)
+        names.append(name)
+        notes.append(note)
+        return sess
+
+    outcome = best_of_n(planner, session_factory, brief, n)
+    idx = outcome.winner_index if outcome.winner_index >= 0 else 0
+    session = sessions[idx]
+    backend_instance = session.backend
+    result = outcome.winner.result if outcome.winner else None
+    ok = bool(result and result.ok)
+
+    return {
+        "ok": ok,
+        "applied": result.applied if result else 0,
+        "digest": result.digest if result else session.digest(),
+        "diagnostics": [d.to_dict() if hasattr(d, "to_dict") else d
+                        for d in (result.diagnostics if result else [])],
+        "summary": session.summary(),
+        "step": _export_step(backend_instance, ok),
+        "backend": names[idx],
+        "backend_note": notes[idx],
+        "trajectory": [
+            {"index": c.index, "ok": c.ok, "error": c.error,
+             "applied": c.result.applied if c.result else 0,
+             "n_diagnostics": len(c.result.diagnostics) if c.result else 0,
+             # Per-op credit for every candidate, not just the winner: which op
+             # broke each losing draw is the only thing that tells you WHY N
+             # had to be this large.
+             "step_rewards": list(sessions[c.index].step_rewards)}
+            for c in outcome.candidates
+        ],
+        "stop_reason": "best-of-n",
+        "run_id": None,
+        "session": session,
+        "strategy": "best-of-n",
+        "n": n,
+        "winner_index": idx,
     }

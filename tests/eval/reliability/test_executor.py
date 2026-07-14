@@ -216,14 +216,39 @@ class TestOutputTruncation(unittest.TestCase):
 
 # --- (2b) Tier-3 human-approval gate --------------------------------------
 class TestApproval(unittest.TestCase):
-    def test_tier3_auto_approves_by_default(self):
+    def test_tier3_refused_by_default_in_a_headless_context(self):
+        """THE BYPASS. The default used to AUTO-APPROVE every Tier-3 op with a
+        note and let it through to the session. A destructive op in a process
+        with no human attached is now REFUSED, and the refusal is recorded."""
         session = FakeSession(_ok_result(), backend=StubBackend())
-        ex = ToolExecutor()  # default: auto-approve with a note
+        ex = ToolExecutor()  # headless: no approver configured
+        res = ex.execute(DeleteOp(target="body1"), session)
+        self.assertFalse(res.approved)
+        self.assertFalse(res.ok)
+        self.assertEqual(len(session.calls), 0)  # op NEVER reached the session
+        self.assertTrue(any(d.code == "approval-denied" for d in res.diagnostics))
+        # ...and the decision is auditable, not silent.
+        record = ex.approval_audit[-1]
+        self.assertEqual(record["op"], "delete")
+        self.assertFalse(record["approved"])
+        self.assertEqual(record["decided_by"], "policy:headless-refuse")
+
+    def test_tier3_headless_auto_approve_is_explicit_and_recorded(self):
+        """An unattended surface may still proceed -- but only by asking for the
+        policy by name, and the reason is written into the record."""
+        from harnesscad.io.surfaces.ui.approval import ApprovalPolicy
+
+        session = FakeSession(_ok_result(), backend=StubBackend())
+        policy = ApprovalPolicy.headless_auto_approve(
+            "batch rebuild: operator signed off on the run", surface="test")
+        ex = ToolExecutor(policy=policy)
         res = ex.execute(DeleteOp(target="body1"), session)
         self.assertTrue(res.approved)
         self.assertTrue(res.ok)
-        self.assertIn("auto-approved", res.note)
-        self.assertEqual(len(session.calls), 1)  # op reached the session
+        self.assertEqual(len(session.calls), 1)
+        record = ex.approval_audit[-1]
+        self.assertEqual(record["decided_by"], "policy:headless-auto-approve")
+        self.assertIn("operator signed off", record["reason"])
 
     def test_tier3_denied_blocks_without_touching_session(self):
         session = FakeSession(_ok_result(), backend=StubBackend())

@@ -8,6 +8,16 @@ The default planner (``_PlatePlanner``) is a dependency-free, offline stand-in
 that emits a simple constrained plate so the server produces a valid STEP without
 a network/LLM dependency. Swap in ``agent.planner.Planner`` (backed by a real
 ``LLM``) for genuine text-to-CAD once a model client is configured.
+
+GATING. ``_PlatePlanner`` is not ``agent.planner.Planner``, and the soundness
+feedback gate used to live INSIDE that class -- so this public surface fed its
+model every HEURISTIC diagnostic the fleet emitted, ungated, which is the exact
+configuration that lost the controlled experiment in ``assets/pressure``. The
+gate is now enforced by ``core.harness.AgentHarness`` at the boundary every
+planner passes through, and the harness's default executor is the guardrail +
+approval-gated ``SessionToolExecutor``. Both apply here without this module
+asking for them, which is the point: a gate that a surface has to remember to
+opt into is a gate that a surface will forget.
 """
 
 from __future__ import annotations

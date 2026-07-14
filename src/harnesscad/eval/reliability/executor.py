@@ -38,6 +38,29 @@ from harnesscad.core.cisp.ops import Op
 from harnesscad.core.cisp.protocol import ApplyOpsResult
 from harnesscad.eval.reliability.guardrails import ErrorRecovery, GuardrailGate
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
+from harnesscad.io.surfaces.ui.approval import ApprovalPolicy
+
+
+def _make_policy(approval: Optional[Callable[[Op], bool]],
+                 *, surface: str) -> ApprovalPolicy:
+    """Adapt a legacy ``approval`` callable / gate object into an ApprovalPolicy.
+
+    ``None`` -> the refuse-by-default headless policy (never a silent approve).
+    A callable -> that callable is the human channel.
+    An object with ``may_proceed`` -> its ``may_proceed`` is the human channel.
+    """
+    if approval is None:
+        return ApprovalPolicy(None, surface=surface)
+    if callable(approval):
+        return ApprovalPolicy(approval, principal="approver", surface=surface)
+    may_proceed = getattr(approval, "may_proceed", None)
+    if callable(may_proceed):
+        return ApprovalPolicy(may_proceed, principal="approval-gate", surface=surface)
+    raise TypeError(
+        "approval must be a callable(op) -> bool, an object exposing "
+        "may_proceed(op) -> bool, or None (headless: refuse by default). "
+        "An unrecognised approver used to be treated as an auto-approve; it is "
+        "now an error, because that is how a destructive op ships unguarded.")
 
 
 # --- injected time primitives ---------------------------------------------
@@ -117,64 +140,48 @@ class ToolExecutor:
         max_output: int = 2000,
         clock: Optional[Callable[[], float]] = None,
         sleeper: Optional[Callable[[float], None]] = None,
+        policy: Optional["ApprovalPolicy"] = None,
     ) -> None:
         self.gate = gate if gate is not None else GuardrailGate()
-        # ``approval`` is the pluggable yes/no decider for Tier-3 ops. None => the
-        # default auto-approve-with-a-note behaviour (so tests need no human).
+        # ``approval`` is the pluggable human yes/no decider for Tier-3 ops; it is
+        # kept for callers that pass a bare callable (the ACP surface passes its
+        # blocking session/request_permission round-trip). Either way it becomes
+        # an ``ApprovalPolicy``: the gate is MECHANICAL (``require`` raises) and
+        # every decision it makes is recorded on ``policy.audit``.
+        #
+        # THE DEFAULT USED TO BE A SILENT AUTO-APPROVE ("tier-3 auto-approved
+        # (default): no human approver configured"), which is exactly the bypass
+        # the audit found: the gate existed, classified correctly, emitted its
+        # risk indicator, and then let every destructive op through anyway. The
+        # default is now REFUSE, and an unattended surface that legitimately needs
+        # to proceed must say so by name via
+        # ``ApprovalPolicy.headless_auto_approve(reason=...)``.
         self.approval = approval
+        self.policy = policy if policy is not None else _make_policy(
+            approval, surface="harness")
         self.max_retries = max_retries
         self.backoff_base = backoff_base
         self.timeout = timeout
         self.max_output = max_output
         self.clock = clock if clock is not None else LogicalClock()
         self.sleeper = sleeper if sleeper is not None else _noop_sleeper
-        # Composed ui.approval gate (lazy) — records approval_required events with
-        # a risk indicator + dry-run preview for inspection. None if ui absent.
-        self._approval_gate = self._make_approval_gate()
 
-    # --- ui.approval composition (lazy import; degrades gracefully) --------
-    @staticmethod
-    def _make_approval_gate():
-        try:
-            from harnesscad.io.surfaces.ui.approval import ApprovalGate
-        except Exception:
-            return None
-        return ApprovalGate()
-
-    def _requires_approval(self, op: Op) -> bool:
-        """True iff ``op`` is Tier-3 (REQUIRE) per ui.approval. False if ui absent."""
-        try:
-            from harnesscad.io.surfaces.ui.approval import ApprovalTier, tier_for
-        except Exception:
-            return False
-        try:
-            return tier_for(op) is ApprovalTier.REQUIRE
-        except Exception:
-            return False
+    @property
+    def approval_audit(self) -> List[dict]:
+        """The auditable record of every approval decision this executor made."""
+        return self.policy.audit_dicts() if self.policy is not None else []
 
     def _approve(self, op: Op) -> tuple:
         """Return (approved, note) for ``op`` running the human-approval gate.
 
-        Tier-1/Tier-2 auto-proceed. Tier-3 REQUIRE: surface the approval_required
-        event (composed ui.approval, for a risk indicator + preview) then consult
-        the pluggable approver; the default auto-approves with a note.
+        Tier-1/Tier-2 auto-proceed (and are still recorded). Tier-3 REQUIRE blocks
+        on the policy: a human approver if one is attached, else the explicit
+        headless policy (REFUSE by default).
         """
-        if not self._requires_approval(op):
+        if self.policy is None:  # ui.approval unavailable: fail closed on nothing
             return True, ""
-        # Surface the risk indicator + dry-run preview (best-effort; never fatal).
-        if self._approval_gate is not None:
-            try:
-                self._approval_gate.evaluate(op)
-            except Exception:
-                pass
-        if self.approval is None:
-            return True, "tier-3 auto-approved (default): no human approver configured"
-        if callable(self.approval):
-            return bool(self.approval(op)), "tier-3: pluggable approver consulted"
-        # Fallback: an object exposing may_proceed(op) -> bool.
-        if hasattr(self.approval, "may_proceed"):
-            return bool(self.approval.may_proceed(op)), "tier-3: approval gate consulted"
-        return True, "tier-3 auto-approved (default): unrecognised approver"
+        record = self.policy.decide(op)
+        return record.approved, f"tier-{record.tier.value}: {record.reason}"
 
     # --- output truncation ------------------------------------------------
     def _truncate(self, diags: List[Diagnostic]) -> tuple:
@@ -355,3 +362,51 @@ class ToolExecutor:
             # Exhausted transient retries — fall back to a simpler strategy.
             return "fallback-simpler-strategy", "rollback-feature-tree"
         return "retry-adjusted-params", "rollback-feature-tree"
+
+
+# ---------------------------------------------------------------------------
+# The batch adapter — how the harness actually dispatches.
+# ---------------------------------------------------------------------------
+class SessionToolExecutor:
+    """Drive a whole op batch through a :class:`ToolExecutor`, one op at a time.
+
+    ``AgentHarness`` dispatches a BATCH (`apply_ops(ops) -> ApplyOpsResult`);
+    ``ToolExecutor`` gates a single OP (`execute(op, session) -> ExecResult`).
+    This is the adapter between them, and it is what makes the guardrail gate,
+    the human-approval gate, retry/backoff and output truncation apply on the
+    DEFAULT harness path instead of only on the ACP editor surface.
+
+    Semantics preserved from ``HarnessSession.apply_ops``: ops are applied in
+    order; the first op that is blocked, denied or rejected stops the batch and
+    is reported as ``rejected``; every diagnostic seen along the way is returned.
+    """
+
+    def __init__(self, session, executor: Optional[ToolExecutor] = None) -> None:
+        self.session = session
+        self.executor = executor if executor is not None else ToolExecutor()
+
+    def apply_ops(self, ops: List[Op]) -> ApplyOpsResult:
+        applied = 0
+        diags: List[Diagnostic] = []
+        rejected: Optional[dict] = None
+
+        for op in ops:
+            res = self.executor.execute(op, self.session)
+            diags.extend(res.diagnostics)
+            if res.ok:
+                applied += res.result.applied if res.result is not None else 1
+                continue
+            rejected = {
+                "op": op.to_dict() if hasattr(op, "to_dict") else str(op),
+                "reason": ("guardrail-blocked" if res.blocked
+                           else "approval-denied" if not res.approved
+                           else "timeout" if res.timed_out
+                           else "verifier-rejected"),
+                "note": res.note,
+            }
+            break
+
+        ok = rejected is None and not any(
+            d.severity is Severity.ERROR for d in diags)
+        return ApplyOpsResult(ok, applied, self.session.digest(),
+                              diagnostics=diags, rejected=rejected)

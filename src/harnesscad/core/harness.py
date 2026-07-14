@@ -29,8 +29,9 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from harnesscad.agents.agent.feedback import MODEL_FACING_TIERS, gate, withheld
 from harnesscad.core.cisp.ops import Op, canonical_json
 from harnesscad.core.cisp.protocol import ApplyOpsResult
 from harnesscad.core.contract import Contract, ContractCheck
@@ -52,6 +53,7 @@ HARNESS_EVENT_KINDS = (
     "verify",
     "contract",
     "checkpoint",
+    "memory",
     "harness_end",
 )
 
@@ -73,6 +75,8 @@ class HarnessRun:
     stop_reason: str = ""
     trajectory: List[dict] = field(default_factory=list)
     run_id: str = ""
+    # What the run wrote to memory, and what the oracle refused to let it write.
+    memory_writes: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -85,6 +89,7 @@ class HarnessRun:
             "stop_reason": self.stop_reason,
             "trajectory": self.trajectory,
             "run_id": self.run_id,
+            "memory_writes": self.memory_writes,
         }
 
 
@@ -110,6 +115,11 @@ class AgentHarness:
         tracer: Optional[Tracer] = None,
         verifiers: Optional[List[Any]] = None,
         max_iterations: int = 8,
+        feedback_tiers: Iterable[str] = MODEL_FACING_TIERS,
+        gated: bool = True,
+        memory: Any = None,
+        oracle: Optional[Any] = None,
+        approval: Any = None,
     ) -> None:
         if max_iterations < 1:
             raise ValueError("max_iterations must be >= 1")
@@ -117,10 +127,52 @@ class AgentHarness:
         self.planner = planner
         self.context = context
         self.loop_detector = loop_detector
+        # THE WRITE GATE, ON BY DEFAULT. With no executor injected the harness
+        # used to fall straight through to ``session.apply_ops`` -- no guardrail
+        # gate, no approval, no retry, no output truncation -- and that was the
+        # default on every surface except the ACP editor. The best-configured
+        # harness in the repository was reachable only through an editor
+        # integration. It is now the only one.
+        #
+        # ``approval`` is the human channel handed to that executor's
+        # ``ApprovalPolicy`` (an ApprovalPolicy, or a bare callable(op) -> bool).
+        # With none attached the process is headless and the policy REFUSES
+        # tier-3 (destructive/irreversible) ops, recording the refusal -- it no
+        # longer auto-approves them silently.
+        if executor is None and gated:
+            from harnesscad.eval.reliability.executor import (
+                SessionToolExecutor, ToolExecutor, _make_policy,
+            )
+            from harnesscad.io.surfaces.ui.approval import ApprovalPolicy
+            if isinstance(approval, ApprovalPolicy):
+                policy = approval
+            else:
+                policy = _make_policy(approval, surface="harness")
+            executor = SessionToolExecutor(session, ToolExecutor(policy=policy))
         self.executor = executor
         self.tracer = tracer if tracer is not None else NullTracer()
         self.verifiers = list(verifiers) if verifiers else []
         self.max_iterations = max_iterations
+        # THE FEEDBACK GATE, AT THE BOUNDARY. It used to be a property of
+        # ``agent.planner.Planner``, so any planner that was not that class
+        # (the A2A surface's ``_PlatePlanner``, for one) fed the model ungated
+        # heuristics. A gate that one class owns is not a policy. It is enforced
+        # here, where every planner passes, and the Planner's own gate is now an
+        # idempotent second application of the same filter.
+        self.feedback_tiers = tuple(feedback_tiers)
+
+        # MEMORY. Retrieval lives in the planner (prompt composition owns it);
+        # the WRITE lives here, because the harness is the only thing that can
+        # call the oracle. If the planner already carries a memory and none was
+        # passed, adopt it — one memory per agent, never two stores that disagree.
+        if memory is None:
+            memory = getattr(planner, "memory", None)
+        self.memory = memory
+        # ``oracle(ops) -> OracleVerdict``. The default REBUILDS the candidate op
+        # stream on a fresh backend with the verifier fleet out of the way, then
+        # measures it with ``io/gate.py``. It has to be independent of the fleet:
+        # the whole point is to catch the fleet being wrong about a good part.
+        self.oracle = oracle
 
     # --- run id -----------------------------------------------------------
     def _make_run_id(self, brief: str) -> str:
@@ -144,6 +196,12 @@ class AgentHarness:
         contract_ok = contract is None
         ok = False
         stop_reason = "max_iterations"
+        # (ops, fleet_diagnostics) per iteration that produced a plan. Every one
+        # is offered to memory at the end of the run and the ORACLE decides which
+        # are true. A rejected iteration is offered too, and that is deliberate:
+        # an iteration the fleet rejected but the gate measures as CORRECT is a
+        # verifier false positive — the washer.
+        candidates: List[Tuple[List[Op], List[Any]]] = []
 
         for i in range(self.max_iterations):
             self.tracer.event("iteration_start", run_id, {"iteration": i})
@@ -221,6 +279,7 @@ class AgentHarness:
 
             step_diags = (list(result.diagnostics) + list(hverify_diags)
                           + list(contract_diags))
+            candidates.append((list(ops), list(step_diags)))
             last_diag_dicts = _diag_dicts(step_diags)
             trajectory.append(self._entry(
                 i, ops, result, verified=verified, contract_ok=contract_ok,
@@ -237,8 +296,24 @@ class AgentHarness:
                 ok = True
                 break
 
-            # Repair: feed the ERROR-severity diagnostics back to the planner.
-            diagnostics = [d for d in step_diags if _is_error(d)] or step_diags
+            # Repair: feed diagnostics back to the planner -- THROUGH THE GATE.
+            # Soundness first (only PROVEN/MEASURED rules may instruct a model:
+            # a wrong instruction is worse than none, and that is the measured
+            # finding of assets/pressure/report.md, not an aesthetic one), then
+            # severity. Whatever the gate withholds is still in the trajectory,
+            # still traced, and still available to a human.
+            trusted = gate(step_diags, self.feedback_tiers)
+            held = withheld(step_diags, self.feedback_tiers)
+            if held:
+                self.tracer.event("verify", run_id, {
+                    "iteration": i,
+                    "withheld_from_model": _diag_dicts(held),
+                    "reason": "soundness tier below the model-facing policy",
+                })
+            diagnostics = [d for d in trusted if _is_error(d)] or trusted
+
+        # --- MEMORY WRITE: gated on the oracle, never on the model's word. ---
+        memory_writes = self._remember(run_id, brief, candidates)
 
         run = HarnessRun(
             ok=ok,
@@ -250,6 +325,7 @@ class AgentHarness:
             stop_reason=stop_reason,
             trajectory=trajectory,
             run_id=run_id,
+            memory_writes=memory_writes,
         )
         self.tracer.event("harness_end", run_id, {
             "ok": run.ok,
@@ -260,6 +336,72 @@ class AgentHarness:
             "stop_reason": run.stop_reason,
         })
         return run
+
+    # --- memory (the oracle is the only thing allowed to write) -----------
+    def _oracle_verdict(self, ops: List[Op]):
+        """Measure a candidate op stream INDEPENDENTLY of the verifier fleet.
+
+        The candidate is rebuilt on a FRESH backend of the session's own class,
+        applied op-by-op straight through ``backend.apply`` (no fleet, no
+        rollback), and the resulting geometry is handed to ``io/gate.py`` — the
+        harness's existing "verified or refused, no third outcome" door, used
+        here as an admission gate on memory.
+
+        The independence is the whole design. If memory asked the FLEET whether
+        a part was good, a verifier false positive would silently become a false
+        memory, and we would have rebuilt Agent-S's failure precisely.
+        """
+        from harnesscad.agents.memory.harness_memory import OracleVerdict, gate_oracle
+
+        if self.oracle is not None:
+            return self.oracle(ops)
+        try:
+            backend = type(self.session.backend)()
+            for op in ops:
+                r = backend.apply(op)
+                if not getattr(r, "ok", True):
+                    return OracleVerdict(
+                        False, (f"apply-rejected: {type(op).__name__}",), "gate")
+        except Exception as exc:  # noqa: BLE001 - unbuildable is not verified
+            return OracleVerdict(
+                False, (f"rebuild-error: {type(exc).__name__}: {exc}",), "gate")
+        return gate_oracle(backend, ops)
+
+    def _remember(
+        self,
+        run_id: str,
+        brief: str,
+        candidates: List[Tuple[List[Op], List[Any]]],
+    ) -> List[dict]:
+        """Offer every planned iteration to memory; the ORACLE decides which are
+        true.
+
+        Only a trajectory the gate MEASURED as correct is written. A trajectory
+        the FLEET rejected and the GATE passed is written AND recorded as a
+        verifier false positive — the self-auditing signal the fleet never had,
+        and the reason the washer was rejected forty times with nobody noticing.
+
+        Memory must never take a build down: every path here is defensive.
+        """
+        if self.memory is None or not candidates:
+            return []
+        writes: List[dict] = []
+        for ops, diags in candidates:
+            try:
+                verdict = self._oracle_verdict(ops)
+                w = dict(self.memory.commit(
+                    brief, ops, verdict,
+                    digest=self.session.digest(),
+                    fleet_diagnostics=diags,
+                    summary=run_id,
+                ))
+                w["oracle"] = verdict.to_dict()
+            except Exception as exc:  # noqa: BLE001
+                self.tracer.event("memory", run_id, {"error": str(exc)})
+                continue
+            writes.append(w)
+            self.tracer.event("memory", run_id, w)
+        return writes
 
     # --- collaborators (each defensive / optional) ------------------------
     def _plan(
@@ -321,20 +463,29 @@ class AgentHarness:
         return looped
 
     def _dispatch(self, ops: List[Op]) -> ApplyOpsResult:
-        """Run the ops through the ToolExecutor if one is provided, else straight
-        through the session. Degrades to ``session.apply_ops`` whenever no usable
-        executor entry point is found (executor.py may land concurrently)."""
+        """Run the op batch through the executor. THE WRITE PATH.
+
+        The executor is a batch dispatcher: ``apply_ops(ops) -> ApplyOpsResult``.
+        ``SessionToolExecutor`` (the default) and the ACP surface's
+        ``BridgingExecutor`` both satisfy it.
+
+        This used to guess: it tried ``apply_ops``/``execute``/``run``/
+        ``dispatch`` in turn and, on a TypeError, re-called with
+        ``fn(self.session, ops)``. Handed a bare ``ToolExecutor`` (whose
+        signature is ``execute(op, session)``) that silently called
+        ``execute(op=session, session=ops)``. Duck-typing a write path is how a
+        wrong part ships with no diagnostic; the contract is now one method.
+        """
         ex = self.executor
-        if ex is not None:
-            for meth in ("apply_ops", "execute", "run", "dispatch"):
-                fn = getattr(ex, meth, None)
-                if callable(fn):
-                    try:
-                        return fn(ops)
-                    except TypeError:
-                        # Executor may want the session too: execute(session, ops).
-                        return fn(self.session, ops)
-        return self.session.apply_ops(ops)
+        if ex is None:
+            return self.session.apply_ops(ops)
+        apply_ops = getattr(ex, "apply_ops", None)
+        if not callable(apply_ops):
+            raise TypeError(
+                f"{type(ex).__name__} is not a harness executor: it must expose "
+                f"apply_ops(ops) -> ApplyOpsResult. Wrap a per-op "
+                f"reliability.executor.ToolExecutor in a SessionToolExecutor.")
+        return apply_ops(ops)
 
     def _harness_verify(self):
         """Run any harness-level verifiers against the current backend state.

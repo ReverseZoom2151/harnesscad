@@ -30,6 +30,21 @@ from typing import Any, Dict, Iterator, Optional
 from harnesscad.agents.a2a.messages import Artifact, Part, agent_message
 from harnesscad.agents.a2a.task import IllegalTransition, TaskStore
 from harnesscad.io.surfaces.a2a_server import wire
+from harnesscad.io.surfaces.ui.approval import ApprovalDenied, ApprovalPolicy
+
+# The A2A surface is HEADLESS by construction: a remote agent posts a brief and
+# there is no human on this side of the socket. Its one destructive action is the
+# ``backend.export("step")`` that produces the artifact -- a tier-3, irreversible
+# hand-off that used to run with no gate at all. The default policy below does
+# still let it through, but it does so as an EXPLICIT, RECORDED decision with a
+# stated reason (the client's own message/send is the request for that artifact,
+# and the export is scoped to bytes returned to that same client -- it writes
+# nothing to the filesystem). A deployment that disagrees passes
+# ``ApprovalPolicy()`` (refuse) or a real approver, and message/send then fails
+# the task with an auditable refusal instead of exporting.
+DEFAULT_EXPORT_APPROVAL_REASON = (
+    "a2a: the client's message/send IS the request for this artifact; the export "
+    "is returned to that client as bytes and touches no filesystem")
 
 # Sentinel pushed onto the event queue when a worker finishes.
 _SENTINEL = object()
@@ -57,9 +72,14 @@ class A2AHandler:
         self,
         harness_factory,
         store: Optional[TaskStore] = None,
+        approval: Optional[ApprovalPolicy] = None,
     ) -> None:
         self.harness_factory = harness_factory
         self.store = store if store is not None else TaskStore()
+        self.approval = approval if approval is not None else (
+            ApprovalPolicy.headless_auto_approve(
+                DEFAULT_EXPORT_APPROVAL_REASON,
+                principal="a2a-client", surface="a2a"))
 
     # --- non-streaming dispatch ------------------------------------------
     def dispatch(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -250,6 +270,21 @@ class A2AHandler:
         run = harness.run(brief)
         if run.ok:
             backend = harness.session.backend
+            # THE CONSENT GATE. Tier-3: export is an irreversible hand-off. The
+            # policy decides mechanically and the decision is recorded; a refusal
+            # fails the task and the export NEVER runs.
+            try:
+                record = self.approval.require("export")
+            except ApprovalDenied as denied:
+                task.fail(
+                    agent_message(
+                        Part.from_text(
+                            "Model built, but the STEP export was refused by the "
+                            "approval policy; no artifact was produced."),
+                        Part.from_data({"approvalDenied": denied.record.to_dict()}),
+                    )
+                )
+                return
             content = backend.export("step")
             raw = content if isinstance(content, (bytes, bytearray)) else str(content).encode("utf-8")
             b64 = base64.b64encode(raw).decode("ascii")
@@ -261,7 +296,8 @@ class A2AHandler:
                 name="out.step",
                 description="Generated STEP model",
                 parts=(file_part,),
-                metadata={"digest": run.digest, "applied": run.applied},
+                metadata={"digest": run.digest, "applied": run.applied,
+                          "approval": record.to_dict()},
             )
             task.add_artifact(artifact)
             task.complete(
