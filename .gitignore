@@ -12,3 +12,6 @@ venv/
 build/
 dist/
 .DS_Store
+
+# pressure-test model-output cache (large, machine-local, regenerable)
+.pressure_cache/
