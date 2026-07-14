@@ -13,13 +13,23 @@
         Turn a natural-language brief into verified geometry via the LLM planner
         and the correction loop, then optionally write the exported STEP.
 
-    python cli.py formats [--kind mesh|brep|csg|drawing] [--mode read|write] [--json]
+    python cli.py formats [--kind mesh|brep|csg|drawing|image] [--mode read|write]
+                          [--json]
         Print the honest I/O capability matrix: every adapted codec, its
         extensions, kind, and whether it can genuinely read / write / round-trip.
 
     python cli.py export <out.stl> [--ops ops.json] [--backend stub|cadquery|frep]
         Run an op stream (the built-in demo when --ops is omitted) and write the
         resulting model through the format registry; the extension picks the codec.
+        `export part.png` renders a shaded solid (see `render` for the options).
+
+    python cli.py render <out.png> [--ops ops.json] [--backend stub|cadquery|frep]
+                         [--view iso|front|top|side|hero] [--shading flat|smooth]
+                         [--no-edges] [--width N] [--height N] [--ssaa N]
+                         [--projection orthographic|perspective]
+        Run an op stream (the built-in demo when --ops is omitted) and rasterise
+        the model to a PNG: a z-buffered shaded solid with its feature edges drawn
+        over the top -- what a CAD viewport shows. Stdlib only; no PIL, no numpy.
 
     python cli.py ingest <tokens.json|mesh.obj> --family deepcad|skexgen|hnc|
                                                         vitruvion|mesh
@@ -119,7 +129,14 @@ import sys
 from typing import List, Optional
 
 from harnesscad.io.formats import registry as formats
-from harnesscad.io.surfaces.server import CISPServer
+from harnesscad.io.surfaces.server import BACKENDS, CISPServer
+
+# The `--backend` choices are the server's BACKENDS, not a second hand-kept list:
+# adding a backend in one place must not be able to leave the CLI behind.
+# `blender`, `openscad` and `freecad` shell out to a real external kernel; when
+# that binary is absent they degrade to the stub and say so, so the choice is
+# always offerable. `cadquery` and `freecad` are the real B-rep kernels.
+BACKEND_CHOICES = list(BACKENDS)
 
 
 # The deterministic sample: sk1 = first sketch, e1 = first entity (rectangle).
@@ -251,20 +268,30 @@ def cmd_formats(args: argparse.Namespace) -> int:
     return 0
 
 
+def _ops_from(path: Optional[str]) -> List[dict]:
+    """The op stream at `path`, or the built-in demo when it is None.
+
+    Raises ValueError with a CLI-ready message when the file is unusable.
+    """
+    if not path:
+        return [dict(op) for op in DEMO_OPS]
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            ops = json.load(fh)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"could not load ops from {path!r}: {exc}") from exc
+    if not isinstance(ops, list):
+        raise ValueError(f"{path!r} must contain a JSON array of ops")
+    return ops
+
+
 def cmd_export(args: argparse.Namespace) -> int:
     """Run an op stream (or the demo), then write the model to <out>."""
-    if args.ops:
-        try:
-            with open(args.ops, "r", encoding="utf-8") as fh:
-                ops = json.load(fh)
-        except (OSError, json.JSONDecodeError) as exc:
-            print(f"error: could not load ops from {args.ops!r}: {exc}", file=sys.stderr)
-            return 2
-        if not isinstance(ops, list):
-            print(f"error: {args.ops!r} must contain a JSON array of ops", file=sys.stderr)
-            return 2
-    else:
-        ops = [dict(op) for op in DEMO_OPS]
+    try:
+        ops = _ops_from(args.ops)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
     server = CISPServer(backend=args.backend)
     result = server.applyOps(ops)
@@ -277,6 +304,50 @@ def cmd_export(args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     print(f"wrote:    {args.out}")
+    return 0
+
+
+def render_views() -> List[str]:
+    """The camera views `render --view` accepts, taken from the renderer itself."""
+    from harnesscad.io.render import VIEW_PRESETS
+
+    return list(VIEW_PRESETS)
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    """Run an op stream (or the demo), then rasterise the model to a PNG."""
+    # Imported here so the rasteriser is only touched by `render`/`export *.png`.
+    from harnesscad.io import render as render_route
+
+    try:
+        ops = _ops_from(args.ops)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    server = CISPServer(backend=args.backend)
+    result = server.applyOps(ops)
+    _print_result(result)
+    if not result["ok"]:
+        return 1
+    try:
+        render_route.render_session(
+            server.session, args.out,
+            view=args.view,
+            width=args.width,
+            height=args.height,
+            shading=args.shading,
+            edges=not args.no_edges,
+            ssaa=args.ssaa,
+            projection=args.projection,
+        )
+    except (render_route.RenderError, formats.FormatError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    width, height = render_route.png_size(args.out)
+    print(f"view:     {args.view} ({args.projection}, {args.shading}"
+          f"{'' if args.no_edges else ', feature edges'})")
+    print(f"wrote:    {args.out} ({width}x{height})")
     return 0
 
 
@@ -382,6 +453,41 @@ def cmd_generate(args: argparse.Namespace) -> int:
     return generation_registry.run_cli(args)
 
 
+def cmd_vision(args: argparse.Namespace) -> int:
+    # Imported here so the vision tree is only touched by `vision`.
+    from harnesscad.domain.vision import registry as vision_registry
+
+    return vision_registry.run_cli(args)
+
+
+def cmd_ecosystem(args: argparse.Namespace) -> int:
+    # Imported here so the adapter/backend catalogues are only touched by `ecosystem`.
+    from harnesscad.io.adapters import registry as ecosystem_registry
+
+    return ecosystem_registry.run_cli(args)
+
+
+def cmd_ui(args: argparse.Namespace) -> int:
+    # Imported here so the interaction surfaces are only touched by `ui`.
+    from harnesscad.io.surfaces import registry as surfaces_registry
+
+    return surfaces_registry.run_cli(args)
+
+
+def cmd_core(args: argparse.Namespace) -> int:
+    # Imported here so the core guards are only touched by `core`.
+    from harnesscad.core import registry as core_registry
+
+    return core_registry.run_cli(args)
+
+
+def cmd_agent(args: argparse.Namespace) -> int:
+    # Imported here so the agent tree is only touched by `agent`.
+    from harnesscad.agents import registry as agents_registry
+
+    return agents_registry.run_cli(args)
+
+
 def cmd_bench(args: argparse.Namespace) -> int:
     # Imported here so the metric registry (and the bench tree it adapts) is only
     # touched when the `bench` subcommand actually runs.
@@ -404,13 +510,21 @@ def cmd_dataset(args: argparse.Namespace) -> int:
     return data_pipeline.run(args)
 
 
+def cmd_pressure(args: argparse.Namespace) -> int:
+    # Imported here so the pressure harness (and litellm/ollama, which only it
+    # needs) is only touched by `pressure`.
+    from harnesscad.eval.pressure import cli as pressure_cli
+
+    return pressure_cli.run(args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cli.py", description="harnesscad CISP CLI")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_apply = sub.add_parser("apply", help="run a JSON array of ops")
     p_apply.add_argument("ops", help="path to a JSON array of ops")
-    p_apply.add_argument("--backend", default="stub", choices=["stub", "cadquery", "frep"])
+    p_apply.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
     p_apply.add_argument(
         "--verify", default="core", choices=["core", "full"],
         help="'core' runs the three core checks; 'full' runs the whole discovered "
@@ -419,7 +533,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_apply.set_defaults(func=cmd_apply)
 
     p_demo = sub.add_parser("demo", help="run the built-in constrained-plate sample")
-    p_demo.add_argument("--backend", default="stub", choices=["stub", "cadquery", "frep"])
+    p_demo.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
     p_demo.add_argument("--core-only", action="store_true", dest="core_only",
                         help="run only the core verifiers (skip the discovered fleet)")
     p_demo.set_defaults(func=cmd_demo)
@@ -427,7 +541,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_build = sub.add_parser(
         "build", help="build a part from a natural-language brief via the LLM planner")
     p_build.add_argument("brief", help="natural-language design brief")
-    p_build.add_argument("--backend", default="cadquery", choices=["stub", "cadquery", "frep"])
+    p_build.add_argument("--backend", default="cadquery", choices=BACKEND_CHOICES)
     p_build.add_argument("--model", default=None, help="model name for the default LLM client")
     p_build.add_argument("--out", default=None, help="write the exported STEP to this path")
     p_build.add_argument("--trace", default=None, help="write JSONL trace events to this path")
@@ -438,7 +552,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_formats = sub.add_parser(
         "formats", help="list the I/O capability matrix (read/write/round-trip)")
     p_formats.add_argument("--kind", default=None,
-                           choices=["mesh", "brep", "csg", "drawing"])
+                           choices=["mesh", "brep", "csg", "drawing", "image"])
     p_formats.add_argument("--mode", default=None, choices=["read", "write"])
     p_formats.add_argument("--json", action="store_true", help="emit the report as JSON")
     p_formats.set_defaults(func=cmd_formats)
@@ -448,8 +562,31 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("out", help="output path; the extension picks the format")
     p_export.add_argument("--ops", default=None,
                           help="path to a JSON array of ops (default: the built-in demo)")
-    p_export.add_argument("--backend", default="stub", choices=["stub", "cadquery", "frep"])
+    p_export.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
     p_export.set_defaults(func=cmd_export)
+
+    p_render = sub.add_parser(
+        "render",
+        help="run ops (or the demo) and rasterise the model to a shaded-solid PNG")
+    p_render.add_argument("out", help="output PNG path")
+    p_render.add_argument("--ops", default=None,
+                          help="path to a JSON array of ops (default: the built-in demo)")
+    p_render.add_argument("--backend", default="frep",
+                          choices=BACKEND_CHOICES,
+                          help="geometry backend (default: frep -- it meshes anything)")
+    p_render.add_argument("--view", default="iso",
+                          choices=sorted(render_views()),
+                          help="named camera view (default: iso)")
+    p_render.add_argument("--shading", default="smooth", choices=["flat", "smooth"])
+    p_render.add_argument("--no-edges", action="store_true", dest="no_edges",
+                          help="do not draw the feature edges over the solid")
+    p_render.add_argument("--width", type=int, default=1200)
+    p_render.add_argument("--height", type=int, default=900)
+    p_render.add_argument("--ssaa", type=int, default=2,
+                          help="supersampling factor 1..4 (default 2)")
+    p_render.add_argument("--projection", default="orthographic",
+                          choices=["orthographic", "perspective"])
+    p_render.set_defaults(func=cmd_render)
 
     p_ingest = sub.add_parser(
         "ingest",
@@ -461,7 +598,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["deepcad", "skexgen", "hnc", "vitruvion", "mesh"],
         help="the token family to decode with -- MANDATORY and never guessed: the "
              "quantisers are mutually incompatible ('mesh' takes the point-cloud path)")
-    p_ingest.add_argument("--backend", default="stub", choices=["stub", "cadquery"])
+    p_ingest.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
     p_ingest.add_argument("--arc-policy", default="chord", dest="arc_policy",
                           choices=["chord", "reject"],
                           help="CISP has no arc op: approximate arcs by their chord "
@@ -551,6 +688,46 @@ def build_parser() -> argparse.ArgumentParser:
     _generation_registry.add_arguments(p_generate)
     p_generate.set_defaults(func=cmd_generate)
 
+    p_vision = sub.add_parser(
+        "vision",
+        help="vision surface: trace an image back to CISP ops, calibrate px->mm")
+    from harnesscad.domain.vision import registry as _vision_registry
+
+    _vision_registry.add_arguments(p_vision)
+    p_vision.set_defaults(func=cmd_vision)
+
+    p_ecosystem = sub.add_parser(
+        "ecosystem",
+        help="which system, which backend, which bridge, which kernel")
+    from harnesscad.io.adapters import registry as _ecosystem_registry
+
+    _ecosystem_registry.add_arguments(p_ecosystem)
+    p_ecosystem.set_defaults(func=cmd_ecosystem)
+
+    p_ui = sub.add_parser(
+        "ui",
+        help="interaction surface: command grammar, prediction, overlays, views")
+    from harnesscad.io.surfaces import registry as _surfaces_registry
+
+    _surfaces_registry.add_arguments(p_ui)
+    p_ui.set_defaults(func=cmd_ui)
+
+    p_core = sub.add_parser(
+        "core",
+        help="core guards: op-decoding constraints, routing, feature tree, context")
+    from harnesscad.core import registry as _core_registry
+
+    _core_registry.add_arguments(p_core)
+    p_core.set_defaults(func=cmd_core)
+
+    p_agent = sub.add_parser(
+        "agent",
+        help="agent surface: envelopes, gates, approval-gated edits, tool metrics")
+    from harnesscad.agents import registry as _agents_registry
+
+    _agents_registry.add_arguments(p_agent)
+    p_agent.set_defaults(func=cmd_agent)
+
     p_bench = sub.add_parser(
         "bench",
         help="metric registry + suite runner (--list/--suites/--suite <name>)")
@@ -574,6 +751,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     _data_pipeline.add_arguments(p_dataset)
     p_dataset.set_defaults(func=cmd_dataset)
+
+    p_pressure = sub.add_parser(
+        "pressure",
+        help="pressure test: does a typed diagnostic beat a blind retry? "
+             "(runs local ollama models through both loops and scores the geometry)")
+    from harnesscad.eval.pressure import cli as _pressure_cli
+
+    _pressure_cli.add_arguments(p_pressure)
+    p_pressure.set_defaults(func=cmd_pressure)
 
     p_caps = sub.add_parser(
         "capabilities",

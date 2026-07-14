@@ -344,6 +344,26 @@ def _write_xcsg(obj: Any, path: str, **kwargs: Any) -> None:
     xcsg_codec.write_xcsg(path, _csg_node(obj), **kwargs)
 
 
+def _write_png(obj: Any, path: str, **kwargs: Any) -> None:
+    """PNG is write-only: a rendered raster of the model, not a model.
+
+    Every other codec here carries geometry; this one carries a *picture* of it.
+    :mod:`harnesscad.io.render` scan-converts the mesh with a z-buffer, shades it,
+    draws its feature edges over the top and writes the PNG with zlib alone. The
+    pixels cannot be turned back into a model, so there is no reader.
+    """
+    from harnesscad.io import render as render_route
+
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    if not faces:
+        raise ExportError("nothing to render: the model has no faces")
+    try:
+        render_route.render((verts, faces), path, **kwargs)
+    except render_route.RenderError as exc:
+        raise ExportError(str(exc)) from exc
+
+
 def _write_svg(obj: Any, path: str, opts: Optional[dict] = None,
                views: Any = None, **kwargs: Any) -> None:
     """SVG is write-only. Two routes, and the caller picks:
@@ -454,6 +474,15 @@ _ADAPTERS: Dict[str, _Adapter] = {
              "views=True (or a view list) to take the orthographic engineering-"
              "drawing route instead: first/third angle, hidden lines, dimensions.",
     ),
+    "harnesscad.io.render": _Adapter(
+        extensions=(".png",), mime="image/png", kind="image",
+        read_symbols=(), write_symbols=("render", "write_png"),
+        reader=None, writer=_write_png, lossless=False,
+        note="WRITE-ONLY: a rendered raster (shaded solid + feature edges), not "
+             "geometry. Pixels cannot be decoded back into a model, so there is no "
+             "reader. Options pass through to io.render.render(): view=, shading=, "
+             "edges=, ssaa=, width=, height=, projection=.",
+    ),
     "harnesscad.io.formats.dxf": _Adapter(
         extensions=(".dxf",), mime="image/vnd.dxf", kind="drawing",
         read_symbols=(), write_symbols=(),
@@ -477,7 +506,7 @@ class FormatSpec:
     dotted: str                    # harnesscad.io.formats.stl
     extensions: Tuple[str, ...]
     mime: str
-    kind: str                      # mesh | brep | csg | drawing
+    kind: str                      # mesh | brep | csg | drawing | image
     can_read: bool
     can_write: bool
     round_trip: bool
@@ -602,7 +631,7 @@ def spec_for_path(path: str) -> FormatSpec:
 
 
 def supported(kind: Optional[str] = None, mode: Optional[str] = None) -> List[FormatSpec]:
-    """The specs matching a kind (mesh/brep/csg/drawing) and/or a mode."""
+    """The specs matching a kind (mesh/brep/csg/drawing/image) and/or a mode."""
     if mode not in (None, "read", "write"):
         raise ValueError("mode must be 'read', 'write' or None")
     out = []
@@ -669,7 +698,7 @@ def export_session(session: Any, path: str, **options: Any) -> str:
     if backend is None:
         raise ExportError(
             f"{type(session).__name__!r} is not a session/backend with an export()")
-    if spec.kind in ("mesh", "drawing"):
+    if spec.kind in ("mesh", "drawing", "image"):
         model: Any = _mesh_from_backend(backend, name=os.path.basename(str(path)))
     elif spec.kind == "brep":
         model = _step_text(backend)

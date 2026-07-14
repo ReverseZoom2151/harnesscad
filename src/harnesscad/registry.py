@@ -143,6 +143,7 @@ KEYWORD_TAGS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("amf", ("format", "io")),
     ("3mf", ("format", "io")),
     ("svg", ("format", "io")),
+    ("png", ("format", "io")),
     ("ply", ("format", "io")),
     ("off_", ("format", "io")),
     ("codec", ("format", "io")),
