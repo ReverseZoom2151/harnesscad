@@ -166,6 +166,11 @@ from harnesscad.io.surfaces.server import BACKENDS, CISPServer
 # always offerable. `cadquery` and `freecad` are the real B-rep kernels.
 BACKEND_CHOICES = list(BACKENDS)
 
+#: Loop strategies `harnesscad build --strategy` offers. Mirrored (and asserted
+#: identical, tests/core/test_cli_strategy.py) from `core.pipeline.STRATEGIES`,
+#: which is imported lazily so `apply`/`demo` never pay for the planner stack.
+BUILD_STRATEGIES = ("refine", "best-of-n")
+
 
 # The deterministic sample: sk1 = first sketch, e1 = first entity (rectangle).
 DEMO_OPS: List[dict] = [
@@ -268,6 +273,8 @@ def cmd_build(args: argparse.Namespace) -> int:
             model=args.model,
             max_iters=args.max_iters,
             tracer=tracer,
+            strategy=args.strategy,
+            n=args.best_of,
         )
     except BuildError as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -645,6 +652,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--trace", default=None, help="write JSONL trace events to this path")
     p_build.add_argument("--max-iters", type=int, default=5, dest="max_iters",
                          help="max plan->apply->replan iterations (default 5)")
+    p_build.add_argument(
+        "--strategy", default="refine", choices=list(BUILD_STRATEGIES),
+        help="'refine' feeds the (soundness-gated) diagnostics back and replans. "
+             "'best-of-n' draws N independent plans, applies each in a fresh "
+             "session and lets the deterministic verifier pick the winner -- no "
+             "feedback channel, therefore no poisoning surface.")
+    p_build.add_argument("--best-of", type=int, default=4, dest="best_of",
+                         help="N for --strategy best-of-n (default 4)")
     p_build.add_argument(
         "--force", action="store_true",
         help="write the artifact even when the output gate refuses it. The "

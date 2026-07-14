@@ -48,6 +48,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from harnesscad.agents.generation import three_view as three_view_spec
+from harnesscad.io import gate
 from harnesscad.data.dataengine.annotation import visual_qc
 from harnesscad.eval.quality.perception import view_coverage
 from harnesscad.io import drawing as drawing_route
@@ -729,7 +730,9 @@ def render(mesh: Any,
            edge_width: int = 1,
            margin: float = 0.10,
            fov_deg: float = 32.0,
-           return_pixels: bool = False) -> Any:
+           return_pixels: bool = False,
+           force: bool = False,
+           source: Any = None) -> Any:
     """Render ``mesh`` to a PNG at ``path``; returns the path.
 
     ``mesh`` is anything the format registry can coerce (a ``formats.Mesh``, a
@@ -738,6 +741,21 @@ def render(mesh: Any,
     :data:`VIEW_PRESETS`) and is ignored when an explicit ``camera`` is given.
     ``shading`` is ``"flat"`` or ``"smooth"``. With ``return_pixels`` the RGB
     buffer and its size are returned instead of (or as well as) being written.
+
+    A render is an artifact: a picture of a part is how a wrong part gets shipped
+    (the dilating shell rendered *beautifully*). So whenever a ``path`` is given
+    this goes through :mod:`harnesscad.io.gate` first, and an invalid model
+    raises :class:`~harnesscad.io.gate.InvalidArtifact` with no PNG written.
+    ``force=True`` renders anyway and drops the ``.INVALID.json`` sidecar.
+    With ``path=None`` nothing leaves the harness, so nothing is gated -- the
+    pixels are returned in-process (this is how :func:`three_view` composes its
+    panels, and it gates the composite it actually writes).
+
+    ``source`` is the session/backend the mesh came from, when the caller has
+    already tessellated it and only holds ``(verts, faces)``. Handing it over is
+    what lets the gate check the DECLARED intent (a shell that grew the part, a
+    cut that added volume) and not merely the measured geometry -- exactly the
+    gap the dilating-shell render fell through.
     """
     if shading not in ("flat", "smooth"):
         raise RenderError("shading must be 'flat' or 'smooth', got %r" % (shading,))
@@ -751,6 +769,11 @@ def render(mesh: Any,
     verts, faces = _as_indexed(mesh)
     if not faces:
         raise RenderError("nothing to render: the mesh has no triangles")
+
+    # THE GATE. Nothing reaches the filesystem from here without passing it.
+    report = (gate.guard((verts, faces), str(path),
+                         source=source if source is not None else mesh, force=force)
+              if path is not None else None)
 
     center, radius = _bounds(verts)
     cam = camera or preset_camera(view, center, radius, projection=projection,
@@ -777,6 +800,8 @@ def render(mesh: Any,
     pixels = fb.downsample(ssaa)
     if path is not None:
         write_png(str(path), pixels, width, height)
+        if report is not None and not report.ok:      # forced through the gate
+            gate.write_sidecar(str(path), report)
     if return_pixels or path is None:
         return {"pixels": pixels, "width": width, "height": height,
                 "path": str(path) if path else None}
@@ -792,7 +817,8 @@ def render_session(session_or_backend: Any, path: str, **options: Any) -> str:
 # The modules that were blocked on a renderer.
 # ---------------------------------------------------------------------------
 
-def three_view(mesh: Any, path: str, panel: int = 800, **options: Any) -> dict:
+def three_view(mesh: Any, path: str, panel: int = 800, force: bool = False,
+               **options: Any) -> dict:
     """The CADSmith three-view judge image (``agents.generation.three_view``).
 
     That module fixes the exact cameras -- isometric (el 35, az 45), high-angle
@@ -805,6 +831,8 @@ def three_view(mesh: Any, path: str, panel: int = 800, **options: Any) -> dict:
     verts, faces = _as_indexed(mesh)
     if not faces:
         raise RenderError("nothing to render: the mesh has no triangles")
+    # THE GATE: the composite PNG is the artifact; the panels never touch disk.
+    report = gate.guard((verts, faces), str(path), source=mesh, force=force)
     center, radius = _bounds(verts)
     panel = int(panel)
     options.pop("camera", None)
@@ -832,6 +860,8 @@ def three_view(mesh: Any, path: str, panel: int = 800, **options: Any) -> dict:
             dst = (y * total_w + pi * panel) * 3
             composed[dst:dst + panel * 3] = buf[src:src + panel * 3]
     write_png(str(path), composed, total_w, panel)
+    if not report.ok:                                  # forced through the gate
+        gate.write_sidecar(str(path), report)
     return {"path": str(path), "views": tuple(names),
             "width": total_w, "height": panel,
             "spec_resolution": three_view_spec.render_resolution()}

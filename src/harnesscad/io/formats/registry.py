@@ -47,6 +47,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tupl
 
 from harnesscad import registry as capabilities
 from harnesscad.domain.geometry.mesh.polyhedron import Polyhedron
+from harnesscad.io import gate
 from harnesscad.domain.programs.ast.typed_csg import Node
 from harnesscad.io.formats import amf as amf_codec
 from harnesscad.io.formats import dxf as dxf_codec
@@ -521,12 +522,22 @@ class FormatSpec:
                 f"format {self.name!r} is write-only: {self.note}")
         return self._reader(path, **options)
 
-    def write(self, model: Any, path: str, **options: Any) -> str:
+    def write(self, model: Any, path: str, *, source: Any = None,
+              force: bool = False, **options: Any) -> str:
+        """Write ``model`` to ``path`` -- THROUGH THE OUTPUT GATE.
+
+        Every codec in this registry is reached through here, so this is the one
+        place the gate has to stand. It measures the geometry, compares it with
+        the declared intent (when ``source`` is a session/backend carrying an op
+        log), and raises :class:`harnesscad.io.gate.InvalidArtifact` *before the
+        file is opened* if the two disagree. ``force=True`` writes anyway and
+        drops a ``<name>.INVALID.json`` sidecar naming the failures.
+        """
         if not self.can_write or self._writer is None:
             raise UnsupportedOperationError(
                 f"format {self.name!r} cannot be written: {self.note}")
-        self._writer(model, path, **options)
-        return path
+        return gate.gated_write(self._writer, model, str(path),
+                                source=source, force=force, **options)
 
     def to_dict(self) -> dict:
         return {
@@ -678,17 +689,29 @@ def read(path: str, **options: Any) -> Any:
     return spec_for_path(path).read(str(path), **options)
 
 
-def write(model_or_mesh: Any, path: str, **options: Any) -> str:
-    """Write a model/mesh/session to `path`, dispatching on its extension."""
-    return spec_for_path(path).write(model_or_mesh, str(path), **options)
+def write(model_or_mesh: Any, path: str, *, force: bool = False,
+          **options: Any) -> str:
+    """Write a model/mesh/session to `path`, dispatching on its extension.
+
+    Goes through the output gate: an invalid artifact raises
+    :class:`harnesscad.io.gate.InvalidArtifact` and no file is written.
+    """
+    return spec_for_path(path).write(model_or_mesh, str(path),
+                                     source=model_or_mesh, force=force, **options)
 
 
-def export_session(session: Any, path: str, **options: Any) -> str:
+def export_session(session: Any, path: str, *, force: bool = False,
+                   **options: Any) -> str:
     """Write a HarnessSession's current model to any writable format.
 
     Mesh/drawing targets go through the backend's STL export; BRep targets go
     through its STEP export. A backend that cannot produce the needed geometry
     raises :class:`ExportError` rather than writing a bogus file.
+
+    The backend is handed to the gate as the ``source``, so even a BRep (STEP)
+    export -- whose payload is *text* the gate could not measure -- is judged
+    against the real geometry the session built, and against the intent its op
+    log declared.
     """
     spec = spec_for_path(path)
     if not spec.can_write:
@@ -705,7 +728,7 @@ def export_session(session: Any, path: str, **options: Any) -> str:
     else:
         raise UnsupportedOperationError(
             f"a session cannot be exported to kind {spec.kind!r} ({spec.name})")
-    return spec.write(model, str(path), **options)
+    return spec.write(model, str(path), source=backend, force=force, **options)
 
 
 def render_matrix(rows: Optional[Sequence[dict]] = None) -> str:

@@ -240,15 +240,32 @@ def save_views(
     views: Iterable = DEFAULT_VIEWS,
     size: Tuple[int, int] = (512, 512),
     fmt: str = "svg",
+    force: bool = False,
 ) -> Dict[str, Optional[str]]:
     """Render and write each view to ``directory``; return ``{view: path|None}``.
 
     Skipped views (``None`` bytes) are written as ``None`` paths, not files.
     Creates ``directory`` if needed. Never raises for a missing renderer.
+
+    These images are artifacts of the model, so they go through the output gate
+    (:mod:`harnesscad.io.gate`) exactly once, on the backend's geometry, before
+    any of them is written. If the model is invalid, nothing is written and
+    :class:`~harnesscad.io.gate.InvalidArtifact` is raised: a picture of a wrong
+    part is how a wrong part ships. A backend the gate cannot measure (no
+    ``export``) also produces no images, so there is nothing to write anyway.
     """
+    from harnesscad.io import gate
+
     result = render(backend, views=views, size=size, fmt=fmt)
+    if not any(data is not None for data in result.images.values()):
+        return {name: None for name in result.images}
+
     os.makedirs(directory, exist_ok=True)
     ext = "png" if result.fmt == "png" else "svg"
+    # One gate call for the whole view set: they all depict the same solid.
+    probe = os.path.join(directory, f"views.{ext}")
+    report = gate.guard(backend, probe, source=backend, force=force)
+
     paths: Dict[str, Optional[str]] = {}
     for name, data in result.images.items():
         if data is None:
@@ -258,4 +275,6 @@ def save_views(
         with open(path, "wb") as fh:
             fh.write(data)
         paths[name] = path
+    if not report.ok:                                  # forced through the gate
+        gate.write_sidecar(probe, report)
     return paths

@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from harnesscad.eval.gallery import parts as catalogue
 from harnesscad.eval.gallery.parts import COMPARE_BACKENDS, COMPARE_PART, Part
 from harnesscad.io import drawing as drawing_route
+from harnesscad.io import gate
 from harnesscad.io import render as render_route
 from harnesscad.io.surfaces.server import CISPServer
 
@@ -338,6 +339,11 @@ def build_part(part: Part, backend: Optional[str] = None) -> dict:
         "seconds": time.perf_counter() - started,
         "vertices": len(mesh[0]), "faces": len(mesh[1]),
         "digest": result.get("digest"),
+        # Kept so the output gate can check the DECLARED intent of the op stream
+        # (a shell that grew the part, a cut that added volume) and not merely
+        # the measured mesh. Without it the gallery is blind to exactly the class
+        # of bug that put an oversize enclosure in the README.
+        "session": server.session,
     }
 
 
@@ -360,7 +366,7 @@ def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
                         width=WIDTH, height=HEIGHT, ssaa=SSAA,
                         shading="smooth", edges=True, projection="orthographic",
                         material=GALLERY_MATERIAL, lights=GALLERY_LIGHTS,
-                        cull=wound)
+                        cull=wound, source=built.get("session"))
     render_seconds = time.perf_counter() - t0
     metrics = verify_png(png, WIDTH, HEIGHT)
 
@@ -393,6 +399,9 @@ def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
             built["mesh"], views=("front", "top", "side", "iso"),
             width=1100.0, height=800.0, show_hidden=True, show_dimensions=True,
             title="harnesscad / " + part.name)
+        # THE GATE: a dimensioned engineering drawing of a wrong part is the
+        # single most dangerous artifact the harness can emit.
+        gate.guard(built["mesh"], svg_path, source=built.get("session"))
         with open(svg_path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(svg)
         row["drawing"] = os.path.basename(svg_path)
