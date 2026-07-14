@@ -13,6 +13,14 @@ dependencies = []
 [project.optional-dependencies]
 # OCCT-backed geometry backend (CadQuery / OpenCascade).
 cadquery = ["cadquery>=2.4"]
+# The FreeCAD backend needs NO Python package: FreeCAD ships its own interpreter
+# and the backend drives the installed `freecadcmd` binary out-of-process (its
+# Python is a different build from the host's, so it cannot be imported here).
+# Install the application, not a wheel:
+#     winget install FreeCAD.FreeCAD   |   apt install freecad
+#     brew install --cask freecad      |   HARNESSCAD_FREECAD=/path/to/freecadcmd
+# Listed for discoverability; `pip install harnesscad[freecad]` is a no-op.
+freecad = []
 # Provider-agnostic LLM layer (LiteLLM) + structured op output (Instructor).
 llm = ["litellm>=1.0", "instructor>=1.0"]
 # Real 2D sketch constraint solver (SolveSpace). Optional: the ConstraintGraph
