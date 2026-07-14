@@ -41,12 +41,18 @@ from harnesscad.io.formats import stl as stl_codec
 #: refused on ALL of them: one ungated codec is a hole in the hull.
 EXPORT_EXTENSIONS = ("stl", "obj", "glb", "amf", "step", "svg", "png")
 
-#: Coarse enough that 200 marching-cubes builds finish, fine enough that the
+#: Coarse enough that 200 iso-surface builds finish, fine enough that the
 #: errors the gate hunts (millimetres on a 60 mm part) are far outside the
 #: discretisation noise.
 CORPUS_RESOLUTION = 18
 CORPUS_SIZE = 200
 CORPUS_SEED = 20260714
+#: The corpus PINS its meshers rather than riding the default, and alternates
+#: between them: the gate's job is to refuse bad geometry from whatever produced
+#: it, and the two meshers produce DIFFERENT defects (see the comment in
+#: ``PropertyTotalCorrectnessTest``). A gate corpus that follows DEFAULT_MESHER
+#: silently loses coverage of the other one every time the default moves.
+CORPUS_MESHERS = ("marching_cubes", "dual_contouring")
 
 
 # ---------------------------------------------------------------------------
@@ -381,8 +387,14 @@ class DeclaredIntentTest(TempDirTest):
         try:
             b = build_box(resolution=32)
             b.apply(Shell(faces=[], thickness=3.0))
-            grown = [round(c, 1) for c in b.query("metrics")["bbox"]]
-            self.assertEqual(grown, [63.0, 43.0, 23.0], "the bug did not reproduce")
+            grown = b.query("metrics")["bbox"]
+            # The bug reproduces when the part GREW. Do not pin the exact bbox:
+            # that number is the MESHER's reading, not the gate's subject, and it
+            # moves with the mesher (marching cubes reports 63.0 here, dual
+            # contouring 63.5). A test about the gate must not fail when the
+            # measuring instrument is swapped.
+            for got, was in zip(grown, (60.0, 40.0, 20.0)):
+                self.assertGreater(got, was + 1.0, "the bug did not reproduce")
 
             out = self.path("enclosure.stl")
             with self.assertRaises(gate.InvalidArtifact) as caught:
@@ -617,7 +629,19 @@ class PropertyTotalCorrectnessTest(TempDirTest):
         refusal_codes = {}
 
         for i in range(CORPUS_SIZE):
-            backend = FRepBackend(resolution=CORPUS_RESOLUTION)
+            # The mesher is PINNED, and it alternates. This test is about the
+            # GATE, but the gate only ever sees geometry a mesher produced, and
+            # the two meshers fail differently: over this corpus dual contouring
+            # is the only one that produces a SELF-INTERSECTING mesh (MC: 0/200,
+            # DC: 1/200), and marching cubes is the cheaper way to hit the
+            # winding/manifold paths. Leaving it on the default would test only
+            # whichever mesher is currently default -- which is exactly how the
+            # self-intersecting refusal path went untested until the flip.
+            # Alternating covers both defect profiles and keeps the corpus inside
+            # the module's runtime budget (DC-only: 110 s; MC-only: 38 s;
+            # alternating: ~75 s).
+            mesher = CORPUS_MESHERS[i % len(CORPUS_MESHERS)]
+            backend = FRepBackend(resolution=CORPUS_RESOLUTION, mesher=mesher)
             backend.reset()
 
             if not all(backend.apply(op).ok for op in random_stream(rng)):
@@ -664,6 +688,14 @@ class PropertyTotalCorrectnessTest(TempDirTest):
             % (refusal_codes,))
         self.assertGreaterEqual(shipped + refused, 100,
                                 "too few streams reached the gate")
+        # COVERAGE PIN. Dual contouring is the only mesher in this corpus that
+        # produces a self-intersecting mesh (stream 159), and it is the mesher we
+        # ship. If this code stops appearing, the corpus has stopped exercising a
+        # refusal path -- do not delete this assertion, work out what changed.
+        self.assertIn(
+            "self-intersecting", refusal_codes,
+            "the corpus no longer exercises the self-intersecting refusal path "
+            "(codes: %r)" % (refusal_codes,))
         print("\n  corpus: %d streams | %d shipped-valid | %d refused | "
               "%d rejected pre-gate | THIRD OUTCOME: %d\n  refusal codes: %r"
               % (CORPUS_SIZE, shipped, refused, plan_rejected, len(third_outcome),
