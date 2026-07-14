@@ -220,6 +220,16 @@ def check_containment(
 
 
 def check_fillet_radius(shape: ShapeInfo, radius: float) -> Optional[Failure]:
+    """Reject a fillet radius the geometry cannot carry.
+
+    The constraint is ``radius < limit / 2`` where ``limit`` is the smallest
+    adjacent extent (``min_edge_length`` when known, else the smallest bbox
+    extent): two fillets of radius ``r`` eat ``r`` from each side of that
+    extent, so at ``2r == limit`` they meet and the face between them vanishes.
+    ``2r == limit`` is therefore the *degenerate limit* and must fire — the old
+    strict ``>`` let exactly that case through while flagging everything past
+    it, so the rule disagreed with its own suggestion ("reduce below limit/2").
+    """
     if radius <= 0.0:
         return Failure(
             code=ErrorCode.INVALID_INPUT,
@@ -230,10 +240,10 @@ def check_fillet_radius(shape: ShapeInfo, radius: float) -> Optional[Failure]:
     limit = shape.min_edge_length
     if limit is None:
         limit = shape.bbox.min_extent()
-    if radius * 2.0 > limit:
+    if radius * 2.0 >= limit:
         return Failure(
             code=ErrorCode.RADIUS_TOO_LARGE,
-            message="Fillet radius %.6g exceeds half the smallest extent (%.6g) of '%s'."
+            message="Fillet radius %.6g leaves no face on the smallest extent (%.6g) of '%s'."
             % (radius, limit, shape.id),
             suggestion="Reduce the radius below %.6g." % (limit / 2.0),
             failed_check="fillet_radius",

@@ -102,6 +102,34 @@ class TestIndividualChecks(unittest.TestCase):
             check_fillet_radius(BOX, -1.0).code, ErrorCode.INVALID_INPUT
         )
 
+    def test_fillet_radius_boundary_is_the_degenerate_limit(self):
+        # The 50x30x6 plate from the pressure report. The constraint is
+        # r < half the smallest extent (3 mm). The boundary r == 3 is the
+        # degenerate limit -- the two fillets meet and the face vanishes -- so
+        # it MUST fire; the old strict `>` let exactly that case through while
+        # its own suggestion said "reduce below 3".
+        plate = ShapeInfo("plate", BoundingBox(0, 0, 0, 50, 30, 6), volume=9000.0)
+        self.assertEqual(
+            check_fillet_radius(plate, 3.0).code, ErrorCode.RADIUS_TOO_LARGE
+        )
+        self.assertEqual(
+            check_fillet_radius(plate, 3.1).code, ErrorCode.RADIUS_TOO_LARGE
+        )
+        self.assertIsNone(check_fillet_radius(plate, 2.99))
+        self.assertIn("3", check_fillet_radius(plate, 3.0).suggestion)
+
+    def test_shell_thickness_boundary_still_fires(self):
+        # The harness's genuine win (trap_shell_too_thick) must survive: a 9 mm
+        # shell in 5 mm of stock, and the exact boundary t == half the extent.
+        tray = ShapeInfo("tray", BoundingBox(0, 0, 0, 60, 40, 5), volume=12000.0)
+        fail = check_shell_thickness(tray, 9.0)
+        self.assertEqual(fail.code, ErrorCode.THICKNESS_TOO_LARGE)
+        self.assertIn("leaves no cavity", fail.message)
+        self.assertEqual(
+            check_shell_thickness(tray, 2.5).code, ErrorCode.THICKNESS_TOO_LARGE
+        )
+        self.assertIsNone(check_shell_thickness(tray, 2.4))
+
     def test_fillet_radius_uses_min_edge_length(self):
         thin = ShapeInfo("t", BOX.bbox, volume=1000.0, min_edge_length=1.0)
         self.assertEqual(
