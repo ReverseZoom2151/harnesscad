@@ -138,8 +138,10 @@ class TestOrphans(unittest.TestCase):
         orph = set(registry.orphans())
         graph = registry.import_graph()
         imported = {t for targets in graph.values() for t in targets}
+        for targets in registry.dynamic_edges().values():
+            imported.update(targets)
         indexed = {e.dotted for e in registry.index()}
-        self.assertEqual(orph, indexed - imported - {"harnesscad.registry"})
+        self.assertEqual(orph, indexed - imported - set(registry.ROOTS))
 
     def test_wired_modules_are_not_orphans(self):
         """Regression for the seams: these are imported by real product code."""
@@ -157,6 +159,87 @@ class TestOrphans(unittest.TestCase):
         self.assertTrue(imported)
         for d in registry.orphans():
             self.assertNotIn(d, imported)
+
+
+class TestOrphanDetectorSeesDynamicDispatch(unittest.TestCase):
+    """The orphan detector used to cry wolf, and that is why the dead stayed hidden.
+
+    `_product_imports` reads the AST, so it cannot see
+    `importlib.import_module(entry.dotted)` -- which is how EVERY layer registry
+    in this repo dispatches. The verifier fleet runs on every `verify_level=full`
+    loop and reported as dead; so did every bench metric and every adapter. 336
+    orphans were reported and 292 of them were alive. When a tool is wrong about
+    300 modules nobody reads its output, and `tool_reward.py` sits unwired inside
+    the noise. These tests keep the detector honest.
+    """
+
+    def test_a_dynamically_dispatched_verifier_is_not_an_orphan(self):
+        # precheck runs on every full-verify loop -- it caused every regression in
+        # assets/pressure/report.md -- and the old detector called it dead.
+        orph = set(registry.orphans())
+        self.assertNotIn("harnesscad.eval.verifiers.precheck", orph)
+        self.assertNotIn("harnesscad.eval.verifiers.dfm", orph)
+
+    def test_the_static_view_is_still_available_and_is_strictly_larger(self):
+        static = set(registry.orphans(dynamic=False))
+        true = set(registry.orphans(dynamic=True))
+        self.assertTrue(true.issubset(static))
+        self.assertLess(len(true), len(static))
+
+    def test_every_dynamic_dispatcher_is_declared(self):
+        """A new layer registry cannot silently reintroduce the cried-wolf bug.
+
+        Any module named `registry` (or `pipeline`) that imports the capability
+        index and loads modules by dotted name IS a dispatcher and must appear in
+        DYNAMIC_DISPATCHERS, or the modules it dispatches will be reported dead.
+        """
+        import pathlib
+        import re
+
+        src = pathlib.Path(registry.ROOT)
+        undeclared = []
+        for path in sorted(src.rglob("*.py")):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if "from harnesscad import registry as capability_registry" not in text:
+                continue
+            if not re.search(r"capability_registry\.load\(|importlib\.import_module\(",
+                             text):
+                continue
+            dotted = "harnesscad." + str(
+                path.relative_to(src).with_suffix("")).replace(os.sep, ".")
+            if dotted not in registry.DYNAMIC_DISPATCHERS:
+                undeclared.append(dotted)
+        self.assertEqual(
+            undeclared, [],
+            "these modules dispatch by importlib and are not in "
+            "registry.DYNAMIC_DISPATCHERS, so everything they dispatch will be "
+            "misreported as an orphan: %r" % (undeclared,))
+
+    def test_declared_dispatchers_and_prefixes_are_real(self):
+        indexed = {e.dotted for e in registry.index()}
+        for dispatcher, prefixes in registry.DYNAMIC_DISPATCHERS.items():
+            self.assertIn(dispatcher, indexed, dispatcher)
+            for prefix in prefixes:
+                self.assertTrue(
+                    any(d.startswith(prefix + ".") for d in indexed),
+                    "%s dispatches %r and nothing lives there" % (dispatcher, prefix))
+
+    def test_the_orphan_ledger_may_not_grow(self):
+        """The committed ceiling. An orphan is a capability nobody can reach."""
+        orph = registry.orphans()
+        self.assertLessEqual(
+            len(orph), ORPHAN_CEILING,
+            "the orphan count rose to %d (ceiling %d). A module nothing imports "
+            "and no dispatcher can reach is not a capability. Wire it, or delete "
+            "it, or raise this ceiling in the same diff and say why:\n  %s"
+            % (len(orph), ORPHAN_CEILING, "\n  ".join(orph)))
+
+
+#: The number of modules NOTHING in the product can reach, statically or by
+#: runtime dispatch, as measured when the detector was fixed. It is a debt and it
+#: may only go down. (The old, AST-only detector reported 336; 292 of those were
+#: alive and dispatched by importlib.)
+ORPHAN_CEILING = 44
 
 
 class TestStats(unittest.TestCase):

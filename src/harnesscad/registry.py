@@ -526,12 +526,94 @@ def import_graph() -> Dict[str, List[str]]:
     return graph
 
 
-def orphans() -> List[str]:
-    """Indexed modules that no other indexed module imports -- the unreachable islands."""
+# ---------------------------------------------------------------------------
+# DYNAMIC REACHABILITY -- why the orphan list was wrong
+# ---------------------------------------------------------------------------
+#
+# `_product_imports` reads the AST. It sees `from x import y`. It cannot see
+# `importlib.import_module(entry.dotted)`, and EVERY layer registry in this
+# repository dispatches exactly that way: it asks the capability index for the
+# modules of a package and imports them by name at runtime. So the whole verifier
+# fleet -- 20-odd modules that RUN ON EVERY `verify_level="full"` LOOP -- reported
+# as dead, alongside every bench metric, every quality scorer and every adapter.
+#
+# That is not a cosmetic defect. A wrong orphan report is WHY the genuinely dead
+# modules stayed invisible: when the tool cries wolf on 300 live modules, nobody
+# reads the list, and `tool_reward.py` sits unwired for months inside the noise.
+#
+# The fix is to declare the dispatch edges the AST cannot see. The table is
+# asserted complete by tests/test_registry.py: any `*/registry.py` that imports
+# the capability registry and is absent from this table fails the suite, so a new
+# dispatcher cannot silently reintroduce the bug.
+DYNAMIC_DISPATCHERS: Dict[str, Tuple[str, ...]] = {
+    "harnesscad.agents.registry": ("harnesscad.agents",),
+    "harnesscad.agents.exploration.registry": ("harnesscad.agents.exploration",),
+    "harnesscad.agents.generation.registry": ("harnesscad.agents.generation",),
+    "harnesscad.core.registry": ("harnesscad.core",),
+    "harnesscad.data.pipeline": ("harnesscad.data",),
+    "harnesscad.domain.editing.registry": ("harnesscad.domain.editing",),
+    "harnesscad.domain.fabrication.registry": ("harnesscad.domain.fabrication",),
+    "harnesscad.domain.library.registry": ("harnesscad.domain.library",),
+    "harnesscad.domain.procedural.registry": ("harnesscad.domain.procedural",),
+    "harnesscad.domain.programs.registry": ("harnesscad.domain.programs",),
+    "harnesscad.domain.reconstruction.registry": ("harnesscad.domain.reconstruction",
+                                                  "harnesscad.io.ingest"),
+    "harnesscad.domain.spec.registry": ("harnesscad.domain.spec",),
+    "harnesscad.domain.vision.registry": ("harnesscad.domain.vision",),
+    "harnesscad.eval.bench.registry": ("harnesscad.eval.bench",),
+    "harnesscad.eval.quality.registry": ("harnesscad.eval.quality",),
+    "harnesscad.eval.verifiers.registry": ("harnesscad.eval.verifiers",),
+    "harnesscad.governance.registry": ("harnesscad.governance",),
+    "harnesscad.io.adapters.registry": ("harnesscad.io.adapters",
+                                        "harnesscad.io.formats"),
+    "harnesscad.io.surfaces.registry": ("harnesscad.io.surfaces",),
+}
+
+#: Modules that are legitimately imported by nothing because they ARE the entry
+#: point: a console script, a `python -m` target, or the index itself. An entry
+#: point is not an orphan, and calling it one is the other half of the cried wolf.
+ROOTS: Tuple[str, ...] = (
+    "harnesscad.registry",                        # this module; the index
+    "harnesscad.core.cli",                        # [project.scripts] harnesscad
+    "harnesscad.eval.gates.precision_floor",      # python -m ... (CI gate)
+    "harnesscad.eval.gates.liveness_floor",       # python -m ... (CI gate)
+    "harnesscad.eval.bench.harness.pressure_correlation",  # python -m ...
+)
+
+
+def dynamic_edges() -> Dict[str, List[str]]:
+    """dispatcher -> the modules it imports AT RUNTIME (importlib, not the AST)."""
+    known = sorted(_by_dotted())
+    out: Dict[str, List[str]] = {}
+    for dispatcher, prefixes in DYNAMIC_DISPATCHERS.items():
+        if dispatcher not in _by_dotted():
+            continue
+        targets = [
+            d for d in known
+            if d != dispatcher
+            and any(d.startswith(p + ".") for p in prefixes)
+        ]
+        out[dispatcher] = targets
+    return out
+
+
+def orphans(dynamic: bool = True) -> List[str]:
+    """Indexed modules NOTHING can reach -- statically or by runtime dispatch.
+
+    ``dynamic=True`` (the default, and the honest one) additionally credits the
+    layer registries with the modules they `importlib`-load from the capability
+    index, and treats :data:`ROOTS` as reachable. ``dynamic=False`` is the old,
+    AST-only view, kept so the difference between the two is auditable and so the
+    size of the lie is a number anyone can print.
+    """
     graph = import_graph()
     imported = set()
     for targets in graph.values():
         imported.update(targets)
+    if dynamic:
+        for targets in dynamic_edges().values():
+            imported.update(targets)
+        imported.update(ROOTS)
     return sorted(d for d in graph if d not in imported)
 
 

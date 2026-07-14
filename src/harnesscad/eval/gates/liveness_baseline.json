@@ -1,0 +1,23 @@
+{
+  "_": "COMMITTED DEAD-FIELD CENSUS. Enforced by harnesscad.eval.gates.liveness_floor. Each entry is a backend:op.field the kernel currently IGNORES -- a parameter the model can set and the geometry will not honour. This list is a debt. It may shrink; a new entry fails the build.",
+  "backends": [
+    "frep"
+  ],
+  "dead": [
+    "frep:chamfer.distance2",
+    "frep:chamfer.edges",
+    "frep:circular_pattern.axis",
+    "frep:circular_pattern.feature",
+    "frep:constrain.b",
+    "frep:constrain.value",
+    "frep:fillet.edges",
+    "frep:hole.cbore_depth",
+    "frep:hole.cbore_diameter",
+    "frep:hole.csk_angle",
+    "frep:hole.csk_diameter",
+    "frep:hole.face_or_sketch",
+    "frep:hole.kind",
+    "frep:linear_pattern.feature",
+    "frep:mirror.feature_or_body"
+  ]
+}

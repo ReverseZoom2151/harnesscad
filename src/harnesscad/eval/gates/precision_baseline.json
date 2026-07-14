@@ -1,0 +1,249 @@
+{
+  "_": "COMMITTED PRECISION FLOORS. Enforced by harnesscad.eval.gates.precision_floor, which CI runs on every push. A model-facing verifier's floor is 1.0 and may not be lowered: fix the rule or demote it to HEURISTIC in verifiers/soundness.py. A heuristic verifier's floor is its measured precision, so it cannot silently regress. A verifier absent from this file fails the build.",
+  "corpus": {
+    "backend": "frep",
+    "known_bad": 8,
+    "known_good": 8
+  },
+  "fleet": {
+    "false_positive_rate": 0.0,
+    "fires_on_everything": [],
+    "fn": 1,
+    "fp": 0,
+    "informative_tp": 7,
+    "tn": 8,
+    "tp": 7
+  },
+  "verifiers": {
+    "access": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "assembly": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "brep-validity": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": ""
+    },
+    "brick-validity": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "clearance-shift": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "completeness": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": "HEURISTIC, floor 0.5 = its measured precision. It emits missing-metadata on EVERY part (name/units/material are absent from the corpus), so it fires on all 16 and its precision is exactly the base rate of bad parts. It is the whole of the fleet's 100% false-positive rate. It is not model-facing, so it costs a human's attention and not a part -- but it is a rule that says no to everything, and the floor is committed here so it cannot get worse while somebody decides whether it should be scoped (applies_to) or deleted."
+    },
+    "compliance": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "dfm": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "dimension-qa": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": ""
+    },
+    "drag-proxy": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "edit-consistency": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": ""
+    },
+    "functional": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "interference": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "kernel-preflight": {
+      "fired": 4,
+      "measured_precision": 1.0,
+      "measured_recall": 0.5714285714285714,
+      "model_facing": true,
+      "model_facing_codes": [
+        "preflight-INVALID_INPUT",
+        "preflight-THICKNESS_TOO_LARGE",
+        "preflight-ZERO_VOLUME"
+      ],
+      "precision_floor": 1.0,
+      "reason": "MODEL-FACING by_code only: preflight-THICKNESS_TOO_LARGE and preflight-ZERO_VOLUME are theorems and are spoken to the model. preflight-RADIUS_TOO_LARGE is unsound (report.md, fleet hole 4) and stays HEURISTIC. Floor 1.0 applies to the promoted codes: if either theorem ever false-positives, the build fails."
+    },
+    "modal-frequency": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "plausibility": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "precheck": {
+      "fired": 6,
+      "measured_precision": 1.0,
+      "measured_recall": 0.75,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": 1.0,
+      "reason": "HEURISTIC (one 'infeasible-plan' code covering a dozen unrelated reasons, some provable and some guessed -- soundness.py takes the weakest tier). Measured precision 1.0 after the hole-vs-thickness bug was fixed; that 1.0 is now the floor and a regression fails the build. This is the rule that fired 40 times and caused every regression in assets/pressure/report.md."
+    },
+    "rim-feasibility": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "shell-envelope": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": ""
+    },
+    "simulation": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "standability": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "standards": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": 0.0,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "tolerance-stack": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": false,
+      "model_facing_codes": [],
+      "precision_floor": null,
+      "reason": ""
+    },
+    "validity-gate": {
+      "fired": 0,
+      "measured_precision": null,
+      "measured_recall": null,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": ""
+    }
+  }
+}

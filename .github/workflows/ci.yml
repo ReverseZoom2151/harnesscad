@@ -1,0 +1,167 @@
+name: ci
+
+# The repository had NO CI. `eval/selftest/` measured the harness -- precision
+# per verifier, six-engine differential, metamorphic laws, field liveness -- and
+# nothing enforced any of it. A rule with precision 0.4 could be merged the next
+# day, and that is precisely the bug that lost the controlled experiment in
+# assets/pressure/report.md (typed diagnostics lost to blind resampling by 8.3
+# points; every net loss was a correct part broken because a false diagnostic
+# told the model to break it).
+#
+# A capability the loop is not gated on is a decoration. This file is the gate.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # -------------------------------------------------------------------------
+  # 1. THE PRECISION FLOOR. The most important job in this file.
+  #
+  # eval/selftest/fleet_audit.py measures precision/recall PER VERIFIER over a
+  # known-good and a known-bad corpus. eval/gates/precision_floor.py enforces a
+  # COMMITTED floor per verifier:
+  #   * a MODEL-FACING verifier (one whose codes are PROVEN/MEASURED and are
+  #     therefore written into the model's retry prompt) must have precision 1.0;
+  #   * a HEURISTIC verifier is pinned at its measured value and may not regress;
+  #   * a verifier absent from the baseline fails the build outright.
+  # -------------------------------------------------------------------------
+  precision-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: fleet precision floor (fails if any model-facing verifier lies)
+        run: python -m harnesscad.eval.gates.precision_floor
+      - name: judge calibration gate (an uncalibrated judge may not instruct)
+        run: python -m harnesscad.eval.gates.judge_gate
+
+  # -------------------------------------------------------------------------
+  # 2. The self-evaluation oracles, each as its own process.
+  #
+  # --strict turns a finding into a non-zero exit. differential and properties
+  # need a geometry engine; frep is stdlib and always available, so these run on
+  # a bare runner with no optional deps.
+  # -------------------------------------------------------------------------
+  selftest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        oracle: [differential, properties, golden]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: selftest --${{ matrix.oracle }} --strict
+        run: python -m harnesscad.core.cli selftest --${{ matrix.oracle }} --backend frep --strict
+
+  # -------------------------------------------------------------------------
+  # 2b. The output gate. "Every artifact leaving the harness is either verified
+  #     valid, or refused with a reason. There is no third outcome." Its property
+  #     test is the only thing that keeps that sentence true.
+  # -------------------------------------------------------------------------
+  output-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - run: python -m unittest tests.io.test_gate
+
+  # -------------------------------------------------------------------------
+  # 3. Field liveness: changing any op field must CHANGE the geometry.
+  #
+  # Three backends were silently dropping fields -- an op parameter the model
+  # sets and the kernel ignores is a lie the grader cannot see. Runs only if the
+  # oracle exists (a concurrent branch owns it); skipped, never silently passed.
+  # -------------------------------------------------------------------------
+  field-liveness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: field liveness ratchet (frep)
+        run: |
+          if python -c "import harnesscad.eval.selftest.field_liveness" 2>/dev/null; then
+            python -m harnesscad.eval.gates.liveness_floor --backend frep
+          else
+            echo "field_liveness oracle not present on this ref; nothing to gate."
+          fi
+
+  # -------------------------------------------------------------------------
+  # 4. The test suite, PER MODULE, each in its own process.
+  #
+  # A monolithic `unittest discover` SEGFAULTS at OCCT teardown, so a single
+  # green tick from a discover run is not evidence. Each of the ~920 test modules
+  # is run as an independent process; a crash in one is attributed to that one and
+  # does not swallow the rest of the suite.
+  # -------------------------------------------------------------------------
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: run each test module as its own process (shard ${{ matrix.shard }}/4)
+        run: |
+          set -uo pipefail
+          fails=0
+          total=0
+          i=0
+          while IFS= read -r f; do
+            if [ $(( i % 4 )) -ne ${{ matrix.shard }} ]; then i=$((i+1)); continue; fi
+            i=$((i+1))
+            total=$((total+1))
+            mod="${f%.py}"
+            mod="${mod//\//.}"
+            if ! python -m unittest "$mod" >/tmp/out.txt 2>&1; then
+              fails=$((fails+1))
+              echo "::error file=$f::FAILED $mod"
+              tail -n 40 /tmp/out.txt
+            fi
+          done < <(find tests -name 'test_*.py' | sort)
+          echo "shard ${{ matrix.shard }}: $total module(s), $fails failing"
+          [ "$fails" -eq 0 ]
+
+  # -------------------------------------------------------------------------
+  # 5. The orphan ledger. A capability nothing imports is not a capability.
+  #    Fails when the orphan count grows past the committed ceiling.
+  # -------------------------------------------------------------------------
+  orphans:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: orphan ceiling
+        run: python -m unittest tests.test_registry
