@@ -19,12 +19,29 @@ What it flags (each an ERROR ``infeasible-plan`` with a specific reason):
   * a solid-consuming op before any solid exists — Fillet / Chamfer / Shell /
     Draft / Hole-on-a-face / Mirror / Pattern with no prior solid, or a Boolean
     with fewer than two solids.
-  * a hole whose diameter meets or exceeds the plate/stock wall it is cut into
-    (from the base extrude thickness, or ``rules.wall_thickness``).
+  * a hole that does not fit the material *around* it: its disc spans the whole
+    IN-PLANE extent of the stock at its position, so no wall survives on either
+    side. (The hole diameter is an in-plane quantity and is *never* compared
+    against the extrude depth — those are orthogonal; see the note below.)
   * a shell whose wall thickness meets or exceeds the available stock (nothing
     left) or falls below ``rules.min_wall``.
   * a pattern whose count is below ``rules.min_pattern_count`` (default 2).
   * mutually exclusive / duplicate mates — two mates coupling the same pair.
+
+And two WARNINGs about ambiguous sketch consumption:
+
+  * ``ambiguous-sketch`` — a sketch holding more than one closed profile is
+    extruded: which profile becomes the solid is unspecified.
+  * ``sketch-reused`` — one sketch is consumed by more than one solid-producing
+    op: almost certainly an unintended double extrude.
+
+.. note:: **Deleted rule (unsound).** An earlier revision flagged a hole whose
+   *diameter* met or exceeded the base extrude *distance* ("plate/stock wall").
+   Those are orthogonal quantities: the diameter lies in the sketch plane, the
+   extrude distance along Z. An 80 mm disc 8 mm thick with a 30 mm bore is a
+   washer — it builds correctly and the rule called it infeasible. The rule is
+   gone; a hole is now only rejected against the in-plane material around it,
+   and when the in-plane extent is not knowable the rule does not fire at all.
 
 Purely symbolic: it inspects ops only (no backend query, no geometry, no
 mutation) so it can run pre-execution and is fully deterministic. ``check`` is
@@ -56,8 +73,10 @@ class PrecheckRules:
 
     ``min_wall``        — thinnest producible wall; a shell thinner than this is
         infeasible.
-    ``wall_thickness``  — explicit plate/stock wall a hole is cut into. When
-        ``None`` the precheck infers the wall from the base extrude distance.
+    ``wall_thickness``  — explicit stock thickness available to a *shell*. When
+        ``None`` the precheck infers it from the base extrude distance. It is
+        NOT used for holes: a hole's diameter is an in-plane dimension and the
+        stock thickness is along the extrude axis.
     ``min_pattern_count`` — smallest meaningful pattern count (a pattern of one
         is a no-op).
     """
@@ -122,18 +141,27 @@ class PrecheckCheck:
 class _PlanState:
     """Mutable symbolic state accumulated while walking the op plan.
 
-    Tracks only what feasibility needs: which sketches exist and whether they
-    carry a profile, how many solids have been produced (for booleans), the
-    current stock/plate wall thickness (for holes and shells), and which mate
+    Tracks only what feasibility needs: which sketches exist, whether they carry
+    a profile and how many *closed* profiles that is, the in-plane bounds of
+    every sketch (for the hole rule), how many solids have been produced (for
+    booleans), the stock thickness along the extrude axis (for shells), which
+    sketches have already been consumed by a solid-producing op, and which mate
     pairs have already been coupled.
     """
 
     def __init__(self, rules: PrecheckRules) -> None:
         self.rules = rules
         self.sketch_entities: dict = {}   # sid -> entity count
+        self.sketch_profiles: dict = {}   # sid -> closed-profile count
+        self.sketch_bounds: dict = {}     # sid -> [minx, miny, maxx, maxy]
+        self.sketch_consumers: dict = {}  # sid -> [where, ...] (solid-producing)
         self._sk_n = 0
         self.n_solids = 0
-        self.wall: Optional[float] = None  # current plate/stock thickness
+        self.n_solidify = 0                # solid-producing ops seen
+        self.wall: Optional[float] = None  # stock thickness along the extrude axis
+        # In-plane bounds of the stock: the union of the bounds of every sketch
+        # that has actually been turned into a solid. ``None`` until one has.
+        self.stock_planar: Optional[List[float]] = None
         self.mate_pairs: set = set()
         self.diags: List[Diagnostic] = []
 
@@ -151,17 +179,28 @@ class _PlanState:
         where = f"op[{i}]"
         if isinstance(op, NewSketch):
             self._sk_n += 1
-            self.sketch_entities[f"sk{self._sk_n}"] = 0
-        elif isinstance(op, (AddPoint, AddLine)):
+            sid = f"sk{self._sk_n}"
+            self.sketch_entities[sid] = 0
+            self.sketch_profiles[sid] = 0
+        elif isinstance(op, AddPoint):
             self._add_entity(op.sketch, where)
+            self._grow(op.sketch, op.x, op.y, op.x, op.y)
+        elif isinstance(op, AddLine):
+            self._add_entity(op.sketch, where)
+            self._grow(op.sketch, min(op.x1, op.x2), min(op.y1, op.y2),
+                       max(op.x1, op.x2), max(op.y1, op.y2))
         elif isinstance(op, AddCircle):
             if op.r <= 0:
                 self._bad(where, f"circle radius must be > 0 (got {op.r:g}).")
-            self._add_entity(op.sketch, where)
+            self._add_entity(op.sketch, where, closed_profile=True)
+            self._grow(op.sketch, op.cx - abs(op.r), op.cy - abs(op.r),
+                       op.cx + abs(op.r), op.cy + abs(op.r))
         elif isinstance(op, AddRectangle):
             if op.w <= 0 or op.h <= 0:
                 self._bad(where, f"rectangle w/h must be > 0 (got {op.w:g}x{op.h:g}).")
-            self._add_entity(op.sketch, where)
+            self._add_entity(op.sketch, where, closed_profile=True)
+            self._grow(op.sketch, min(op.x, op.x + op.w), min(op.y, op.y + op.h),
+                       max(op.x, op.x + op.w), max(op.y, op.y + op.h))
         elif isinstance(op, Constrain):
             if op.kind not in CONSTRAINT_DOF:
                 self._bad(where, f"unknown constraint kind '{op.kind}'.")
@@ -210,11 +249,27 @@ class _PlanState:
         # AddPoint/AddInstance/SetParam need no feasibility gate here.
 
     # -- helpers ------------------------------------------------------------ #
-    def _add_entity(self, sketch: str, where: str) -> None:
+    def _add_entity(self, sketch: str, where: str,
+                    closed_profile: bool = False) -> None:
         if sketch not in self.sketch_entities:
             self._bad(where, f"references unknown sketch '{sketch}'.")
             return
         self.sketch_entities[sketch] += 1
+        if closed_profile:
+            self.sketch_profiles[sketch] = self.sketch_profiles.get(sketch, 0) + 1
+
+    def _grow(self, sketch: str, x0: float, y0: float, x1: float, y1: float) -> None:
+        """Accumulate the in-plane AABB of a sketch (unknown sketches ignored)."""
+        if sketch not in self.sketch_entities:
+            return
+        box = self.sketch_bounds.get(sketch)
+        if box is None:
+            self.sketch_bounds[sketch] = [float(x0), float(y0), float(x1), float(y1)]
+        else:
+            box[0] = min(box[0], float(x0))
+            box[1] = min(box[1], float(y0))
+            box[2] = max(box[2], float(x1))
+            box[3] = max(box[3], float(y1))
 
     def _sketch_ok(self, sketch: str, feature: str, where: str) -> bool:
         if sketch not in self.sketch_entities:
@@ -226,6 +281,44 @@ class _PlanState:
             return False
         return True
 
+    def _consume(self, sketch: str, feature: str, where: str) -> None:
+        """Book a sketch as consumed by a solid-producing op, and warn on the
+        two ambiguities that produce silently-wrong solids:
+
+        * more than one closed profile in the consumed sketch — which loop is
+          the profile is unspecified (the backends union them);
+        * the same sketch consumed twice — the second solid is a duplicate at a
+          different depth, almost never intended.
+        """
+        prior = self.sketch_consumers.setdefault(sketch, [])
+        if prior:
+            self._warn(where, "sketch-reused",
+                       f"sketch '{sketch}' is consumed by more than one "
+                       f"solid-producing op ({', '.join(prior)} and {where}); "
+                       "the same profile becomes two solids at different depths; "
+                       "almost certainly unintended.")
+        prior.append(where)
+        n_profiles = self.sketch_profiles.get(sketch, 0)
+        if n_profiles > 1:
+            self._warn(where, "ambiguous-sketch",
+                       f"{feature} of sketch '{sketch}', which holds "
+                       f"{n_profiles} closed profiles; which profile is the "
+                       "solid is ambiguous. Put one profile per sketch.")
+
+    def _stock_grow(self, sketch: str) -> None:
+        """Fold a solidified sketch's in-plane AABB into the stock footprint."""
+        box = self.sketch_bounds.get(sketch)
+        if box is None:
+            return
+        if self.stock_planar is None:
+            self.stock_planar = list(box)
+        else:
+            s = self.stock_planar
+            s[0] = min(s[0], box[0])
+            s[1] = min(s[1], box[1])
+            s[2] = max(s[2], box[2])
+            s[3] = max(s[3], box[3])
+
     def _solidify(self, sketch: str, feature: str, where: str,
                   zero_dim: bool, zero_msg: str,
                   set_wall: Optional[float] = None) -> None:
@@ -233,7 +326,10 @@ class _PlanState:
         if zero_dim:
             self._bad(where, zero_msg)
         if ok and not zero_dim:
+            self._consume(sketch, feature, where)
             self.n_solids += 1
+            self.n_solidify += 1
+            self._stock_grow(sketch)
             if set_wall is not None and set_wall > 0:
                 self.wall = set_wall
 
@@ -242,13 +338,19 @@ class _PlanState:
             self._bad(where, "loft requires at least two profile sketches.")
             return
         if all(self._sketch_ok(s, "loft", where) for s in op.sketches):
+            for s in op.sketches:
+                self._consume(s, "loft", where)
+                self._stock_grow(s)
             self.n_solids += 1
+            self.n_solidify += 1
 
     def _sweep(self, op: Sweep, where: str) -> None:
         ok = self._sketch_ok(op.sketch, "sweep", where)
         ok = self._sketch_ok(op.path, "sweep path", where) and ok
         if ok:
+            self._consume(op.sketch, "sweep", where)
             self.n_solids += 1
+            self.n_solidify += 1
 
     def _require_solid(self, feature: str, where: str) -> bool:
         if not self.have_solid:
@@ -274,12 +376,50 @@ class _PlanState:
         if not ref.startswith("sk") and not self.have_solid:
             self._bad(where, "hole on a face requires an existing solid, but "
                              "none has been created yet.")
-        wall = self._current_wall()
-        if wall is not None and wall > 0 and op.diameter > 0 and op.diameter >= wall:
+        self._hole_in_plane(op, where)
+
+    def _hole_in_plane(self, op: Hole, where: str) -> None:
+        """Does the hole fit the material AROUND it, in the sketch plane?
+
+        A hole's diameter is an in-plane dimension, so the only material it can
+        consume is the in-plane extent of the stock — never the extrude depth
+        (that is what the hole is drilled *along*). Two soundly-decidable cases:
+
+        * the disc spans the stock from edge to edge along an in-plane axis:
+          nothing is left on either side, the plate is severed — ERROR;
+        * the disc crosses the stock boundary while its centre is inside: the
+          "hole" is an open notch, remaining wall <= 0 — WARNING.
+
+        When the stock's in-plane extent is not knowable (no solidified sketch
+        with bounds), NOTHING fires: a false positive here is far more costly
+        than a missed check.
+        """
+        box = self.stock_planar
+        if box is None or op.diameter <= 0 or self.n_solidify != 1:
+            # n_solidify != 1: several bodies, so the hole's (x, y) cannot be
+            # placed in a single unambiguous stock frame. Stay silent.
+            return
+        r = op.diameter / 2.0
+        cx, cy = float(op.x), float(op.y)
+        minx, miny, maxx, maxy = box
+        spans_x = (cx - r <= minx) and (cx + r >= maxx)
+        spans_y = (cy - r <= miny) and (cy + r >= maxy)
+        if spans_x or spans_y:
+            axis, extent = ("X", maxx - minx) if spans_x else ("Y", maxy - miny)
             self._bad(where,
-                      f"hole diameter {op.diameter:g} mm >= plate/stock wall "
-                      f"{wall:g} mm; the hole is as large as (or larger than) "
-                      "the wall it is cut into.")
+                      f"hole diameter {op.diameter:g} mm spans the whole "
+                      f"in-plane {axis} extent ({extent:g} mm) of the stock at "
+                      f"({cx:g}, {cy:g}); no wall remains on either side. "
+                      "(The extrude depth is irrelevant here: a hole is bounded "
+                      "by the material around it, not by the plate thickness.)")
+            return
+        inside = minx <= cx <= maxx and miny <= cy <= maxy
+        breakout = min(cx - r - minx, cy - r - miny, maxx - (cx + r), maxy - (cy + r))
+        if inside and breakout < 0.0:
+            self._warn(where, "thin-wall",
+                       f"hole diameter {op.diameter:g} mm at ({cx:g}, {cy:g}) "
+                       f"crosses the stock boundary by {-breakout:g} mm; it "
+                       "leaves no wall there and cuts an open notch, not a hole.")
 
     def _shell(self, op: Shell, where: str) -> None:
         self._require_solid("shell", where)
@@ -320,6 +460,9 @@ class _PlanState:
     def _bad(self, where: str, reason: str) -> None:
         self.diags.append(Diagnostic(
             Severity.ERROR, "infeasible-plan", reason, where))
+
+    def _warn(self, where: str, code: str, reason: str) -> None:
+        self.diags.append(Diagnostic(Severity.WARNING, code, reason, where))
 
 
 # --------------------------------------------------------------------------- #
