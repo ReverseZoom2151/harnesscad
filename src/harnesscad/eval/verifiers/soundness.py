@@ -244,7 +244,12 @@ SOUNDNESS: Dict[str, Soundness] = {
             "than its envelope is a fact plus a contradiction, not an opinion. "
             "It fires only on a real backend regression (report.md hole 2: the "
             "F-rep two-sided shell dilated every shelled part by t/2 and NO "
-            "verifier noticed)."),
+            "verifier noticed). "
+            "It claims EXACTLY what it can support and no more: it proves the "
+            "part did not GROW. It does NOT prove the shell is correct -- an "
+            "inward shell can preserve the bounding box exactly and still leave "
+            "the wall far too thin, and this verifier would say nothing. "
+            "Silence from it is not a certificate."),
     ),
     "dimension-qa": Soundness(
         MEASURED,

@@ -171,7 +171,10 @@
         "harnesscad.agents.llm.structured.ParsedOps",
         "harnesscad.agents.llm.structured.validate_ops",
         "harnesscad.core.cisp.ops",
-        "harnesscad.core.cisp.ops.Op"
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.MODEL_FACING_TIERS",
+        "harnesscad.eval.verifiers.soundness.model_facing"
       ],
       "layer": "agents",
       "name": "planner",
@@ -2286,10 +2289,14 @@
         "harnesscad.domain.vision.registry",
         "harnesscad.eval.bench",
         "harnesscad.eval.bench.registry",
+        "harnesscad.eval.gallery",
+        "harnesscad.eval.gallery.render_gallery",
         "harnesscad.eval.pressure",
         "harnesscad.eval.pressure.cli",
         "harnesscad.eval.quality",
         "harnesscad.eval.quality.registry",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.registry",
         "harnesscad.governance",
         "harnesscad.governance.registry",
         "harnesscad.io",
@@ -2297,6 +2304,7 @@
         "harnesscad.io.adapters.registry",
         "harnesscad.io.formats",
         "harnesscad.io.formats.registry",
+        "harnesscad.io.gate",
         "harnesscad.io.render",
         "harnesscad.io.render.VIEW_PRESETS",
         "harnesscad.io.surfaces",
@@ -2326,6 +2334,7 @@
         "cmd_export",
         "cmd_fabricate",
         "cmd_formats",
+        "cmd_gallery",
         "cmd_generate",
         "cmd_govern",
         "cmd_ingest",
@@ -2336,6 +2345,7 @@
         "cmd_render",
         "cmd_report",
         "cmd_search",
+        "cmd_selftest",
         "cmd_spec",
         "cmd_ui",
         "cmd_vision",
@@ -9185,6 +9195,7 @@
         "round_field",
         "scale",
         "shell",
+        "shell_inward",
         "stretch",
         "translate"
       ],
@@ -10702,6 +10713,26 @@
       "tags": [
         "geometry",
         "graph",
+        "isosurface",
+        "meshing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.volumes.dual_contouring_3d",
+      "imports": [
+        "harnesscad.domain.geometry.volumes.surface_nets",
+        "harnesscad.domain.geometry.volumes.surface_nets.ScalarGrid"
+      ],
+      "layer": "domain",
+      "name": "dual_contouring_3d",
+      "package": "geometry",
+      "summary": "Dual Contouring of Hermite Data in 3D, on a uniform grid.",
+      "symbols": [
+        "dual_contour",
+        "solve_qef"
+      ],
+      "tags": [
+        "geometry",
         "isosurface",
         "meshing"
       ]
@@ -22679,6 +22710,99 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.gallery.parts",
+      "imports": [
+        "harnesscad.domain.geometry.features",
+        "harnesscad.domain.geometry.features.enclosure",
+        "harnesscad.domain.geometry.features.holes",
+        "harnesscad.domain.geometry.features.screw_thread",
+        "harnesscad.domain.geometry.features.sweep",
+        "harnesscad.domain.geometry.features.thread_profile",
+        "harnesscad.domain.geometry.kinematics",
+        "harnesscad.domain.geometry.kinematics.involute_gear",
+        "harnesscad.domain.geometry.sdf",
+        "harnesscad.domain.geometry.sdf.cam_profile",
+        "harnesscad.domain.geometry.sdf.combinators",
+        "harnesscad.domain.geometry.sdf.primitives",
+        "harnesscad.domain.geometry.sdf.spiral",
+        "harnesscad.domain.geometry.sdf.tpms",
+        "harnesscad.io.backends",
+        "harnesscad.io.backends.frep"
+      ],
+      "layer": "eval",
+      "name": "parts",
+      "package": "gallery",
+      "summary": "The gallery catalogue: sixteen distinct parts, each exercising a different capability.",
+      "symbols": [
+        "Part",
+        "blend_field",
+        "build_blend",
+        "build_bolt",
+        "build_bracket",
+        "build_cam",
+        "build_edge_chamfer",
+        "build_edge_fillet",
+        "build_enclosure_lid",
+        "build_enclosure_shell",
+        "build_flange",
+        "build_gear",
+        "build_gyroid",
+        "build_heatsink",
+        "build_pulley",
+        "build_spiral",
+        "build_spring",
+        "build_sweep_duct",
+        "cam_field",
+        "gear_polygon",
+        "get",
+        "gyroid_field",
+        "names",
+        "spiral_field"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.gallery.render_gallery",
+      "imports": [
+        "harnesscad.eval.gallery",
+        "harnesscad.eval.gallery.parts",
+        "harnesscad.eval.gallery.parts.COMPARE_BACKENDS",
+        "harnesscad.eval.gallery.parts.COMPARE_PART",
+        "harnesscad.eval.gallery.parts.Part",
+        "harnesscad.io",
+        "harnesscad.io.drawing",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.registry",
+        "harnesscad.io.gate",
+        "harnesscad.io.render",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "render_gallery",
+      "package": "gallery",
+      "summary": "The gallery driver: build every catalogued part, render it, and QC the PNG.",
+      "symbols": [
+        "GalleryError",
+        "QC",
+        "add_arguments",
+        "build_gallery",
+        "build_part",
+        "compare_backends",
+        "consistently_wound",
+        "decode_png",
+        "main",
+        "render_part",
+        "run_cli",
+        "verify_png"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "render"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.pressure.briefs",
       "imports": [],
       "layer": "eval",
@@ -24734,6 +24858,404 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.selftest.differential",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.BackendFactory",
+        "harnesscad.eval.selftest.probe.EXACTNESS_ORDER",
+        "harnesscad.eval.selftest.probe.GEOMETRIC_BACKENDS",
+        "harnesscad.eval.selftest.probe.Observation",
+        "harnesscad.eval.selftest.probe.available",
+        "harnesscad.eval.selftest.probe.bbox_delta",
+        "harnesscad.eval.selftest.probe.observe",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.selftest.probe.tolerance",
+        "harnesscad.eval.selftest.probe.volume_rel_delta"
+      ],
+      "layer": "eval",
+      "name": "differential",
+      "package": "selftest",
+      "summary": "Differential oracle \u2014 six engines, one op stream, no ground truth needed.",
+      "symbols": [
+        "CaseReport",
+        "DifferentialReport",
+        "Disagreement",
+        "agree",
+        "compare",
+        "format_text",
+        "run"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.selftest.fleet_audit",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.BackendFactory",
+        "harnesscad.eval.selftest.probe.plan_opdag",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.registry",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Severity"
+      ],
+      "layer": "eval",
+      "name": "fleet_audit",
+      "package": "selftest",
+      "summary": "Fleet audit \u2014 precision, recall and F1 PER VERIFIER. The metric we never had.",
+      "symbols": [
+        "Case",
+        "FleetReport",
+        "VerifierScore",
+        "audit",
+        "format_text",
+        "run"
+      ],
+      "tags": [
+        "benchmark",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.selftest.golden",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.BackendFactory",
+        "harnesscad.eval.selftest.probe.GEOMETRIC_BACKENDS",
+        "harnesscad.eval.selftest.probe.Observation",
+        "harnesscad.eval.selftest.probe.available",
+        "harnesscad.eval.selftest.probe.observe",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.selftest.probe.tolerance"
+      ],
+      "layer": "eval",
+      "name": "golden",
+      "package": "selftest",
+      "summary": "Golden corpus \u2014 parts whose volume, bbox and genus are known in CLOSED FORM.",
+      "symbols": [
+        "Deviation",
+        "GoldenPart",
+        "GoldenReport",
+        "GoldenResult",
+        "annulus_volume",
+        "chamfered_box_volume",
+        "check_part",
+        "format_text",
+        "open_top_shell_box_volume",
+        "rounded_box_volume",
+        "run",
+        "shelled_box_volume"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.selftest.probe",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.core.state.opdag",
+        "harnesscad.core.state.opdag.OpDAG",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server._make_backend"
+      ],
+      "layer": "eval",
+      "name": "probe",
+      "package": "selftest",
+      "summary": "The measurement primitive every oracle in this package is built on.",
+      "symbols": [
+        "Observation",
+        "Tolerance",
+        "available",
+        "bbox_delta",
+        "observe",
+        "observe_steps",
+        "plan_opdag",
+        "resolve",
+        "scale_ops",
+        "tolerance",
+        "volume_rel_delta"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.selftest.properties",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.BackendFactory",
+        "harnesscad.eval.selftest.probe.Observation",
+        "harnesscad.eval.selftest.probe.bbox_delta",
+        "harnesscad.eval.selftest.probe.observe",
+        "harnesscad.eval.selftest.probe.observe_steps",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.selftest.probe.scale_ops",
+        "harnesscad.eval.selftest.probe.tolerance",
+        "harnesscad.eval.selftest.probe.volume_rel_delta"
+      ],
+      "layer": "eval",
+      "name": "properties",
+      "package": "selftest",
+      "summary": "Property / metamorphic oracle \u2014 invariants that hold for ANY part, ANY engine.",
+      "symbols": [
+        "PropertyReport",
+        "Violation",
+        "check_stream",
+        "format_text",
+        "generate_corpus",
+        "run"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.selftest.registry",
+      "imports": [
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.differential",
+        "harnesscad.eval.selftest.fleet_audit",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.GEOMETRIC_BACKENDS",
+        "harnesscad.eval.selftest.probe.available",
+        "harnesscad.eval.selftest.properties"
+      ],
+      "layer": "eval",
+      "name": "registry",
+      "package": "selftest",
+      "summary": "``harnesscad selftest`` \u2014 the CLI surface of the four self-evaluation oracles.",
+      "symbols": [
+        "add_arguments",
+        "run"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.briefs",
+      "imports": [],
+      "layer": "eval",
+      "name": "briefs",
+      "package": "showcase",
+      "summary": "The brief set: ten plain-English parts a real engineer would ask for.",
+      "symbols": [
+        "Brief",
+        "brief_by_id",
+        "brief_ids",
+        "grade_geometry"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.cli",
+      "imports": [
+        "harnesscad.eval.showcase",
+        "harnesscad.eval.showcase.briefs",
+        "harnesscad.eval.showcase.briefs.BRIEFS",
+        "harnesscad.eval.showcase.briefs.brief_by_id",
+        "harnesscad.eval.showcase.image",
+        "harnesscad.eval.showcase.image.validate_png",
+        "harnesscad.eval.showcase.loop",
+        "harnesscad.eval.showcase.loop.MAX_ATTEMPTS",
+        "harnesscad.eval.showcase.loop.apply_ops",
+        "harnesscad.eval.showcase.models",
+        "harnesscad.eval.showcase.models.MODELS",
+        "harnesscad.eval.showcase.models.model_slug",
+        "harnesscad.eval.showcase.models.resolve_models",
+        "harnesscad.eval.showcase.report",
+        "harnesscad.eval.showcase.runner",
+        "harnesscad.eval.showcase.runner.HERO_HEIGHT",
+        "harnesscad.eval.showcase.runner.HERO_WIDTH",
+        "harnesscad.eval.showcase.runner.load_runs",
+        "harnesscad.eval.showcase.runner.render_record",
+        "harnesscad.eval.showcase.runner.run_sweep",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.registry"
+      ],
+      "layer": "eval",
+      "name": "cli",
+      "package": "showcase",
+      "summary": "`python -m harnesscad.eval.showcase.cli` -- run the showcase.",
+      "symbols": [
+        "build_parser",
+        "cmd_best",
+        "cmd_report",
+        "cmd_sweep",
+        "main"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.image",
+      "imports": [],
+      "layer": "eval",
+      "name": "image",
+      "package": "showcase",
+      "summary": "Prove a render is a picture of something. Stdlib zlib, no PIL, no numpy.",
+      "symbols": [
+        "PngError",
+        "PngImage",
+        "PngStats",
+        "load_png",
+        "png_stats",
+        "validate_png"
+      ],
+      "tags": [
+        "render",
+        "vision"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.loop",
+      "imports": [
+        "harnesscad.agents.agent.planner",
+        "harnesscad.agents.agent.planner.Planner",
+        "harnesscad.eval.showcase.briefs",
+        "harnesscad.eval.showcase.briefs.Brief",
+        "harnesscad.eval.showcase.briefs.grade_geometry",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "loop",
+      "package": "showcase",
+      "summary": "One (brief, model) run of the harness's block-and-correct loop.",
+      "symbols": [
+        "Attempt",
+        "RunRecord",
+        "apply_ops",
+        "blocking_diagnostics",
+        "run_brief"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.models",
+      "imports": [
+        "harnesscad.agents.llm.litellm_backend",
+        "harnesscad.agents.llm.litellm_backend.LiteLLMClient"
+      ],
+      "layer": "eval",
+      "name": "models",
+      "package": "showcase",
+      "summary": "The local model fleet, and the one place an `LLM` is constructed.",
+      "symbols": [
+        "make_llm",
+        "model_slug",
+        "resolve_models"
+      ],
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.report",
+      "imports": [
+        "harnesscad.eval.showcase.briefs",
+        "harnesscad.eval.showcase.briefs.BRIEFS",
+        "harnesscad.eval.showcase.briefs.brief_by_id",
+        "harnesscad.eval.showcase.models",
+        "harnesscad.eval.showcase.models.MODELS"
+      ],
+      "layer": "eval",
+      "name": "report",
+      "package": "showcase",
+      "summary": "The scoreboard: which models can actually build a part from a plain brief.",
+      "symbols": [
+        "best_per_brief",
+        "render_markdown",
+        "scoreboard",
+        "write_results"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.showcase.runner",
+      "imports": [
+        "harnesscad.eval.showcase.briefs",
+        "harnesscad.eval.showcase.briefs.BRIEFS",
+        "harnesscad.eval.showcase.briefs.Brief",
+        "harnesscad.eval.showcase.briefs.brief_by_id",
+        "harnesscad.eval.showcase.image",
+        "harnesscad.eval.showcase.image.validate_png",
+        "harnesscad.eval.showcase.loop",
+        "harnesscad.eval.showcase.loop.MAX_ATTEMPTS",
+        "harnesscad.eval.showcase.loop.RunRecord",
+        "harnesscad.eval.showcase.loop.apply_ops",
+        "harnesscad.eval.showcase.loop.run_brief",
+        "harnesscad.eval.showcase.models",
+        "harnesscad.eval.showcase.models.MODELS",
+        "harnesscad.eval.showcase.models.SEED",
+        "harnesscad.eval.showcase.models.make_llm",
+        "harnesscad.eval.showcase.models.model_slug",
+        "harnesscad.io",
+        "harnesscad.io.render"
+      ],
+      "layer": "eval",
+      "name": "runner",
+      "package": "showcase",
+      "summary": "The sweep: every brief x every model, through the loop, to a rendered PNG.",
+      "symbols": [
+        "load_runs",
+        "render_record",
+        "run_pair",
+        "run_sweep"
+      ],
+      "tags": [
+        "features",
+        "format",
+        "io",
+        "render"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.verifiers.access",
       "imports": [
         "harnesscad.eval.verifiers.verify",
@@ -25063,6 +25585,8 @@
     {
       "dotted": "harnesscad.eval.verifiers.geometry",
       "imports": [
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.observe",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
@@ -25254,6 +25778,7 @@
         "harnesscad.core.cisp.ops.Fillet",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.eval.verifiers",
         "harnesscad.eval.verifiers.brick_buildability",
         "harnesscad.eval.verifiers.brick_buildability.is_buildable",
         "harnesscad.eval.verifiers.brick_validity",
@@ -25283,6 +25808,7 @@
         "harnesscad.eval.verifiers.plausibility.check_physical_plausibility",
         "harnesscad.eval.verifiers.rim_feasibility",
         "harnesscad.eval.verifiers.rim_feasibility.validate_design",
+        "harnesscad.eval.verifiers.soundness",
         "harnesscad.eval.verifiers.standability",
         "harnesscad.eval.verifiers.standability.evaluate_standability",
         "harnesscad.eval.verifiers.tolerance_stack",
@@ -25404,6 +25930,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.verifiers.soundness",
+      "imports": [],
+      "layer": "eval",
+      "name": "soundness",
+      "package": "verifiers",
+      "summary": "Soundness tiering \u2014 which diagnostics are allowed to instruct the model.",
+      "symbols": [
+        "Soundness",
+        "human_facing",
+        "model_facing",
+        "observe",
+        "soundness_of",
+        "soundness_or_untrusted",
+        "stamp",
+        "tier_of"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.verifiers.standability",
       "imports": [],
       "layer": "eval",
@@ -25489,7 +26036,9 @@
       "dotted": "harnesscad.eval.verifiers.verify",
       "imports": [
         "harnesscad.eval.verifiers.geometry",
-        "harnesscad.eval.verifiers.geometry.BRepValidityCheck"
+        "harnesscad.eval.verifiers.geometry.BRepValidityCheck",
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.observe"
       ],
       "layer": "eval",
       "name": "verify",
@@ -26203,6 +26752,9 @@
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.core.constraints",
         "harnesscad.core.constraints.ConstraintGraph",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.domain.geometry.topology.selector_dsl.SelectorError",
+        "harnesscad.domain.geometry.topology.selector_dsl.parse",
         "harnesscad.eval.verifiers.assembly",
         "harnesscad.eval.verifiers.assembly.mate_dof",
         "harnesscad.eval.verifiers.verify",
@@ -26218,6 +26770,7 @@
       "summary": "CadQueryBackend \u2014 a real-geometry GeometryBackend over CadQuery (OCCT).",
       "symbols": [
         "CadQueryBackend",
+        "join_selectors",
         "solid_volume"
       ],
       "tags": []
@@ -26234,6 +26787,7 @@
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io",
         "harnesscad.io.backends",
         "harnesscad.io.backends.base",
         "harnesscad.io.backends.base.ApplyResult",
@@ -26243,7 +26797,8 @@
         "harnesscad.io.backends.frep.Node",
         "harnesscad.io.formats",
         "harnesscad.io.formats.glb",
-        "harnesscad.io.formats.stl"
+        "harnesscad.io.formats.stl",
+        "harnesscad.io.gate"
       ],
       "layer": "io",
       "name": "external",
@@ -26272,8 +26827,15 @@
       "dotted": "harnesscad.io.backends.freecad",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Fillet",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.domain.geometry.topology.topological_naming",
         "harnesscad.domain.programs.expressions",
         "harnesscad.domain.programs.expressions.freecad_expressions",
         "harnesscad.eval.verifiers.verify",
@@ -26281,18 +26843,19 @@
         "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.adapters.freecad_catalog",
         "harnesscad.io.adapters.freecad_catalog.default_catalog",
+        "harnesscad.io.backends",
         "harnesscad.io.backends.base",
         "harnesscad.io.backends.base.ApplyResult",
         "harnesscad.io.backends.base.BackendUnavailable",
         "harnesscad.io.backends.external",
         "harnesscad.io.backends.external.DEFAULT_TIMEOUT",
         "harnesscad.io.backends.external.ExternalToolBackend",
-        "harnesscad.io.backends.external.blend_radius",
         "harnesscad.io.backends.external.cache_dir",
         "harnesscad.io.backends.external.find_executable",
         "harnesscad.io.backends.external.program_digest",
         "harnesscad.io.backends.freecad_driver",
         "harnesscad.io.backends.freecad_driver.DRIVER_SOURCE",
+        "harnesscad.io.backends.frep",
         "harnesscad.io.formats",
         "harnesscad.io.formats.freecad_document"
       ],
@@ -26301,7 +26864,8 @@
       "package": "backends",
       "summary": "FreeCADBackend \u2014 a real parametric B-rep GeometryBackend over FreeCAD.",
       "symbols": [
-        "FreeCADBackend"
+        "FreeCADBackend",
+        "shell_face_selector"
       ],
       "tags": [
         "benchmark",
@@ -26363,6 +26927,8 @@
         "harnesscad.domain.geometry.sdf.field_transforms",
         "harnesscad.domain.geometry.sdf.polygon",
         "harnesscad.domain.geometry.sdf.primitives",
+        "harnesscad.domain.geometry.volumes.dual_contouring_3d",
+        "harnesscad.domain.geometry.volumes.dual_contouring_3d.dual_contour",
         "harnesscad.domain.geometry.volumes.marching_cubes",
         "harnesscad.domain.geometry.volumes.marching_cubes.marching_cubes",
         "harnesscad.domain.geometry.volumes.surface_nets",
@@ -26376,13 +26942,15 @@
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io",
         "harnesscad.io.backends",
         "harnesscad.io.backends.base",
         "harnesscad.io.backends.base.ApplyResult",
         "harnesscad.io.backends.frep_ir",
         "harnesscad.io.formats",
         "harnesscad.io.formats.glb",
-        "harnesscad.io.formats.stl"
+        "harnesscad.io.formats.stl",
+        "harnesscad.io.gate"
       ],
       "layer": "io",
       "name": "frep",
@@ -26952,6 +27520,7 @@
         "harnesscad.io.formats.stl",
         "harnesscad.io.formats.svg",
         "harnesscad.io.formats.xcsg",
+        "harnesscad.io.gate",
         "harnesscad.io.render",
         "harnesscad.registry"
       ],
@@ -27226,6 +27795,35 @@
         "format",
         "io"
       ]
+    },
+    {
+      "dotted": "harnesscad.io.gate",
+      "imports": [
+        "harnesscad.domain.geometry.mesh.halfedge",
+        "harnesscad.domain.geometry.mesh.halfedge.HalfedgeMesh",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.stl"
+      ],
+      "layer": "io",
+      "name": "gate",
+      "package": "",
+      "summary": "The output gate -- the one door every artifact leaves the harness through.",
+      "symbols": [
+        "Failure",
+        "GateError",
+        "GateReport",
+        "InvalidArtifact",
+        "check",
+        "claims",
+        "declared_failures",
+        "gated_write",
+        "guard",
+        "measure",
+        "measured_failures",
+        "sidecar_path",
+        "write_sidecar"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.io.ingest.assembly_transform",
@@ -27753,7 +28351,8 @@
         "harnesscad.io",
         "harnesscad.io.drawing",
         "harnesscad.io.formats",
-        "harnesscad.io.formats.registry"
+        "harnesscad.io.formats.registry",
+        "harnesscad.io.gate"
       ],
       "layer": "io",
       "name": "render",
@@ -28446,7 +29045,10 @@
     },
     {
       "dotted": "harnesscad.io.surfaces.render",
-      "imports": [],
+      "imports": [
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
       "layer": "io",
       "name": "render",
       "package": "surfaces",

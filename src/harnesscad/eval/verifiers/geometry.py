@@ -21,19 +21,29 @@ class BRepValidityCheck:
 
     Reads the backend's real OCCT validity report. If no solid is present the
     check is a no-op (solid *presence* is another verifier's concern).
+
+    Soundness: MEASURED. The verifier forwards the kernel's own verdict about
+    the solid that was actually built; it does not model anything. The message
+    leads with the observation and names the failing predicates as evidence.
     """
 
     name = "brep-validity"
 
     def check(self, backend, opdag) -> VerifyReport:
+        from harnesscad.eval.verifiers.soundness import observe
+
         v = backend.query("validity")
         diags: List[Diagnostic] = []
         if v.get("solid_present"):
             if not (v.get("manifold") and v.get("watertight") and v.get("is_valid")):
+                failed = [k for k in ("manifold", "watertight", "is_valid")
+                          if not v.get(k)]
                 diags.append(Diagnostic(
                     Severity.ERROR, "invalid-brep",
-                    "solid is present but not manifold/watertight/valid "
-                    f"(manifold={v.get('manifold')}, "
-                    f"watertight={v.get('watertight')}, "
-                    f"is_valid={v.get('is_valid')})"))
+                    observe(
+                        "solid is present but not manifold/watertight/valid",
+                        f"the kernel's validity report fails on {', '.join(failed)} "
+                        f"(manifold={v.get('manifold')}, "
+                        f"watertight={v.get('watertight')}, "
+                        f"is_valid={v.get('is_valid')})")))
         return VerifyReport(diags)

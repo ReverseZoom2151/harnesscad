@@ -5,17 +5,35 @@ the brief + a snapshot of current model state + any diagnostics from a failed
 prior attempt), calls the `LLM`, and funnels the response through
 `llm.structured` so it only ever hands back validated `cisp.ops.Op` objects. It
 is deliberately provider-blind — it takes any `LLM`.
+
+THE FEEDBACK GATE
+-----------------
+This is the one place in the product where a diagnostic becomes an INSTRUCTION
+TO A MODEL, so this is where the soundness policy is enforced. Only PROVEN and
+MEASURED diagnostics (`verifiers.soundness`) are written into the retry prompt.
+HEURISTIC ones are still produced, still returned in the `ApplyOpsResult`, still
+logged and still shown to humans — they are simply not spoken to the model.
+
+The reason is measured, not aesthetic. `assets/pressure/report.md`: the typed
+loop lost to blind resampling by 8.3 points and lost hardest on the strongest
+model, because every one of its net losses was a REGRESSION — a correct part
+that the model broke *because a wrong diagnostic told it to*. A typed diagnostic
+is a lever, and a lever amplifies whichever way it is pushed. The value of a
+diagnostic is bounded above by its truth, and the tighter a model's
+instruction-following, the tighter that bound binds. A wrong instruction is
+worse than no instruction.
 """
 
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from harnesscad.core.cisp.ops import Op
 from harnesscad.agents.agent.system_prompt import SYSTEM_PROMPT
 from harnesscad.agents.llm.base import LLM, Message, ToolSpec, system, user
 from harnesscad.agents.llm.structured import ParsedOps, validate_ops
+from harnesscad.eval.verifiers.soundness import MODEL_FACING_TIERS, model_facing
 
 
 # A tool the model may call instead of replying in free text. Either path works;
@@ -46,9 +64,21 @@ class PlanError(RuntimeError):
 
 
 class Planner:
-    def __init__(self, llm: LLM, use_tool: bool = False) -> None:
+    """NL brief -> ops, with the soundness gate on the feedback channel.
+
+    ``feedback_tiers`` is the policy: the soundness tiers whose diagnostics are
+    allowed into the model's retry prompt. It defaults to PROVEN + MEASURED.
+    Pass ``feedback_tiers=soundness.TIERS`` to restore the pre-tiering behaviour
+    (everything is fed back) — that is the configuration the pressure experiment
+    measured at -8.3 points, and it exists so the comparison can be re-run, not
+    because anyone should ship it.
+    """
+
+    def __init__(self, llm: LLM, use_tool: bool = False,
+                 feedback_tiers: Iterable[str] = MODEL_FACING_TIERS) -> None:
         self.llm = llm
         self.use_tool = use_tool
+        self.feedback_tiers = tuple(feedback_tiers)
 
     # --- message assembly ------------------------------------------------
     def build_messages(
@@ -63,10 +93,15 @@ class Planner:
             parts.append(
                 "CURRENT MODEL STATE:\n" + json.dumps(state_summary, sort_keys=True, indent=2)
             )
-        if diagnostics:
+        # THE GATE. Heuristic findings are dropped here and nowhere else: they
+        # remain in the caller's ApplyOpsResult for the log and the human.
+        trusted = model_facing(diagnostics or [], self.feedback_tiers)
+        if trusted:
             parts.append(
-                "PRIOR ATTEMPT FAILED — fix these diagnostics and re-emit the "
-                "full corrected op sequence:\n" + _format_diagnostics(diagnostics)
+                "PRIOR ATTEMPT FAILED — these are OBSERVATIONS about what was "
+                "built, with the evidence for each. Reason from them, re-emit "
+                "the full corrected op sequence, and change only what the "
+                "evidence requires:\n" + _format_diagnostics(trusted)
             )
         msgs.append(user("\n\n".join(parts)))
         return msgs
