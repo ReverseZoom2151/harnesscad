@@ -18,7 +18,8 @@ import argparse
 import json
 from typing import Any, Dict, List, Optional
 
-from harnesscad.eval.selftest import differential, fleet_audit, golden, properties
+from harnesscad.eval.selftest import (differential, field_liveness, fleet_audit,
+                                      golden, properties)
 from harnesscad.eval.selftest.probe import GEOMETRIC_BACKENDS, available
 
 __all__ = ["add_arguments", "run"]
@@ -38,8 +39,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
                         help="metamorphic laws (a shell must not grow the part, "
                              "scaling by k scales volume by k^3, ...) over a "
                              "seeded random corpus")
+    parser.add_argument("--field-liveness", action="store_true",
+                        dest="field_liveness",
+                        help="for EVERY op field, prove that changing it changes "
+                             "the geometry -- the one oracle the differential "
+                             "cannot be, because all six engines drop the SAME "
+                             "fields and so agree while all being wrong")
     parser.add_argument("--all", action="store_true",
-                        help="run all four oracles (the default)")
+                        help="run all the oracles (the default)")
     parser.add_argument("--backend", action="append", dest="backends",
                         metavar="NAME",
                         help="restrict to these engines (repeatable); default is "
@@ -65,8 +72,14 @@ def run(args: argparse.Namespace) -> int:
         "fleet": bool(getattr(args, "fleet", False)),
         "properties": bool(getattr(args, "properties", False)),
     }
+    # field-liveness is OPT-IN, and stays out of --all. The full six-engine matrix
+    # forks freecadcmd/blender/openscad ~1000 times and takes the better part of an
+    # hour; bolting that silently onto `selftest --all` would turn the command
+    # everybody runs into the command nobody runs. Ask for it by name.
+    field_liveness_wanted = bool(getattr(args, "field_liveness", False))
     if getattr(args, "all", False) or not any(wanted.values()):
-        wanted = {k: True for k in wanted}
+        if not field_liveness_wanted:
+            wanted = {k: True for k in wanted}
 
     backends = list(getattr(args, "backends", None) or GEOMETRIC_BACKENDS)
     as_json = bool(getattr(args, "as_json", False))
@@ -77,7 +90,7 @@ def run(args: argparse.Namespace) -> int:
     if wanted["differential"]:
         rep = differential.run(backends=backends)
         out["differential"] = rep.to_dict()
-        findings += len(rep.disagreements)
+        findings += rep.findings
         text.append(differential.format_text(rep))
 
     if wanted["golden"]:
@@ -106,6 +119,17 @@ def run(args: argparse.Namespace) -> int:
         out["properties"] = rep_p.to_dict()
         findings += len(rep_p.violations)
         text.append(properties.format_text(rep_p))
+
+    if field_liveness_wanted:
+        # The stub is included on purpose: it is non-geometric, so its dead cells
+        # are excluded from the census, but it is the only engine that can check
+        # all 83 fields in a fraction of a second and it is where a broken FIXTURE
+        # surfaces first.
+        rep_l = field_liveness.run(
+            backends=(["stub"] + [b for b in backends if b != "stub"]))
+        out["field_liveness"] = rep_l.to_dict()
+        findings += len(rep_l.dead) + len(rep_l.rejected) + len(rep_l.unmapped)
+        text.append(field_liveness.format_text(rep_l))
 
     out["findings"] = findings
     if as_json:
