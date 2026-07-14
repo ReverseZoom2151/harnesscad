@@ -51,6 +51,8 @@ from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 from harnesscad.io.backends.base import ApplyResult, BackendUnavailable
 from harnesscad.core.constraints import ConstraintGraph
+from harnesscad.domain.geometry.topology.selector_dsl import SelectorError
+from harnesscad.domain.geometry.topology.selector_dsl import parse as parse_selector
 
 #: Sketch planes this backend accepts. Validated at NewSketch time (as the frep
 #: backend does) rather than exploding later inside cq.Workplane at extrude time.
@@ -105,6 +107,68 @@ def _degenerate(wp, what: str) -> Optional[ApplyResult]:
     if solid_volume(wp) <= MIN_VOLUME:
         return _err("degenerate", "%s produced a zero-volume solid" % what)
     return None
+
+
+def join_selectors(selectors) -> Optional[str]:
+    """Combine CISP selector strings into ONE CadQuery selector string, or None.
+
+    CISP carries a *tuple* of selectors (``Fillet.edges``, ``Shell.faces``);
+    CadQuery's ``Workplane.edges(selector)`` / ``.faces(selector)`` take a single
+    string. Per the selectors doc (selectors.html, "Combining Selectors"), string
+    selectors compose with ``and`` / ``or`` / ``not`` / ``exc``, so a tuple is the
+    ``or`` (set union) of its members — each parenthesised so that a member which
+    is itself a compound expression cannot bind across the join.
+
+    Returns None for an empty tuple, which every caller reads as "no filter".
+    Raises :class:`SelectorError` for a malformed member, so the backend reports a
+    typed ``bad-value`` diagnostic instead of letting a typo reach the kernel.
+    """
+    sels = [str(s).strip() for s in (selectors or ()) if str(s).strip()]
+    if not sels:
+        return None
+    joined = " or ".join("(%s)" % s for s in sels) if len(sels) > 1 else sels[0]
+    parse_selector(joined)  # validate against our CadQuery-compatible grammar
+    return joined
+
+
+def _blend_took_effect(before, after, what: str) -> Optional[ApplyResult]:
+    """``ApplyResult`` when a fillet/chamfer silently did NOTHING, else None.
+
+    ``_degenerate`` only asks "is there a positive-volume solid?", which an
+    UNCHANGED solid passes. OCCT usually throws on an impossible blend, but not
+    always (a degenerate radius, or an edge list that resolved to a seam edge, can
+    return the input shape untouched). A blend that really happened MUST change the
+    topology: BRepFilletAPI_MakeFillet adds one face per rounded edge (and a patch
+    per corner), and BRepFilletAPI_MakeChamfer adds one planar face per edge. So a
+    face count that did not rise means the op was a no-op and must be refused
+    rather than committed as a phantom feature.
+    """
+    try:
+        n_before = len(before.val().Faces())
+        n_after = len(after.val().Faces())
+    except Exception:  # noqa: BLE001 - can't tell -> don't block
+        return None
+    if n_after <= n_before:
+        return _err("degenerate",
+                    "%s did not change the solid (face count stayed at %d): the "
+                    "selected edges could not be blended" % (what, n_before))
+    return None
+
+
+def _sub_shapes(wp, kind: str, selectors, default: Optional[str] = None):
+    """``wp.edges(sel)`` / ``wp.faces(sel)`` for a CISP selector tuple.
+
+    ``default`` is the selector used when the tuple is empty (None = take them
+    all). Returns the resulting Workplane with the sub-shapes on the stack.
+    Raises SelectorError (malformed) or ValueError (selected nothing).
+    """
+    sel = join_selectors(selectors)
+    if sel is None:
+        sel = default
+    picked = getattr(wp, kind)(sel) if sel else getattr(wp, kind)()
+    if not picked.vals():
+        raise ValueError("selector %r selected no %s" % (sel, kind))
+    return picked
 
 
 class CadQueryBackend:
@@ -211,13 +275,11 @@ class CadQueryBackend:
         if isinstance(op, Shell):
             return self._shell(op)
         if isinstance(op, Draft):
-            return self._unsupported_feature(
-                "draft", faces_ok=True,
-                msg="draft angle is not yet wired on this CadQuery/OCCT build")
+            return self._draft(op)
         if isinstance(op, Loft):
-            return self._loft_unsupported(op)
+            return self._loft(op)
         if isinstance(op, Sweep):
-            return self._sweep_unsupported(op)
+            return self._sweep(op)
         if isinstance(op, LinearPattern):
             return self._linear_pattern(op)
         if isinstance(op, CircularPattern):
@@ -381,15 +443,23 @@ class CadQueryBackend:
         try:
             _cq()
             target = self._solids[-1]
-            # Edge ids are opaque across backends; fillet all edges of the
-            # current solid (a real OCCT fillet). Too-large radius -> kernel
-            # exception -> block-and-correct below.
-            filleted = target.edges().fillet(op.radius)
-            bad = _degenerate(filleted, "fillet")
+            # BUG: op.edges was IGNORED and EVERY edge was filleted. A fillet on
+            # the wrong edge set is a silent correctness bug (a 20x10x5 box
+            # filleted r=1 on its 4 vertical edges has 10 faces / V=995.708; the
+            # same box filleted on all 12 edges has 26 faces / V=971.295 -- two
+            # different parts, both "ok"). op.edges is a tuple of CadQuery
+            # selector strings (selectors.html); an empty tuple still means every
+            # edge, so existing op streams are unchanged.
+            edges = _sub_shapes(target, "edges", op.edges)
+            filleted = edges.fillet(op.radius)
+            bad = _degenerate(filleted, "fillet") \
+                or _blend_took_effect(target, filleted, "fillet")
             if bad is not None:
                 return bad
         except BackendUnavailable:
             raise
+        except SelectorError as exc:
+            return _err("bad-value", f"fillet edge selector is malformed: {exc}")
         except _err_types() as exc:
             return _err("kernel-error", f"fillet failed: {exc}")
         fid = self._new_id("f")
@@ -403,8 +473,12 @@ class CadQueryBackend:
         ``self._solids`` and the solid-producing features are pushed in lockstep,
         so the n-th solid-producing feature is the n-th solid.
         """
+        # Every feature type that PUSHES a new entry onto self._solids must be
+        # listed here, or Boolean(target=...) resolves to the wrong body. loft and
+        # sweep are body-producing now, so they belong in this set.
         bodies = [f["id"] for f in self.features
-                  if f["type"] in ("extrude", "revolve", "boolean")]
+                  if f["type"] in ("extrude", "revolve", "boolean",
+                                   "loft", "sweep")]
         try:
             i = bodies.index(ref)
         except ValueError:
@@ -487,17 +561,25 @@ class CadQueryBackend:
             return _err("no-solid", "chamfer requires an existing solid")
         if op.distance <= 0:
             return _err("bad-value", f"chamfer distance must be > 0 (got {op.distance})")
+        if op.distance2 is not None and op.distance2 <= 0:
+            return _err("bad-value",
+                        f"chamfer distance2 must be > 0 (got {op.distance2})")
         try:
             _cq()
             target = self._solids[-1]
-            # Edge ids are opaque across backends; chamfer all edges (a real OCCT
-            # chamfer). Too-large a setback -> kernel exception -> block-and-correct.
-            chamfered = target.edges().chamfer(op.distance)
-            bad = _degenerate(chamfered, "chamfer")
+            # Same bug as _fillet: op.edges was ignored and EVERY edge chamfered.
+            # Workplane.chamfer(length, length2=None) (classreference.html) takes
+            # an optional second setback for an asymmetric chamfer.
+            edges = _sub_shapes(target, "edges", op.edges)
+            chamfered = edges.chamfer(op.distance, op.distance2)
+            bad = _degenerate(chamfered, "chamfer") \
+                or _blend_took_effect(target, chamfered, "chamfer")
             if bad is not None:
                 return bad
         except BackendUnavailable:
             raise
+        except SelectorError as exc:
+            return _err("bad-value", f"chamfer edge selector is malformed: {exc}")
         except _err_types() as exc:
             return _err("kernel-error", f"chamfer failed: {exc}")
         fid = self._new_id("f")
@@ -510,9 +592,31 @@ class CadQueryBackend:
             return _err("bad-value", f"hole diameter must be > 0 (got {op.diameter})")
         if not op.through and (op.depth is None or op.depth <= 0):
             return _err("bad-value", "blind hole requires depth > 0")
-        if op.kind != "simple":
-            return _err("not-yet-supported",
-                        f"hole kind '{op.kind}' is not yet realised (only 'simple')")
+        if op.kind not in ("simple", "counterbore", "countersink"):
+            return _err("bad-value", f"unknown hole kind '{op.kind}' "
+                                     "(simple | counterbore | countersink)")
+        # CAPABILITY: counterbore / countersink used to be refused outright. They
+        # are first-class CadQuery ops -- Workplane.cboreHole(diameter,
+        # cboreDiameter, cboreDepth, depth=None) and Workplane.cskHole(diameter,
+        # cskDiameter, cskAngle, depth=None) (classreference.html); depth=None is
+        # through-all. Both drill along the -normal of the workplane face.
+        cbore_d = op.cbore_diameter if op.cbore_diameter is not None \
+            else 2.0 * op.diameter
+        cbore_z = op.cbore_depth if op.cbore_depth is not None else op.diameter
+        csk_d = op.csk_diameter if op.csk_diameter is not None \
+            else 2.0 * op.diameter
+        if op.kind == "counterbore":
+            if cbore_d <= op.diameter:
+                return _err("bad-value", "counterbore diameter must exceed the "
+                                         "hole diameter")
+            if cbore_z <= 0:
+                return _err("bad-value", "counterbore depth must be > 0")
+        if op.kind == "countersink":
+            if csk_d <= op.diameter:
+                return _err("bad-value", "countersink diameter must exceed the "
+                                         "hole diameter")
+            if not 0.0 < op.csk_angle < 180.0:
+                return _err("bad-value", "countersink angle must be in (0, 180)")
         ref = op.face_or_sketch
         if ref.startswith("sk") and ref not in self.sketches:
             return _err("bad-ref", f"unknown sketch '{ref}'", ref)
@@ -521,18 +625,38 @@ class CadQueryBackend:
         try:
             _cq()
             target = self._solids[-1]
-            wp = (target.faces(">Z")
+            # BUG: op.face_or_sketch was IGNORED -- every hole was drilled into the
+            # TOP face, so Hole(face_or_sketch="<Z", ...) silently drilled the wrong
+            # side. The ref may be a body alias ("solid"/"body"/"last") or a sketch
+            # id, both of which mean "the default drilling face" (">Z"); anything
+            # else is a CadQuery face selector.
+            if ref in ("", "solid", "body", "last") or ref.startswith("sk"):
+                face_sel = ">Z"
+            else:
+                face_sel = ref
+            # centerOption="ProjectedOrigin" projects the GLOBAL origin onto the
+            # face (classreference.html#cadquery.Workplane.workplane), so the local
+            # (x, y) we push ARE the model's x/y. This is deliberate: CISP's
+            # Hole(x, y) are absolute model coordinates, and the other two options
+            # ("CenterOfMass", "CenterOfBoundBox") would re-origin the hole on the
+            # face's own centre and silently move it on any off-centre face.
+            wp = (_sub_shapes(target, "faces", (face_sel,))
                         .workplane(centerOption="ProjectedOrigin")
                         .pushPoints([(op.x, op.y)]))
-            if op.through:
-                result = wp.hole(op.diameter)
+            depth = None if op.through else op.depth
+            if op.kind == "counterbore":
+                result = wp.cboreHole(op.diameter, cbore_d, cbore_z, depth)
+            elif op.kind == "countersink":
+                result = wp.cskHole(op.diameter, csk_d, op.csk_angle, depth)
             else:
-                result = wp.hole(op.diameter, op.depth)
+                result = wp.hole(op.diameter, depth)
             bad = _degenerate(result, "hole")
             if bad is not None:
                 return bad
         except BackendUnavailable:
             raise
+        except SelectorError as exc:
+            return _err("bad-value", f"hole face selector is malformed: {exc}")
         except _err_types() as exc:
             return _err("kernel-error", f"hole failed: {exc}")
         fid = self._new_id("f")
@@ -546,17 +670,65 @@ class CadQueryBackend:
             return _err("no-solid", "shell requires an existing solid")
         if op.thickness <= 0:
             return _err("bad-value", f"shell thickness must be > 0 (got {op.thickness})")
+        if op.kind not in ("arc", "intersection"):
+            return _err("bad-value",
+                        f"unknown shell kind '{op.kind}' (arc | intersection)")
         try:
             _cq()
             target = self._solids[-1]
-            # Remove the top face and hollow inward by `thickness` (a real OCCT
-            # MakeThickSolid). Too-thick a wall -> kernel exception -> rollback.
-            shelled = target.faces(">Z").shell(-abs(op.thickness))
+            # SHELL SIGN CONVENTION -- this is documented, not luck.
+            # Workplane.shell(thickness, kind='arc') (classreference.html):
+            #   "Negative values shell inwards, positive values shell outwards."
+            # examples.html#shelling-to-create-thin-features is blunter: "To shell
+            # an object and 'hollow out' the inside pass a NEGATIVE thickness"; a
+            # positive one "wraps an object ... and the original object will be the
+            # 'hollowed out' portion" -- i.e. it GROWS the part (60x40x20 -> 66x46x23).
+            # So we pass -thickness. That is the whole reason this backend got the
+            # bbox right while frep/blender did not.
+            #
+            # WHICH FACES: Workplane.shell removes the faces ON THE STACK
+            # (`faces = [f for f in self.objects if isinstance(f, Face)]`).
+            #   * op.faces non-empty -> those faces are REMOVED (opened).
+            #   * op.faces EMPTY     -> a CLOSED HOLLOW: a sealed internal void with
+            #     no opening. The free function `hollow` documents exactly this --
+            #     "if no faces provided a watertight solid will be constructed".
+            # BUG: we used to hardcode ">Z" for the empty case, silently opening the
+            # top face on every shell that did not name one. That is what made this
+            # backend disagree with frep/blender; it was OUR bug, not a semantic
+            # difference. Never default a face open.
+            before_bb = target.val().BoundingBox()
+            before_v = solid_volume(target)
+            if join_selectors(op.faces) is None:
+                shelled = target.shell(-abs(op.thickness), kind=op.kind)
+            else:
+                faces = _sub_shapes(target, "faces", op.faces)
+                shelled = faces.shell(-abs(op.thickness), kind=op.kind)
             bad = _degenerate(shelled, "shell")
             if bad is not None:
                 return bad
+            # POSTCONDITION -- a shell HOLLOWS, it never grows and never adds
+            # material. OCCT does not always refuse an over-thick wall: shelling a
+            # 20mm cube by 50mm returns a solid rather than raising, and it used to
+            # be committed. Assert the invariant instead of trusting the kernel.
+            after_bb = shelled.val().BoundingBox()
+            grew = [
+                after_bb.xlen - before_bb.xlen,
+                after_bb.ylen - before_bb.ylen,
+                after_bb.zlen - before_bb.zlen,
+            ]
+            if max(grew) > 1e-6:
+                return _err("degenerate",
+                            "shell grew the part's bounding box by %s -- a shell "
+                            "must hollow inward and leave the outer surface where "
+                            "it was" % [round(g, 6) for g in grew])
+            if solid_volume(shelled) >= before_v - MIN_VOLUME:
+                return _err("degenerate",
+                            "shell removed no material (wall thickness %g is too "
+                            "large for this body)" % op.thickness)
         except BackendUnavailable:
             raise
+        except SelectorError as exc:
+            return _err("bad-value", f"shell face selector is malformed: {exc}")
         except _err_types() as exc:
             return _err("kernel-error", f"shell failed: {exc}")
         fid = self._new_id("f")
@@ -610,7 +782,18 @@ class CadQueryBackend:
             _cq()
             base = self._solids[-1]
             a = op.axis
-            step = op.angle / op.count
+            # PITCH RULE -- copied from CadQuery's own Workplane.polarArray(fill=True)
+            # (cq.py; classreference.html#cadquery.Workplane.polarArray):
+            #   if abs(math.remainder(angle, 360)) < TOL: angle = angle / count
+            #   else:                                     angle = angle / (count - 1)
+            # A full turn divides evenly (the last copy would land on the first);
+            # any other arc is spanned INCLUSIVELY, start and end. We used
+            # angle/count unconditionally, so a 180-degree 4-up pattern spanned
+            # 135 degrees where CadQuery (and every CAD package) spans 180.
+            if abs(math.remainder(float(op.angle), 360.0)) < 1e-9:
+                step = float(op.angle) / float(op.count)
+            else:
+                step = float(op.angle) / float(op.count - 1)
             result = base
             for i in range(1, op.count):
                 rotated = base.rotate((a[0], a[1], a[2]), (a[3], a[4], a[5]), step * i)
@@ -652,16 +835,34 @@ class CadQueryBackend:
         self._solids[-1] = result
         return ApplyResult(True, [fid])
 
-    # -- honestly-unsupported features -------------------------------------
-    # These validate references (so a bad ref still reports 'bad-ref') but then
-    # return a typed 'not-yet-supported' diagnostic instead of fabricating
-    # geometry the current CadQuery/OCCT build cannot produce reliably.
-    def _unsupported_feature(self, name: str, faces_ok: bool, msg: str) -> ApplyResult:
-        if not self.solid_present or not self._solids:
-            return _err("no-solid", f"{name} requires an existing solid")
-        return _err("not-yet-supported", msg)
+    # -- loft / sweep / draft (real geometry) -------------------------------
+    def _outer_wire(self, cq, sketch: dict, offset: float = 0.0):
+        """The sketch's outer closed wire, on its own plane, offset along its normal.
 
-    def _loft_unsupported(self, op: Loft) -> ApplyResult:
+        ``Workplane.workplane(offset=...)`` (classreference.html) shifts the plane
+        along its normal, which is how two profiles sketched on the SAME plane get
+        the separation a loft needs.
+        """
+        wp = cq.Workplane(sketch["plane"])
+        if offset:
+            wp = wp.workplane(offset=offset)
+        n = 0
+        for eid in sketch["entities"]:
+            ent = self.entities[eid]
+            p = ent["params"]
+            if ent["type"] == "rectangle":
+                wp = wp.moveTo(p["x"] + p["w"] / 2.0, p["y"] + p["h"] / 2.0)
+                wp = wp.rect(p["w"], p["h"])
+                n += 1
+            elif ent["type"] == "circle":
+                wp = wp.moveTo(p["cx"], p["cy"]).circle(p["r"])
+                n += 1
+        if not n:
+            return None
+        wires = wp.wires().vals()
+        return wires[0] if wires else None
+
+    def _loft(self, op: Loft) -> ApplyResult:
         if len(op.sketches) < 2:
             return _err("bad-value", "loft requires at least two sketches")
         for sid in op.sketches:
@@ -669,19 +870,171 @@ class CadQueryBackend:
                 return _err("bad-ref", f"unknown sketch '{sid}'", sid)
             if not self.sketches[sid]["entities"]:
                 return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
-        return _err("not-yet-supported",
-                    "loft over abstract coplanar profiles is not yet wired on this "
-                    "CadQuery/OCCT build")
+        try:
+            cq = _cq()
+            offsets = list(op.offsets) + [0.0] * len(op.sketches)
+            wires = []
+            for i, sid in enumerate(op.sketches):
+                w = self._outer_wire(cq, self.sketches[sid], float(offsets[i]))
+                if w is None:
+                    return _err("empty-sketch",
+                                f"sketch '{sid}' has no closed profile to loft", sid)
+                wires.append(w)
+            # Solid.makeLoft(listOfWire, ruled=False) (classreference.html).
+            solid = cq.Workplane("XY").newObject(
+                [cq.Solid.makeLoft(wires, bool(op.ruled))])
+            # Coincident profiles (all offsets 0 on one plane) loft to zero volume
+            # -- caught here rather than committed as a phantom body.
+            bad = _degenerate(solid, "loft")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"loft failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "loft", "id": fid,
+                              "sketches": list(op.sketches)})
+        self._solids.append(solid)
+        self.solid_present = True
+        return ApplyResult(True, [fid])
 
-    def _sweep_unsupported(self, op: Sweep) -> ApplyResult:
+    def _build_path(self, cq, sketch: dict):
+        """A sketch's open/closed path wire: chained lines, or a single circle."""
+        lines = [self.entities[e] for e in sketch["entities"]
+                 if self.entities[e]["type"] == "line"]
+        circles = [self.entities[e] for e in sketch["entities"]
+                   if self.entities[e]["type"] == "circle"]
+        wp = cq.Workplane(sketch["plane"])
+        if lines:
+            p = lines[0]["params"]
+            wp = wp.moveTo(p["x1"], p["y1"]).lineTo(p["x2"], p["y2"])
+            for ent in lines[1:]:
+                q = ent["params"]
+                wp = wp.lineTo(q["x2"], q["y2"])
+            return wp.wire()
+        if circles:
+            p = circles[0]["params"]
+            return wp.moveTo(p["cx"], p["cy"]).circle(p["r"])
+        return None
+
+    def _sweep(self, op: Sweep) -> ApplyResult:
         for sid in (op.sketch, op.path):
             if sid not in self.sketches:
                 return _err("bad-ref", f"unknown sketch '{sid}'", sid)
             if not self.sketches[sid]["entities"]:
                 return _err("empty-sketch", f"sketch '{sid}' has no profile", sid)
-        return _err("not-yet-supported",
-                    "sweep along an abstract path sketch is not yet wired on this "
-                    "CadQuery/OCCT build")
+        try:
+            cq = _cq()
+            profile = self._build_profile(cq, self.sketches[op.sketch])
+            if profile is None:
+                return _err("empty-sketch",
+                            f"sweep profile sketch '{op.sketch}' has no closed "
+                            f"profile", op.sketch)
+            path = self._build_path(cq, self.sketches[op.path])
+            if path is None:
+                return _err("empty-sketch",
+                            f"sweep path sketch '{op.path}' has no line or circle "
+                            f"path", op.path)
+            # Workplane.sweep(path, ...) (classreference.html): sweeps the
+            # un-extruded wires in the chain along `path`. combine defaults to True
+            # but there is no context solid here, so it just returns the swept body.
+            solid = profile.sweep(path)
+            bad = _degenerate(solid, "sweep")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"sweep failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "sweep", "id": fid, "sketch": op.sketch,
+                              "path": op.path})
+        self._solids.append(solid)
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _draft(self, op: Draft) -> ApplyResult:
+        """Taper faces about a neutral plane (OCCT BRepOffsetAPI_DraftAngle).
+
+        CadQuery's Workplane has no draft method (only ``extrude(taper=)`` /
+        ``cutBlind(taper=)``, which draft an extrusion as it is created, not an
+        existing solid), so we drive the OCCT algorithm the kernel exposes
+        directly. ``op.faces`` are CadQuery selector strings for the faces to
+        taper. ``op.neutral_plane`` is the surface that stays put; it accepts
+        either a datum-plane NAME ("XY" / "XZ" / "YZ", through the global origin)
+        or a CadQuery face selector ("<Z" = the bottom face). It defaults to
+        "<Z". The pull direction is that plane's normal, pointing into the body.
+        """
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "draft requires an existing solid")
+        if op.angle == 0:
+            return _err("bad-value", "draft angle must be non-zero")
+        if abs(op.angle) >= 90.0:
+            return _err("bad-value", f"draft angle must be < 90 deg (got {op.angle})")
+        try:
+            cq = _cq()
+            from OCP.BRepOffsetAPI import BRepOffsetAPI_DraftAngle
+            from OCP.gp import gp_Dir, gp_Pln, gp_Pnt
+
+            target = self._solids[-1]
+            spec = str(op.neutral_plane).strip() or "<Z"
+            # A datum-plane NAME (through the global origin) or a face selector.
+            datum = {"XY": (0.0, 0.0, 1.0), "YX": (0.0, 0.0, 1.0),
+                     "XZ": (0.0, 1.0, 0.0), "ZX": (0.0, 1.0, 0.0),
+                     "YZ": (1.0, 0.0, 0.0), "ZY": (1.0, 0.0, 0.0)}
+            if spec.upper() in datum:
+                d = datum[spec.upper()]
+                origin = (0.0, 0.0, 0.0)
+                pull_v = d                      # taper away from the datum plane
+            else:
+                neutral = _sub_shapes(target, "faces", (spec,)).vals()[0]
+                nc, nn = neutral.Center(), neutral.normalAt()
+                origin = (nc.x, nc.y, nc.z)
+                pull_v = (-nn.x, -nn.y, -nn.z)  # the face's normal, INTO the body
+            pull = gp_Dir(*pull_v)
+            # The neutral plane is perpendicular to the pull direction.
+            plane = gp_Pln(gp_Pnt(*origin), pull)
+
+            # Default face set: the side walls -- every face whose normal is
+            # PERPENDICULAR to the pull direction (those are the faces a mould
+            # release needs; the neutral face and its opposite are untouched).
+            # Computed here rather than as a selector string because CadQuery's own
+            # string-selector grammar cannot express it: it parses "not(a or b)"
+            # but rejects "not(a) and not(b)" ("Expected end of text, found 'and'").
+            if join_selectors(op.faces) is not None:
+                faces = _sub_shapes(target, "faces", op.faces).vals()
+            else:
+                faces = [f for f in target.faces().vals()
+                         if abs(f.normalAt().dot(
+                             cq.Vector(*pull_v))) <= 1e-6]
+            builder = BRepOffsetAPI_DraftAngle(target.val().wrapped)
+            added = 0
+            for f in faces:
+                builder.Add(f.wrapped, pull, math.radians(abs(op.angle)), plane)
+                added += 1
+            if not added:
+                return _err("bad-value", "draft selected no faces to taper")
+            builder.Build()
+            if not builder.IsDone():
+                return _err("kernel-error", "OCCT draft (BRepOffsetAPI_DraftAngle) "
+                                            "could not build the tapered solid")
+            drafted = cq.Workplane("XY").newObject(
+                [cq.Shape.cast(builder.Shape())])
+            bad = _degenerate(drafted, "draft")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
+        except SelectorError as exc:
+            return _err("bad-value", f"draft face selector is malformed: {exc}")
+        except _err_types() as exc:
+            return _err("kernel-error", f"draft failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "draft", "id": fid,
+                              "faces": list(op.faces), "angle": op.angle})
+        self._solids[-1] = drafted
+        return ApplyResult(True, [fid])
 
     def regenerate(self) -> List[Diagnostic]:
         return []  # incremental backend; nothing to rebuild
@@ -836,7 +1189,37 @@ class CadQueryBackend:
             return {}
 
     # -- export -------------------------------------------------------------
-    def export(self, fmt: str):
+    #: Tessellation deflection used for every meshed export (STL, ...).
+    #:
+    #: exporters.export(w, fname, exportType, tolerance=0.1, angularTolerance=0.1)
+    #: (importexport.html): ``tolerance`` is the LINEAR deflection in model units,
+    #: ``angularTolerance`` is in RADIANS.
+    #:
+    #: THE TRAP: exporters.export defaults tolerance=0.1, but the Shape.exportStl
+    #: it delegates to defaults tolerance=1e-3 ("a good starting point for a range
+    #: of cases"). export() passes its own coarse default straight through, so any
+    #: mesh produced via export() is 100x coarser than the documented default --
+    #: and we were passing NO tolerance at all, so every mesh-based verifier and
+    #: the differential oracle silently ran on that coarse tessellation.
+    #:
+    #: Both bounds must be pinned. The angular one is what actually binds on
+    #: curved faces: at cq's 0.1 rad (5.7 deg) our reference plate meshes to 520
+    #: facets whether the linear tolerance is 0.1 or 0.01 -- tightening the linear
+    #: bound ALONE changes nothing. Measured mesh-volume error vs analytic on a
+    #: 40x24x8 plate with a 6mm bore:
+    #:     cq export() default (0.1 / 0.1 rad)  ->  520 facets, 0.0013% error
+    #:     ours              (1e-3 / 0.05 rad)  -> 1024 facets, 0.0003% error
+    LINEAR_DEFLECTION = 1e-3      # mm  (Shape.exportStl's own documented default)
+    ANGULAR_DEFLECTION = 0.05     # radians (~2.9 deg)
+
+    #: STEP application protocol. OCCT's default is AP214IS, but it is a *global*
+    #: Interface_Static setting that any other OCCT user in-process can change, so
+    #: we set it explicitly on every export rather than inheriting whatever the
+    #: process happens to be in (importexport.html / OCCT STEP writer).
+    STEP_SCHEMA = "AP214IS"
+
+    def export(self, fmt: str, tolerance: Optional[float] = None,
+               angular_tolerance: Optional[float] = None):
         fmt = str(fmt).lower()
         if fmt not in self.FORMATS:
             raise ValueError("the cadquery backend cannot export '%s' (supported: %s)"
@@ -846,18 +1229,65 @@ class CadQueryBackend:
         if shape is None:
             raise ValueError("nothing to export: no solid present")
         from cadquery import exporters
+        lin = self.LINEAR_DEFLECTION if tolerance is None else float(tolerance)
+        ang = (self.ANGULAR_DEFLECTION if angular_tolerance is None
+               else float(angular_tolerance))
+        if lin <= 0 or ang <= 0:
+            raise ValueError("export tolerances must be > 0")
         wp = cq.Workplane("XY").add(shape)
         if fmt == "step":
-            return self._export_text(exporters, wp, "STEP", ".step")
+            from OCP.Interface import Interface_Static
+            Interface_Static.SetCVal_s("write.step.schema", self.STEP_SCHEMA)
+            # write_pcurves=True keeps the parametric curves (a lossless B-rep
+            # round-trip); precision_mode=0 uses the shape's own tolerances.
+            return self._export_text(exporters, wp, "STEP", ".step",
+                                     opt={"write_pcurves": True,
+                                          "precision_mode": 0})
         if fmt == "stl":
-            # ASCII: export() defaults to *binary* STL, which cannot survive being
-            # read back as text (the bytes get mangled by the utf-8 decode) and so
-            # was not parseable by any STL reader.
-            return self._export_text(exporters, wp, "STL", ".stl",
-                                     opt={"ascii": True})
+            return self._export_stl(shape, lin, ang)
         if fmt == "brep":
             return self._export_brep(shape)
         return self._export_iges(shape)
+
+    @staticmethod
+    def _export_stl(shape, tolerance: float, angular_tolerance: float) -> str:
+        """ASCII STL at a KNOWN, ABSOLUTE tessellation deflection.
+
+        We drive ``Shape.exportStl(fileName, tolerance, angularTolerance, ascii,
+        relative, parallel)`` directly instead of ``exporters.export(...,
+        exportType="STL")``, because that wrapper does
+        ``shape.exportStl(fname, tolerance, angularTolerance, useascii)`` and so
+        leaves TWO defaults we must not accept:
+
+        * ``relative=True`` -- the linear tolerance is then scaled per edge rather
+          than being the deflection in model units importexport.html documents. It
+          is also barely monotonic: on our reference plate, tolerance 0.5 and 0.05
+          both produced 44 facets. With relative=False the same sweep gives
+          48 -> 116 -> 324 -> 992 facets, which is the predictable behaviour the
+          downstream mesh checks need.
+        * no triangulation reset -- OCCT CACHES the mesh on the TopoDS_Shape, so
+          the SECOND export of a shape silently reuses the FIRST export's mesh and
+          ignores the new tolerance entirely (measured: 992 facets returned for
+          every tolerance from 0.0005 to 0.5). BRepTools.Clean_s drops the cached
+          triangulation so each export really re-tessellates.
+
+        ASCII (not cq's default binary) because the caller reads the result back as
+        text; binary bytes do not survive the utf-8 decode.
+        """
+        from OCP.BRepTools import BRepTools
+
+        fd, path = tempfile.mkstemp(suffix=".stl")
+        os.close(fd)
+        try:
+            BRepTools.Clean_s(shape.wrapped)   # drop any cached triangulation
+            shape.exportStl(path, tolerance, angular_tolerance, True, False)
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
     @staticmethod
     def _export_brep(shape) -> str:
@@ -895,11 +1325,18 @@ class CadQueryBackend:
                 pass
 
     @staticmethod
-    def _export_text(exporters, wp, export_type: str, suffix: str, opt=None) -> str:
+    def _export_text(exporters, wp, export_type: str, suffix: str, opt=None,
+                     tolerance: Optional[float] = None,
+                     angular_tolerance: Optional[float] = None) -> str:
         fd, path = tempfile.mkstemp(suffix=suffix)
         os.close(fd)
+        kw = {}
+        if tolerance is not None:
+            kw["tolerance"] = tolerance
+        if angular_tolerance is not None:
+            kw["angularTolerance"] = angular_tolerance
         try:
-            exporters.export(wp, path, exportType=export_type, opt=opt)
+            exporters.export(wp, path, exportType=export_type, opt=opt, **kw)
             with open(path, "r", encoding="utf-8", errors="replace") as fh:
                 return fh.read()
         finally:

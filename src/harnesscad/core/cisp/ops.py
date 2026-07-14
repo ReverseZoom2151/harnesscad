@@ -99,6 +99,15 @@ class Extrude(Op):
 
 @dataclass(frozen=True)
 class Fillet(Op):
+    """Round solid edges.
+
+    ``edges`` is a tuple of CadQuery selector strings naming the edges to round
+    (``("|Z",)`` = the four vertical edges, ``(">Z",)`` = the top face's edges,
+    ``("|Z and >Y",)``, ...). An EMPTY tuple means "every edge" — the historical
+    behaviour, kept so existing op streams are unchanged. See
+    :mod:`harnesscad.domain.geometry.topology.selector_dsl` for the grammar.
+    """
+
     OP: ClassVar[str] = "fillet"
     edges: tuple = ()
     radius: float = 1.0
@@ -133,11 +142,14 @@ class Chamfer(Op):
     """A straight chamfer on solid edges (BRepFilletAPI_MakeChamfer).
 
     Distinct from :class:`Fillet` (which rounds); ``distance`` is the setback.
+    ``distance2`` optionally makes the chamfer asymmetric — it maps onto
+    CadQuery's ``Workplane.chamfer(length, length2=None)`` second setback.
     """
 
     OP: ClassVar[str] = "chamfer"
     edges: tuple = ()
     distance: float = 1.0
+    distance2: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -145,8 +157,14 @@ class Hole(Op):
     """A semantic, DFM-legible hole: cut a cylinder into a face/sketch datum.
 
     ``kind`` is a manufacturing intent tag ("simple" | "counterbore" |
-    "countersink"); only "simple" is realised geometrically today. ``through``
-    selects a through-all cut; otherwise ``depth`` bounds a blind hole.
+    "countersink"). ``through`` selects a through-all cut; otherwise ``depth``
+    bounds a blind hole.
+
+    Counterbore/countersink carry the extra stepped-profile dimensions that
+    CadQuery's ``Workplane.cboreHole(diameter, cboreDiameter, cboreDepth)`` and
+    ``Workplane.cskHole(diameter, cskDiameter, cskAngle)`` require. When they are
+    left as ``None`` a backend may fall back to a conventional ratio, but callers
+    that care about the exact stepped profile should set them explicitly.
     """
 
     OP: ClassVar[str] = "hole"
@@ -157,18 +175,32 @@ class Hole(Op):
     depth: Optional[float] = None
     through: bool = True
     kind: str = "simple"
+    cbore_diameter: Optional[float] = None
+    cbore_depth: Optional[float] = None
+    csk_diameter: Optional[float] = None
+    csk_angle: float = 82.0
 
 
 @dataclass(frozen=True)
 class Shell(Op):
     """Hollow a solid to a wall ``thickness`` (OCCT MakeThickSolid / cq.shell).
 
-    ``faces`` names the faces to remove (open); empty removes a default face.
+    ``faces`` names the faces to remove (open) as CadQuery selector strings (e.g.
+    ``(">Z",)``, ``(">Z or <X",)``); empty defaults to removing the top face
+    (``">Z"``).
+
+    ``thickness`` is always a POSITIVE wall thickness and always hollows INWARD:
+    CadQuery's ``Workplane.shell`` documents "Negative values shell inwards,
+    positive values shell outwards", so a backend must pass ``-thickness``. A
+    shell must never grow the part's outer bounding box.
+
+    ``kind`` is CadQuery's join kind, ``"arc"`` or ``"intersection"``.
     """
 
     OP: ClassVar[str] = "shell"
     faces: tuple = ()
     thickness: float = 1.0
+    kind: str = "arc"
 
 
 @dataclass(frozen=True)
@@ -188,11 +220,18 @@ class Draft(Op):
 
 @dataclass(frozen=True)
 class Loft(Op):
-    """Loft a solid through an ordered list of sketch profiles."""
+    """Loft a solid through an ordered list of sketch profiles.
+
+    ``offsets`` gives each profile's offset along its own sketch-plane normal (so
+    two profiles on the same plane can still be lofted, which is the usual case).
+    When shorter than ``sketches`` the missing entries are 0. Profiles that all
+    end up coincident give a zero-volume loft and are rejected as degenerate.
+    """
 
     OP: ClassVar[str] = "loft"
     sketches: tuple = ()
     ruled: bool = False
+    offsets: tuple = ()
 
 
 @dataclass(frozen=True)

@@ -11,11 +11,12 @@ Every new op is exercised three ways:
                    and a non-empty STL export.
 """
 
+import math
 import unittest
 
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.core.cisp.ops import (
-    NewSketch, AddRectangle,
+    NewSketch, AddRectangle, AddCircle, AddLine,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     parse_op, canonical_json, _REGISTRY,
@@ -225,24 +226,50 @@ class TestRealGeometry(unittest.TestCase):
         self.assertTrue(res.ok, res.diagnostics and res.diagnostics[0].message)
         self.assertTrue(b.query("validity")["is_valid"])
 
-    def test_draft_loft_sweep_are_typed_unsupported(self):
+    def test_draft_loft_sweep_are_real_geometry_now(self):
+        """These three used to return a typed 'not-yet-supported'. CadQuery does
+        all three (Workplane.loft / Workplane.sweep, classreference.html; draft via
+        OCCT BRepOffsetAPI_DraftAngle), so they now build real solids.
+
+        Draft.neutral_plane accepts a datum-plane NAME ('XY') as well as a face
+        selector ('<Z')."""
         from harnesscad.io.backends.cadquery import CadQueryBackend
+
         b = self._cq_plate()
+        before = b.query("measure")["volume"]
         d = b.apply(Draft(angle=5.0, neutral_plane="XY"))
-        self.assertFalse(d.ok)
-        self.assertEqual(d.diagnostics[0].code, "not-yet-supported")
-        # loft: build two profile sketches, expect typed unsupported (not bad-ref)
+        self.assertTrue(d.ok, d.diagnostics and d.diagnostics[0].message)
+        self.assertLess(b.query("measure")["volume"], before)  # tapered inward
+        self.assertTrue(b.query("validity")["is_valid"])
+
+        # loft: two profiles, separated along their sketch-plane normal
         b2 = CadQueryBackend()
         b2.apply(NewSketch())
         b2.apply(AddRectangle(sketch="sk1", x=0, y=0, w=5, h=5))
         b2.apply(NewSketch())
         b2.apply(AddRectangle(sketch="sk2", x=0, y=0, w=3, h=3))
-        lo = b2.apply(Loft(sketches=("sk1", "sk2")))
-        self.assertFalse(lo.ok)
-        self.assertEqual(lo.diagnostics[0].code, "not-yet-supported")
-        sw = b2.apply(Sweep(sketch="sk1", path="sk2"))
-        self.assertFalse(sw.ok)
-        self.assertEqual(sw.diagnostics[0].code, "not-yet-supported")
+        lo = b2.apply(Loft(sketches=("sk1", "sk2"), offsets=(0.0, 10.0)))
+        self.assertTrue(lo.ok, lo.diagnostics and lo.diagnostics[0].message)
+        self.assertTrue(b2.query("validity")["is_valid"])
+
+        # coplanar profiles (no offsets) are a DEGENERATE loft, not a phantom body
+        b3 = CadQueryBackend()
+        b3.apply(NewSketch())
+        b3.apply(AddRectangle(sketch="sk1", x=0, y=0, w=5, h=5))
+        b3.apply(NewSketch())
+        b3.apply(AddRectangle(sketch="sk2", x=0, y=0, w=3, h=3))
+        self.assertFalse(b3.apply(Loft(sketches=("sk1", "sk2"))).ok)
+
+        # sweep: a profile on one plane along a line path on another
+        b4 = CadQueryBackend()
+        b4.apply(NewSketch(plane="YZ"))
+        b4.apply(AddCircle(sketch="sk1", cx=0, cy=0, r=2))
+        b4.apply(NewSketch(plane="XZ"))
+        b4.apply(AddLine(sketch="sk2", x1=0, y1=0, x2=20, y2=0))
+        sw = b4.apply(Sweep(sketch="sk1", path="sk2"))
+        self.assertTrue(sw.ok, sw.diagnostics and sw.diagnostics[0].message)
+        self.assertAlmostEqual(b4.query("measure")["volume"],
+                               math.pi * 4.0 * 20.0, places=6)
 
 
 if __name__ == "__main__":
