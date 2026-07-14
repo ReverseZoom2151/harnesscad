@@ -100,12 +100,18 @@ def _filleted_thin_plate() -> List[Op]:
     not by the 6 mm thickness. `preflight-RADIUS_TOO_LARGE` compares it against
     half the smallest extent of the whole bbox and rejects it. That rule is
     HEURISTIC, so it may say so -- to a human. It may not say so to the model.
+
+    Note `edges=()`: the F-rep backend has no topological edges for a selector to
+    name, and it REFUSES a named-edge fillet rather than silently rounding every
+    edge and reporting success. That refusal is a MEASURED fact about the kernel
+    and it is correct; it is not a false positive, so the corpus asks for the
+    uniform blend the backend can actually deliver.
     """
     return [
         NewSketch(),
         AddRectangle(sketch="sk1", x=0.0, y=0.0, w=50.0, h=30.0),
         Extrude(sketch="sk1", distance=6.0),
-        Fillet(edges=("e1",), radius=3.0),
+        Fillet(edges=(), radius=3.0),
     ]
 
 
@@ -126,9 +132,9 @@ def _counterbored_bracket() -> List[Op]:
         AddRectangle(sketch="sk1", x=0.0, y=0.0, w=70.0, h=40.0),
         Extrude(sketch="sk1", distance=10.0),
         Hole(face_or_sketch="sk1", x=15.0, y=20.0, diameter=8.0, through=True,
-             kind="counterbore"),
+             kind="counterbore", cbore_diameter=14.0, cbore_depth=4.0),
         Hole(face_or_sketch="sk1", x=55.0, y=20.0, diameter=8.0, through=True,
-             kind="counterbore"),
+             kind="counterbore", cbore_diameter=14.0, cbore_depth=4.0),
     ]
 
 
@@ -145,20 +151,56 @@ KNOWN_GOOD: Dict[str, List[Op]] = {
 
 #: ERROR codes a HEURISTIC rule is permitted to raise on a known-good part.
 #:
-#: There is exactly one, and it is here because it is REVIEWED, not because it
-#: is tolerated: `completeness` ERRORs when a part carries no name, no units and
-#: no material. None of those three are expressible in the CISP op vocabulary at
-#: ALL, so it fires on every part any op stream can possibly build. It is a
-#: release-readiness policy aimed at a PDM record, not a statement about
-#: geometry -- which is exactly why it is tiered HEURISTIC and never reaches the
-#: model. Anything else appearing here is a new false hard error and this test is
-#: how you find out.
-ALLOWED_HEURISTIC_ERROR_CODES = frozenset({"missing-metadata"})
+#: EMPTY, and it must stay that way. It briefly held `missing-metadata`, with a
+#: written justification: name/units/material are not expressible in the CISP op
+#: vocabulary, so `completeness` fired on every part any op stream can build.
+#: The justification was true and the conclusion was wrong. The fleet audit
+#: (eval/selftest/fleet_audit.py) measured that rule raising an ERROR on 16 of
+#: 16 parts -- good AND bad -- giving it precision 0.50 on a corpus whose base
+#: rate is 0.50. A rule that fires on every input carries ZERO information, and
+#: an allowlist is just a place to write down that you have decided to live with
+#: one. `completeness` now abstains (INFO `completeness-unmeasurable`) when the
+#: backend exposes no metadata surface, and this list is empty.
+ALLOWED_HEURISTIC_ERROR_CODES = frozenset()
+
+#: Deliberately-broken parts. Used ONLY to prove a rule can still discriminate:
+#: a rule that is silent on the good corpus is worthless if it is also silent
+#: here (that is abstention, not precision), and a rule that fires on both is
+#: worthless too (that is noise). The measurement of precision/recall per
+#: verifier belongs to eval/selftest/fleet_audit.py; this file owns the hard
+#: pass/fail assertions.
+def _shell_no_cavity() -> List[Op]:
+    """60 x 40 x 5 plate shelled at 9 mm. 2*9 = 18 >= 5: no cavity can exist."""
+    return [
+        NewSketch(),
+        AddRectangle(sketch="sk1", x=0.0, y=0.0, w=60.0, h=40.0),
+        Extrude(sketch="sk1", distance=5.0),
+        Shell(faces=("top",), thickness=9.0),
+    ]
+
+
+def _empty_sketch_extrude() -> List[Op]:
+    """An extrude of a sketch with no profile entities. Cannot make a solid."""
+    return [NewSketch(), Extrude(sketch="sk1", distance=10.0)]
+
+
+KNOWN_BAD: Dict[str, List[Op]] = {
+    "shell_no_cavity": _shell_no_cavity(),
+    "empty_sketch_extrude": _empty_sketch_extrude(),
+}
+
+
+#: The F-rep backend refuses a wall it cannot resolve on its sampling grid (it
+#: would otherwise build a SMALLER part -- watertight, manifold and wrong -- and
+#: report success). That refusal is a MEASURED fact and it is right. The corpus
+#: is about verifier precision, not about mesher resolution, so it builds at a
+#: resolution fine enough for a 3 mm wall on a 60 mm box.
+_RESOLUTION = 64
 
 
 def _build(ops: List[Op]):
     """Apply an op stream at verify_level='full' and return (result, session)."""
-    session = HarnessSession(FRepBackend(), verify_level="full")
+    session = HarnessSession(FRepBackend(resolution=_RESOLUTION), verify_level="full")
     return session.apply_ops(ops), session
 
 
@@ -233,6 +275,62 @@ class TestKnownGoodCorpus(unittest.TestCase):
             offenders, [],
             "a verifier raised a hard ERROR on a KNOWN-GOOD part:\n  "
             + "\n  ".join(offenders))
+
+    def test_no_verifier_raises_an_error_on_one_hundred_percent_of_inputs(self):
+        """A verifier that fires on every input is not a verifier.
+
+        Its precision equals the corpus base rate BY CONSTRUCTION and can never
+        be anything else -- it is a tautology wearing a diagnostic's clothes, and
+        it silently inflates the fleet's recall (strip `completeness` out of the
+        fleet audit's "100% recall" and the real number was 6/8). The gate
+        refuses to ship one. This is severity-blind about WHY a rule is
+        uninformative: it just refuses hard errors that carry no signal.
+        """
+        corpus = dict(KNOWN_GOOD)
+        corpus.update(KNOWN_BAD)
+        always: Dict[str, int] = {}
+        for ops in corpus.values():
+            for code in {d.code for d in _errors(_all_diagnostics(ops))}:
+                always[code] = always.get(code, 0) + 1
+        offenders = sorted(c for c, n in always.items() if n == len(corpus))
+        self.assertEqual(
+            offenders, [],
+            f"these codes raise an ERROR on ALL {len(corpus)} parts, good and "
+            f"bad alike, so they cannot distinguish the two: {offenders}. "
+            "Make the rule discriminate, or make it abstain (INFO) where it has "
+            "no information. Do not put it on an allowlist.")
+
+    def test_no_verifier_warns_on_the_majority_of_known_good_parts(self):
+        """THE WARNING CHANNEL, held to the same standard as the ERROR channel.
+
+        A WARNING reaches the model. `pressure.metrics.BLOCKING_SEVERITIES` is
+        `("error", "warning")`, so the loop SPEAKS warnings, and a model does not
+        weigh a false instruction less because it arrived at a lower severity. We
+        spent a whole session auditing ERROR and left this channel unexamined,
+        and the red team found the washer bug alive inside it: `standards` warned
+        on 31 of 45 provably-correct parts, `plausibility` on 18.
+
+        A verifier that warns on the MAJORITY of provably-correct parts is not a
+        verifier. Its output is uncorrelated with correctness by construction, so
+        every one of those warnings is a false instruction.
+        """
+        n = len(KNOWN_GOOD)
+        counts: Dict[str, int] = {}
+        for ops in KNOWN_GOOD.values():
+            for code in {d.code for d in _all_diagnostics(ops)
+                         if d.severity is Severity.WARNING}:
+                counts[code] = counts.get(code, 0) + 1
+        offenders = sorted(f"{c} ({k}/{n})" for c, k in counts.items() if k * 2 > n)
+        self.assertEqual(
+            offenders, [],
+            f"these codes WARN on the majority of the {n} known-good parts, so "
+            f"they cannot be evidence of anything being wrong: {offenders}. A "
+            "warning reaches the model exactly as an error does. Make the rule "
+            "discriminate, or make it an INFO note.")
+
+    def test_the_good_corpus_allowlist_is_empty(self):
+        """The allowlist is a place to record a rule you decided to live with."""
+        self.assertEqual(set(ALLOWED_HEURISTIC_ERROR_CODES), set())
 
     def test_every_known_good_part_builds(self):
         """The corpus is only a precision gate if the parts are actually good."""
@@ -349,6 +447,22 @@ class TestFeedbackGate(unittest.TestCase):
         self.assertIn("PRIOR ATTEMPT FAILED", prompt)
         for d in trusted:
             self.assertIn(d.code, prompt)
+
+    def test_a_true_but_empty_note_does_not_instruct(self):
+        """MEASURED + INFO is a fact with nothing to fix. It must not be spoken.
+
+        `under-constrained` is true on essentially every op stream a model
+        writes (it emits no constrain ops), so it fired on 7 of 7 known-good
+        parts. It is a fact, so the tier gate lets it through; it claims nothing
+        is wrong, so the severity gate must stop it. Both conditions are needed.
+        """
+        note = Diagnostic(Severity.INFO, "under-constrained",
+                          "sketch sk1 is under-constrained (dof=3)", "sk1",
+                          soundness.MEASURED)
+        self.assertEqual(soundness.tier_of(note), soundness.MEASURED)
+        self.assertEqual(soundness.model_facing([note]), [])
+        # (the system prompt mentions the term, so assert on the note's payload)
+        self.assertNotIn("dof=3", self._prompt_with([note]))
 
     def test_the_human_channel_keeps_everything(self):
         """Heuristics are dropped from the PROMPT, not from the report."""
@@ -470,7 +584,8 @@ class TestCensus(unittest.TestCase):
         # Shell-leaves-no-cavity and zero-volume are theorems about offsets.
         self.assertEqual(
             proven_codes,
-            ["preflight-THICKNESS_TOO_LARGE", "preflight-ZERO_VOLUME"])
+            ["preflight-INVALID_INPUT", "preflight-THICKNESS_TOO_LARGE",
+             "preflight-ZERO_VOLUME"])
         # A negative sketch DOF count is a proof of unsatisfiability.
         self.assertEqual(proven_verifiers, ["sketch-constraint"])
 

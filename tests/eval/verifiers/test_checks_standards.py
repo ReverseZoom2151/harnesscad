@@ -12,7 +12,7 @@ Covers:
 
 import unittest
 
-from harnesscad.core.cisp.ops import NewSketch, AddCircle, Fillet
+from harnesscad.core.cisp.ops import NewSketch, AddCircle, Extrude, Fillet, Hole
 from harnesscad.core.state.opdag import OpDAG
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.eval.verifiers.verify import Severity
@@ -76,8 +76,8 @@ class TestNearestStandard(unittest.TestCase):
 
 class TestStandardsCheckHoles(unittest.TestCase):
     def test_non_standard_hole_flagged(self):
-        # Ø7.3 hole -> radius 3.65
-        dag = _opdag(NewSketch(plane="XY"), AddCircle(sketch="sk1", r=3.65))
+        dag = _opdag(NewSketch(plane="XY"),
+                     Hole(face_or_sketch="sk1", diameter=7.3, through=True))
         report = StandardsCheck().check(StubBackend(), dag)
         self.assertIn("non-standard-hole", _codes(report))
         _no_error(self, report)
@@ -87,11 +87,31 @@ class TestStandardsCheckHoles(unittest.TestCase):
         self.assertIn("7.5", msg)
 
     def test_standard_hole_passes(self):
-        # Ø8.0 hole -> radius 4.0
-        dag = _opdag(NewSketch(plane="XY"), AddCircle(sketch="sk1", r=4.0))
+        dag = _opdag(NewSketch(plane="XY"),
+                     Hole(face_or_sketch="sk1", diameter=8.0, through=True))
         report = StandardsCheck().check(StubBackend(), dag)
         self.assertNotIn("non-standard-hole", _codes(report))
         _no_error(self, report)
+
+    def test_a_sketch_circle_is_a_profile_not_a_hole(self):
+        """The OUTER diameter of a bearing housing is not a drill size.
+
+        This rule used to read every AddCircle as a hole. A 40 mm bearing bore
+        in a 60 mm disc therefore came back as "hole diameter 60 mm is not a
+        standard drill size; nearest standard is 25 mm" -- it had read the OUTER
+        diameter. A circle in a sketch may become a boss, a bore, a pad or a
+        pocket and the op stream does not say which; only the Hole op declares
+        hole intent, so only the Hole op may be read.
+        """
+        dag = _opdag(NewSketch(plane="XY"),
+                     AddCircle(sketch="sk1", r=30.0),        # the OUTER disc, D60
+                     Extrude(sketch="sk1", distance=12.0),
+                     Hole(face_or_sketch="sk1", diameter=40.0, through=True))
+        report = StandardsCheck().check(StubBackend(), dag)
+        msgs = [d.message for d in report.diagnostics
+                if d.code == "non-standard-hole"]
+        self.assertFalse(any("60" in m for m in msgs),
+                         f"the outer diameter was read as a hole: {msgs}")
 
 
 class TestStandardsCheckDimensions(unittest.TestCase):

@@ -246,14 +246,30 @@ class StandardsCheck:
 
     # -- hole diameters -----------------------------------------------------
     def _check_holes(self, ops, metric_holes, diags: List[Diagnostic]) -> None:
+        """Standard-size check over things that ARE HOLES.
+
+        It used to read every ``AddCircle`` in the sketch. An AddCircle is a
+        PROFILE, not a hole: the outer disc of a 40 mm bearing housing is an
+        AddCircle too. So a 40 mm bore came back as "hole diameter 60 mm is not
+        a standard drill size" -- the rule had read the OUTER diameter. That is
+        not a lint being noisy; it is a rule computing on the wrong quantity,
+        the same failure as the old hole-diameter-vs-plate-thickness rule that
+        caused every regression in the pressure run.
+
+        A circle in a sketch may become a boss, a bore, a pad or a pocket, and
+        the op stream does not say which. The ``Hole`` op is the ONLY op that
+        declares hole intent, so it is the only op this rule may read. Where the
+        backend measures real hole diameters (``metrics.holes``) it uses those.
+        Where it can know nothing, it says nothing.
+        """
         r = self.rules
         std = r.standard_hole_sizes()
         holes: List[tuple] = []
         for idx, op in enumerate(ops):
-            if type(op).__name__ == "AddCircle":
-                dia = 2.0 * float(getattr(op, "r", 0.0))
+            if type(op).__name__ == "Hole":
+                dia = float(getattr(op, "diameter", 0.0))
                 if dia > 0:
-                    holes.append((dia, f"circle#{idx}"))
+                    holes.append((dia, f"hole#{idx}"))
         for i, dia in enumerate(metric_holes):
             holes.append((float(dia), f"metrics.holes[{i}]"))
 
@@ -291,15 +307,32 @@ class StandardsCheck:
 
     def _flag_dim(self, value: float, preferred, where: str,
                   diags: List[Diagnostic]) -> None:
+        """ISO preferred numbers, reported as the NOTE they are.
+
+        This is INFO, not WARNING, and the demotion is not a softening: the rule
+        fires on exactly the same dimensions, with the same code and the same
+        message. What changed is the claim it makes.
+
+        A 12 mm plate is not defective because 12.5 is on the R10 series.
+        Preferred numbers are a CONVENTION for choosing round sizes, and the red
+        team measured this rule warning on 31 of 45 provably-correct parts --
+        69%. A rule that flags the majority of correct parts carries almost no
+        information about correctness, and at WARNING severity it was reaching
+        the model through `pressure.metrics.BLOCKING_SEVERITIES` and telling it
+        to change dimensions that were right. A diagnostic must claim exactly
+        what it can support; this one supports "here is a rounder number", and
+        that is an INFO.
+        """
         r = self.rules
         if value <= 0:
             return
         if _matches(value, preferred, r.abs_tol, r.rel_tol) is None:
             near = nearest_standard(value, preferred)
-            diags.append(_warn(
+            diags.append(_info(
                 "non-preferred-dimension",
                 f"dimension {value:g} mm is not on the ISO preferred-number "
-                f"series; nearest preferred value is {near:g} mm.",
+                f"series; the nearest preferred value is {near:g} mm. This is a "
+                f"drafting convention, not a defect: the dimension is valid.",
                 where=where))
 
 

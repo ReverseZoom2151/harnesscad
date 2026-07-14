@@ -73,11 +73,27 @@ class TestPlausibility(unittest.TestCase):
         r = check_physical_plausibility(100.0, 500.0, b)  # fill ratio 1e-4
         self.assertTrue(any("fill ratio" in w.lower() for w in r["warnings"]))
 
-    def test_high_fill_ratio_is_issue(self):
+    def test_a_solid_plate_is_not_suspicious_for_being_solid(self):
+        """Fill ratio 0.99 is a SOLID BLOCK, not an error.
+
+        The threshold used to be 0.95, so a plain plate -- fill ratio ~1.0
+        BECAUSE IT IS SOLID -- was reported as "fill ratio suspiciously high".
+        The red-team sweep caught it firing on 18 of 45 provably-correct parts,
+        and the metric-correlation work found fill_ratio is the single best
+        PREDICTOR of correctness: the rule was firing hardest on exactly the
+        parts most likely to be right.
+        """
         b = _cube(10.0)  # bbox volume 1000
-        r = check_physical_plausibility(990.0, 600.0, b)  # fill 0.99 > 0.95
+        r = check_physical_plausibility(990.0, 600.0, b)  # fill 0.99: a solid block
+        self.assertTrue(r["plausible"], r["issues"])
+        self.assertEqual(r["issues"], [])
+
+    def test_a_fill_ratio_above_one_is_impossible_and_is_an_issue(self):
+        """The bound is 1.0 and it is a theorem: no solid outgrows its own bbox."""
+        b = _cube(10.0)  # bbox volume 1000
+        r = check_physical_plausibility(1200.0, 600.0, b)  # fill 1.2: impossible
         self.assertFalse(r["plausible"])
-        self.assertTrue(len(r["issues"]) >= 1)
+        self.assertTrue(any("exceeds 1.0" in i for i in r["issues"]), r["issues"])
 
     def test_high_sa_to_vol_warns(self):
         b = _cube(10.0)

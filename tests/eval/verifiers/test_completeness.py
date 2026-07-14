@@ -180,14 +180,32 @@ class TestDimensionCoverage(unittest.TestCase):
 
 
 class TestGracefulDegradation(unittest.TestCase):
-    def test_stub_backend_does_not_crash(self):
-        # The stub answers 'summary' (no name/units/material) -> gaps are ERRORs,
-        # but nothing crashes and unmeasurable families INFO-skip.
+    def test_a_backend_with_no_metadata_surface_abstains_rather_than_failing(self):
+        """No metadata surface -> UNMEASURABLE, not "incomplete".
+
+        The stub (and the F-rep backend, and every backend the op vocabulary can
+        actually drive) cannot report a name, units, a material or a hole
+        callout for ANY part. This check used to call that a metadata GAP and
+        raise a hard ERROR -- on 16 of 16 parts in the fleet audit, correct and
+        broken alike. Precision 0.50 against a base rate of 0.50: zero
+        information, and it inflated the fleet's headline recall besides.
+
+        A rule that cannot tell a good part from a bad one must say so, not
+        fail both. `completeness-unmeasurable` is the sentence it already had.
+        """
         report = CompletenessCheck().check(StubBackend(), None)
-        # summary has no name/units -> part-field gaps present.
-        self.assertIn("missing-metadata", _codes(report))
-        # no solid + no bodies -> material unmeasurable INFO, not ERROR.
+        self.assertNotIn("missing-metadata", _codes(report))
         self.assertIn("completeness-unmeasurable", _codes(report))
+        self.assertTrue(report.ok, [d.to_dict() for d in _errors(report)])
+
+    def test_a_metadata_aware_backend_still_gets_every_error(self):
+        """Abstention is scoped to ignorance. Where the rule can see, it fires."""
+        backend = _MetaBackend(metrics={
+            "name": "p", "units": "mm", "solid_present": True,
+        })
+        report = CompletenessCheck().check(backend, None)
+        self.assertFalse(report.ok)
+        self.assertIn("body.material", _wheres(report))
 
     def test_broken_backend_does_not_crash(self):
         class _Boom:

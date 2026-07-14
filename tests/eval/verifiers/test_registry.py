@@ -245,7 +245,13 @@ class TestSessionWiring(unittest.TestCase):
         self.assertNotIn("infeasible-plan", codes)
 
     def test_existing_dof_diagnostics_still_appear(self):
-        """Regression: the under-constrained sketch warning must survive."""
+        """Regression: the under-constrained sketch diagnostic must survive.
+
+        It is now an INFO note rather than a WARNING -- it fires on every op
+        stream that emits no constrain ops, i.e. on every correct part, so it
+        cannot be evidence that anything is wrong -- but it must still be
+        REPORTED, with the same code and the same location.
+        """
         for level in ("core", "full"):
             session = _session(verify_level=level)
             res = session.apply_ops([
@@ -256,7 +262,7 @@ class TestSessionWiring(unittest.TestCase):
             self.assertTrue(res.ok, level)
             under = [d for d in res.diagnostics if d.code == "under-constrained"]
             self.assertTrue(under, f"under-constrained warning lost at level {level}")
-            self.assertIs(under[0].severity, Severity.WARNING)
+            self.assertIs(under[0].severity, Severity.INFO)
             self.assertEqual(under[0].where, "sk1")
 
     def test_full_level_invokes_the_fleet(self):

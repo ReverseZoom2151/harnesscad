@@ -16,6 +16,24 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Protocol
 
+from harnesscad.eval.verifiers import soundness as _soundness
+
+#: The diagnostic wire format is VERSIONED, explicitly, because it crosses four
+#: JSON boundaries (MCP, A2A, the JSONL tracer, the pressure experiment's
+#: results file) and one of them is frozen.
+#:
+#: v1 -- severity/code/message/where. What `assets/pressure/results.json`
+#:       recorded. Reproduce it with :meth:`Diagnostic.to_dict_v1`.
+#: v2 -- v1 + `soundness`, the RESOLVED tier of the rule that spoke.
+#:
+#: v1 omitted `soundness`, and that omission was a bug in a fix: the whole point
+#: of soundness tiering is that only PROVEN/MEASURED diagnostics may instruct a
+#: model, and the tier evaporated at every serialization boundary. A remote MCP
+#: client could not tell a theorem from a guess. v2 is the default because a
+#: correct tier on the wire is worth more than a byte-identical wire.
+DIAGNOSTIC_WIRE_VERSION = 2
+DIAGNOSTIC_WIRE_V1_KEYS = ("severity", "code", "message", "where")
+
 
 class Severity(str, Enum):
     ERROR = "error"
@@ -35,12 +53,28 @@ class Diagnostic:
     #: "not stamped"; soundness.tier_of then falls back to the code index and,
     #: failing that, to HEURISTIC. Only PROVEN/MEASURED diagnostics are fed back
     #: into a model's retry prompt: a wrong instruction is worse than none.
-    #:
-    #: Deliberately absent from `to_dict`: the wire format is what the pressure
-    #: experiment recorded, and it stays byte-identical.
     soundness: Optional[str] = None
 
     def to_dict(self) -> dict:
+        """The v2 wire form: v1 plus the RESOLVED soundness tier.
+
+        `soundness` is never None on the wire. An unstamped diagnostic is
+        resolved through `soundness.tier_of`, which falls back to the code index
+        and then to HEURISTIC -- failing closed. A consumer on the far side of a
+        JSON boundary can therefore apply the same gate the in-process planner
+        applies, which is the whole point of the tier.
+        """
+        d = self.to_dict_v1()
+        d["soundness"] = _soundness.tier_of(self)
+        return d
+
+    def to_dict_v1(self) -> dict:
+        """The FROZEN v1 wire form, byte-identical to what the pressure run recorded.
+
+        Kept so a re-run of `eval/pressure` can be compared against
+        `assets/pressure/results.json` key-for-key. This is the only place the
+        old format is promised; the type no longer holds the experiment hostage.
+        """
         return {
             "severity": self.severity.value,
             "code": self.code,
@@ -94,12 +128,22 @@ class SketchConstraintCheck:
                         "remove or relax the redundant constraint(s) until dof >= 0"),
                     sid))
             elif dof > 0:
+                # INFO, not WARNING. It is a true fact (MEASURED) and it is not
+                # a defect: an op stream that emits no `constrain` ops -- which
+                # is nearly every op stream a model writes -- builds EXACTLY the
+                # geometry it specified, with the sketch left unpinned. This
+                # fired on 7 of 7 known-good parts. A diagnostic that flags every
+                # correct part carries no information about correctness, and at
+                # WARNING severity it reached the model and told it to go and
+                # constrain a sketch that was already right.
                 diags.append(Diagnostic(
-                    Severity.WARNING, "under-constrained",
+                    Severity.INFO, "under-constrained",
                     observe(
                         f"sketch {sid} is under-constrained (dof={dof})",
                         f"the solver reports {dof} unpinned degree(s) of freedom; "
-                        f"the geometry built is one of infinitely many solutions"),
+                        f"the geometry built is one of infinitely many solutions. "
+                        f"This is a note, not a defect: the built geometry is the "
+                        f"one the ops specified"),
                     sid))
         return VerifyReport(diags)
 

@@ -35,6 +35,7 @@ from typing import Dict, List, Optional, Tuple
 
 from harnesscad.agents.llm.base import Message
 from harnesscad.io.surfaces.render import DEFAULT_VIEWS, RenderResult, render
+from harnesscad.eval.gates import judge_gate
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
@@ -255,12 +256,22 @@ class VLMJudgeCheck:
                 f"vision judge skipped (no rendered views): {result.note}")])
 
         verdict = self._judge(result)
-        sev = Severity.INFO if verdict.score >= self.pass_threshold else Severity.WARNING
+        # THE CALIBRATION GATE. An uncalibrated evaluator inside a loop is the
+        # washer bug one layer up: this judge has never been scored against a
+        # human or an oracle, so it may REPORT (INFO) and it may not WARN. A
+        # WARNING is a claim about correctness, and a claim about correctness
+        # from an unmeasured judge is exactly what cost 8 briefs. Calibrate it
+        # (harnesscad.eval.gates.judge_gate.calibrate) and the WARNING returns.
+        below = verdict.score < self.pass_threshold
+        calibrated = judge_gate.is_calibrated(self.name)
+        sev = Severity.WARNING if (below and calibrated) else Severity.INFO
         rationale = f" — {verdict.rationale}" if verdict.rationale else ""
+        trust = ("threshold %.2f" % self.pass_threshold if calibrated
+                 else "UNCALIBRATED: advisory only, never a WARNING")
         return VerifyReport([Diagnostic(
             sev, "vlm-judge",
             f"subjective design score {verdict.score:.3f} "
-            f"(advisory; threshold {self.pass_threshold:.2f}){rationale}")])
+            f"(advisory; {trust}){rationale}")])
 
     # -- A-vs-B comparison with full swap-augmentation ----------------------
     def compare(self, backend_a, backend_b) -> Dict[str, float]:

@@ -77,6 +77,7 @@ __all__ = [
     "KERNEL_CODES",
     "soundness_of",
     "tier_of",
+    "tier_of_code",
     "stamp",
     "UNDECLARED",
     "soundness_or_untrusted",
@@ -97,6 +98,19 @@ HEURISTIC = "heuristic"
 TIERS: Tuple[str, ...] = (PROVEN, MEASURED, HEURISTIC)
 
 #: The tiers whose diagnostics are allowed into the model's retry prompt.
+#:
+#: SEVERITY IS NOT A TRUST SIGNAL AND MUST NEVER BE USED AS ONE. Any code that
+#: decides what the model hears by filtering on severity -- e.g. a
+#: `BLOCKING_SEVERITIES = ("error", "warning")` -- has bypassed this policy, not
+#: implemented it. A WARNING reaches the model identically to an ERROR, and a
+#: capable model does not discount a false instruction for arriving quietly: the
+#: red-team sweep found `standards` warning on 31 of 45 provably-correct parts
+#: and `plausibility` on 18, which is the washer bug alive at a lower volume.
+#:
+#: The two axes are orthogonal and each answers its own question:
+#:   severity  -- how bad is this IF TRUE?   (does it block the build?)
+#:   soundness -- how likely is it to BE true? (may it instruct the model?)
+#: `model_facing` is the only correct filter for the model channel.
 MODEL_FACING_TIERS: Tuple[str, ...] = (PROVEN, MEASURED)
 
 
@@ -186,6 +200,9 @@ SOUNDNESS: Dict[str, Soundness] = {
             # A shape of zero volume cannot carry a feature; there is no
             # surface to offset, fillet or shell. Also a theorem.
             "preflight-ZERO_VOLUME": PROVEN,
+            # A non-positive radius or thickness is not a geometry, it is a
+            # typo. There is nothing to argue about.
+            "preflight-INVALID_INPUT": PROVEN,
         },
         reason=(
             "The DEFAULT is HEURISTIC because preflight-RADIUS_TOO_LARGE is "
@@ -459,6 +476,16 @@ def soundness_or_untrusted(verifier: Any) -> Soundness:
         return UNDECLARED
 
 
+def tier_of_code(code: str) -> str:
+    """The tier of a diagnostic CODE alone (unknown -> HEURISTIC, fail closed).
+
+    Used where a verifier must know its own finding's tier BEFORE it has built
+    the Diagnostic -- e.g. to choose the severity, because severity follows
+    soundness: a PROVEN infeasibility may block, a HEURISTIC guess may not.
+    """
+    return _CODE_INDEX.get(str(code), HEURISTIC)
+
+
 def tier_of(diag: Any) -> str:
     """The soundness tier of a single diagnostic.
 
@@ -494,16 +521,32 @@ def stamp(diag: Any, verifier: Any) -> Any:
     return diag
 
 
+def _severity_of(diag: Any) -> str:
+    sev = diag.get("severity") if isinstance(diag, dict) else getattr(diag, "severity", None)
+    return str(getattr(sev, "value", sev) or "").lower()
+
+
 def model_facing(diags: Iterable[Any],
                  tiers: Iterable[str] = MODEL_FACING_TIERS) -> List[Any]:
     """The diagnostics allowed to instruct the model. THE gate.
+
+    Two conditions, and BOTH must hold:
+
+    *   the TIER is trusted (PROVEN or MEASURED) -- may this rule be believed?
+    *   the SEVERITY claims something is actually wrong (ERROR or WARNING) --
+        is there anything to act on? An INFO is a note ("skipped",
+        "unmeasurable", "not on the ISO series", "the sketch is unpinned"). It
+        is often perfectly true and there is nothing in it for the model to do,
+        so putting it in a retry prompt can only invite an edit to a part that
+        was already right.
 
     Everything else is dropped from the retry prompt -- not from the log, not
     from the report, not from the human's screen. Only from the one channel
     where being wrong destroys work.
     """
     allowed = set(tiers)
-    return [d for d in diags if tier_of(d) in allowed]
+    return [d for d in diags
+            if tier_of(d) in allowed and _severity_of(d) in ("error", "warning")]
 
 
 def human_facing(diags: Iterable[Any],

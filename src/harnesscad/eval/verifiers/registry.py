@@ -398,11 +398,26 @@ def _adapter_kernel_preflight() -> FunctionVerifier:
         min_extent = box.min_extent()
         diags: List[Diagnostic] = []
 
+        def _emit(fail, where: str, thickness: Optional[float]) -> Diagnostic:
+            # SEVERITY FOLLOWS SOUNDNESS. A PROVEN infeasibility is an ERROR: it
+            # is a theorem that this operation cannot be performed, and a rule
+            # that has proved a part impossible must be allowed to block it. A
+            # HEURISTIC finding is a WARNING and stays one, precisely because it
+            # may be wrong and a wrong hard error destroys work.
+            #
+            # This whole adapter used to emit WARNING for everything, so the
+            # fleet audit -- which scores ERRORs -- recorded kernel-preflight as
+            # catching ZERO of the 8 known-bad parts while it was in fact
+            # catching the shell ones all along. The rule was not blind; the
+            # channel was.
+            code = "preflight-" + fail.code
+            msg = _preflight_message(fail, thickness, min_extent)
+            make = _err if _soundness.tier_of_code(code) == _soundness.PROVEN else _warn
+            return make(code, msg, where)
+
         fail = check_nonzero_volume(shape)
         if fail is not None:
-            diags.append(_warn("preflight-" + fail.code,
-                               _preflight_message(fail, None, min_extent),
-                               "model"))
+            diags.append(_emit(fail, "model", None))
 
         for i, op in enumerate(state.ops()):
             thickness: Optional[float] = None
@@ -416,9 +431,8 @@ def _adapter_kernel_preflight() -> FunctionVerifier:
             else:
                 continue
             if fail is not None:
-                diags.append(_warn("preflight-" + fail.code,
-                                   _preflight_message(fail, thickness, min_extent),
-                                   f"op[{i}]:{type(op).__name__.lower()}"))
+                diags.append(_emit(fail, f"op[{i}]:{type(op).__name__.lower()}",
+                                   thickness))
         return diags
 
     return FunctionVerifier("kernel-preflight", LINT, applies, run,

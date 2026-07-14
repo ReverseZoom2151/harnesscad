@@ -95,6 +95,18 @@ _MATERIAL_KEYS = ("material",)
 _HOLE_SPEC_KEYS = ("tolerance", "thread", "thread_spec")
 _DIM_LIST_KEYS = ("critical_dimensions", "dimensions")
 
+#: The keys whose PRESENCE (not truthiness) proves the backend has a metadata
+#: surface to be incomplete about. A backend that reports none of them is not
+#: an incomplete model; it is a model whose completeness is unknowable.
+_METADATA_SURFACE_KEYS = (
+    _NAME_KEYS + _UNITS_KEYS + _MATERIAL_KEYS + _DIM_LIST_KEYS
+    + ("bodies", "holes", "metadata")
+)
+
+
+def _carries_metadata(meta: dict) -> bool:
+    return any(k in meta for k in _METADATA_SURFACE_KEYS)
+
 
 # --------------------------------------------------------------------------- #
 # The verifier
@@ -134,6 +146,32 @@ class CompletenessCheck:
                 "completeness-skipped",
                 "completeness checks skipped: backend exposed no "
                 "'summary'/'metrics' and the op-DAG carried no ops to inspect.")])
+
+        # A backend that exposes NO metadata surface at all cannot report a
+        # name, units, a material or a hole callout for ANY part, correct or
+        # broken. Against such a backend this checklist fired on 100% of inputs
+        # -- 16 of 16 parts in the fleet audit, good and bad alike -- which makes
+        # its precision equal to the corpus base rate BY CONSTRUCTION. A rule
+        # that fires on every input carries zero information: it cannot separate
+        # a correct part from a broken one, ever, and it inflated the fleet's
+        # headline recall into an artifact.
+        #
+        # The rule already knew how to say this -- `completeness-unmeasurable`,
+        # used for the GD&T dimension list -- and simply failed to apply it to
+        # the other three families. So: no metadata surface -> UNMEASURABLE
+        # (INFO), not a gap (ERROR). Nothing is weakened. Against a
+        # metadata-aware backend, which is the only kind that can answer the
+        # question, every ERROR fires exactly as before.
+        if not _carries_metadata(meta):
+            return VerifyReport([_info(
+                "completeness-unmeasurable",
+                "metadata coverage not evaluated: the backend exposes no "
+                "metadata surface at all (no name/units/material/bodies/holes "
+                "keys in 'summary' or 'metrics'), and the CISP op vocabulary "
+                "cannot express those fields, so nothing here can distinguish a "
+                "complete model from an incomplete one. Release readiness is a "
+                "PDM-record question, not a build-gate question.",
+                where="metadata")])
 
         diags: List[Diagnostic] = []
         self._check_part_fields(meta, diags)

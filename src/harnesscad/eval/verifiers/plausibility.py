@@ -25,7 +25,12 @@ MAX_DIMENSION = 10000.0      # mm; above this a dimension is "very large"
 EXTREME_ASPECT_HI = 100.0    # side-ratio flagged as extreme when above this
 EXTREME_ASPECT_LO = 0.01     # ...or below this
 LOW_FILL_RATIO = 0.01        # solidity below this -> sparse geometry warning
-HIGH_FILL_RATIO = 0.95       # solidity above this -> suspiciously dense (issue)
+# A solid cannot occupy more volume than its own bounding box, so a fill ratio
+# above 1.0 is IMPOSSIBLE and means the volume and the bbox disagree. That -- and
+# only that -- is an issue. This was 0.95, which flagged every plain plate: a
+# solid plate is ~1.0 BECAUSE IT IS SOLID (red-team sweep: 18 of 45
+# provably-correct parts). The threshold now sits on the theorem.
+HIGH_FILL_RATIO = 1.0 + 1e-6  # solidity above this is geometrically impossible
 HIGH_SA_TO_VOL = 1000.0      # surface-area / volume above this -> thin/complex
 
 
@@ -146,8 +151,21 @@ def check_physical_plausibility(
                 f"Very low fill ratio: {fr:.2%} - geometry may be too sparse"
             )
         elif fr > high_fill:
+            # The bound is 1.0 and it is a THEOREM: a solid cannot occupy more
+            # volume than its own bounding box, so fill ratio > 1 means the
+            # volume and the bbox disagree -- a measurement or a build is wrong.
+            #
+            # It used to be 0.95, and that flagged a plain plate. A solid plate
+            # has a fill ratio near 1.0 BECAUSE IT IS SOLID; the rule mistook
+            # "solid" for "suspicious" and fired on 18 of 45 provably-correct
+            # parts in the red-team sweep, hardest on exactly the parts most
+            # likely to be right. A rule that fires on correctness is not a
+            # verifier. The impossible case is still caught, and only it.
             issues.append(
-                "Fill ratio suspiciously high - may indicate errors in calculation"
+                f"Fill ratio {fr:.2%} exceeds 1.0: the measured volume "
+                f"({volume:g}) is larger than its own bounding box "
+                f"({bbox.volume:g}), which no solid can be. The volume "
+                f"measurement or the bbox is wrong."
             )
 
     sa_to_vol = None
