@@ -134,19 +134,44 @@ class DifferentialReport:
         return [(c.name, d) for c in self.cases for d in c.disagreements]
 
     @property
+    def crashes(self) -> List[Tuple[str, str, str]]:
+        """(part, engine, error). An engine that BLEW UP is a finding, and it must
+        not be able to hide inside a "0 disagreements" headline just because a
+        corpse has no bbox to disagree with."""
+        return [(c.name, b, err) for c in self.cases
+                for b, err in sorted(c.crashed.items())]
+
+    @property
+    def refusals(self) -> List[Tuple[str, str, str]]:
+        """(part, engine, why). A capability gap, reported separately from a bug."""
+        return [(c.name, b, why) for c in self.cases
+                for b, why in sorted(c.refused.items())]
+
+    @property
+    def findings(self) -> int:
+        return len(self.disagreements) + len(self.crashes)
+
+    @property
     def ok(self) -> bool:
-        return not self.disagreements
+        return not self.disagreements and not self.crashes
 
     def by_backend(self) -> Dict[str, int]:
         counts = {b: 0 for b in self.backends}
         for _, d in self.disagreements:
             counts[d.backend] = counts.get(d.backend, 0) + 1
+        for _, b, _ in self.crashes:
+            counts[b] = counts.get(b, 0) + 1
         return counts
 
     def to_dict(self) -> dict:
         return {
             "oracle": "differential",
             "ok": self.ok,
+            "findings": self.findings,
+            "crashes": [{"part": p, "backend": b, "error": e}
+                        for p, b, e in self.crashes],
+            "refusals": [{"part": p, "backend": b, "why": w}
+                         for p, b, w in self.refusals],
             "backends": self.backends,
             "skipped_backends": self.skipped_backends,
             "cases": [c.to_dict() for c in self.cases],
@@ -338,10 +363,19 @@ def format_text(report: DifferentialReport) -> str:
         lines.append("  skipped %-9s %s" % (name, why))
     lines.append("")
     counts = report.by_backend()
-    lines.append("%-10s %14s" % ("engine", "disagreements"))
-    lines.append("-" * 26)
+    crashed = {}
+    for _, b, _ in report.crashes:
+        crashed[b] = crashed.get(b, 0) + 1
+    refused = {}
+    for _, b, _ in report.refusals:
+        refused[b] = refused.get(b, 0) + 1
+    lines.append("%-10s %8s %8s %9s" % ("engine", "findings", "crashes", "refusals"))
+    lines.append("-" * 39)
     for b in report.backends:
-        lines.append("%-10s %14d" % (b, counts.get(b, 0)))
+        lines.append("%-10s %8d %8d %9d"
+                     % (b, counts.get(b, 0), crashed.get(b, 0), refused.get(b, 0)))
+    lines.append("(a refusal is a CAPABILITY GAP, not a bug: the engine declined "
+                 "rather than\n building the part wrong. A crash IS a finding.)")
     lines.append("")
     for case in report.cases:
         if case.ok and not case.refused and not case.crashed:
@@ -371,11 +405,20 @@ def format_text(report: DifferentialReport) -> str:
                             "  STRUCTURAL" if d.structural else ""))
         lines.append("")
     if report.ok:
-        lines.append("no disagreements.")
+        lines.append("no disagreements and no crashes across %d parts x %d engines."
+                     % (len(report.cases), len(report.backends)))
+        lines.append("NOTE: agreement is not proof. The signature compared (volume, "
+                     "bbox, genus,\nwatertightness) is MANY-TO-ONE -- engines can "
+                     "share a bug, and a part with its\nholes in the wrong places "
+                     "matches every number here.")
     else:
         n_struct = sum(1 for _, d in report.disagreements if d.structural)
-        lines.append("%d disagreements (%d STRUCTURAL) across %d parts."
-                     % (len(report.disagreements), n_struct, len(report.cases)))
+        lines.append("%d disagreements (%d STRUCTURAL) and %d crashes across %d "
+                     "parts."
+                     % (len(report.disagreements), n_struct, len(report.crashes),
+                        len(report.cases)))
+        for part, engine, err in report.crashes:
+            lines.append("    CRASH      %-9s on %s: %s" % (engine, part, err[:60]))
         lines.append("consensus is the largest agreeing cluster -- a signal, not "
                      "truth. Run --golden to adjudicate.")
     return "\n".join(lines)

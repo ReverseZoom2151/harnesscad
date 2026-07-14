@@ -13,6 +13,16 @@ The laws, and why each one is here:
     at 3 mm came out 63x43x23 -- watertight, valid, beautiful, and 3 mm oversize
     on every face. Twenty-three verifiers and ~200 benchmark modules never asked.
 
+``shell_does_not_shrink``
+    And it cannot make it SMALLER either. The outer surface does not move, in
+    either direction -- ``shell`` hollows inward, full stop. This law was added
+    after its twin above found nothing and this one found a real bug: the F-rep
+    shell of an 80x30x5 box at t=1 comes back 78.1 x 28.2 x 3.5, eroded on every
+    face, 75% under volume, watertight and silent. The wall (1 mm) is smaller than
+    the sampling grid's cell (80/48 = 1.67 mm), so the field cannot represent it
+    and the engine quietly builds a different, smaller part instead of refusing.
+    An engine that cannot build the part must SAY SO.
+
 ``shell_wall_is_thickness_t``
     And a bbox check CANNOT PROVE A SHELL. An inward shell can hold the envelope
     to the micron and still leave the wall at ``t/sqrt(3)`` -- 42% too thin, from
@@ -69,6 +79,7 @@ __all__ = ["Violation", "PropertyReport", "generate_corpus", "check_stream",
 #: Named for the report; the check functions live in ``check_stream``.
 PROPERTIES: Tuple[str, ...] = (
     "shell_does_not_grow",
+    "shell_does_not_shrink",
     "shell_wall_is_thickness_t",
     "cut_does_not_add",
     "union_does_not_remove",
@@ -258,6 +269,17 @@ def check_stream(name: str, ops: Sequence[Op], backend: str,
                      "volume %.1f -> %.1f: hollowing ADDED %.1f mm3"
                      % (before.volume, after.volume,
                         after.volume - before.volume))
+            checks += 1
+            shrank = [(ax, b, a) for ax, b, a in zip("xyz", before.bbox, after.bbox)
+                      if a < b - btol]
+            if shrank:
+                fail("shell_does_not_shrink",
+                     "bbox %s -> %s: a shell hollows INWARD -- the outer surface "
+                     "must not move at all (%s). The engine built a smaller part "
+                     "and did not say so."
+                     % ([round(v, 2) for v in before.bbox],
+                        [round(v, 2) for v in after.bbox],
+                        ", ".join("%s %.2f" % (ax, a - b) for ax, b, a in shrank)))
 
     # -- the wall must actually be t thick ---------------------------------
     # Only decidable where we KNOW the part: a box, extruded, then shelled. Those

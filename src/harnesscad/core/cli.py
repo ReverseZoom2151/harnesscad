@@ -109,6 +109,20 @@
         named and rival-free by construction: scale-invariant dedup and exact-token
         dedup disagree by design, so a pipeline may select only one of them.
 
+    python cli.py selftest [--differential] [--golden] [--fleet] [--properties]
+                          [--all] [--json] [--strict]
+        SELF-evaluation (harnesscad.eval.selftest): the only surface here that
+        points INWARD. Every other eval scores a MODEL; this one asks whether the
+        HARNESS is correct. Four oracles, none of which needs a model or a label:
+        DIFFERENTIAL (run one op stream on all six engines -- where they disagree,
+        one of them is wrong, and no ground truth was needed to find out), GOLDEN
+        (parts whose volume/bbox/genus are known in closed form, which is what
+        adjudicates a disagreement), FLEET (precision/recall/F1 PER VERIFIER over a
+        known-good and a known-bad corpus -- an ERROR on a washer is a false
+        positive, and that metric is the one the fleet was never held to), and
+        PROPERTIES (a shell must not grow the part; scaling a plan by k must scale
+        its volume by k^3 -- metamorphic laws over a seeded random corpus).
+
     python cli.py gallery --list [--json]
     python cli.py gallery --build [--out assets/gallery] [--only NAME] [--no-compare]
         The RENDERED PARTS GALLERY (harnesscad.eval.gallery): sixteen distinct
@@ -138,6 +152,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from typing import List, Optional
 
@@ -178,6 +193,29 @@ def _print_result(result: dict) -> None:
         print("diagnostics: (none)")
     if result.get("rejected"):
         print(f"rejected:  {json.dumps(result['rejected'])}")
+
+
+def _print_refusal(exc: "Exception") -> None:
+    """Print an output-gate refusal. A refusal is the gate WORKING, so say so.
+
+    Exit code 3 is reserved for it: 0 ok, 1 the model failed to build, 2 a usage
+    or I/O error, 3 the harness built something and refused to ship it.
+    """
+    report = getattr(exc, "report", None)
+    print("REFUSED:  the output gate rejected this artifact. No file was written.",
+          file=sys.stderr)
+    for f in getattr(exc, "failures", ()):
+        print(f"  [{f.family}] {f.check}: {f.detail}", file=sys.stderr)
+        if f.expected is not None:
+            print(f"      measured {f.measured!r}, expected {f.expected!r}",
+                  file=sys.stderr)
+    if report is not None:
+        m = report.measurement or {}
+        if m.get("bbox"):
+            print(f"  measured bbox={m['bbox']} volume={m.get('volume')}",
+                  file=sys.stderr)
+    print("  (pass --force to write it anyway; a .INVALID.json sidecar will name "
+          "the failures)", file=sys.stderr)
 
 
 def _run_ops(ops: List[dict], backend: str, verify: str = "core") -> dict:
@@ -245,12 +283,26 @@ def cmd_build(args: argparse.Namespace) -> int:
         if step is None:
             print("error: build ok but no STEP was produced to write", file=sys.stderr)
             return 1
+        # THE GATE. `build` producing a STEP is not the same thing as that STEP
+        # being a valid part: the geometry is measured (and its declared intent
+        # checked) against the session's backend before a byte is written.
+        from harnesscad.io import gate
+
+        try:
+            report = gate.guard(step, args.out, source=result.get("session"),
+                                force=getattr(args, "force", False))
+        except gate.InvalidArtifact as exc:
+            _print_refusal(exc)
+            return 3
         try:
             with open(args.out, "w", encoding="utf-8") as fh:
                 fh.write(step)
         except OSError as exc:
             print(f"error: could not write STEP to {args.out!r}: {exc}", file=sys.stderr)
             return 2
+        if not report.ok:
+            side = gate.write_sidecar(args.out, report)
+            print(f"FORCED:   {args.out} is INVALID; see {side}")
         print(f"wrote:    {args.out}")
 
     return 0 if result["ok"] else 1
@@ -311,11 +363,19 @@ def cmd_export(args: argparse.Namespace) -> int:
     _print_result(result)
     if not result["ok"]:
         return 1
+    from harnesscad.io import gate
+
     try:
-        formats.write(server.session, args.out)
+        formats.write(server.session, args.out, force=args.force)
+    except gate.InvalidArtifact as exc:
+        _print_refusal(exc)
+        return 3
     except formats.FormatError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    if args.force and os.path.exists(gate.sidecar_path(args.out)):
+        print(f"FORCED:   {args.out} is INVALID; "
+              f"see {gate.sidecar_path(args.out)}")
     print(f"wrote:    {args.out}")
     return 0
 
@@ -343,6 +403,8 @@ def cmd_render(args: argparse.Namespace) -> int:
     _print_result(result)
     if not result["ok"]:
         return 1
+    from harnesscad.io import gate
+
     try:
         render_route.render_session(
             server.session, args.out,
@@ -353,10 +415,17 @@ def cmd_render(args: argparse.Namespace) -> int:
             edges=not args.no_edges,
             ssaa=args.ssaa,
             projection=args.projection,
+            force=args.force,
         )
+    except gate.InvalidArtifact as exc:
+        _print_refusal(exc)
+        return 3
     except (render_route.RenderError, formats.FormatError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    if args.force and os.path.exists(gate.sidecar_path(args.out)):
+        print(f"FORCED:   {args.out} is INVALID; "
+              f"see {gate.sidecar_path(args.out)}")
     width, height = render_route.png_size(args.out)
     print(f"view:     {args.view} ({args.projection}, {args.shading}"
           f"{'' if args.no_edges else ', feature edges'})")
@@ -531,6 +600,14 @@ def cmd_dataset(args: argparse.Namespace) -> int:
     return data_pipeline.run(args)
 
 
+def cmd_selftest(args: argparse.Namespace) -> int:
+    # Imported here so the self-evaluation oracles (which drive every installed
+    # geometry engine) are only touched by `selftest`.
+    from harnesscad.eval.selftest import registry as selftest_registry
+
+    return selftest_registry.run(args)
+
+
 def cmd_pressure(args: argparse.Namespace) -> int:
     # Imported here so the pressure harness (and litellm/ollama, which only it
     # needs) is only touched by `pressure`.
@@ -568,6 +645,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--trace", default=None, help="write JSONL trace events to this path")
     p_build.add_argument("--max-iters", type=int, default=5, dest="max_iters",
                          help="max plan->apply->replan iterations (default 5)")
+    p_build.add_argument(
+        "--force", action="store_true",
+        help="write the artifact even when the output gate refuses it. The "
+             "file is written AND a <name>.INVALID.json sidecar naming every "
+             "failed measurement is written beside it. For debugging only.")
     p_build.set_defaults(func=cmd_build)
 
     p_formats = sub.add_parser(
@@ -584,6 +666,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("--ops", default=None,
                           help="path to a JSON array of ops (default: the built-in demo)")
     p_export.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
+    p_export.add_argument(
+        "--force", action="store_true",
+        help="write the artifact even when the output gate refuses it. The "
+             "file is written AND a <name>.INVALID.json sidecar naming every "
+             "failed measurement is written beside it. For debugging only.")
     p_export.set_defaults(func=cmd_export)
 
     p_render = sub.add_parser(
@@ -607,6 +694,11 @@ def build_parser() -> argparse.ArgumentParser:
                           help="supersampling factor 1..4 (default 2)")
     p_render.add_argument("--projection", default="orthographic",
                           choices=["orthographic", "perspective"])
+    p_render.add_argument(
+        "--force", action="store_true",
+        help="write the artifact even when the output gate refuses it. The "
+             "file is written AND a <name>.INVALID.json sidecar naming every "
+             "failed measurement is written beside it. For debugging only.")
     p_render.set_defaults(func=cmd_render)
 
     p_ingest = sub.add_parser(
@@ -772,6 +864,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     _data_pipeline.add_arguments(p_dataset)
     p_dataset.set_defaults(func=cmd_dataset)
+
+    p_selftest = sub.add_parser(
+        "selftest",
+        help="SELF-evaluation: the harness evaluating the harness. Six engines "
+             "differentially tested against each other, an analytic golden corpus, "
+             "precision/recall PER VERIFIER, and metamorphic laws. Points INWARD: "
+             "nothing here scores a model.")
+    from harnesscad.eval.selftest import registry as _selftest_registry
+
+    _selftest_registry.add_arguments(p_selftest)
+    p_selftest.set_defaults(func=cmd_selftest)
 
     p_pressure = sub.add_parser(
         "pressure",
