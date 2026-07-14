@@ -253,9 +253,20 @@ class ShellWallTest(TempDirTest):
             # The envelope is intact -- the shell did not grow the part by so much
             # as a micron, so the bbox check (and every check built on it) PASSES.
             # The part is still wrong.
+            #
+            # REBASELINED for the dual-contouring default (was ``+ 1e-6``). The
+            # old bound was an artefact of marching cubes: MC pins every vertex to
+            # a grid EDGE, and for an axis-aligned box those edges lie exactly on
+            # the face planes, so MC's bbox is exact and its error is one-sided
+            # (it only ever chamfers corners INWARD). A dual-contouring vertex is
+            # a QEF minimiser and may sit a fraction of a micron OUTSIDE the true
+            # face: the same 60x40x20 box measures [59.999977, 40.000179,
+            # 19.999595]. That is 2e-4 mm of tessellation noise, four orders of
+            # magnitude below the bug this test is about (a two-sided shell grows
+            # the part by t/2 = 1.5 mm).
             bbox = b.query("metrics")["bbox"]
             for measured, declared in zip(bbox, (60.0, 40.0, 20.0)):
-                self.assertLessEqual(measured, declared + 1e-6,
+                self.assertLessEqual(measured, declared + 1e-3,
                                      "the envelope grew; this test is about a "
                                      "shell whose envelope is CORRECT")
                 self.assertAlmostEqual(measured, declared, delta=0.5)

@@ -84,15 +84,27 @@ DEFAULT_RESOLUTION = 48
 _INF = float("inf")
 
 #: The iso-surface extractors this backend can drive. They are RIVALS, never
-#: blended: ``marching_cubes`` is and stays the default (it is the one every
-#: existing digest/mesh expectation was recorded against); ``surface_nets`` is a
-#: dual method that puts one vertex per cell and produces a different -- also
-#: valid -- mesh of the same field; ``dual_contouring`` is the same dual layout
-#: but with the cell vertex placed by a QEF over Hermite data (Ju, Losasso,
-#: Schaefer & Warren 2002), which is the only one of the three that can put a
-#: vertex exactly on a sharp corner. Choose with ``mesher=``; nothing mixes them.
+#: blended. ``dual_contouring`` is THE DEFAULT: it places the cell vertex by a
+#: QEF over Hermite data (Ju, Losasso, Schaefer & Warren 2002) and is the only
+#: one of the three that can put a vertex exactly on a sharp corner.
+#: ``marching_cubes`` structurally CANNOT represent a sharp edge -- it can only
+#: interpolate along cell edges, so it chamfers material off every corner, and
+#: the resulting volume error is large and ONE-SIDED (always negative).
+#: ``surface_nets`` is the same dual layout with the vertex at the cell centroid.
+#:
+#: Measured on a 60x40x20 block against the analytic volume (tests/io/backends/
+#: test_frep.py::FRepMesherVolumeErrorTest):
+#:
+#:     res | marching cubes | dual contouring
+#:      16 |    -3.0521%    |    -0.0082%
+#:      32 |    -0.8287%    |    -0.0048%
+#:      48 |    -0.3758%    |    -0.0035%
+#:      96 |    -0.1008%    |    -0.0019%
+#:
+#: DC at res 16 beats MC at res 96: a 216x cheaper grid and 12x more accurate.
+#: Choose with ``mesher=``; nothing mixes them.
 MESHERS: Tuple[str, ...] = ("marching_cubes", "surface_nets", "dual_contouring")
-DEFAULT_MESHER = "marching_cubes"
+DEFAULT_MESHER = "dual_contouring"
 
 #: How a surface normal is obtained. ``finite_difference`` is the default (it is
 #: what the mesh writers have always used, via the codecs); ``autodiff`` compiles

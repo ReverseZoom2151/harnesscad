@@ -345,13 +345,25 @@ class FRepNodeTest(unittest.TestCase):
 
 
 class FRepMesherChoiceTest(unittest.TestCase):
-    """marching_cubes and surface_nets are RIVALS: selectable, never blended."""
+    """The three meshers are RIVALS: selectable, never blended."""
 
-    def test_marching_cubes_is_still_the_default(self):
+    def test_dual_contouring_is_the_default(self):
+        """REBASELINED (was: marching_cubes is still the default).
+
+        Marching cubes pins every vertex to a grid EDGE and therefore cannot
+        represent a sharp edge at all: it chamfers material off every corner, and
+        that is the whole of its volume error on a prismatic part (-0.38% at the
+        default resolution 48, one-sided, always negative). Dual contouring places
+        the cell vertex by a QEF and lands ON the corner: -0.0035% at the same
+        resolution. The default moved to the mesher that can represent the parts
+        this system builds.
+        """
         backend, _ = _apply(PLATE_OPS)
-        self.assertEqual(backend.mesher, "marching_cubes")
-        self.assertEqual(frep.DEFAULT_MESHER, "marching_cubes")
-        self.assertEqual(backend.mesh(), backend.mesh(mesher="marching_cubes"))
+        self.assertEqual(backend.mesher, "dual_contouring")
+        self.assertEqual(frep.DEFAULT_MESHER, "dual_contouring")
+        self.assertEqual(backend.mesh(), backend.mesh(mesher="dual_contouring"))
+        # ...and marching cubes is still selectable, unchanged, as a rival.
+        self.assertNotEqual(backend.mesh(), backend.mesh(mesher="marching_cubes"))
 
     def test_surface_nets_is_a_different_but_valid_mesh_of_the_same_field(self):
         backend, _ = _apply(CUT_OPS)
