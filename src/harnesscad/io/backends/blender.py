@@ -21,7 +21,9 @@ which produces the same directory, which is a cache hit rather than a re-run.
 What the script receives
 ------------------------
 Not the op stream, and not the F-rep tree either -- a *lowered* build plan
-(JSON):
+(JSON), wrapped in an envelope that also stamps the digest of the script itself
+(``{"script": <sha>, "plan": <node>}``) so the result cache is keyed on the
+kernel recipe as well as on the model:
 
     {"t": "mesh",      "verts": [...], "faces": [...]}    a solid leaf
     {"t": "bool",      "op": union|cut|intersect, "a": .., "b": ..}
@@ -282,6 +284,7 @@ Reads a build plan (world-space leaf meshes + kernel operations), realises it
 with Blender's exact boolean / bevel / solidify modifiers, and writes an STL.
 """
 import json
+import math
 import struct
 import sys
 
@@ -293,10 +296,23 @@ SPEC_PATH, OUT_PATH, OUT_FMT = _argv[0], _argv[1], _argv[2]
 
 BOOL_OPS = {"union": "UNION", "cut": "DIFFERENCE", "intersect": "INTERSECT"}
 
+#: Only edges sharper than this get beveled (BevelModifier.angle_limit). 30 deg is
+#: Blender's own default; it beveles a box's 90-degree edges and leaves the ~11 deg
+#: seams of a faceted cylinder alone, which is what a CAD fillet means.
+BEVEL_ANGLE_LIMIT = math.radians(30.0)
+
 
 def clear_scene():
+    """Empty the scene AND the datablocks. --factory-startup already gives a fresh
+    process; this keeps a single process deterministic if it ever builds twice."""
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
+    for me in list(bpy.data.meshes):
+        bpy.data.meshes.remove(me, do_unlink=True)
+    # Blender's unit system can silently scale exported geometry; factory startup
+    # is 1.0 (METRIC), and we pin it so one model unit is one exported unit.
+    bpy.context.scene.unit_settings.system = "NONE"
+    bpy.context.scene.unit_settings.scale_length = 1.0
 
 
 def activate(ob):
@@ -328,12 +344,19 @@ def apply_modifiers(ob):
 
 def boolean(a, b, op):
     mod = a.modifiers.new(name="bool", type="BOOLEAN")
+    mod.operand_type = "OBJECT"
     mod.operation = BOOL_OPS[op]
     mod.object = b
-    try:
-        mod.solver = "EXACT"
-    except (AttributeError, TypeError):
-        pass
+    # BooleanModifier.solver: 'EXACT' -- "Slower solver with the best results for
+    # coplanar faces" (bpy.types.BooleanModifier). 'FLOAT' is the fast solver and
+    # is explicitly documented as "without support for overlapping geometry", which
+    # is exactly the case a CAD cut hits (a hole tool flush with a face). 'MANIFOLD'
+    # is faster but only valid on manifold input. EXACT is the only CAD-correct one.
+    mod.solver = "EXACT"
+    # "Allow self-intersection in operands" -- a mirror/pattern union can hand the
+    # solver two copies that touch, so this must be on.
+    mod.use_self = True
+    mod.use_hole_tolerant = False  # our operands are watertight; this is only slower
     apply_modifiers(a)
     bpy.data.objects.remove(b, do_unlink=True)
     return a
@@ -354,16 +377,57 @@ def build(node):
     if kind == "shell":
         ob = build(node["child"])
         mod = ob.modifiers.new(name="solidify", type="SOLIDIFY")
+        mod.solidify_mode = "EXTRUDE"          # Simple: our input is manifold
         mod.thickness = node["thickness"]
-        mod.offset = 0.0
+        # THE SHELL RULE. Manual, Solidify > Offset: "A value between (-1 to 1) to
+        # locate the solidified output inside or outside the original mesh. The
+        # inside and outside is determined by the face normals. Set to 0.0, the
+        # solidified output will be CENTERED on the original mesh."
+        # Centred (the old offset=0.0) pushes half the thickness OUTWARD, which grew
+        # every shelled part -- a 60x40x20 box at t=3 measured 61.732 x 41.732 x
+        # 21.732 (the vertices ride the averaged corner normal, so each side gained
+        # (t/2)/sqrt(3) = 0.866). A CAD shell hollows INWARD and must not move the
+        # outer surface, so the offset is -1: the whole thickness goes to the inside
+        # of the face normals (which recalc_face_normals has made point outward).
+        mod.offset = -1.0
+        # "Maintain thickness by adjusting for sharp corners" (use_even_offset) and
+        # "Calculate normals which result in more even thickness" (use_quality_normals).
+        # Without them the inner surface is offset along the *vertex* normal, so a box
+        # corner walks the diagonal and the wall comes out t/sqrt(3) thin. With them
+        # the 60x40x20/t=3 wall volume is exactly 48000 - 54*34*14 = 22296.
+        mod.use_even_offset = True
+        mod.use_quality_normals = True
+        mod.use_rim = True                     # close the shell on boundary edges
+        mod.use_rim_only = False               # keep the walls, not just the rim
+        mod.thickness_clamp = 0.0              # never rescale the requested wall
+        mod.use_flip_normals = False
         apply_modifiers(ob)
         return ob
     if kind == "bevel":
         ob = build(node["child"])
         mod = ob.modifiers.new(name="bevel", type="BEVEL")
+        mod.affect = "EDGES"                   # a CAD fillet blends edges, not verts
+        # offset_type 'OFFSET' -- "Amount is offset of new edges from original", so
+        # for a 90-degree edge the width IS the fillet radius / the chamfer setback.
+        mod.offset_type = "OFFSET"
         mod.width = node["width"]
+        # segments: 1 = chamfer (a single flat face); >1 with profile 0.5 = a circular
+        # arc ("The profile shape (0.5 = round)").
         mod.segments = int(node["segments"])
+        mod.profile_type = "SUPERELLIPSE"
+        mod.profile = 0.5
+        # limit_method 'ANGLE' -- "Only bevel edges with sharp enough angles between
+        # faces". 'NONE' would "Bevel the entire mesh by a constant amount", which
+        # would round the seams of every faceted cylinder into mush.
         mod.limit_method = "ANGLE"
+        mod.angle_limit = BEVEL_ANGLE_LIMIT
+        mod.use_clamp_overlap = True           # never let two blends cross
+        mod.loop_slide = True
+        mod.miter_outer = "MITER_SHARP"
+        mod.miter_inner = "MITER_SHARP"
+        mod.harden_normals = False
+        mod.mark_seam = False
+        mod.mark_sharp = False
         apply_modifiers(ob)
         return ob
     raise ValueError("unknown build-plan node %r" % kind)
@@ -404,11 +468,16 @@ def main():
     with open(SPEC_PATH, "r") as fh:
         spec = json.load(fh)
     clear_scene()
-    ob = build(spec)
+    ob = build(spec["plan"])
     activate(ob)
     if OUT_FMT == "glb":
+        # export_yup defaults to TRUE: the glTF exporter converts Blender's Z-up
+        # frame to glTF's Y-up one, i.e. it silently ROTATES the part -90 degrees
+        # about X. Every other format this backend emits (and every other backend)
+        # is Z-up in model units, so the part must not be re-framed on the way out.
         bpy.ops.export_scene.gltf(filepath=OUT_PATH, export_format="GLB",
-                                  use_selection=True)
+                                  use_selection=True, export_yup=False,
+                                  export_apply=True)
         return
     tris = triangles_of(ob)
     if not tris:
@@ -454,10 +523,22 @@ class BlenderBackend(ExternalToolBackend):
         return _lower(root, self.segments)
 
     def program(self) -> str:
-        """The model as JSON. The bpy script itself is a constant (see
-        :data:`BUILD_SCRIPT`); the model is its input, so the digest of this text
-        is the digest of the geometry."""
-        return json.dumps(self.build_plan(), sort_keys=True, separators=(",", ":"))
+        """The model as JSON, stamped with the digest of the bpy script that will
+        consume it.
+
+        The script is a constant (:data:`BUILD_SCRIPT`) but it is *not* a constant
+        across releases, and the on-disk result cache is content-addressed on this
+        text alone. Without the ``script`` stamp, changing a modifier setting inside
+        the script (say, fixing the solidify offset) leaves every previously cached
+        STL in place -- the backend would keep serving geometry built by the old,
+        wrong script. The stamp makes the cache key cover the kernel recipe as well
+        as the model.
+        """
+        from harnesscad.io.backends.external import program_digest
+
+        return json.dumps({"script": program_digest(BUILD_SCRIPT)[:16],
+                           "plan": self.build_plan()},
+                          sort_keys=True, separators=(",", ":"))
 
     def script(self) -> str:
         """The bpy script that will be executed (checked for syntax before it is)."""

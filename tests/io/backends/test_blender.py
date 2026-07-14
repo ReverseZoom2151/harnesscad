@@ -16,6 +16,7 @@ Skips cleanly (unittest.skipUnless) when Blender is not installed.
 
 from __future__ import annotations
 
+import json
 import math
 import os
 import tempfile
@@ -51,6 +52,25 @@ CUT_OPS = PLATE_OPS + [
 ]
 
 PLATE_VOLUME = 20.0 * 10.0 * 5.0
+
+#: The shell case from the bug report: a 60x40x20 box hollowed to a 3 mm wall.
+SHELL_BOX = (60.0, 40.0, 20.0)
+SHELL_THICKNESS = 3.0
+BOX_OPS = [
+    {"op": "new_sketch", "plane": "XY"},
+    {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0,
+     "w": SHELL_BOX[0], "h": SHELL_BOX[1]},
+    {"op": "extrude", "sketch": "sk1", "distance": SHELL_BOX[2]},
+]
+SHELL_BOX_OPS = BOX_OPS + [{"op": "shell", "faces": [],
+                            "thickness": SHELL_THICKNESS}]
+BOX_VOLUME = SHELL_BOX[0] * SHELL_BOX[1] * SHELL_BOX[2]
+#: A closed hollow box: the outer box less the cavity inset by the wall on all six
+#: sides. Exact, and only reachable when the solidify offset is -1 with even offsets.
+SHELL_WALL_VOLUME = BOX_VOLUME - (
+    (SHELL_BOX[0] - 2 * SHELL_THICKNESS)
+    * (SHELL_BOX[1] - 2 * SHELL_THICKNESS)
+    * (SHELL_BOX[2] - 2 * SHELL_THICKNESS))
 
 
 def ngon_prism_volume(r: float, height: float, segments: int) -> float:
@@ -223,6 +243,136 @@ class BlenderBackendTest(unittest.TestCase):
         self.assertGreater(volume, 0.0)
         self.assertLess(volume, PLATE_VOLUME)
 
+    def test_shell_does_not_grow_the_part(self):
+        """A CAD shell hollows INWARD: the outer surface does not move.
+
+        Blender manual, Solidify > Offset: "A value between (-1 to 1) to locate the
+        solidified output inside or outside the original mesh. The inside and
+        outside is determined by the face normals. Set to 0.0, the solidified output
+        will be centered on the original mesh."
+
+        The backend used to leave the offset at 0.0 (centred), which pushed half the
+        thickness OUTWARD along the averaged corner normals: this 60x40x20 box came
+        out 61.732 x 41.732 x 21.732 at t=3 (each side gained (t/2)/sqrt(3) = 0.866).
+        offset = -1.0 puts the whole thickness on the inside of the face normals.
+        """
+        backend = BlenderBackend()
+        run_ops(backend, SHELL_BOX_OPS)
+        bbox = backend.query("measure")["bbox"]
+        for got, want in zip(bbox, (SHELL_BOX[0], SHELL_BOX[1], SHELL_BOX[2])):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+
+    def test_shell_wall_is_exactly_the_requested_thickness(self):
+        """use_even_offset ("Maintain thickness by adjusting for sharp corners") plus
+        use_quality_normals ("Calculate normals which result in more even thickness").
+
+        Without them the inner surface rides the *vertex* normal, so a box corner
+        walks the diagonal and the wall comes out thin (13843.6 instead of 22296.0 on
+        this part). With them the hollow-box wall volume is exact in closed form."""
+        backend = BlenderBackend()
+        run_ops(backend, SHELL_BOX_OPS)
+        self.assertAlmostEqual(backend.query("measure")["volume"],
+                               SHELL_WALL_VOLUME, delta=1e-2)
+
+    def test_shell_is_hollow_and_watertight(self):
+        backend = BlenderBackend()
+        run_ops(backend, SHELL_BOX_OPS)
+        validity = backend.query("validity")
+        self.assertTrue(validity["watertight"])
+        # An inner surface as well as an outer one: strictly more geometry than the
+        # solid box, for strictly less material.
+        solid = BlenderBackend()
+        run_ops(solid, BOX_OPS)
+        self.assertGreater(len(backend.mesh()[1]), len(solid.mesh()[1]))
+        self.assertLess(backend.query("measure")["volume"],
+                        solid.query("measure")["volume"])
+
+    def test_boolean_uses_the_exact_solver(self):
+        """BooleanModifier.solver: 'FLOAT' is the fast solver and is documented as
+        "without support for overlapping geometry" -- which is precisely the case a
+        CAD cut hits (a hole tool flush with a face). Only 'EXACT' ("the best results
+        for coplanar faces") is CAD-correct, and self-intersecting operands (a mirror
+        or a pattern whose copies touch) need use_self."""
+        script = _script()
+        self.assertIn('mod.solver = "EXACT"', script)
+        self.assertIn("mod.use_self = True", script)
+        self.assertNotIn('"FAST"', script)
+        self.assertNotIn('"FLOAT"', script)
+
+    def test_shell_uses_the_documented_inward_offset(self):
+        script = _script()
+        self.assertIn("mod.offset = -1.0", script)
+        self.assertIn("mod.use_even_offset = True", script)
+        self.assertIn("mod.use_quality_normals = True", script)
+
+    def test_bevel_only_touches_the_edges_it_is_meant_to(self):
+        """BevelModifier.limit_method='ANGLE' -- "Only bevel edges with sharp enough
+        angles between faces". 'NONE' would "Bevel the entire mesh by a constant
+        amount", rounding every seam of a faceted cylinder into mush.
+
+        The plate's 12 box edges are 90 degrees and get filleted; the cylindrical
+        wall of the hole is faceted at 360/n degrees per seam, far below the 30-degree
+        limit, so it stays a clean cylinder. The volume a fillet removes from a box's
+        edges is known in closed form: 12 edges lose (1 - pi/4) r^2 per unit length,
+        and the 8 corners lose (1 - pi/6 - 3*(1 - pi/4)/... ) -- rather than re-derive
+        the corner solid, this asserts the fillet (a) shrinks the part, (b) by less
+        than the whole edge band, and (c) leaves the bbox alone (a fillet never grows
+        a part), and cross-checks the number against CadQuery's OCCT fillet in
+        BlenderVsCadQueryTest."""
+        backend = BlenderBackend()
+        run_ops(backend, BOX_OPS + [{"op": "fillet", "edges": [], "radius": 2.0}])
+        measure = backend.query("measure")
+        for got, want in zip(measure["bbox"], SHELL_BOX):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+        self.assertLess(measure["volume"], BOX_VOLUME)
+        self.assertGreater(measure["volume"], BOX_VOLUME * 0.98)
+
+    def test_chamfer_is_a_one_segment_bevel(self):
+        backend = BlenderBackend()
+        run_ops(backend, BOX_OPS + [{"op": "chamfer", "edges": [], "distance": 2.0}])
+        chamfered = backend.query("measure")["volume"]
+        fillet = BlenderBackend()
+        run_ops(fillet, BOX_OPS + [{"op": "fillet", "edges": [], "radius": 2.0}])
+        # A chamfer cuts the corner straight across; a fillet of the same size leaves
+        # the material under the arc, so it must remove strictly less.
+        self.assertLess(chamfered, fillet.query("measure")["volume"])
+        self.assertLess(chamfered, BOX_VOLUME)
+
+    def test_glb_export_keeps_blender_z_up_and_model_scale(self):
+        """bpy.ops.export_scene.gltf(export_yup=...) defaults to TRUE: the exporter
+        rotates Blender's Z-up frame into glTF's Y-up one, silently turning the part
+        -90 degrees about X. Every other format this backend emits is Z-up in model
+        units, so the exporter is pinned to export_yup=False and the unit scale to
+        1.0 -- a rotated or 1000x-scaled part is a correctness bug, not a preference.
+        """
+        import json as _json
+        import struct as _struct
+
+        backend = BlenderBackend()
+        run_ops(backend, BOX_OPS)
+        data = backend.export("glb")
+        self.assertEqual(data[:4], b"glTF")
+        chunk_len = _struct.unpack("<I", data[12:16])[0]
+        doc = _json.loads(data[20:20 + chunk_len])
+        bounds = [(a["min"], a["max"]) for a in doc["accessors"]
+                  if len(a.get("min", ())) == 3]
+        self.assertTrue(bounds)
+        lo, hi = bounds[0]
+        for i in range(3):
+            self.assertAlmostEqual(hi[i] - lo[i], SHELL_BOX[i], delta=1e-3)
+
+    def test_the_result_cache_is_keyed_on_the_build_script_too(self):
+        """The on-disk cache is content-addressed on program(); if the bpy script (the
+        kernel recipe) were not part of that text, fixing a modifier setting would
+        leave every previously cached STL in place and the backend would keep serving
+        geometry built by the old, wrong script."""
+        backend = BlenderBackend()
+        run_ops(backend, BOX_OPS)
+        program = json.loads(backend.program())
+        self.assertIn("plan", program)
+        self.assertIn("script", program)
+        self.assertTrue(program["script"])
+
 
 @unittest.skipUnless(HAVE_BLENDER, REASON)
 class BlenderVsFRepTest(unittest.TestCase):
@@ -265,6 +415,51 @@ class BlenderVsFRepTest(unittest.TestCase):
         self.assertAlmostEqual(blend.query("measure")["volume"],
                                scad.query("measure")["volume"],
                                delta=STL_FLOAT32_TOLERANCE)
+
+
+@unittest.skipUnless(HAVE_BLENDER, REASON)
+class BlenderVsCadQueryTest(unittest.TestCase):
+    """The differential oracle: CadQuery is OCCT, a B-rep kernel that is right by
+    construction. Where the two kernels model the same thing, they must AGREE."""
+
+    def _pair(self, ops):
+        from harnesscad.io.backends.cadquery import CadQueryBackend
+
+        if not CadQueryBackend.available():
+            self.skipTest("cadquery is not installed on this machine")
+        blend, occt = BlenderBackend(), CadQueryBackend()
+        run_ops(blend, ops)
+        run_ops(occt, ops)
+        return blend.query("measure"), occt.query("measure")
+
+    def test_shell_bbox_agrees_with_occt(self):
+        """The heart of the shell bug: OCCT's MakeThickSolid hollows inward and never
+        moves the outer surface. Blender's solidify must not either."""
+        blend, occt = self._pair(SHELL_BOX_OPS)
+        for i in range(3):
+            self.assertAlmostEqual(blend["bbox"][i], occt["bbox"][i], delta=1e-3)
+            self.assertAlmostEqual(blend["bbox"][i], SHELL_BOX[i], delta=1e-3)
+
+    def test_bevel_volume_agrees_with_occt(self):
+        """Blender's bevel modifier against OCCT's BRepFilletAPI: the same edges, the
+        same radius, the same material removed (to the faceting of the arc)."""
+        blend, occt = self._pair(BOX_OPS
+                                 + [{"op": "fillet", "edges": [], "radius": 2.0}])
+        self.assertAlmostEqual(blend["volume"], occt["volume"],
+                               delta=0.001 * occt["volume"])
+
+    def test_chamfer_volume_agrees_with_occt(self):
+        blend, occt = self._pair(BOX_OPS
+                                 + [{"op": "chamfer", "edges": [], "distance": 2.0}])
+        self.assertAlmostEqual(blend["volume"], occt["volume"],
+                               delta=1e-3 * occt["volume"])
+
+    def test_booleans_agree_with_occt(self):
+        blend, occt = self._pair(CUT_OPS)
+        self.assertAlmostEqual(blend["volume"], occt["volume"],
+                               delta=1e-3 * occt["volume"])
+        for i in range(3):
+            self.assertAlmostEqual(blend["bbox"][i], occt["bbox"][i], delta=1e-3)
 
 
 if __name__ == "__main__":  # pragma: no cover
