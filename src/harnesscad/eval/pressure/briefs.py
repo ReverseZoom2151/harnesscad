@@ -311,19 +311,21 @@ BRIEFS: Tuple[Brief, ...] = (
     ),
     Brief(
         id="step_block", category="bracket", difficulty=3,
-        text=("A stepped block. Start from a solid 60 mm by 40 mm by 20 mm "
-              "block, then cut away a 30 mm by 40 mm by 10 mm slab from the "
-              "top of one end, leaving a two-level step."),
+        text=("A stepped block, 60 mm by 40 mm overall. One half (x from 0 to "
+              "30 mm) is 10 mm tall; the other half (x from 30 to 60 mm) is "
+              "20 mm tall. Build it as one body."),
         expect=Expect(
-            volume=_band(60 * 40 * 20 - 30 * 40 * 10, 0.12),
+            volume=_band(60 * 40 * 10 + 30 * 40 * 10, 0.12),
             inside=((45.0, 20.0, 15.0), (15.0, 20.0, 5.0)),
             outside=((15.0, 20.0, 15.0),),
             ops=(OpSpec("boolean", params={}),),
         ),
-        reference=(_sk("XY"), _rect("sk1", 0, 0, 60, 40), _ext("sk1", 20),
-                   _sk("XY"), _rect("sk2", 0, 0, 30, 40),
-                   {"op": "extrude", "sketch": "sk2", "distance": 30},
-                   {"op": "boolean", "kind": "cut", "target": "f1", "tool": "f2"}),
+        reference=(_sk("XY"), _rect("sk1", 0, 0, 60, 40), _ext("sk1", 10),
+                   _sk("XY"), _rect("sk2", 30, 0, 30, 40), _ext("sk2", 20),
+                   {"op": "boolean", "kind": "union", "target": "f1", "tool": "f2"}),
+        note=("CISP extrudes from the sketch plane only -- there is no offset "
+              "start -- so a 'cut the top off' step must be built as a union of "
+              "two blocks. The brief states the two levels rather than the cut."),
     ),
     Brief(
         id="slotted_block", category="bracket", difficulty=3,
@@ -409,16 +411,20 @@ BRIEFS: Tuple[Brief, ...] = (
 
     # -- tier 5: shells ----------------------------------------------------- #
     # NOTE the F-rep shell is a two-sided wall (|f| - t/2), so a shelled box
-    # grows by t/2 on every side rather than hollowing inward. The probes below
-    # encode what this backend genuinely produces for a CORRECT plan; the
-    # dilation is reported as a backend bug, not scored against the model.
+    # straddles the original boundary: it grows OUTWARD by t/2 as well as
+    # hollowing inward. The `inside` probes therefore sit ON the original surface
+    # (which is the centre of the wall the backend builds) and the `outside`
+    # probes sit at the centroid (which must become a cavity). This encodes what
+    # this backend genuinely produces for a CORRECT plan; the outward dilation is
+    # reported as a BACKEND BUG in the write-up, and is not scored against the
+    # model, which has no op with which to avoid it.
     Brief(
         id="shell_box_3mm", category="shell", difficulty=2,
         text=("A hollow box. Start from a solid block 60 mm by 40 mm by 20 mm "
               "and shell it out to leave a 3 mm wall."),
         expect=Expect(
-            volume=(2000.0, 20000.0),
-            inside=((1.0, 20.0, 10.0),),
+            volume=(8000.0, 45000.0),
+            inside=((0.0, 20.0, 10.0),),           # the wall must be there
             outside=((30.0, 20.0, 10.0),),         # the cavity must exist
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 19.9)}),),
         ),
@@ -430,8 +436,8 @@ BRIEFS: Tuple[Brief, ...] = (
         text=("A shallow tray: take a block 80 mm by 60 mm by 25 mm and hollow "
               "it out with a 2.5 mm wall thickness."),
         expect=Expect(
-            volume=(3000.0, 40000.0),
-            inside=((1.0, 30.0, 12.0),),
+            volume=(8000.0, 70000.0),
+            inside=((0.0, 30.0, 12.0),),
             outside=((40.0, 30.0, 12.0),),
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 24.9)}),),
         ),
@@ -443,8 +449,8 @@ BRIEFS: Tuple[Brief, ...] = (
         text=("A deep hollow enclosure: a 40 mm by 40 mm by 30 mm block, "
               "shelled to a 4 mm wall."),
         expect=Expect(
-            volume=(2000.0, 30000.0),
-            inside=((1.0, 20.0, 15.0),),
+            volume=(6000.0, 45000.0),
+            inside=((0.0, 20.0, 15.0),),
             outside=((20.0, 20.0, 15.0),),
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 29.9)}),),
         ),
@@ -501,8 +507,8 @@ BRIEFS: Tuple[Brief, ...] = (
         text=("A shallow tray made from a plate 60 mm by 40 mm and 5 mm thick, "
               "hollowed out with a 9 mm wall."),
         expect=Expect(
-            volume=(1000.0, 14000.0),
-            inside=((1.5, 20.0, 2.5),),
+            volume=(1000.0, 16000.0),
+            inside=((0.0, 20.0, 2.5),),
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 4.99)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 60, 40), _ext("sk1", 5),
