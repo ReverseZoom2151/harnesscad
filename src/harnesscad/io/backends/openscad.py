@@ -39,10 +39,59 @@ thing that was already written:
   backend reports is the exact volume of the polygon prism OpenSCAD actually
   built -- a number that can be predicted in closed form and asserted on.
 
-Ops OpenSCAD cannot honour honestly (:data:`OpenScadBackend.UNSUPPORTED`) are
-REFUSED with a typed diagnostic rather than approximated: OpenSCAD has no 3D
-offset, so it has no shell, no fillet and no chamfer. Faking them with a
-``minkowski()`` would silently grow the part.
+What OpenSCAD is, and is not
+----------------------------
+OpenSCAD is a **mesh/CSG language with no topological entities**. Its tree is
+built from solids and booleans; there is no B-rep, so there are no persistent
+edges and no persistent faces. ``Fillet(edges=("|Z",))`` and
+``Shell(faces=(">Z",))`` name things OpenSCAD does not have. That is a
+structural limitation, not a bug -- and the only honest responses to it are to
+implement the op exactly, or to REFUSE it with a typed diagnostic. Accepting a
+field and quietly ignoring it (rounding *every* edge when four were asked for)
+produces a different part while reporting success, and is precisely the failure
+this backend refuses to commit.
+
+So, per op:
+
+* **Implemented exactly.** ``extrude``, ``revolve``, ``boolean``, ``mirror``,
+  ``linear_pattern``, ``circular_pattern`` -- all are direct OpenSCAD
+  primitives. ``hole`` is implemented *including* its ``kind`` / ``cbore_*`` /
+  ``csk_*`` fields and its face datum: a counterbore is a stacked cylinder and a
+  countersink is a ``cylinder(r1=, r2=)`` cone -- a real truncated cone, one
+  primitive, exact. (Four of six engines used to collapse a counterbore, a
+  countersink and a plain hole into the SAME cylinder. The stepped tool is now
+  built in the shared F-rep tree, and lowered faithfully here.)
+  ``shell`` is implemented for a **prism** (an extruded profile), where the
+  inward erosion IS OpenSCAD's exact 2D ``offset()`` of the profile plus an
+  inset of the extrusion slab -- so a 60x40x20 box shelled to t=3 has volume
+  exactly ``48000 - 54*34*14 = 22296``, not a number near it. Both of CadQuery's
+  join kinds are honoured, because OpenSCAD has both: ``offset(r=)`` is the
+  "arc" join and ``offset(delta=)`` is the "intersection" join.
+* **Refused, with a typed ``unsupported-op``.** ``fillet``, ``chamfer``,
+  ``draft``, ``loft``, ``sweep``, and ``shell`` of a non-prism. The reason is
+  always the same one: OpenSCAD has no 3D erosion. ``offset()`` "generates a new
+  2d interior or exterior outline from an existing outline" (OpenSCAD User
+  Manual, Transformations/offset) -- it is 2D only; and ``minkowski()`` is a
+  *sum* (a dilation) with no documented inverse anywhere in the manual or the
+  cheatsheet. A constant-radius edge blend needs an erode-then-dilate, so it is
+  not expressible. ``minkowski(){ cube([20,10,5]); sphere(1); }`` does not
+  fillet the box: it grows it to 22 x 12 x 7, a different part with a different
+  bounding box. Shipping that as "fillet" would be the bug, not the feature.
+* **Approximated.** Nothing. No op here is approximated.
+
+Tessellation is pinned
+----------------------
+Every curved entity this backend emits (``circle``, ``cylinder``,
+``rotate_extrude``, ``offset``) carries an **explicit ``$fn``**, computed by
+OpenSCAD's own ``get_fragments_from_r`` law
+(:mod:`harnesscad.domain.geometry.parametric.facets`). Nothing is ever left to
+OpenSCAD's ``$fa=12`` / ``$fs=2`` defaults, so a cylinder's volume is a closed
+form and not a property of the installed binary's defaults.
+
+And both ``$fn`` **and the OpenSCAD version** are stamped into the program text
+(and into :meth:`OpenScadBackend.state_digest`), so they are part of the
+content-addressed cache key. Without the version in the key, upgrading OpenSCAD
+would silently re-serve the STL that the *previous* kernel built.
 
 Absent the binary, the constructor raises
 :class:`~harnesscad.io.backends.base.BackendUnavailable`.
@@ -50,20 +99,28 @@ Absent the binary, the constructor raises
 
 from __future__ import annotations
 
+import hashlib
 import math
 import os
 import subprocess
 from typing import Dict, List, Optional, Sequence, Tuple
 
+from harnesscad.core.cisp.ops import Shell
 from harnesscad.domain.fabrication import openscad_export
 from harnesscad.domain.programs.emit import openscad_emit as se
 from harnesscad.domain.programs.validate import openscad_check
-from harnesscad.io.backends.base import BackendUnavailable
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
+from harnesscad.io.backends.base import ApplyResult, BackendUnavailable
 from harnesscad.io.backends.external import (
     ExternalToolBackend, ccw, circle_loop, plane_axes, plane_normal,
     profile_loops, rect_loop, segments_for, slab,
 )
-from harnesscad.io.backends.frep import Node
+from harnesscad.io.backends.frep import (
+    SHELL_FACES, Node, countersink_depth, node_bounds,
+)
+
+__all__ = ["OpenScadBackend", "OpenScadError", "lower", "render",
+           "countersink_depth"]
 
 #: Installer locations for the binary, globbed (never a hard-coded version).
 OPENSCAD_PATTERNS = (
@@ -169,6 +226,92 @@ def _revolve_basis(plane: str, axis: Sequence[float]) -> List[List[float]]:
     ]
 
 
+# --------------------------------------------------------------------------
+# the primitives OpenSCAD needs that the shared lowering does not already have
+# --------------------------------------------------------------------------
+# The F-rep tree is the kernel-neutral CSG DAG every external backend lowers, and
+# it now carries the whole stepped hole: a `cyl` shaft, a second `cyl` for a
+# counterbore, and a `cone` for a countersink -- each resolved onto the face its
+# datum names. So a counterbore, a countersink and a plain hole are three
+# different trees, and this backend simply builds what it is given. (They were
+# ONE tree until recently: every engine lowered all three to the same bare
+# cylinder. The fix is in frep, and lowering it faithfully is the job here.)
+#
+# What OpenSCAD adds is that `cone` and `shell` have EXACT expressions --
+# cylinder(r1=, r2=) is a truncated cone, and the inward erosion of a prism IS
+# offset() of its profile -- so nothing below is approximated.
+
+#: Clearance added beyond a face so a cut passes cleanly through it.
+CUT_PAD = 1.0
+
+
+def _frustum(node: Node, segments: int) -> se.ScadNode:
+    """A ``cone`` node: radius ``r0`` at ``w0`` tapering to ``r1`` at ``w1``.
+
+    ``cylinder(h, r1|d1, r2|d2, center)`` IS a truncated cone in OpenSCAD (the
+    cheatsheet's 3D primitives), so a countersink is one primitive and one call,
+    exact to the facet law -- there is nothing here to approximate and no reason
+    any engine ever had to collapse a countersink into a cylinder.
+    """
+    w0, w1 = float(node.d["w0"]), float(node.d["w1"])
+    r0, r1 = float(node.d["r0"]), float(node.d["r1"])
+    lo, hi = slab(w0, w1)
+    a, b = (r0, r1) if w0 <= w1 else (r1, r0)
+    seg = segments_for(max(a, b), segments)
+    body = se.cylinder(r1=a, r2=b, h=hi - lo, segments=seg)
+    body = se.translate((float(node.d["cu"]), float(node.d["cv"]), lo))(body)
+    return _placed(node.d["plane"], body)
+
+
+def _shell_prism(shell: Node, segments: int) -> se.ScadNode:
+    """A shelled prism: the solid minus its inward erosion. EXACT.
+
+    The erosion of an extruded profile by a wall thickness t is the extrusion of
+    the profile's inward 2D offset by t, over a slab inset by t at each closed
+    end. OpenSCAD's ``offset()`` is exactly that 2D offset -- the manual's
+    Transformations/offset: "delta ... creates a new outline with sides having a
+    fixed distance ... inward (delta < 0) from the original outline", and "r ...
+    as if a circle of some radius is rotated around the ... interior (r < 0)".
+    So this is a real constant-thickness wall, not a fudge, and the OUTER surface
+    is untouched -- a shell must never grow the bounding box.
+
+    ``Shell.kind`` is honoured: CadQuery's "intersection" join extends the offset
+    sides to their intersection (a sharp corner), which is ``offset(delta=)``;
+    its "arc" join rolls a radius around the corner, which is ``offset(r=)``.
+    Those are the two joins OpenSCAD documents, and they are the two CadQuery
+    names.
+    """
+    child = shell.d["child"]
+    plane = child.d["plane"]
+    t = float(shell.d["thickness"])
+    lo, hi = slab(float(child.d["w0"]), float(child.d["w1"]))
+    _, _, iw = plane_axes(plane)
+
+    faces = [str(f).strip().lower() for f in (shell.d.get("faces") or ())]
+    open_lo = any(SHELL_FACES[f] == (iw, -1) for f in faces)
+    open_hi = any(SHELL_FACES[f] == (iw, +1) for f in faces)
+
+    profile = _profile_2d(child.d["profile"], segments)
+    outer = se.linear_extrude(height=hi - lo)(profile)
+    if lo:
+        outer = se.translate((0.0, 0.0, lo))(outer)
+
+    kind = str(shell.d.get("kind", "arc"))
+    if kind == "intersection":
+        inner_profile = se.offset(delta=-t)(_profile_2d(child.d["profile"], segments))
+    else:
+        inner_profile = se.offset(r=-t, segments=segments)(
+            _profile_2d(child.d["profile"], segments))
+
+    # An opened cap is not inset: the cavity runs out through it (and past it,
+    # so the face's wall is actually removed rather than left as a skin).
+    ilo = (lo - CUT_PAD) if open_lo else (lo + t)
+    ihi = (hi + CUT_PAD) if open_hi else (hi - t)
+    inner = se.translate((0.0, 0.0, ilo))(
+        se.linear_extrude(height=ihi - ilo)(inner_profile))
+    return _placed(plane, se.difference()(outer, inner))
+
+
 def lower(node: Node, segments: int) -> se.ScadNode:
     """One F-rep node as OpenSCAD geometry."""
     t = node.t
@@ -178,12 +321,22 @@ def lower(node: Node, segments: int) -> se.ScadNode:
         if lo:
             body = se.translate((0.0, 0.0, lo))(body)
         return _placed(node.d["plane"], body)
+    if t == "shell":
+        child = node.d["child"]
+        if child.t != "extrude":
+            raise OpenScadError(
+                "openscad backend: shell of a %r is not expressible (OpenSCAD's "
+                "offset() is 2D only, so only a prism can be eroded exactly)"
+                % child.t)
+        return _shell_prism(node, segments)
     if t == "cyl":
         lo, hi = slab(float(node.d["w0"]), float(node.d["w1"]))
         r = float(node.d["r"])
         body = se.translate((float(node.d["cu"]), float(node.d["cv"]), lo))(
             se.cylinder(r=r, h=hi - lo, segments=segments_for(r, segments)))
         return _placed(node.d["plane"], body)
+    if t == "cone":
+        return _frustum(node, segments)
     if t == "revolve":
         angle = abs(float(node.d.get("angle", 360.0)))
         angle = 360.0 if angle >= 360.0 else angle
@@ -202,31 +355,49 @@ def lower(node: Node, segments: int) -> se.ScadNode:
     if t == "mirror":
         child = lower(node.d["child"], segments)
         normal = plane_normal(node.d["plane"])
-        return se.union()(child, se.mirror(list(normal))(lower(node.d["child"], segments)))
+        return se.union()(child, se.mirror(list(normal))(
+            lower(node.d["child"], segments)))
     if t == "pattern":
+        # Each transform is a RIGID 3x4 matrix, row-major. It used to be
+        # (dx, dy, dz, angle_about_Z), which could not express a rotation about any
+        # axis but Z -- so CircularPattern.axis was read, validated, and then thrown
+        # away. multmatrix() takes the 4x4 straight, so the axis the op names is the
+        # axis the instance turns about.
         kids: List[se.ScadNode] = []
         for tr in node.d["transforms"]:
-            dx, dy, dz, ang = (float(tr[0]), float(tr[1]), float(tr[2]), float(tr[3]))
-            body = lower(node.d["child"], segments)
-            if ang:
-                body = se.rotate(a=[0.0, 0.0, ang])(body)
-            if dx or dy or dz:
-                body = se.translate((dx, dy, dz))(body)
-            kids.append(body)
+            m = [float(v) for v in tr]
+            kids.append(se.multmatrix([
+                [m[0], m[1], m[2], m[3]],
+                [m[4], m[5], m[6], m[7]],
+                [m[8], m[9], m[10], m[11]],
+                [0.0, 0.0, 0.0, 1.0],
+            ])(lower(node.d["child"], segments)))
         if len(kids) == 1:
             return kids[0]
         return se.union()(*kids)
     raise OpenScadError("openscad backend: unknown F-rep node kind %r" % t)
 
 
-HEADER = ("// Generated by harnesscad OpenScadBackend. Do not edit.\n"
-          "// Curved primitives are faceted by OpenSCAD's own $fn law, so the\n"
-          "// volume of this model is predictable in closed form.")
+def header(segments: int, version: str) -> str:
+    """The source header -- and the reason the cache key is honest.
+
+    ``$fn`` and the OpenSCAD version are stamped into the program TEXT, and the
+    program text is what the content-addressed cache directory is named after
+    (:func:`harnesscad.io.backends.external.program_digest`). So a different
+    tessellation, or a different kernel build, is a different artefact -- never a
+    stale hit. Blender's and FreeCAD's cache keys both omitted the tool version
+    and re-served geometry the previous version had built.
+    """
+    return ("// Generated by harnesscad OpenScadBackend. Do not edit.\n"
+            "// Every curved entity below carries an EXPLICIT $fn (%d), computed by\n"
+            "// OpenSCAD's own get_fragments_from_r law -- nothing is left to the\n"
+            "// $fa=12 / $fs=2 defaults, so this model's volume is a closed form.\n"
+            "// openscad-version: %s" % (int(segments), version))
 
 
-def render(root: Node, segments: int) -> str:
+def render(root: Node, segments: int, version: str = "unknown") -> str:
     """The whole model as OpenSCAD source (deterministic, byte-stable)."""
-    return se.scad_render(lower(root, segments), header=HEADER)
+    return se.scad_render(lower(root, segments), header=header(segments, version))
 
 
 # --------------------------------------------------------------------------
@@ -236,17 +407,169 @@ class OpenScadBackend(ExternalToolBackend):
     """A GeometryBackend backed by the OpenSCAD binary (exact CGAL CSG)."""
 
     TOOL = "openscad"
-    #: OpenSCAD has no 3D offset operator, so it cannot express these HONESTLY.
-    #: They are refused with a typed diagnostic rather than approximated -- a
-    #: ``minkowski()`` "fillet" would grow the part instead of rounding it.
+    #: Ops OpenSCAD cannot honour HONESTLY, refused with a typed diagnostic
+    #: rather than approximated. Every reason reduces to the same fact: OpenSCAD
+    #: has no 3D erosion (``offset()`` is 2D only; ``minkowski()`` is a sum with
+    #: no inverse) and no topological entities at all -- so ``edges`` and
+    #: ``faces`` selectors name things its CSG tree does not contain.
     UNSUPPORTED: Dict[str, str] = {
-        "fillet": "OpenSCAD has no 3D offset, so it cannot round solid edges "
-                  "(a minkowski() would dilate the part, not fillet it)",
-        "chamfer": "OpenSCAD has no 3D offset, so it cannot chamfer solid edges",
-        "shell": "OpenSCAD has no 3D offset, so it cannot hollow a solid to a "
-                 "wall thickness",
+        "fillet": "OpenSCAD is a CSG language with no topological edges, so the "
+                  "'edges' selector cannot be honoured; and it has no 3D erosion "
+                  "(offset() is 2D-only, minkowski() is a dilation with no "
+                  "inverse), so a constant-radius blend that preserves the "
+                  "bounding box is not expressible. minkowski() with a sphere "
+                  "would GROW a 20x10x5 box to 22x12x7 -- a different part",
+        "chamfer": "OpenSCAD is a CSG language with no topological edges, so the "
+                   "'edges' selector cannot be honoured, and it has no 3D "
+                   "erosion with which to set an edge back",
+        "draft": "OpenSCAD has no face entities, so a draft angle cannot be "
+                 "applied to a named neutral plane and face set",
+        "loft": "OpenSCAD has no loft; hull() of two profiles is a convex hull, "
+                "not a ruled/lofted surface through them",
+        "sweep": "OpenSCAD has no sweep along a path in the core language",
     }
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "scad")
+
+    #: ``openscad --version``, memoised per executable path. Part of the cache key.
+    _VERSIONS: Dict[str, str] = {}
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # The op-state model is a composed FRepBackend, and two of frep's refusals
+        # are facts about ITS kernel, not about CAD -- so they are not ours to
+        # inherit, and frep exposes both as knobs for exactly this reason.
+        #
+        # 1. frep refuses a shell whose wall is thinner than a few cells of its
+        #    SAMPLING GRID. Right for frep (an unresolvable wall would come back as
+        #    a different, smaller part); meaningless for OpenSCAD, which is an exact
+        #    CSG kernel and samples no grid at all. A 3 mm wall on a 60 mm box is cut
+        #    here to the last bit.
+        # 2. frep refuses the 'intersection' shell join, because a distance field's
+        #    inward offset IS the 'arc' join and it cannot express a sharp corner.
+        #    OpenSCAD can: offset(delta=) is precisely the sides-extended-to-their-
+        #    intersection join. frep's own diagnostic says so ("use cadquery/freecad/
+        #    openscad, whose kernels have both joins").
+        #
+        # The refusals that ARE ours -- the ones about OpenSCAD's own limits -- are
+        # in _check_shell, and they are typed.
+        self._frep.SHELL_MIN_WALL_CELLS = 0.0
+        self._frep.SHELL_JOINS = ("arc", "intersection")
+
+    # -- version (a cache-key input, not a cosmetic banner) -----------------
+    def tool_version(self) -> str:
+        """The binary's version string. Stamped into the program and the digest.
+
+        OpenSCAD 2021.01 renders CSG through CGAL Nef polyhedra. The Manifold
+        backend (``--backend=manifold``) only became selectable in the 2024.09.28
+        snapshots, so on a 2021.01 binary there is nothing to select and the
+        kernel is CGAL. Two kernels can mesh the same tree differently, which is
+        exactly why the version belongs in the key.
+        """
+        cached = type(self)._VERSIONS.get(self.executable)
+        if cached is not None:
+            return cached
+        try:
+            proc = subprocess.run([self.executable, "--version"],
+                                  capture_output=True, text=True, timeout=30)
+            text = (proc.stdout or "") + (proc.stderr or "")
+            version = text.strip().splitlines()[0].strip() if text.strip() else "unknown"
+        except Exception:                                   # pragma: no cover
+            version = "unknown"
+        type(self)._VERSIONS[self.executable] = version
+        return version
+
+    def state_digest(self) -> str:
+        """Content hash of the model AND of everything that decides its geometry.
+
+        The op stream alone is not enough: the same ops at $fn=16 and $fn=64 are
+        different solids, and the same ops on two OpenSCAD builds may be different
+        meshes. Both are therefore in the digest. Blender's and FreeCAD's keys both
+        omitted the tool version, and silently re-served the geometry that the
+        PREVIOUS version of the tool had built.
+        """
+        blob = "%s|%s|fn=%d|version=%s" % (
+            self.TOOL, self._frep.state_digest(), self.segments, self.tool_version())
+        return hashlib.sha256(blob.encode()).hexdigest()
+
+    # -- op admission ------------------------------------------------------
+    def apply(self, op):
+        """Refuse what cannot be honoured, BEFORE anything mutates.
+
+        The base class refuses whole ops (:data:`UNSUPPORTED`). This adds the one
+        field-level admission the base cannot do: a Shell whose child is not a
+        prism, or which opens a face that is not one of the prism's caps. Both are
+        refused rather than silently degraded into a solid block.
+
+        Hole needs nothing here: frep now builds the stepped tool itself and
+        validates it, so ``kind`` / ``cbore_*`` / ``csk_*`` / the face datum all
+        arrive in the tree and are lowered faithfully.
+        """
+        if isinstance(op, Shell):
+            err = self._check_shell(op)
+            if err is not None:
+                return err
+        return super().apply(op)
+
+    @staticmethod
+    def _refuse(code: str, msg: str) -> ApplyResult:
+        return ApplyResult(False, [], [Diagnostic(Severity.ERROR, code, msg, None)])
+
+    def _check_shell(self, op: Shell) -> Optional[ApplyResult]:
+        """Shell is EXACT for a prism, and not expressible for anything else.
+
+        These are the refusals that are genuinely OpenSCAD's. Everything else about
+        a Shell -- the selector grammar, the join kind, an unknown face, a
+        non-positive thickness -- frep validates for us, so it is not re-checked
+        here and cannot drift out of step with it.
+        """
+        from harnesscad.io.backends.frep import resolve_faces
+
+        bodies = self._frep._bodies
+        if not bodies:
+            return None                       # frep will refuse it: 'no-solid'
+        node = bodies[-1]["node"]
+        if node.t != "extrude":
+            return self._refuse(
+                "unsupported-op",
+                "the openscad backend cannot shell a %r: OpenSCAD's offset() is "
+                "2D-only and minkowski() has no inverse, so the inward erosion of "
+                "a general solid is not expressible. Only a prism (an extruded "
+                "profile), whose erosion IS the 2D offset of its profile, can be "
+                "shelled exactly" % node.t)
+        thickness = float(op.thickness)
+        if thickness <= 0.0:
+            return None                     # frep will refuse it: 'bad-value'
+        try:
+            faces = resolve_faces(node_bounds(node), op.faces or ())
+        except Exception:
+            return None                     # frep will refuse it, with its message
+
+        # The opened faces must be the prism's own CAPS. Opening a side wall is a
+        # 2D cut of the profile, which this lowering does not express -- so it is
+        # refused, rather than ignored and handed back as a closed box.
+        _, _, iw = plane_axes(node.d["plane"])
+        for name in faces:
+            axis, _sign = SHELL_FACES[name]
+            if axis != iw:
+                return self._refuse(
+                    "unsupported-op",
+                    "the openscad backend can only open a prism's CAP faces "
+                    "(those normal to the extrusion axis); '%s' is a side wall, "
+                    "whose removal is a 2D cut this lowering does not express"
+                    % name)
+        lo, hi = slab(float(node.d["w0"]), float(node.d["w1"]))
+        if (hi - lo) - (2 - len(set(faces))) * thickness <= 0.0:
+            return self._refuse(
+                "bad-value",
+                "shell thickness %g leaves no cavity in a prism %g tall"
+                % (thickness, hi - lo))
+        plo_u, plo_v, phi_u, phi_v = node.d["profile"].bounds()
+        if min(phi_u - plo_u, phi_v - plo_v) <= 2.0 * thickness:
+            return self._refuse(
+                "bad-value",
+                "shell thickness %g erodes the whole profile away (its smallest "
+                "extent is %g)" % (thickness, min(phi_u - plo_u, phi_v - plo_v)))
+        return None
 
     @classmethod
     def locate(cls) -> str:
@@ -267,7 +590,7 @@ class OpenScadBackend(ExternalToolBackend):
         root = self.root()
         if root is None:
             raise OpenScadError("openscad backend: no solid to render")
-        source = render(root, self.segments)
+        source = render(root, self.segments, version=self.tool_version())
         issues = openscad_check.check(source)
         errors = [i for i in issues if i.severity == "error"]
         if errors:
@@ -286,18 +609,28 @@ class OpenScadBackend(ExternalToolBackend):
         plan = openscad_export.plan_export(
             source, export_format="binstl", out_dir=workdir.replace("\\", "/"),
             executable=self.executable)
+        openscad_export.check_output_extension(out_path, "binstl")
         with open(plan.scad_path, "w", encoding="utf-8") as fh:
             fh.write(source)
+        # A failed run must leave NOTHING behind. The caller's cache is a
+        # file-exists check, so a half-written STL from a crashed run would be
+        # re-served forever, and reported as a success. Clear before, clear after.
+        if os.path.isfile(out_path):
+            os.remove(out_path)
         argv = [self.executable, "-o", out_path, "--export-format", "binstl",
                 plan.scad_path]
         proc = subprocess.run(argv, capture_output=True, text=True,
                               timeout=self.timeout)
         status, messages = openscad_export.classify_result(proc.returncode, proc.stderr)
-        if status != openscad_export.STATUS_OK:
-            raise OpenScadError(
-                "openscad %s (exit %d): %s"
-                % (status, proc.returncode, "; ".join(messages) or (proc.stderr or "").strip()))
-        if not (os.path.isfile(out_path) and os.path.getsize(out_path) > 0):
+        empty = not (os.path.isfile(out_path) and os.path.getsize(out_path) > 0)
+        if status != openscad_export.STATUS_OK or empty:
+            if os.path.isfile(out_path):
+                os.remove(out_path)
+            if status != openscad_export.STATUS_OK:
+                raise OpenScadError(
+                    "openscad %s (exit %d): %s"
+                    % (status, proc.returncode,
+                       "; ".join(messages) or (proc.stderr or "").strip()))
             raise OpenScadError(
                 "openscad exited %d but wrote no geometry to %s"
                 % (proc.returncode, out_path))
