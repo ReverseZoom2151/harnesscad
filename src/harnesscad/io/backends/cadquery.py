@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import tempfile
 import os
 from typing import List, Optional
@@ -48,8 +49,18 @@ from harnesscad.core.cisp.ops import (
 )
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
-from harnesscad.io.backends.base import ApplyResult
+from harnesscad.io.backends.base import ApplyResult, BackendUnavailable
 from harnesscad.core.constraints import ConstraintGraph
+
+#: Sketch planes this backend accepts. Validated at NewSketch time (as the frep
+#: backend does) rather than exploding later inside cq.Workplane at extrude time.
+PLANES = ("XY", "XZ", "YZ", "YX", "ZX", "ZY",
+          "front", "back", "left", "right", "top", "bottom")
+
+#: A solid whose volume is at or below this is degenerate. OCCT will happily
+#: return a *topologically* non-empty solid with ZERO volume (e.g. a revolve
+#: about an axis normal to the sketch plane), so counting solids is not enough.
+MIN_VOLUME = 1e-9
 
 
 def _err(code: str, msg: str, where: Optional[str] = None) -> ApplyResult:
@@ -57,14 +68,60 @@ def _err(code: str, msg: str, where: Optional[str] = None) -> ApplyResult:
 
 
 def _cq():
-    """Lazy import of cadquery so this module loads without OCCT installed."""
-    import cadquery  # noqa: WPS433 (deliberately local / lazy)
+    """Lazy import of cadquery so this module loads without OCCT installed.
+
+    Raises :class:`BackendUnavailable` (not a bare ImportError) so that a missing
+    kernel is never mistaken for a *geometry* failure: the op handlers catch
+    kernel exceptions broadly to implement block-and-correct, and without this a
+    missing install surfaced as a per-op ``kernel-error`` diagnostic and the
+    harness silently produced an empty model instead of refusing to start.
+    """
+    try:
+        import cadquery  # noqa: WPS433 (deliberately local / lazy)
+    except Exception as exc:  # noqa: BLE001
+        raise BackendUnavailable(
+            "cadquery",
+            "the cadquery backend requires cadquery + cadquery-ocp (OCCT): %s "
+            "(install with: pip install 'harnesscad[cadquery]')" % exc,
+            ["python: import cadquery"])
     return cadquery
 
 
+def solid_volume(wp) -> float:
+    """Total volume of every solid in ``wp``, or 0.0 when there is none."""
+    try:
+        return float(sum(s.Volume() for s in wp.solids().vals()))
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def _degenerate(wp, what: str) -> Optional[ApplyResult]:
+    """``ApplyResult`` when ``wp`` is not a real, positive-volume solid, else None."""
+    try:
+        if not wp.solids().vals():
+            return _err("degenerate", "%s produced no solid" % what)
+    except Exception as exc:  # noqa: BLE001
+        return _err("kernel-error", "%s produced no readable solid: %s" % (what, exc))
+    if solid_volume(wp) <= MIN_VOLUME:
+        return _err("degenerate", "%s produced a zero-volume solid" % what)
+    return None
+
+
 class CadQueryBackend:
+    #: exports this backend can produce (the only backend with real B-rep/STEP)
+    FORMATS = ("step", "stl", "iges", "brep")
+
     def __init__(self) -> None:
         self.reset()
+
+    @staticmethod
+    def available() -> bool:
+        """Whether cadquery/OCCT can be imported here. Never raises."""
+        try:
+            _cq()
+        except BackendUnavailable:
+            return False
+        return True
 
     # -- lifecycle ----------------------------------------------------------
     def reset(self) -> None:
@@ -107,6 +164,13 @@ class CadQueryBackend:
 
     def _dispatch(self, op: Op) -> ApplyResult:
         if isinstance(op, NewSketch):
+            # Validate the plane HERE (as frep does). cq.Workplane accepts only a
+            # fixed set of names; an unknown one used to sail through NewSketch and
+            # only blow up later inside _extrude, where it was reported as a
+            # 'kernel-error' on the extrude rather than a 'bad-value' on the sketch.
+            if str(op.plane) not in PLANES:
+                return _err("bad-value", f"unknown sketch plane '{op.plane}' "
+                                         f"(supported: {', '.join(PLANES)})")
             sid = self._new_id("sk")
             self.sketches[sid] = {
                 "plane": op.plane, "entities": [], "dof": 0,
@@ -194,6 +258,8 @@ class CadQueryBackend:
                 b = placed.BoundingBox()
                 bbox = [float(b.xmin), float(b.ymin), float(b.zmin),
                         float(b.xmax), float(b.ymax), float(b.zmax)]
+        except BackendUnavailable:
+            raise
         except Exception as exc:  # noqa: BLE001 - placement issue -> block-and-correct
             return _err("kernel-error", f"instance placement failed: {exc}")
         iid = self._new_id("i")
@@ -294,8 +360,11 @@ class CadQueryBackend:
                             f"sketch '{op.sketch}' has no closed profile to extrude",
                             op.sketch)
             solid = profile.extrude(op.distance)
-            if solid.val() is None or not solid.solids().vals():
-                return _err("degenerate", "extrude produced no solid")
+            bad = _degenerate(solid, "extrude")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:  # kernel exception -> block-and-correct
             return _err("kernel-error", f"extrude failed: {exc}")
         fid = self._new_id("f")
@@ -316,8 +385,11 @@ class CadQueryBackend:
             # current solid (a real OCCT fillet). Too-large radius -> kernel
             # exception -> block-and-correct below.
             filleted = target.edges().fillet(op.radius)
-            if not filleted.solids().vals():
-                return _err("degenerate", "fillet produced no solid")
+            bad = _degenerate(filleted, "fillet")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"fillet failed: {exc}")
         fid = self._new_id("f")
@@ -325,29 +397,59 @@ class CadQueryBackend:
         self._solids[-1] = filleted
         return ApplyResult(True, [fid])
 
+    def _solid_index(self, ref: str) -> Optional[int]:
+        """Index into ``self._solids`` of the body a feature id names.
+
+        ``self._solids`` and the solid-producing features are pushed in lockstep,
+        so the n-th solid-producing feature is the n-th solid.
+        """
+        bodies = [f["id"] for f in self.features
+                  if f["type"] in ("extrude", "revolve", "boolean")]
+        try:
+            i = bodies.index(ref)
+        except ValueError:
+            return None
+        return i if i < len(self._solids) else None
+
     def _boolean(self, op: Boolean) -> ApplyResult:
         if op.kind not in ("union", "cut", "intersect"):
             return _err("bad-value", f"unknown boolean kind '{op.kind}'")
         if len(self.features) < 2 or len(self._solids) < 2:
             return _err("no-solid", "boolean requires two solids")
+        # BUG: op.target / op.tool were IGNORED -- a Boolean that explicitly named
+        # its operands silently operated on the last two solids instead, which is
+        # wrong geometry with no diagnostic. Resolve them as the frep backend does.
+        ia = self._solid_index(op.target) if op.target else len(self._solids) - 2
+        ib = self._solid_index(op.tool) if op.tool else len(self._solids) - 1
+        if ia is None:
+            return _err("bad-ref", f"unknown boolean target '{op.target}'", op.target)
+        if ib is None:
+            return _err("bad-ref", f"unknown boolean tool '{op.tool}'", op.tool)
+        if ia == ib:
+            return _err("bad-ref", "boolean target and tool are the same body")
         try:
             _cq()
-            b = self._solids[-1]
-            a = self._solids[-2]
+            b = self._solids[ib]
+            a = self._solids[ia]
             if op.kind == "union":
                 result = a.union(b)
             elif op.kind == "cut":
                 result = a.cut(b)
             else:
                 result = a.intersect(b)
-            if not result.solids().vals():
-                return _err("degenerate", f"boolean '{op.kind}' produced no solid")
+            bad = _degenerate(result, f"boolean '{op.kind}'")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"boolean failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "boolean", "id": fid, "kind": op.kind})
-        # replace the two operands with their combination
-        self._solids[-2:] = [result]
+        # the two operands are consumed and replaced by their combination
+        for i in sorted((ia, ib), reverse=True):
+            self._solids.pop(i)
+        self._solids.append(result)
         return ApplyResult(True, [fid])
 
     # -- extended mechanical features --------------------------------------
@@ -367,8 +469,11 @@ class CadQueryBackend:
                             op.sketch)
             a = op.axis
             solid = profile.revolve(op.angle, (a[0], a[1], a[2]), (a[3], a[4], a[5]))
-            if not solid.solids().vals():
-                return _err("degenerate", "revolve produced no solid")
+            bad = _degenerate(solid, "revolve")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"revolve failed: {exc}")
         fid = self._new_id("f")
@@ -388,8 +493,11 @@ class CadQueryBackend:
             # Edge ids are opaque across backends; chamfer all edges (a real OCCT
             # chamfer). Too-large a setback -> kernel exception -> block-and-correct.
             chamfered = target.edges().chamfer(op.distance)
-            if not chamfered.solids().vals():
-                return _err("degenerate", "chamfer produced no solid")
+            bad = _degenerate(chamfered, "chamfer")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"chamfer failed: {exc}")
         fid = self._new_id("f")
@@ -420,8 +528,11 @@ class CadQueryBackend:
                 result = wp.hole(op.diameter)
             else:
                 result = wp.hole(op.diameter, op.depth)
-            if not result.solids().vals():
-                return _err("degenerate", "hole produced no solid")
+            bad = _degenerate(result, "hole")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"hole failed: {exc}")
         fid = self._new_id("f")
@@ -441,8 +552,11 @@ class CadQueryBackend:
             # Remove the top face and hollow inward by `thickness` (a real OCCT
             # MakeThickSolid). Too-thick a wall -> kernel exception -> rollback.
             shelled = target.faces(">Z").shell(-abs(op.thickness))
-            if not shelled.solids().vals():
-                return _err("degenerate", "shell produced no solid")
+            bad = _degenerate(shelled, "shell")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"shell failed: {exc}")
         fid = self._new_id("f")
@@ -458,16 +572,26 @@ class CadQueryBackend:
             return _err("bad-value", f"linear_pattern count must be >= 2 (got {op.count})")
         if op.feature and op.feature not in self._feature_ids():
             return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        # BUG: the direction was used RAW, so a non-unit direction scaled the
+        # spacing (direction=(2,0,0), spacing=10 stepped 20mm here but 10mm on
+        # frep). Normalise, exactly as frep does, so spacing means spacing.
+        d = list(op.direction) + [0.0, 0.0, 0.0]
+        norm = math.sqrt(d[0] ** 2 + d[1] ** 2 + d[2] ** 2)
+        if norm == 0.0:
+            return _err("bad-value", "linear_pattern direction is degenerate")
+        ux, uy, uz = d[0] / norm, d[1] / norm, d[2] / norm
         try:
             _cq()
             base = self._solids[-1]
-            d = op.direction
             result = base
             for i in range(1, op.count):
-                off = (d[0] * op.spacing * i, d[1] * op.spacing * i, d[2] * op.spacing * i)
+                off = (ux * op.spacing * i, uy * op.spacing * i, uz * op.spacing * i)
                 result = result.union(base.translate(off))
-            if not result.solids().vals():
-                return _err("degenerate", "linear_pattern produced no solid")
+            bad = _degenerate(result, "linear_pattern")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"linear_pattern failed: {exc}")
         fid = self._new_id("f")
@@ -491,8 +615,11 @@ class CadQueryBackend:
             for i in range(1, op.count):
                 rotated = base.rotate((a[0], a[1], a[2]), (a[3], a[4], a[5]), step * i)
                 result = result.union(rotated)
-            if not result.solids().vals():
-                return _err("degenerate", "circular_pattern produced no solid")
+            bad = _degenerate(result, "circular_pattern")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"circular_pattern failed: {exc}")
         fid = self._new_id("f")
@@ -513,8 +640,11 @@ class CadQueryBackend:
             base = self._solids[-1]
             mirrored = base.mirror(op.plane)
             result = base.union(mirrored)
-            if not result.solids().vals():
-                return _err("degenerate", "mirror produced no solid")
+            bad = _degenerate(result, "mirror")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
         except _err_types() as exc:
             return _err("kernel-error", f"mirror failed: {exc}")
         fid = self._new_id("f")
@@ -695,17 +825,26 @@ class CadQueryBackend:
                 "surface_area": surface_area,
                 "bbox": [float(bb.xlen), float(bb.ylen), float(bb.zlen)],
                 "center_of_mass": [float(com.X()), float(com.Y()), float(com.Z())],
+                # Topology counts: how a fillet/chamfer PROVES it rounded an edge
+                # (a blended box gains a face per edge and a patch per corner).
+                "faces": len(shape.Faces()),
+                "edges": len(shape.Edges()),
+                "vertices": len(shape.Vertices()),
+                "solids": len(shape.Solids()),
             }
         except Exception:  # noqa: BLE001
             return {}
 
     # -- export -------------------------------------------------------------
     def export(self, fmt: str):
-        fmt = fmt.lower()
+        fmt = str(fmt).lower()
+        if fmt not in self.FORMATS:
+            raise ValueError("the cadquery backend cannot export '%s' (supported: %s)"
+                             % (fmt, ", ".join(self.FORMATS)))
+        cq = _cq()  # raises BackendUnavailable when OCCT is missing
         shape = self._combined()
         if shape is None:
             raise ValueError("nothing to export: no solid present")
-        cq = _cq()
         from cadquery import exporters
         wp = cq.Workplane("XY").add(shape)
         if fmt == "step":
@@ -716,9 +855,24 @@ class CadQueryBackend:
             # was not parseable by any STL reader.
             return self._export_text(exporters, wp, "STL", ".stl",
                                      opt={"ascii": True})
-        if fmt == "iges":
-            return self._export_iges(shape)
-        raise ValueError(f"unsupported export format '{fmt}'")
+        if fmt == "brep":
+            return self._export_brep(shape)
+        return self._export_iges(shape)
+
+    @staticmethod
+    def _export_brep(shape) -> str:
+        """The native OCCT B-rep serialisation (lossless: the real kernel data)."""
+        fd, path = tempfile.mkstemp(suffix=".brep")
+        os.close(fd)
+        try:
+            shape.exportBrep(path)
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
     @staticmethod
     def _export_iges(shape) -> str:
