@@ -63,6 +63,7 @@ from harnesscad.domain.geometry.sdf import field_transforms as xf
 from harnesscad.domain.geometry.sdf import polygon as poly
 from harnesscad.domain.geometry.sdf import primitives as prim
 from harnesscad.domain.geometry.parametric.chord_tolerance import segments_for_tolerance
+from harnesscad.domain.geometry.volumes.dual_contouring_3d import dual_contour
 from harnesscad.domain.geometry.volumes.marching_cubes import marching_cubes
 from harnesscad.domain.geometry.volumes.surface_nets import (
     ScalarGrid, sample_sdf_grid, surface_nets,
@@ -86,8 +87,11 @@ _INF = float("inf")
 #: blended: ``marching_cubes`` is and stays the default (it is the one every
 #: existing digest/mesh expectation was recorded against); ``surface_nets`` is a
 #: dual method that puts one vertex per cell and produces a different -- also
-#: valid -- mesh of the same field. Choose with ``mesher=``; nothing mixes them.
-MESHERS: Tuple[str, ...] = ("marching_cubes", "surface_nets")
+#: valid -- mesh of the same field; ``dual_contouring`` is the same dual layout
+#: but with the cell vertex placed by a QEF over Hermite data (Ju, Losasso,
+#: Schaefer & Warren 2002), which is the only one of the three that can put a
+#: vertex exactly on a sharp corner. Choose with ``mesher=``; nothing mixes them.
+MESHERS: Tuple[str, ...] = ("marching_cubes", "surface_nets", "dual_contouring")
 DEFAULT_MESHER = "marching_cubes"
 
 #: How a surface normal is obtained. ``finite_difference`` is the default (it is
@@ -329,7 +333,7 @@ def eval_node(node: Node, p: Sequence[float]) -> float:
         b = eval_node(node.d["b"], p)
         return _boolean_field(node, a, b)
     if t == "shell":
-        return xf.shell(eval_node(node.d["child"], p), node.d["thickness"])
+        return _eval_shell(node, p)
     if t == "mirror":
         return comb.union(eval_node(node.d["child"], p),
                           eval_node(node.d["child"], _reflect(p, node.d["plane"])))
@@ -338,6 +342,98 @@ def eval_node(node: Node, p: Sequence[float]) -> float:
         vals = [eval_node(child, _untransform(p, tr)) for tr in node.d["transforms"]]
         return comb.union_all(vals)
     raise ValueError("unknown F-rep node kind '%s'" % t)  # pragma: no cover
+
+
+# --------------------------------------------------------------------------
+# shell
+# --------------------------------------------------------------------------
+#: The face names a Shell may open, as (axis, +1 for the max face / -1 for the
+#: min face). Both the CAD words and the bare signed-axis spellings are taken.
+SHELL_FACES: Dict[str, Tuple[int, int]] = {
+    "right": (0, +1), "+x": (0, +1), "xmax": (0, +1),
+    "left": (0, -1), "-x": (0, -1), "xmin": (0, -1),
+    "back": (1, +1), "+y": (1, +1), "ymax": (1, +1),
+    "front": (1, -1), "-y": (1, -1), "ymin": (1, -1),
+    "top": (2, +1), "+z": (2, +1), "zmax": (2, +1),
+    "bottom": (2, -1), "-z": (2, -1), "zmin": (2, -1),
+}
+
+
+def _eval_shell(node: Node, p: Sequence[float]) -> float:
+    """A CAD Shell: hollow the child INWARD, optionally opening named faces.
+
+    Closed shell.  ``shell_inward(f, t) = max(f, -(f + t))`` -- the material
+    between the original surface ``{f = 0}`` and the inward offset ``{f = -t}``.
+    The outer surface is *untouched*, so the bounding box is preserved exactly.
+
+    This is NOT ``abs(f) - t``.  That operator is Inigo Quilez's ``opOnion``
+    (https://iquilezles.org/articles/distfunctions/, "Onion / opOnion"), whose
+    stated purpose is "carving interiors or giving thickness to primitives" --
+    it is symmetric about the boundary and therefore keeps half the wall
+    *outside* the original surface, growing the part.  Curv exposes the same
+    two-sided operator as ``shell``.  Both are correct for what they are and
+    wrong for a CAD Shell feature, which only ever REMOVES material: SolidWorks,
+    Fusion and Onshape all leave the outer faces exactly where they were.  The
+    two-sided version is still available as ``field_transforms.shell``; the CAD
+    one is ``field_transforms.shell_inward``, which is what this node uses.
+
+    Open faces.  ``faces`` names the faces to delete.  Deleting a face does not
+    mean cutting the solid with a half-space -- that would saw the surrounding
+    walls off too, and shorten the part.  It means punching the *cavity* out
+    through that face.  So the cavity ``{f <= -t}`` is swept along the face's
+    outward axis by clamping the domain along that axis (the same domain-clamp
+    trick as iq's Elongation operator, ``q = p - clamp(p, -h, h)``): past the
+    cavity's mid-plane the cavity is evaluated *at* its mid-plane, which extrudes
+    its cross-section there out through the wall and off to infinity.  The swept
+    cavity is unioned with the plain one and the whole thing is subtracted from
+    the solid, so the side walls keep their full height and only the named face's
+    wall is removed.
+
+    Caveats, stated rather than hidden.  (a) The swept part of the opening field
+    is a distance *bound*, not the exact distance -- it ignores the sweep axis.
+    That is fine here: it is only ever fed to ``max``/``min`` and to the mesher,
+    both of which need the sign and the zero set, and it under-estimates, which
+    is the safe direction.  (b) The cross-section taken is the one at the
+    cavity's mid-plane, which is the right one for a prismatic part (the case a
+    CAD Shell with open faces is defined for) and merely a defensible choice for
+    a body that necks in and out along that axis.
+    """
+    child = node.d["child"]
+    t = float(node.d["thickness"])
+    f = eval_node(child, p)
+    faces = node.d.get("faces") or ()
+    if not faces:
+        return xf.shell_inward(f, t)
+
+    # the cavity: the inward offset of the child by t (negative inside it)
+    cavity = f + t
+    lo, hi = node_bounds(child)
+    for name in faces:
+        axis, _sign = SHELL_FACES[str(name).strip().lower()]
+        mid = 0.5 * (lo[axis] + hi[axis])
+        q = list(p)
+        # Clamp the sweep axis onto the cavity's mid-plane on the OUTBOARD side
+        # of it, so the cross-section there is extruded out through the face.
+        if _sign > 0:
+            if q[axis] > mid:
+                q[axis] = mid
+        else:
+            if q[axis] < mid:
+                q[axis] = mid
+        cavity = comb.union(cavity, eval_node(child, q) + t)
+    # solid minus the (opened) cavity
+    return comb.difference(f, cavity)
+
+
+def _has_shell(node: Node) -> bool:
+    """Does this tree contain a shell node anywhere?  (See :meth:`FRepBackend.ir`.)"""
+    if node.t == "shell":
+        return True
+    for key in ("child", "a", "b"):
+        kid = node.d.get(key)
+        if isinstance(kid, Node) and _has_shell(kid):
+            return True
+    return False
 
 
 def _reflect(p: Sequence[float], plane: str) -> Vec3:
@@ -424,7 +520,8 @@ def node_bounds(node: Node) -> Tuple[Vec3, Vec3]:
             return _grow((lo, hi), k)  # type: ignore[arg-type]
         return _grow(_union_bounds(ba, bb), k)
     if t == "shell":
-        return _grow(node_bounds(node.d["child"]), node.d["thickness"])
+        # An inward shell never leaves the child's bounds.
+        return node_bounds(node.d["child"])
     if t == "mirror":
         b = node_bounds(node.d["child"])
         pl = str(node.d["plane"]).upper()
@@ -532,7 +629,8 @@ def blend_tree(node: Node, kind: str, k: float) -> Node:
                     blend=kind, k=k)
     if t == "shell":
         return Node("shell", child=blend_tree(node.d["child"], kind, k),
-                    thickness=node.d["thickness"])
+                    thickness=node.d["thickness"],
+                    faces=node.d.get("faces", ()))
     if t == "mirror":
         return Node("mirror", child=blend_tree(node.d["child"], kind, k),
                     plane=node.d["plane"])
@@ -744,7 +842,13 @@ def tessellate(field: Callable[[Sequence[float]], float],
         raise ValueError("unknown mesher %r (supported: %s)"
                          % (algorithm, ", ".join(MESHERS)))
     grid = sample_grid(field, bounds, resolution, prune=prune, stats=stats)
-    if algorithm == "surface_nets":
+    if algorithm == "dual_contouring":
+        # Ju, Losasso, Schaefer & Warren 2002. One vertex per cell, placed by a
+        # QEF over the cell's Hermite data, so a corner where three faces meet
+        # is reproduced exactly instead of being chamfered off by up to half a
+        # cell the way marching cubes must.
+        verts, faces = dual_contour(grid, field, 0.0)
+    elif algorithm == "surface_nets":
         verts, quads = surface_nets(grid, 0.0)
         faces: List[Tuple[int, int, int]] = []
         for q in quads:
@@ -1037,9 +1141,16 @@ class FRepBackend:
             return _err("no-solid", "shell requires an existing solid")
         if op.thickness <= 0:
             return _err("bad-value", f"shell thickness must be > 0 (got {op.thickness})")
+        faces = [str(f).strip().lower() for f in (op.faces or ())]
+        for name in faces:
+            if name not in SHELL_FACES:
+                return _err("bad-value",
+                            "unknown shell face '%s' (known: %s)"
+                            % (name, ", ".join(sorted(SHELL_FACES))))
         body = self._bodies[-1]
         body["node"] = Node("shell", child=body["node"],
-                            thickness=float(op.thickness))
+                            thickness=float(op.thickness),
+                            faces=tuple(sorted(set(faces))))
         fid = self._new_id("f")
         self.features.append({"type": "shell", "id": fid,
                               "faces": list(op.faces), "thickness": op.thickness})
@@ -1184,6 +1295,24 @@ class FRepBackend:
         """
         node = self.root()
         if node is None:
+            return None
+        if _has_shell(node):
+            # The IR still encodes a shell as the two-sided ``abs(d) - t/2``
+            # (frep_ir._compile, the "shell" arm), which is NOT the function
+            # ``eval_node`` samples any more -- that is ``shell_inward``, plus
+            # the swept cavity when faces are open. An IR that disagrees with the
+            # field is worse than no IR at all: interval pruning would be bounding
+            # the WRONG function, and it is allowed to (and does) classify a block
+            # that straddles the real surface as FILLED and delete it -- a 60x40x40
+            # box shelled at t=12 lost 66% of its volume that way, and the
+            # half-edge check passed it, because the result is a perfectly closed
+            # manifold of the wrong solid.
+            #
+            # Refusing to compile is the sound answer: `prune` then degrades to a
+            # full sample (right, merely slower) and `normals="autodiff"` raises
+            # instead of returning the gradient of a function nobody asked for.
+            # Both call sites already handle None. Re-enable this once
+            # frep_ir grows a shell arm that matches _eval_shell.
             return None
         key = "%s|%d" % (self.state_digest(), 1 if smooth else 0)
         cache = self._ir_cache or {}
@@ -1493,8 +1622,16 @@ class FRepBackend:
             return glb_fmt.stl_to_glb(binary, name="harnesscad-frep")
         return binary
 
-    def write_stl(self, path: str, binary: bool = True) -> int:
-        """Write the tessellated model to ``path``; returns the triangle count."""
+    def write_stl(self, path: str, binary: bool = True, force: bool = False) -> int:
+        """Write the tessellated model to ``path``; returns the triangle count.
+
+        This is a *write path*, so it goes through the output gate exactly like
+        the format registry does: an invalid model raises
+        :class:`harnesscad.io.gate.InvalidArtifact` and no file appears.
+        """
+        from harnesscad.io import gate
+
+        report = gate.guard(self.mesh(), str(path), source=self, force=force)
         tris = mesh_triangles(self.mesh())
         if binary:
             with open(path, "wb") as fh:
@@ -1502,6 +1639,8 @@ class FRepBackend:
         else:
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(stl_fmt.write_ascii_stl(tris, name="harnesscad-frep"))
+        if not report.ok:                              # forced through the gate
+            gate.write_sidecar(str(path), report)
         return len(tris)
 
     # -- digest ------------------------------------------------------------

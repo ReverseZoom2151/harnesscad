@@ -23,7 +23,7 @@ from harnesscad.domain.numeric import interval_arithmetic
 from harnesscad.io.backends import frep
 from harnesscad.io.backends import frep_ir
 from harnesscad.io.backends.base import GeometryBackend
-from harnesscad.io.backends.frep import FRepBackend, eval_node
+from harnesscad.io.backends.frep import MESHERS, FRepBackend, eval_node
 from harnesscad.io.formats import stl as stl_fmt
 from harnesscad.io.surfaces.server import CISPServer
 
@@ -177,6 +177,56 @@ class FRepFilletTest(unittest.TestCase):
             self.assertAlmostEqual(got, want, delta=0.6)
 
 
+class FRepShellTest(unittest.TestCase):
+    """A CAD shell hollows INWARD; it must never grow the part.
+
+    The backend used Curv's two-sided shell (|f| - t/2), which dilates by t/2
+    per side: a 60x40x20 box shelled at t=3 measured 63x43x23 and every
+    verifier stayed silent.
+    """
+
+    BOX = [
+        {"op": "new_sketch", "plane": "XY"},
+        {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0,
+         "w": 60.0, "h": 40.0},
+        {"op": "extrude", "sketch": "sk1", "distance": 20.0},
+    ]
+
+    def test_shell_does_not_grow_the_part(self):
+        solid, _ = _apply(self.BOX)
+        shelled, result = _apply(self.BOX + [{"op": "shell", "faces": [],
+                                              "thickness": 3.0}])
+        self.assertTrue(result.ok, result.diagnostics)
+        before = solid.query("metrics")["bbox"]
+        after = shelled.query("metrics")["bbox"]
+        for axis, b, a in zip("XYZ", before, after):
+            self.assertLessEqual(a, b + 1e-6, f"shell grew the part along {axis}")
+        for got, want in zip(after, (60.0, 40.0, 20.0)):
+            self.assertAlmostEqual(got, want, delta=0.6)
+
+    def test_shell_removes_material(self):
+        solid, _ = _apply(self.BOX)
+        shelled, _ = _apply(self.BOX + [{"op": "shell", "faces": [],
+                                         "thickness": 3.0}])
+        self.assertLess(shelled.query("measure")["volume"],
+                        solid.query("measure")["volume"])
+
+    def test_shell_too_thick_leaves_the_solid_intact_not_inflated(self):
+        # 60x40x5 plate, 9 mm wall: no cavity can open. The old two-sided shell
+        # inflated it to 69x49x14 (volume 44941). It must stay the plate.
+        tray = [
+            {"op": "new_sketch", "plane": "XY"},
+            {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0,
+             "w": 60.0, "h": 40.0},
+            {"op": "extrude", "sketch": "sk1", "distance": 5.0},
+            {"op": "shell", "faces": [], "thickness": 9.0},
+        ]
+        backend, _ = _apply(tray)
+        for got, want in zip(backend.query("metrics")["bbox"], (60.0, 40.0, 5.0)):
+            self.assertAlmostEqual(got, want, delta=0.6)
+        self.assertLess(backend.query("measure")["volume"], 60.0 * 40.0 * 5.0 * 1.02)
+
+
 class FRepExportTest(unittest.TestCase):
     def setUp(self):
         self.backend, _ = _apply(PLATE_OPS)
@@ -319,8 +369,11 @@ class FRepMesherChoiceTest(unittest.TestCase):
 
     def test_an_unknown_mesher_is_refused(self):
         backend, _ = _apply(PLATE_OPS)
+        # dual_contouring IS a 3D rival now (see FRepDualContouringTest).
+        self.assertIn("dual_contouring", MESHERS)
+        self.assertTrue(backend.mesh(mesher="dual_contouring")[1])
         with self.assertRaises(ValueError):
-            backend.mesh(mesher="dual_contouring")   # 2D only; not a 3D rival
+            backend.mesh(mesher="nope")
         with self.assertRaises(ValueError):
             FRepBackend(mesher="nope")
 
@@ -500,6 +553,394 @@ class FRepMassPropertiesTest(unittest.TestCase):
         q = backend.query("mass_properties")
         self.assertIn("inertia_tensor", q)
         self.assertEqual(len(q["inertia_tensor"]), 3)
+
+
+# ===========================================================================
+# The f-rep literature audit: shell semantics, dual contouring, and the
+# distance-property violations that min/max booleans introduce.
+# ===========================================================================
+
+#: 60 x 40 x 20 block -- the part from the shell bug report. Analytic V = 48000.
+BLOCK_OPS = [
+    {"op": "new_sketch", "plane": "XY"},
+    {"op": "add_rectangle", "sketch": "sk1", "x": 0.0, "y": 0.0, "w": 60.0, "h": 40.0},
+    {"op": "extrude", "sketch": "sk1", "distance": 20.0},
+]
+BLOCK_VOLUME = 60.0 * 40.0 * 20.0
+
+
+def _block(resolution=64, mesher="dual_contouring", **kw):
+    backend = FRepBackend(resolution=resolution, mesher=mesher, **kw)
+    for spec in BLOCK_OPS:
+        assert backend.apply(parse_op(spec)).ok
+    return backend
+
+
+def _bbox(backend):
+    return backend.query("metrics")["bbox"]
+
+
+class FRepShellSemanticsTest(unittest.TestCase):
+    """A CAD Shell hollows INWARD. It must never grow the part.
+
+    ``abs(f) - t/2`` is Inigo Quilez's ``opOnion``
+    (https://iquilezles.org/articles/distfunctions/) -- a *two-sided* shell,
+    centred on the boundary, which keeps half the wall OUTSIDE the original
+    surface and therefore dilates the solid by ``t/2`` in every direction. Curv
+    ships the same operator under the name ``shell``. It is correct for graphics
+    and wrong for CAD: SolidWorks/Fusion/Onshape all leave the outer faces
+    exactly where they were, because a Shell only ever removes material. The CAD
+    operator is ``max(f, -(f + t))``.
+    """
+
+    def test_shell_does_not_grow_the_part(self):
+        # THE regression: 60x40x20 shelled at t=3 used to come out 63x43x23.
+        # (The tolerance is a MESHING tolerance, not a shell one: the QEF places
+        # a dual-contouring vertex within ~3e-5 of the true corner, not on it.
+        # The old two-sided shell missed by 3.0 -- five orders of magnitude out.)
+        backend = _block()
+        before = _bbox(backend)
+        self.assertTrue(backend.apply(parse_op(
+            {"op": "shell", "thickness": 3.0, "faces": []})).ok)
+        after = _bbox(backend)
+        for axis, (b, a) in enumerate(zip(before, after)):
+            self.assertAlmostEqual(a, b, delta=1e-3,
+                                   msg="shell grew axis %d: %s -> %s" % (axis, b, a))
+        for got, want in zip(after, (60.0, 40.0, 20.0)):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+
+    def test_a_closed_shell_is_hollow_with_the_right_wall(self):
+        backend = _block()
+        backend.apply(parse_op({"op": "shell", "thickness": 3.0, "faces": []}))
+        # outer 60x40x20 minus the inward-offset cavity 54x34x14
+        expected = BLOCK_VOLUME - 54.0 * 34.0 * 14.0
+        self.assertEqual(expected, 22296.0)
+        volume = backend.query("metrics")["volume"]
+        self.assertAlmostEqual(volume / expected, 1.0, delta=2e-3)
+        # a sealed void: two closed surfaces, so chi = 2 + 2 = 4
+        validity = backend.query("validity")
+        self.assertTrue(validity["is_valid"])
+        self.assertEqual(validity["euler_characteristic"], 4)
+
+    def test_the_wall_is_actually_t_thick_everywhere(self):
+        """A bbox check alone cannot prove a shell is right.
+
+        An inward shell can preserve the bounding box exactly and still leave the
+        wall t/sqrt(3) thick (42% thin) if the inward offset is taken along an
+        uncorrected corner normal instead of the true distance. So probe the
+        FIELD across each of the six walls: at t-eps inside the outer surface we
+        must still be in material, and at t+eps we must be in the cavity.
+        """
+        backend = _block()
+        backend.apply(parse_op({"op": "shell", "thickness": 3.0, "faces": []}))
+        field = backend.field()
+        eps = 0.05
+        # (a point just inside each outer face, the inward direction)
+        walls = [
+            ((0.0, 20.0, 10.0), (1.0, 0.0, 0.0)),    # -x wall
+            ((60.0, 20.0, 10.0), (-1.0, 0.0, 0.0)),  # +x wall
+            ((30.0, 0.0, 10.0), (0.0, 1.0, 0.0)),    # -y wall
+            ((30.0, 40.0, 10.0), (0.0, -1.0, 0.0)),  # +y wall
+            ((30.0, 20.0, 0.0), (0.0, 0.0, 1.0)),    # -z wall
+            ((30.0, 20.0, 20.0), (0.0, 0.0, -1.0)),  # +z wall
+        ]
+        for surface, inward in walls:
+            def at(depth):
+                return field(tuple(surface[i] + inward[i] * depth for i in range(3)))
+            # still solid just short of the wall thickness ...
+            self.assertLess(at(3.0 - eps), 0.0,
+                            "wall at %s is thinner than t=3" % (surface,))
+            # ... and into the cavity just past it
+            self.assertGreater(at(3.0 + eps), 0.0,
+                               "wall at %s is thicker than t=3" % (surface,))
+
+    def test_an_open_face_removes_only_that_face_not_the_walls(self):
+        """faces=['top'] punches the CAVITY out through the top wall.
+
+        It does NOT cut the solid with a half-space -- that would saw the side
+        walls down to z = 17 as well. The part stays 20 tall.
+        """
+        backend = _block()
+        backend.apply(parse_op({"op": "shell", "thickness": 3.0, "faces": ["top"]}))
+        # the side walls keep their FULL height: the part is still 20 tall.
+        for got, want in zip(_bbox(backend), (60.0, 40.0, 20.0)):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+        # the cavity now runs the full 17mm up to the top face
+        expected = BLOCK_VOLUME - 54.0 * 34.0 * 17.0
+        self.assertAlmostEqual(
+            backend.query("metrics")["volume"] / expected, 1.0, delta=2e-3)
+        validity = backend.query("validity")
+        self.assertTrue(validity["is_valid"])
+        # an open tub is a topological sphere again: chi = 2
+        self.assertEqual(validity["euler_characteristic"], 2)
+
+    def test_two_open_faces_make_a_tube(self):
+        backend = _block()
+        backend.apply(parse_op(
+            {"op": "shell", "thickness": 3.0, "faces": ["top", "bottom"]}))
+        for got, want in zip(_bbox(backend), (60.0, 40.0, 20.0)):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+        expected = BLOCK_VOLUME - 54.0 * 34.0 * 20.0
+        self.assertAlmostEqual(
+            backend.query("metrics")["volume"] / expected, 1.0, delta=2e-3)
+        # open at both ends -> a genus-1 tube -> chi = 0
+        self.assertEqual(backend.query("validity")["euler_characteristic"], 0)
+
+    def test_an_unknown_shell_face_is_refused(self):
+        backend = _block()
+        result = backend.apply(parse_op(
+            {"op": "shell", "thickness": 3.0, "faces": ["sideways"]}))
+        self.assertFalse(result.ok)
+        self.assertEqual(result.diagnostics[0].code, "bad-value")
+
+
+class FRepDualContouringTest(unittest.TestCase):
+    """Marching cubes cannot put a vertex on a sharp corner; dual contouring can.
+
+    MC constrains every vertex to a grid EDGE, so a box corner is chamfered off
+    by up to half a cell -- a systematic, one-sided loss of material, and the
+    whole of MC's volume error on a prismatic part. Dual contouring (Ju, Losasso,
+    Schaefer & Warren, "Dual Contouring of Hermite Data", SIGGRAPH 2002) puts one
+    vertex per CELL, placed at the minimiser of a QEF over the cell's Hermite
+    data, which lands exactly on the intersection of the three face planes.
+    """
+
+    def test_dual_contouring_is_near_exact_on_a_prismatic_part(self):
+        for resolution in (16, 32, 64):
+            dc = _block(resolution=resolution, mesher="dual_contouring")
+            error = abs(dc.query("metrics")["volume"] - BLOCK_VOLUME) / BLOCK_VOLUME
+            self.assertLess(error, 1e-3,
+                            "DC volume error %.4f%% at res %d"
+                            % (100 * error, resolution))
+
+    def test_dual_contouring_beats_marching_cubes_at_every_resolution(self):
+        for resolution in (16, 32, 64):
+            mc = _block(resolution=resolution, mesher="marching_cubes")
+            dc = _block(resolution=resolution, mesher="dual_contouring")
+            e_mc = abs(mc.query("metrics")["volume"] - BLOCK_VOLUME)
+            e_dc = abs(dc.query("metrics")["volume"] - BLOCK_VOLUME)
+            self.assertLess(e_dc, e_mc / 10.0,
+                            "res %d: DC %.1f vs MC %.1f" % (resolution, e_dc, e_mc))
+
+    def test_dual_contouring_at_16_beats_marching_cubes_at_96(self):
+        """The headline: DC needs far less grid to do far better."""
+        coarse_dc = _block(resolution=16, mesher="dual_contouring")
+        fine_mc = _block(resolution=96, mesher="marching_cubes")
+        e_dc = abs(coarse_dc.query("metrics")["volume"] - BLOCK_VOLUME)
+        e_mc = abs(fine_mc.query("metrics")["volume"] - BLOCK_VOLUME)
+        self.assertLess(e_dc, e_mc)
+
+    def test_dual_contouring_reproduces_the_sharp_corners(self):
+        """Every one of the block's 8 corners must appear as an actual vertex.
+
+        This is the property marching cubes structurally cannot have: its
+        vertices are pinned to grid EDGES, so the nearest one to a true corner
+        sits ~half a cell away and the corner is chamfered off. The QEF vertex
+        lands on the intersection of the three face planes instead.
+        """
+        corners = [(cx, cy, cz)
+                   for cx in (0.0, 60.0) for cy in (0.0, 40.0) for cz in (0.0, 20.0)]
+
+        def worst(mesher):
+            verts, _ = _block(resolution=32, mesher=mesher).mesh()
+            return max(min(math.dist(v, c) for v in verts) for c in corners)
+
+        dc, mc = worst("dual_contouring"), worst("marching_cubes")
+        # DC lands on every corner to within a rounding error of the QEF solve
+        self.assertLess(dc, 1e-3, "DC missed a corner by %.5f" % dc)
+        # ... while MC misses by a real fraction of a cell
+        self.assertGreater(mc, 0.1)
+        self.assertLess(dc, mc / 100.0, "DC %.6f vs MC %.6f" % (dc, mc))
+
+    def test_dual_contouring_output_is_a_watertight_manifold(self):
+        for ops in (BLOCK_OPS, CUT_OPS):
+            backend = FRepBackend(resolution=32, mesher="dual_contouring")
+            for spec in ops:
+                self.assertTrue(backend.apply(parse_op(spec)).ok)
+            verts, faces = backend.mesh()
+            mesh = HalfedgeMesh(verts, faces)
+            self.assertTrue(mesh.is_closed())
+            self.assertTrue(mesh.is_2manifold()[0])
+
+    def test_dual_contouring_is_deterministic(self):
+        a = _block(resolution=24, mesher="dual_contouring").mesh()
+        b = _block(resolution=24, mesher="dual_contouring").mesh()
+        self.assertEqual(a, b)
+
+
+class FRepConvergenceTest(unittest.TestCase):
+    """The resolution/error curve, and whether the default 48 is defensible."""
+
+    def test_marching_cubes_error_shrinks_with_resolution(self):
+        errors = []
+        for resolution in (16, 32, 64):
+            backend = _block(resolution=resolution, mesher="marching_cubes")
+            volume = backend.query("metrics")["volume"]
+            errors.append(abs(volume - BLOCK_VOLUME) / BLOCK_VOLUME)
+            # MC only ever CHAMFERS material off; it never adds any
+            self.assertLess(volume, BLOCK_VOLUME)
+        self.assertTrue(errors[0] > errors[1] > errors[2], errors)
+        # roughly first-order in the cell size: halving the cell halves the error
+        self.assertLess(errors[2], errors[0] / 3.0)
+
+    def test_the_default_resolution_holds_half_a_percent_under_mc(self):
+        backend = _block(resolution=frep.DEFAULT_RESOLUTION, mesher="marching_cubes")
+        error = abs(backend.query("metrics")["volume"] - BLOCK_VOLUME) / BLOCK_VOLUME
+        self.assertLess(error, 5e-3)
+
+
+class FRepDistancePropertyTest(unittest.TestCase):
+    """min/max booleans do NOT preserve the distance property.
+
+    Inigo Quilez, https://iquilezles.org/articles/distfunctions/ : "the Xor and
+    the Union of two SDFs produces a true SDF, but not the Subtraction or
+    Intersection [...] this is only true in the exterior of the SDF (where
+    distances are positive) and not in the interior."
+
+    Every op that reads |f| INSIDE the solid -- shell, offset -- is therefore
+    reading a bound, not a distance. These tests pin the violation so it cannot
+    silently regress, and pin the guards that keep it from corrupting a mesh.
+    """
+
+    def test_min_union_underestimates_the_interior_depth(self):
+        """Two 40-cubes overlapping into a 60x40x40 block."""
+        backend = FRepBackend(resolution=16)
+        for spec in [
+            {"op": "new_sketch", "plane": "XY"},
+            {"op": "add_rectangle", "sketch": "sk1",
+             "x": 0.0, "y": 0.0, "w": 40.0, "h": 40.0},
+            {"op": "extrude", "sketch": "sk1", "distance": 40.0},
+            {"op": "new_sketch", "plane": "XY"},
+            {"op": "add_rectangle", "sketch": "sk2",
+             "x": 20.0, "y": 0.0, "w": 40.0, "h": 40.0},
+            {"op": "extrude", "sketch": "sk2", "distance": 40.0},
+            {"op": "boolean", "kind": "union"},
+        ]:
+            self.assertTrue(backend.apply(parse_op(spec)).ok)
+        field = backend.field()
+        # centre of the resulting 60x40x40 block: the true distance is -20
+        # (x:30, y:20, z:20). min() of the two box fields reports only -10.
+        self.assertAlmostEqual(field((30.0, 20.0, 20.0)), -10.0, places=6)
+        # ... and the field is still a valid BOUND: it never overstates depth.
+        self.assertGreaterEqual(field((30.0, 20.0, 20.0)), -20.0)
+
+    def test_prune_never_changes_the_mesh_of_a_shelled_part(self):
+        """The guard on the unsound IR.
+
+        frep_ir compiles a shell as the old two-sided ``abs(d) - t/2``, which is
+        no longer the function eval_node samples. Interval pruning would then be
+        bounding the WRONG function and would classify blocks that straddle the
+        real surface as FILLED and delete them -- this exact model lost 66% of
+        its volume that way, and the half-edge check passed it, because the
+        result is a perfectly closed manifold of the wrong solid. FRepBackend.ir
+        refuses to compile a tree containing a shell, so prune degrades to a full
+        sample instead of corrupting the mesh.
+        """
+        def build(prune):
+            backend = FRepBackend(resolution=64, prune=prune)
+            for spec in [
+                {"op": "new_sketch", "plane": "XY"},
+                {"op": "add_rectangle", "sketch": "sk1",
+                 "x": 0.0, "y": 0.0, "w": 60.0, "h": 40.0},
+                {"op": "extrude", "sketch": "sk1", "distance": 40.0},
+                {"op": "shell", "thickness": 12.0, "faces": []},
+            ]:
+                assert backend.apply(parse_op(spec)).ok
+            return backend
+
+        plain, pruned = build(False), build(True)
+        self.assertIsNone(pruned.ir())          # refused, on purpose
+        self.assertEqual(plain.mesh(), pruned.mesh())
+        expected = 60.0 * 40.0 * 40.0 - 36.0 * 16.0 * 16.0
+        self.assertAlmostEqual(
+            pruned.query("metrics")["volume"] / expected, 1.0, delta=2e-3)
+
+    def test_prune_still_prunes_a_part_it_can_soundly_bound(self):
+        backend = _block(resolution=48, mesher="marching_cubes", prune=True)
+        stats = {}
+        backend.mesh(stats=stats)
+        self.assertGreater(stats["blocks_pruned"], 0)
+        self.assertLess(stats["field_evals"], stats["samples"])
+
+
+class FRepMarchingCubesAmbiguityTest(unittest.TestCase):
+    """Does our 256-case table crack on an ambiguous face?
+
+    The original Lorensen & Cline paper is famous for it. The answer, verified
+    exhaustively below, is NO: the table we ship (Bourke's) is *face-consistent*
+    -- the segments it lays down on any cube face are a function of that face's
+    four corner signs alone, so two cells sharing a face always agree on it and
+    the mesh cannot have a hole.
+
+    That is watertightness, NOT topological correctness: the table can still
+    resolve an interior ambiguity the wrong way and get the GENUS wrong (that is
+    what Chernyaev's MC33 fixes). A genus error is silent -- the mesh stays a
+    closed manifold -- so the half-edge check would not catch it. Documented, not
+    fixed; dual contouring is the recommended escape.
+    """
+
+    def test_the_marching_cubes_table_cannot_crack(self):
+        from harnesscad.domain.geometry.volumes.marching_cubes import TRI_TABLE
+
+        # each cube face as (its 4 corner ids, the 4 cube-edge ids lying on it)
+        faces = {
+            "z0": ((0, 1, 2, 3), {0, 1, 2, 3}),
+            "z1": ((4, 5, 6, 7), {4, 5, 6, 7}),
+            "y0": ((0, 1, 5, 4), {0, 9, 4, 8}),
+            "y1": ((3, 2, 6, 7), {2, 10, 6, 11}),
+            "x0": ((0, 3, 7, 4), {3, 11, 7, 8}),
+            "x1": ((1, 2, 6, 5), {1, 10, 5, 9}),
+        }
+
+        def triangles(config):
+            row = TRI_TABLE[config]
+            return [tuple(row[i:i + 3]) for i in range(0, len(row), 3)
+                    if row[i] != -1]
+
+        comparisons = 0
+        for corners, face_edges in faces.values():
+            seen = {}
+            for config in range(256):
+                signature = tuple((config >> c) & 1 for c in corners)
+                segments = set()
+                for tri in triangles(config):
+                    for a, b in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
+                        if a in face_edges and b in face_edges:
+                            segments.add(frozenset((a, b)))
+                if signature in seen:
+                    comparisons += 1
+                    self.assertEqual(
+                        seen[signature], segments,
+                        "face signs %s are triangulated inconsistently -> the "
+                        "table can leave a hole" % (signature,))
+                else:
+                    seen[signature] = segments
+        self.assertEqual(comparisons, 1440)
+
+    def test_a_saddle_shaped_part_still_meshes_watertight(self):
+        """Four pillars joined by a plate: plenty of ambiguous-face cells."""
+        specs = [
+            {"op": "new_sketch", "plane": "XY"},
+            {"op": "add_rectangle", "sketch": "sk1",
+             "x": 0.0, "y": 0.0, "w": 40.0, "h": 40.0},
+            {"op": "extrude", "sketch": "sk1", "distance": 4.0},
+        ]
+        for index, (cx, cy) in enumerate(((8.0, 8.0), (32.0, 8.0),
+                                          (8.0, 32.0), (32.0, 32.0))):
+            specs += [
+                {"op": "new_sketch", "plane": "XY"},
+                {"op": "add_circle", "sketch": "sk%d" % (index + 2),
+                 "cx": cx, "cy": cy, "r": 5.0},
+                {"op": "extrude", "sketch": "sk%d" % (index + 2), "distance": 20.0},
+                {"op": "boolean", "kind": "union"},
+            ]
+        for mesher in MESHERS:
+            backend = FRepBackend(resolution=40, mesher=mesher)
+            for spec in specs:
+                self.assertTrue(backend.apply(parse_op(spec)).ok, spec)
+            verts, faces = backend.mesh()
+            self.assertTrue(HalfedgeMesh(verts, faces).is_closed(),
+                            "%s produced a hole" % mesher)
 
 
 if __name__ == "__main__":  # pragma: no cover
