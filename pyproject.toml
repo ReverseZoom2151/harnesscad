@@ -21,6 +21,13 @@ cadquery = ["cadquery>=2.4"]
 #     brew install --cask freecad      |   HARNESSCAD_FREECAD=/path/to/freecadcmd
 # Listed for discoverability; `pip install harnesscad[freecad]` is a no-op.
 freecad = []
+# Computer-use: drive a real CAD GUI through its Windows accessibility tree
+# (io/cua/*). The harness core stays stdlib-only; these are needed ONLY to drive
+# a live GUI, and every cua module reports available() is False and SKIPs cleanly
+# when they are absent -- it never hangs and never fails on absence.
+# The FreeCAD *application* (the windowed freecad.exe, not freecadcmd) must also
+# be installed; override discovery with HARNESSCAD_FREECAD_GUI.
+cua = ["uiautomation>=2.0; sys_platform == 'win32'"]
 # Provider-agnostic LLM layer (LiteLLM) + structured op output (Instructor).
 llm = ["litellm>=1.0", "instructor>=1.0"]
 # Real 2D sketch constraint solver (SolveSpace). Optional: the ConstraintGraph
