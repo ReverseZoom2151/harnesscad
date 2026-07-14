@@ -84,6 +84,62 @@ resolution smooths it at the price of a denser mesh. That trade is the honest
 shape of an SDF pipeline, and it is why OCCT remains available as an optional
 extra.
 
+## What it can build
+
+Every image below is the harness rendering its own output: a stdlib z-buffered
+rasteriser, no numpy, no external renderer. `harnesscad gallery --build`
+reproduces all of them.
+
+<p align="center">
+  <img src="assets/gallery/gyroid-lattice.png" width="24%" alt="Gyroid TPMS lattice cube">
+  <img src="assets/gallery/gear-spur-involute.png" width="24%" alt="20-tooth involute spur gear">
+  <img src="assets/gallery/bolt-m10-iso.png" width="24%" alt="M10 bolt with a real ISO thread helix">
+  <img src="assets/gallery/blend-smooth-union.png" width="24%" alt="Smooth SDF blend of a dome and a cylinder into a plate">
+</p>
+<p align="center">
+  <img src="assets/gallery/coil-spring.png" width="24%" alt="Helical coil spring">
+  <img src="assets/gallery/pulley-vgroove.png" width="24%" alt="Revolved V-groove pulley">
+  <img src="assets/gallery/enclosure-shell.png" width="24%" alt="Shelled enclosure">
+  <img src="assets/gallery/pattern-heatsink.png" width="24%" alt="Patterned heatsink fins">
+</p>
+<p align="center">
+  <img src="assets/gallery/cam-three-arc.png" width="24%" alt="Three-arc cam with a keyway">
+  <img src="assets/gallery/sweep-taper-duct.png" width="24%" alt="Swept tapering duct">
+  <img src="assets/gallery/spiral-flexure.png" width="24%" alt="Spiral flexure">
+  <img src="assets/gallery/edge-fillet.png" width="24%" alt="Filleted block">
+</p>
+
+The gyroid and the smooth blend are worth pausing on: **no B-rep kernel can make
+them.** They are signed distance fields, and they exist here because the geometry
+layer was mined from the SDF literature rather than wrapped around a kernel.
+
+### Six backends, one op stream
+
+The same ops run on a kernel-free SDF backend, two OCCT B-rep kernels, exact CSG,
+and mesh booleans. Left to right: `frep`, `cadquery`, `openscad`, `blender`.
+
+<p align="center">
+  <img src="assets/gallery/compare-frep.png" width="24%" alt="Plate built by the kernel-free SDF backend">
+  <img src="assets/gallery/compare-cadquery.png" width="24%" alt="Plate built by CadQuery/OCCT">
+  <img src="assets/gallery/compare-openscad.png" width="24%" alt="Plate built by OpenSCAD">
+  <img src="assets/gallery/compare-blender.png" width="24%" alt="Plate built by Blender">
+</p>
+
+They agree, and where they do not, the harness says so instead of hiding it. On a
+40x24x8 plate with two 6 mm through-holes (analytic 7227.610658 mm3):
+
+| backend | volume | error |
+|---|---|---|
+| `cadquery` (OCCT B-rep) | 7227.610658 | exact to 1e-12 |
+| `freecad` (OCCT B-rep) | 7227.610658 | exact to 1e-12 |
+| `openscad` (exact CSG) | matches closed-form | 6e-9 relative |
+| `frep` (SDF, default grid) | 7179.781788 | 0.66% under |
+
+The SDF error is grid resolution, and it converges: on a four-hole plate it falls
+from 0.69% at the default grid to 0.11% at resolution 128 and 0.08% at 160. It is
+a knob, not a defect. But it is never zero, which is why a real kernel remains one
+flag away.
+
 ## The finding
 
 Reading 186 text-to-CAD papers and 70 CAD repositories end to end surfaced

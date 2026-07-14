@@ -109,6 +109,19 @@
         named and rival-free by construction: scale-invariant dedup and exact-token
         dedup disagree by design, so a pipeline may select only one of them.
 
+    python cli.py gallery --list [--json]
+    python cli.py gallery --build [--out assets/gallery] [--only NAME] [--no-compare]
+        The RENDERED PARTS GALLERY (harnesscad.eval.gallery): sixteen distinct
+        parts -- counterbored bracket, shelled enclosure + lid, involute spur gear,
+        ISO-threaded bolt, gyroid TPMS lattice, SDF smooth blend, revolved pulley,
+        swept duct, coil spring, patterned heatsink + flange, fillet vs chamfer,
+        three-arc cam, spiral flexure -- each naming the capability module it
+        exercises and the backends that can (and provably cannot) build it. Every
+        PNG is decoded back and QC'd (variance, silhouette coverage, colour count)
+        before it is shipped. `--build` also renders the bracket on all four
+        kernels (compare-<backend>.png) so a kernel-free SDF mesh and a real B-rep
+        are side by side.
+
     python cli.py capabilities --list [--tag X] [--layer Y] [--package Z]
     python cli.py capabilities --search TEXT
     python cli.py capabilities --show harnesscad.domain.geometry.sdf.primitives
@@ -372,6 +385,14 @@ def cmd_ingest(args: argparse.Namespace) -> int:
     if result.get("note"):
         print(f"note:     {result['note']} (confidence {result.get('confidence')})")
     return 0 if result["ok"] else 1
+
+
+def cmd_gallery(args: argparse.Namespace) -> int:
+    # Imported here so the gallery (and the renderer it drives) is only touched
+    # by `gallery`.
+    from harnesscad.eval.gallery import render_gallery
+
+    return render_gallery.run_cli(args)
 
 
 def cmd_capabilities(args: argparse.Namespace) -> int:
@@ -760,6 +781,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     _pressure_cli.add_arguments(p_pressure)
     p_pressure.set_defaults(func=cmd_pressure)
+
+    p_gallery = sub.add_parser(
+        "gallery",
+        help="rendered parts gallery: 16 parts, each exercising a different "
+             "capability (--list / --build [--out DIR] [--only NAME])")
+    from harnesscad.eval.gallery import render_gallery as _render_gallery
+
+    _render_gallery.add_arguments(p_gallery)
+    p_gallery.set_defaults(func=cmd_gallery)
 
     p_caps = sub.add_parser(
         "capabilities",
