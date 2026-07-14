@@ -12,10 +12,25 @@ The digest is load-bearing: replaying the same ops must yield the same digest
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Protocol, runtime_checkable
+from typing import List, Protocol, Sequence, runtime_checkable
 
 from harnesscad.core.cisp.ops import Op
 from harnesscad.eval.verifiers.verify import Diagnostic
+
+
+class BackendUnavailable(RuntimeError):
+    """The backend needs an external tool that is not installed on this machine.
+
+    Raised from a backend's constructor (never mid-model), so a caller can decide
+    up front: the CISP server falls back to the stub with a note, and the test
+    suite SKIPs. It carries the tool it looked for and the places it looked, so
+    the message is actionable rather than a bare ImportError.
+    """
+
+    def __init__(self, tool: str, message: str, searched: Sequence[str] = ()) -> None:
+        self.tool = tool
+        self.searched = list(searched)
+        super().__init__(message)
 
 
 @dataclass
