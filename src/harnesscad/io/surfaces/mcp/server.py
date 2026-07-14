@@ -38,6 +38,7 @@ from harnesscad.io.surfaces.mcp.jsonrpc import (
     METHOD_NOT_FOUND,
     RESOURCE_NOT_FOUND,
 )
+from harnesscad.io.surfaces.mcp.annotations import TIER_AUTO, TIER_NOTIFY, TIER_REQUIRE
 from harnesscad.io.surfaces.mcp.tools import (
     MCPError,
     ToolCatalog,
@@ -46,6 +47,21 @@ from harnesscad.io.surfaces.mcp.tools import (
     UnknownToolError,
 )
 from harnesscad.io.surfaces.server import _make_backend
+from harnesscad.io.surfaces.ui.approval import (
+    ApprovalDenied,
+    ApprovalPolicy,
+    ApprovalTier,
+)
+
+# The MCP annotation tier (an int, sec.5) and the ui.approval tier (an enum,
+# sec.14) are the same three tiers under two names. This is the ONE place they
+# are joined, so the two classifiers cannot drift: the tool's own annotations are
+# authoritative on this surface.
+_ANNOTATION_TIER_TO_APPROVAL = {
+    TIER_AUTO: ApprovalTier.AUTO,
+    TIER_NOTIFY: ApprovalTier.NOTIFY,
+    TIER_REQUIRE: ApprovalTier.REQUIRE,
+}
 
 # The MCP protocol revisions this server can speak. The first is preferred; the
 # others are accepted for backwards compatibility during negotiation.
@@ -119,8 +135,21 @@ class MCPServer:
     """A session-scoped MCP endpoint over a ToolCatalog + a HarnessSession."""
 
     def __init__(self, backend: str = "stub", *, session: Optional[HarnessSession] = None,
-                 catalog: Optional[ToolCatalog] = None) -> None:
+                 catalog: Optional[ToolCatalog] = None,
+                 approval: Optional[ApprovalPolicy] = None) -> None:
         self.catalog = catalog if catalog is not None else ToolCatalog()
+        # THE CONSENT GATE ON THE PUBLIC SURFACE. ``tools/call`` used to run any
+        # tool -- including the ones this server itself annotates
+        # ``destructiveHint`` (export / reset / delete) -- straight into the
+        # session with no human step: the annotations were carried and then
+        # ignored. Every call now goes through an ``ApprovalPolicy``. An MCP
+        # stdio server is HEADLESS by construction, so with no approver attached
+        # the policy REFUSES tier-3 and says so in an auditable record; an
+        # embedder that wants unattended exports must pass
+        # ``ApprovalPolicy(approver)`` or an explicit
+        # ``ApprovalPolicy.headless_auto_approve(reason=...)``.
+        self.approval = approval if approval is not None else ApprovalPolicy(
+            None, surface="mcp")
         if session is not None:
             self.session = session
             self.backend = session.backend
@@ -198,6 +227,27 @@ class MCPServer:
         if not isinstance(arguments, dict):
             return jsonrpc.error(msg_id, INVALID_PARAMS,
                                  "tools/call: 'arguments' must be an object")
+
+        # --- consent gate (before ANY execution) --------------------------
+        try:
+            tool = self.catalog.get(name)
+        except UnknownToolError as exc:
+            return jsonrpc.error(msg_id, INVALID_PARAMS, exc.message, exc.data or None)
+        tier = _ANNOTATION_TIER_TO_APPROVAL[tool.annotations.tier]
+        try:
+            self.approval.require(name, tier=tier)
+        except ApprovalDenied as denied:
+            # A refusal is a tool RESULT (isError), not a transport error: the
+            # agent can read the record, see the risk indicator and the dry-run
+            # preview, and ask a human. Nothing was executed.
+            record = denied.record.to_dict()
+            return jsonrpc.result(msg_id, {
+                "content": [{"type": "text", "text": str(denied)}],
+                "structuredContent": {"approvalDenied": record,
+                                      "diagnostics": [], "rejected": None},
+                "isError": True,
+            })
+
         try:
             result = self.catalog.call(name, arguments, session=self.session)
         except (UnknownToolError, ToolValidationError) as exc:

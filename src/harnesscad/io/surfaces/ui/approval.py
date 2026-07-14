@@ -378,3 +378,205 @@ class ApprovalGate:
             for d in require:
                 d.event = event
         return decisions
+
+
+# ===========================================================================
+# The MECHANICAL gate: ApprovalPolicy
+# ===========================================================================
+# ``ApprovalGate`` above is *advisory*: it classifies and emits, and every caller
+# was free to ignore its verdict — and every caller did. ``fleet_blocking=False``
+# taught us what an advisory guardrail buys (all of the harm, none of the
+# containment). ``ApprovalPolicy`` is the enforcing half:
+#
+#   * ``decide(...)`` returns an ``ApprovalRecord`` for EVERY action it sees
+#     (Tier-1/2 included) and appends it to an audit log. Nothing passes the gate
+#     without leaving a record of who let it through and why.
+#   * ``require(...)`` RAISES ``ApprovalDenied`` when the record is not approved.
+#     A caller that forgets to check a bool cannot silently proceed.
+#   * Headless/non-interactive contexts (no human attached: MCP stdio, A2A, CI,
+#     an RL rollout) must state a ``HeadlessPolicy`` EXPLICITLY. There is no
+#     silent default: the default is REFUSE, and choosing AUTO_APPROVE requires a
+#     written ``headless_reason`` that is copied into every record it approves.
+
+
+class HeadlessPolicy(Enum):
+    """What a Tier-3 action does when there is no human approver attached.
+
+    REFUSE        the action is denied and a denial record is written (default).
+    AUTO_APPROVE  the action proceeds, and an approval record naming the policy
+                  and its ``headless_reason`` is written. Never silent.
+    """
+
+    REFUSE = "refuse"
+    AUTO_APPROVE = "auto_approve"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True)
+class ApprovalRecord:
+    """One auditable decision: what was asked, who decided, and why."""
+
+    op_name: str
+    tier: ApprovalTier
+    risk: RiskLevel
+    approved: bool
+    decided_by: str          # "policy:tier-1" | "human:<principal>" | "policy:headless-*"
+    reason: str
+    surface: str = ""        # which surface asked (harness / mcp / a2a / acp)
+    preview: Optional[DryRunPreview] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "op": self.op_name,
+            "tier": str(self.tier),
+            "risk": str(self.risk),
+            "approved": self.approved,
+            "decided_by": self.decided_by,
+            "reason": self.reason,
+            "surface": self.surface,
+            "preview": self.preview.to_dict() if self.preview else None,
+        }
+
+
+class ApprovalDenied(Exception):
+    """Raised by ``ApprovalPolicy.require`` when an action is not approved.
+
+    Carries the ``ApprovalRecord`` so the surface can render an auditable refusal
+    instead of inventing its own error text.
+    """
+
+    def __init__(self, record: ApprovalRecord) -> None:
+        super().__init__(
+            f"approval denied for '{record.op_name}' "
+            f"(tier={record.tier}, risk={record.risk}): {record.reason}")
+        self.record = record
+
+
+class ApprovalPolicy:
+    """The enforcing human-in-the-loop gate. Composed by every write surface.
+
+    ``approver`` is the human channel: a callable taking the op/tool name (or the
+    ``Op``) and returning a bool. The ACP surface passes the blocking
+    ``session/request_permission`` round-trip here; a CLI passes a prompt.
+
+    With no ``approver``, the process is HEADLESS and ``headless`` decides —
+    REFUSE by default. ``HeadlessPolicy.AUTO_APPROVE`` is legal but must be asked
+    for by name and must carry a ``headless_reason``; that reason is written into
+    every record it approves, so an auto-approved destructive action is always
+    attributable to a stated policy rather than to an omission.
+    """
+
+    def __init__(
+        self,
+        approver: Optional[Callable[[Union[str, Op]], bool]] = None,
+        *,
+        headless: HeadlessPolicy = HeadlessPolicy.REFUSE,
+        headless_reason: str = "",
+        principal: str = "unknown",
+        surface: str = "",
+        gate: Optional[ApprovalGate] = None,
+    ) -> None:
+        if headless is HeadlessPolicy.AUTO_APPROVE and not headless_reason.strip():
+            raise ValueError(
+                "HeadlessPolicy.AUTO_APPROVE requires a headless_reason: an "
+                "unattended destructive action must be attributable to a stated "
+                "policy, not to a default")
+        self.approver = approver
+        self.headless = headless
+        self.headless_reason = headless_reason.strip()
+        self.principal = principal
+        self.surface = surface
+        self.gate = gate if gate is not None else ApprovalGate()
+        self.audit: List[ApprovalRecord] = []
+
+    # --- construction helpers --------------------------------------------
+    @classmethod
+    def headless_auto_approve(cls, reason: str, *, principal: str = "policy",
+                              surface: str = "") -> "ApprovalPolicy":
+        """An explicit, recorded auto-approve policy for an unattended surface."""
+        return cls(None, headless=HeadlessPolicy.AUTO_APPROVE,
+                   headless_reason=reason, principal=principal, surface=surface)
+
+    @property
+    def headless_context(self) -> bool:
+        """True when no human approver is attached to this process."""
+        return self.approver is None
+
+    def audit_dicts(self) -> List[dict]:
+        return [r.to_dict() for r in self.audit]
+
+    # --- the decision -----------------------------------------------------
+    def decide(self, op: Union[str, Op], *,
+               tier: Optional[ApprovalTier] = None) -> ApprovalRecord:
+        """Classify ``op``, decide, RECORD, and return the record.
+
+        ``tier`` overrides classification (the MCP surface passes the tier its
+        tool annotations already carry, so the two classifiers cannot drift).
+        """
+        name = op_name(op)
+        t = tier if tier is not None else tier_for(op)
+        risk = _TIER_RISK[t]
+        preview = DryRunPreview.for_op(op) if not isinstance(op, str) else None
+
+        if t is not ApprovalTier.REQUIRE:
+            # Tier-1/Tier-2 auto-proceed — but the decision is still recorded, and
+            # Tier-2 still notifies (the gate emits the status event).
+            try:
+                self.gate.evaluate(op)
+            except Exception:  # noqa: BLE001 - a preview must never break the gate
+                pass
+            return self._record(ApprovalRecord(
+                name, t, risk, approved=True,
+                decided_by=f"policy:tier-{t.value}",
+                reason=("read-only, no human gate required"
+                        if t is ApprovalTier.AUTO
+                        else "mutating op: proceed with notification (tier-2)"),
+                surface=self.surface, preview=preview))
+
+        # Tier-3: surface the risk indicator + dry-run preview, then decide.
+        try:
+            self.gate.evaluate(op)
+        except Exception:  # noqa: BLE001
+            pass
+
+        if self.approver is not None:
+            approved = bool(self.approver(op))
+            return self._record(ApprovalRecord(
+                name, t, risk, approved=approved,
+                decided_by=f"human:{self.principal}",
+                reason=("approved by human" if approved else "denied by human"),
+                surface=self.surface, preview=preview))
+
+        if self.headless is HeadlessPolicy.AUTO_APPROVE:
+            return self._record(ApprovalRecord(
+                name, t, risk, approved=True,
+                decided_by="policy:headless-auto-approve",
+                reason=f"headless auto-approve (explicit policy): {self.headless_reason}",
+                surface=self.surface, preview=preview))
+
+        return self._record(ApprovalRecord(
+            name, t, risk, approved=False,
+            decided_by="policy:headless-refuse",
+            reason=("tier-3 (destructive/irreversible) action attempted in a "
+                    "headless context with no human approver; policy=refuse. "
+                    "Attach an approver, or construct the surface with "
+                    "ApprovalPolicy.headless_auto_approve(reason=...)."),
+            surface=self.surface, preview=preview))
+
+    def require(self, op: Union[str, Op], *,
+                tier: Optional[ApprovalTier] = None) -> ApprovalRecord:
+        """``decide``, but RAISE ``ApprovalDenied`` when the verdict is no.
+
+        This is the mechanical form: a caller cannot forget to check a bool.
+        """
+        record = self.decide(op, tier=tier)
+        if not record.approved:
+            raise ApprovalDenied(record)
+        return record
+
+    # --- internals --------------------------------------------------------
+    def _record(self, record: ApprovalRecord) -> ApprovalRecord:
+        self.audit.append(record)
+        return record
