@@ -201,13 +201,15 @@ class TestGeometryIsCorrect(unittest.TestCase):
         for i in range(3):
             self.assertAlmostEqual(centre[i], c[i], places=6)
 
-    def test_dual_contouring_is_two_dimensional_only(self):
-        # RIVAL DISCIPLINE: dual contouring is published as a 2D contourer, not
-        # as a 3D mesher, because that is all the module implements. The 3D
-        # rivals live in io.backends.frep.MESHERS.
+    def test_the_2d_contourer_and_the_3d_mesher_stay_distinct(self):
+        # RIVAL DISCIPLINE: publish a capability only where it is implemented.
+        # dual_contouring.py is a 2D contourer and remains one. The 3D dual
+        # contourer is a separate module and is published as a 3D mesher rival
+        # alongside marching cubes. Neither may stand in for the other.
         from harnesscad.io.backends import frep
         self.assertEqual(services.get("mesh.contour_2d").symbol, "dual_contour_2d")
-        self.assertNotIn("dual_contouring", frep.MESHERS)
+        self.assertIn("dual_contouring", frep.MESHERS)
+        self.assertIn("marching_cubes", frep.MESHERS)
 
 
 if __name__ == "__main__":
