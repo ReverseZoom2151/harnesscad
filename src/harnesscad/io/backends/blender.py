@@ -54,14 +54,21 @@ import os
 import subprocess
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
+from harnesscad.core.cisp.ops import Chamfer, Fillet, Op
+from harnesscad.domain.geometry.topology import selector_dsl
+from harnesscad.domain.geometry.topology.selector_dsl import SelectorError
+from harnesscad.domain.geometry.topology.selector_dsl import parse as parse_selector
 from harnesscad.domain.programs.validate import bpy_script
-from harnesscad.io.backends.base import BackendUnavailable
+from harnesscad.io.backends.base import ApplyResult, BackendUnavailable
 from harnesscad.io.backends.external import (
-    DEFAULT_SEGMENTS, ExternalToolBackend,
+    DEFAULT_SEGMENTS, ExternalToolBackend, _err,
     ccw, plane_axes, plane_normal, profile_loops, segments_for, slab, to_world,
-    blend_radius,
 )
 from harnesscad.io.backends.frep import Node
+
+#: The selector DSL, by path: the build script loads this very file into Blender's
+#: own interpreter so that ``Fillet.edges`` means the same thing on both kernels.
+SELECTOR_DSL_PATH = os.path.abspath(selector_dsl.__file__)
 
 Vec3 = Tuple[float, float, float]
 Point = Tuple[float, float, float]
@@ -78,6 +85,34 @@ BLENDER_PATTERNS = (
 )
 
 BLENDER_ENV = "HARNESSCAD_BLENDER"
+
+#: exe path -> version string. One subprocess per executable per process.
+_VERSIONS: Dict[str, str] = {}
+
+
+def blender_version(executable: str) -> str:
+    """``bpy.app.version_string`` of the Blender that will run the build.
+
+    Part of the cache key, because :data:`BLENDER_PATTERNS` deliberately picks the
+    NEWEST install: without this, upgrading Blender swaps the geometry kernel under
+    an unchanged content-addressed key and every cached result silently belongs to
+    the old kernel.
+    """
+    cached = _VERSIONS.get(executable)
+    if cached is not None:
+        return cached
+    version = "unknown"
+    try:
+        proc = subprocess.run([executable, "--version"], capture_output=True,
+                              text=True, timeout=60)
+        for line in (proc.stdout or "").splitlines():
+            if line.strip().lower().startswith("blender"):
+                version = line.strip()
+                break
+    except (OSError, subprocess.SubprocessError):
+        pass
+    _VERSIONS[executable] = version
+    return version
 
 #: Segments Blender's bevel modifier uses for a fillet (a chamfer is 1 segment).
 BEVEL_SEGMENTS = 8
@@ -264,14 +299,51 @@ def _circle_pts(r: float, segments: int):
     return facets.circle_fragment_points(abs(float(r)), fn=float(segments))
 
 
-def _lower(root: Node, segments: int) -> dict:
+def join_selectors(selectors) -> str:
+    """The CISP selector *tuple* as ONE selector string, or "" for "every edge".
+
+    CISP carries a tuple (``Fillet.edges``); the selector DSL evaluates one
+    expression. Per CadQuery's own selectors doc ("Combining Selectors") string
+    selectors compose with ``or``, so a tuple is a union -- which is what the
+    CadQuery backend does with the same field, so both kernels select the same
+    edges from the same op.
+    """
+    parts = [str(s).strip() for s in (selectors or ()) if str(s).strip()]
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0]
+    return " or ".join("(%s)" % p for p in parts)
+
+
+def _blends(features) -> List[Tuple[str, float, str]]:
+    """The (kind, width, selector) of every Fillet/Chamfer in the op stream, in order.
+
+    ``Fillet``/``Chamfer`` are not F-rep nodes -- they are a rewrite of the tree
+    (``frep.blend_tree``) that stamps a radius onto every leaf, and reading the
+    radius back off the tree (the old ``blend_radius``) loses two things a CAD
+    fillet cannot do without: WHICH edges, and the fact that there may be SEVERAL
+    fillets at different radii. The frep model records each blend as a feature with
+    its ``edges`` and ``value``, so that is where the blender lowering reads them.
+    """
+    out: List[Tuple[str, float, str]] = []
+    for f in features or ():
+        kind = f.get("type")
+        if kind in ("fillet", "chamfer"):
+            out.append((kind, float(f.get("value", 0.0)),
+                        join_selectors(f.get("edges", ()))))
+    return out
+
+
+def _lower(root: Node, segments: int, blends=()) -> dict:
     """The whole model as a Blender build plan (world-space leaves + kernel ops)."""
     plan = _Lowering(segments).node(root, _identity)
-    r, c = blend_radius(root)
-    if r > 0.0:
-        plan = {"t": "bevel", "child": plan, "width": r, "segments": BEVEL_SEGMENTS}
-    elif c > 0.0:
-        plan = {"t": "bevel", "child": plan, "width": c, "segments": 1}
+    for (kind, width, selector) in blends:
+        if width <= 0.0:
+            continue
+        plan = {"t": "bevel", "child": plan, "width": width,
+                "segments": BEVEL_SEGMENTS if kind == "fillet" else 1,
+                "selector": selector}
     return plan
 
 
@@ -283,6 +355,7 @@ BUILD_SCRIPT = r'''"""Generated by harnesscad BlenderBackend. Do not edit.
 Reads a build plan (world-space leaf meshes + kernel operations), realises it
 with Blender's exact boolean / bevel / solidify modifiers, and writes an STL.
 """
+import importlib.util
 import json
 import math
 import struct
@@ -292,14 +365,41 @@ import bmesh
 import bpy
 
 _argv = sys.argv[sys.argv.index("--") + 1:]
-SPEC_PATH, OUT_PATH, OUT_FMT = _argv[0], _argv[1], _argv[2]
+SPEC_PATH, OUT_PATH, OUT_FMT, SELECTOR_PATH = _argv[0], _argv[1], _argv[2], _argv[3]
+
+
+def _load_module(name, path):
+    """Load one harnesscad module into Blender's interpreter, by path.
+
+    The selector DSL is stdlib-only and is the SAME code the CadQuery backend
+    parses ``Fillet.edges`` with, so both kernels select the same edges from the
+    same op. It is loaded by file path rather than by ``import harnesscad...``
+    so that Blender's Python never has to import the package (and its
+    dependencies) at all.
+    """
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    # Registered BEFORE exec: @dataclass resolves its annotations through
+    # sys.modules[cls.__module__], so a module that is not registered blows up in
+    # dataclasses itself.
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+selector_dsl = _load_module("harnesscad_selector_dsl", SELECTOR_PATH)
 
 BOOL_OPS = {"union": "UNION", "cut": "DIFFERENCE", "intersect": "INTERSECT"}
 
-#: Only edges sharper than this get beveled (BevelModifier.angle_limit). 30 deg is
-#: Blender's own default; it beveles a box's 90-degree edges and leaves the ~11 deg
-#: seams of a faceted cylinder alone, which is what a CAD fillet means.
+#: An edge of the MODEL is one whose adjacent faces turn by at least this much: it
+#: keeps a box's 90-degree edges and a hole's rim and drops the 360/n-degree seams a
+#: faceted cylinder only has because it was faceted. 30 degrees is Blender's own
+#: BevelModifier.angle_limit default.
 BEVEL_ANGLE_LIMIT = math.radians(30.0)
+
+#: Weld / degenerate tolerance for a leaf mesh. Well below any feature size we can
+#: express, well above float noise in the lowering.
+WELD_DIST = 1e-6
 
 
 def clear_scene():
@@ -323,14 +423,28 @@ def activate(ob):
 
 
 def make_object(name, verts, faces):
+    """A leaf solid, cleaned into the manifold mesh the EXACT solver requires.
+
+    from_pydata does NO validation, and the boolean manual is explicit that the
+    solver's guarantee has a precondition: "Only Manifold meshes are guaranteed to
+    give proper results". So every leaf is welded (remove_doubles), stripped of
+    zero-length edges and zero-area faces (dissolve_degenerate), given outward
+    normals (recalc_face_normals) and finally run through Mesh.validate() -- which
+    "validate geometry, return True when the mesh has had invalid geometry
+    corrected/removed" -- before any kernel op sees it.
+    """
     me = bpy.data.meshes.new(name)
     me.from_pydata([tuple(v) for v in verts], [], [list(f) for f in faces])
     me.update()
     bm = bmesh.new()
     bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=WELD_DIST)
+    bmesh.ops.dissolve_degenerate(bm, dist=WELD_DIST, edges=bm.edges[:])
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     bm.to_mesh(me)
     bm.free()
+    me.validate(verbose=False)
+    me.update()
     ob = bpy.data.objects.new(name, me)
     bpy.context.collection.objects.link(ob)
     return ob
@@ -353,6 +467,13 @@ def boolean(a, b, op):
     # is exactly the case a CAD cut hits (a hole tool flush with a face). 'MANIFOLD'
     # is faster but only valid on manifold input. EXACT is the only CAD-correct one.
     mod.solver = "EXACT"
+    if mod.solver != "EXACT":
+        # The enum is FLOAT / EXACT / MANIFOLD. 'FLOAT' is documented as a "Simple
+        # solver with good performance, WITHOUT SUPPORT FOR OVERLAPPING GEOMETRY" --
+        # which is every CAD case (a pocket bottom flush with a face, a through-hole
+        # cap, two abutting pattern instances). Landing on it would silently produce
+        # garbage, so a failed assignment is a hard stop, not a fallback.
+        raise SystemExit("blender: boolean solver is %r, not EXACT" % mod.solver)
     # "Allow self-intersection in operands" -- a mirror/pattern union can hand the
     # solver two copies that touch, so this must be on.
     mod.use_self = True
@@ -404,33 +525,105 @@ def build(node):
         apply_modifiers(ob)
         return ob
     if kind == "bevel":
-        ob = build(node["child"])
-        mod = ob.modifiers.new(name="bevel", type="BEVEL")
-        mod.affect = "EDGES"                   # a CAD fillet blends edges, not verts
-        # offset_type 'OFFSET' -- "Amount is offset of new edges from original", so
-        # for a 90-degree edge the width IS the fillet radius / the chamfer setback.
-        mod.offset_type = "OFFSET"
-        mod.width = node["width"]
-        # segments: 1 = chamfer (a single flat face); >1 with profile 0.5 = a circular
-        # arc ("The profile shape (0.5 = round)").
-        mod.segments = int(node["segments"])
-        mod.profile_type = "SUPERELLIPSE"
-        mod.profile = 0.5
-        # limit_method 'ANGLE' -- "Only bevel edges with sharp enough angles between
-        # faces". 'NONE' would "Bevel the entire mesh by a constant amount", which
-        # would round the seams of every faceted cylinder into mush.
-        mod.limit_method = "ANGLE"
-        mod.angle_limit = BEVEL_ANGLE_LIMIT
-        mod.use_clamp_overlap = True           # never let two blends cross
-        mod.loop_slide = True
-        mod.miter_outer = "MITER_SHARP"
-        mod.miter_inner = "MITER_SHARP"
-        mod.harden_normals = False
-        mod.mark_seam = False
-        mod.mark_sharp = False
-        apply_modifiers(ob)
-        return ob
+        return bevel(build(node["child"]), node["width"], int(node["segments"]),
+                     node.get("selector", ""))
     raise ValueError("unknown build-plan node %r" % kind)
+
+
+def model_edges(bm):
+    """The MODEL's edges: the ones a B-rep kernel would call edges.
+
+    A mesh has an edge between every pair of adjacent faces, including the seams
+    that only exist because a cylinder was faceted. Those are not edges of the
+    part -- OCCT's cylinder has no seams to fillet -- so the candidate set is the
+    edges whose adjacent faces actually turn: BevelModifier.limit_method 'ANGLE',
+    "Only bevel edges with sharp enough angles between faces". At the default 30
+    degrees this keeps a box's 90-degree edges and a hole's rim, and drops a
+    360/n-degree facet seam. Selectors are then evaluated over THIS set, so a
+    selector can never pick a seam that is not a real edge of the part.
+    """
+    out = []
+    for e in bm.edges:
+        if len(e.link_faces) != 2:
+            continue
+        if e.calc_face_angle(0.0) >= BEVEL_ANGLE_LIMIT:
+            out.append(e)
+    return out
+
+
+def select_edges(bm, selector):
+    """The edges a CISP Fillet/Chamfer names, or every model edge if it names none."""
+    edges = model_edges(bm)
+    if not selector or not edges:
+        return edges
+    entities = []
+    for i, e in enumerate(edges):
+        a, b = e.verts[0].co, e.verts[1].co
+        center = ((a.x + b.x) * 0.5, (a.y + b.y) * 0.5, (a.z + b.z) * 0.5)
+        tangent = (b - a)
+        axis = (0.0, 0.0, 0.0)
+        if tangent.length > 1e-12:
+            tangent = tangent.normalized()
+            axis = (tangent.x, tangent.y, tangent.z)
+        entities.append(selector_dsl.Entity(center=center, axis=axis,
+                                            geom_type="LINE", name=str(i)))
+    chosen = selector_dsl.select(selector, entities)
+    picked = [edges[int(e.name)] for e in chosen]
+    if not picked:
+        raise SystemExit("blender: edge selector %r selected no edges" % selector)
+    return picked
+
+
+def bevel(ob, width, segments, selector):
+    """A fillet / chamfer on THE EDGES THE OP NAMED -- via bmesh, not the modifier.
+
+    BevelModifier.limit_method is a global heuristic, not a selection: 'ANGLE' only
+    "bevels edges whose angle of adjacent face normals plus the defined Angle is
+    less than 180 degrees" and 'NONE' bevels "the entire mesh by a constant amount".
+    Neither can express "these four edges", so a modifier stack cannot honour
+    ``Fillet.edges`` at all, and cannot carry two different radii in one model.
+
+    bmesh.ops.bevel takes the edge list itself -- ``geom``: "Input edges and
+    vertices" -- so the op's selector picks exactly the BMEdges it names and nothing
+    else. That is the exact-edge route, and it is per-feature, so two fillets at two
+    radii compose.
+    """
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.edges.ensure_lookup_table()
+    geom = select_edges(bm, selector)
+    bmesh.ops.bevel(
+        bm,
+        geom=geom,
+        offset=float(width),
+        # 'OFFSET' -- "Amount is offset of new edges from original": on a 90-degree
+        # edge the width IS the fillet radius / the chamfer setback.
+        offset_type="OFFSET",
+        profile_type="SUPERELLIPSE",
+        # 1 segment is a chamfer (one flat face); >1 at profile 0.5 is a circular arc
+        # ("The profile shape (0.5 = round)").
+        segments=int(segments),
+        profile=0.5,
+        affect="EDGES",                # the bmesh op defaults to VERTICES
+        # clamp_overlap would SILENTLY SHRINK a fillet too big for its edge -- a
+        # wrong part with no diagnostic. Left off: an impossible fillet produces
+        # visibly broken geometry, which regenerate() reports as invalid-mesh.
+        clamp_overlap=False,
+        # "more even bevel widths" with loop slide off (manual, Bevel > Loop Slide);
+        # Blender's default True is the artistic choice, not the CAD one.
+        loop_slide=False,
+        material=-1,
+        miter_outer="SHARP",
+        miter_inner="SHARP",
+        harden_normals=False,
+        mark_seam=False,
+        mark_sharp=False,
+    )
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+    return ob
 
 
 def triangles_of(ob):
@@ -515,28 +708,61 @@ class BlenderBackend(ExternalToolBackend):
                 searched)
         return path
 
+    # -- op admission ------------------------------------------------------
+    def apply(self, op: Op) -> ApplyResult:
+        """Refuse, before anything mutates, the two things this kernel cannot honour.
+
+        A silently dropped field is a wrong part with no diagnostic, which is the
+        failure mode that let the "fillet everything" bug live: block-and-correct
+        means the agent hears about it.
+        """
+        if isinstance(op, (Fillet, Chamfer)):
+            selector = join_selectors(getattr(op, "edges", ()))
+            if selector:
+                try:
+                    parse_selector(selector)
+                except SelectorError as exc:
+                    return _err("bad-value",
+                                "%s edge selector is malformed: %s"
+                                % (type(op).OP, exc), None)
+        if isinstance(op, Chamfer) and getattr(op, "distance2", None) is not None:
+            # bmesh.ops.bevel / BevelModifier carry ONE width; there is no second
+            # setback, so an asymmetric chamfer is not expressible. OCCT's
+            # BRepFilletAPI_MakeChamfer takes two distances, so CadQuery honours the
+            # field -- Blender cannot, and says so rather than quietly building the
+            # symmetric chamfer and calling it done.
+            return _err("unsupported-op",
+                        "the blender backend cannot honour an asymmetric chamfer: "
+                        "Blender's bevel has a single width (bmesh.ops.bevel takes "
+                        "one 'offset'), so Chamfer.distance2 has no counterpart",
+                        "distance2")
+        return super().apply(op)
+
     # -- the program -------------------------------------------------------
     def build_plan(self) -> dict:
         root = self.root()
         if root is None:
             raise ValueError("blender backend: no solid to build")
-        return _lower(root, self.segments)
+        return _lower(root, self.segments, _blends(self.features))
 
     def program(self) -> str:
-        """The model as JSON, stamped with the digest of the bpy script that will
-        consume it.
+        """The model as JSON, stamped with the digest of the bpy script AND the
+        version of the Blender that will run it.
 
-        The script is a constant (:data:`BUILD_SCRIPT`) but it is *not* a constant
-        across releases, and the on-disk result cache is content-addressed on this
-        text alone. Without the ``script`` stamp, changing a modifier setting inside
-        the script (say, fixing the solidify offset) leaves every previously cached
-        STL in place -- the backend would keep serving geometry built by the old,
-        wrong script. The stamp makes the cache key cover the kernel recipe as well
-        as the model.
+        The on-disk result cache is content-addressed on this text alone.
+
+        * Without the ``script`` stamp, changing a modifier setting inside the script
+          (say, fixing the solidify offset) leaves every previously cached STL in
+          place -- the backend keeps serving geometry built by the old, wrong script.
+        * Without the ``kernel`` stamp it is worse: :data:`BLENDER_PATTERNS` globs for
+          the NEWEST install, so upgrading Blender swaps the geometry kernel
+          underneath an unchanged key and every cached result silently belongs to a
+          kernel that is no longer the one being asked.
         """
         from harnesscad.io.backends.external import program_digest
 
         return json.dumps({"script": program_digest(BUILD_SCRIPT)[:16],
+                           "kernel": blender_version(self.executable),
                            "plan": self.build_plan()},
                           sort_keys=True, separators=(",", ":"))
 
@@ -556,14 +782,23 @@ class BlenderBackend(ExternalToolBackend):
         with open(script_path, "w", encoding="utf-8") as fh:
             fh.write(BUILD_SCRIPT)
         fmt = "glb" if out_path.lower().endswith(".glb") else "stl"
+        # --python-exit-code: "Set the exit-code in [0..255] to exit if a Python
+        # exception is raised (only for scripts executed from the command line),
+        # zero disables." Zero is the DEFAULT, so without this a traceback inside the
+        # build script exits 0 -- and a build that crashed but left a stale file in
+        # the cache directory behind would be reported as a success.
         argv = [self.executable, "--background", "--factory-startup",
-                "--python", script_path, "--", spec_path, out_path, fmt]
+                "--python-exit-code", "1",
+                "--python", script_path, "--",
+                spec_path, out_path, fmt, SELECTOR_DSL_PATH]
         proc = subprocess.run(argv, capture_output=True, text=True,
                               timeout=self.timeout)
-        if not (os.path.isfile(out_path) and os.path.getsize(out_path) > 0):
+        ok_file = os.path.isfile(out_path) and os.path.getsize(out_path) > 0
+        if proc.returncode != 0 or not ok_file:
             tail = (proc.stdout or "")[-1500:] + (proc.stderr or "")[-1500:]
             raise RuntimeError(
-                "blender produced no geometry (exit %d)\n%s" % (proc.returncode, tail))
+                "blender failed to build the model (exit %d, output %s)\n%s"
+                % (proc.returncode, "written" if ok_file else "missing", tail))
 
     # -- export ------------------------------------------------------------
     def export(self, fmt: str):

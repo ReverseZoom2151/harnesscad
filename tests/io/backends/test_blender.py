@@ -287,6 +287,137 @@ class BlenderBackendTest(unittest.TestCase):
         self.assertLess(backend.query("measure")["volume"],
                         solid.query("measure")["volume"])
 
+    def test_fillet_only_touches_the_edges_the_op_names(self):
+        """THE ONE THAT MATTERS. ``Fillet.edges`` must SELECT edges.
+
+        BevelModifier.limit_method is a global heuristic, not a selection: 'ANGLE'
+        only "bevels edges whose angle of adjacent face normals plus the defined
+        Angle is less than 180 degrees", and 'NONE' bevels "the entire mesh by a
+        constant amount". Neither can express "these four edges", so the modifier
+        route silently rounded EVERY edge of the model -- boolean-cut pocket corners
+        and the solidify rim included -- whatever the op asked for. bmesh.ops.bevel
+        takes the edge list itself (``geom``: "Input edges and vertices"), so the op's
+        selector picks exactly the BMEdges it names.
+
+        Filleting 4 edges must therefore give a DIFFERENT part from filleting all 12.
+        """
+        four = BlenderBackend()
+        run_ops(four, PLATE_OPS + [{"op": "fillet", "edges": ["|Z"], "radius": 1.0}])
+        every = BlenderBackend()
+        run_ops(every, PLATE_OPS + [{"op": "fillet", "edges": [], "radius": 1.0}])
+        plain = BlenderBackend()
+        run_ops(plain, PLATE_OPS)
+
+        v_four = four.query("measure")["volume"]
+        v_every = every.query("measure")["volume"]
+        # Two different parts, not one. (The bug made these identical.)
+        self.assertNotAlmostEqual(v_four, v_every, delta=1.0)
+        # Only the 4 vertical edges lost material: r=1 on a 5 mm tall edge removes
+        # (1 - pi/4) r^2 h = 0.2146 * 5 per edge, 4.292 mm^3 over four edges. The
+        # mesh arc is a polygon inscribed in that quarter-circle, so it removes a
+        # hair MORE than the analytic solid (4.393 at 8 segments) and never less.
+        removed = PLATE_VOLUME - v_four
+        analytic = 4.0 * (1.0 - math.pi / 4.0) * 5.0
+        self.assertGreater(removed, analytic)
+        self.assertAlmostEqual(removed, analytic, delta=0.03 * analytic)
+        self.assertLess(v_every, v_four)          # all 12 edges removes strictly more
+        self.assertLess(v_four, plain.query("measure")["volume"])
+        # ...and the 4-edge fillet touches far less of the mesh than the 12-edge one.
+        self.assertLess(len(four.mesh()[1]), len(every.mesh()[1]))
+
+    def test_two_fillets_at_two_radii_compose(self):
+        """A modifier stack with one global angle limit cannot carry two radii; a
+        per-feature bmesh.ops.bevel can. Each Fillet op is its own bevel over its own
+        edge set, applied in op order."""
+        backend = BlenderBackend()
+        run_ops(backend, PLATE_OPS + [
+            {"op": "fillet", "edges": ["|Z"], "radius": 1.0},
+            {"op": "fillet", "edges": [">Z"], "radius": 0.5},
+        ])
+        both = backend.query("measure")["volume"]
+        one = BlenderBackend()
+        run_ops(one, PLATE_OPS + [{"op": "fillet", "edges": ["|Z"], "radius": 1.0}])
+        # The second fillet removed more material, and the part still fits its box.
+        self.assertLess(both, one.query("measure")["volume"])
+        for got, want in zip(backend.query("measure")["bbox"], (20.0, 10.0, 5.0)):
+            self.assertAlmostEqual(got, want, delta=1e-3)
+
+    def test_a_malformed_edge_selector_is_refused_not_ignored(self):
+        backend = BlenderBackend()
+        run_ops(backend, PLATE_OPS)
+        before = backend.state_digest()
+        result = backend.apply(parse_op({"op": "fillet", "edges": [">>Q"],
+                                         "radius": 1.0}))
+        self.assertFalse(result.ok)
+        self.assertEqual(result.diagnostics[0].code, "bad-value")
+        self.assertEqual(backend.state_digest(), before)
+
+    def test_asymmetric_chamfer_is_refused_not_silently_symmetric(self):
+        """Blender's bevel carries ONE width (bmesh.ops.bevel takes a single
+        'offset'), so Chamfer.distance2 -- which OCCT's BRepFilletAPI_MakeChamfer
+        does honour -- has no counterpart here. Refused with a typed diagnostic
+        rather than quietly built symmetric."""
+        backend = BlenderBackend()
+        run_ops(backend, PLATE_OPS)
+        before = backend.state_digest()
+        result = backend.apply(parse_op({"op": "chamfer", "edges": ["|Z"],
+                                         "distance": 1.0, "distance2": 2.0}))
+        self.assertFalse(result.ok)
+        self.assertEqual(result.diagnostics[0].code, "unsupported-op")
+        self.assertEqual(backend.state_digest(), before)
+
+    def test_chamfer_on_named_edges_is_exact(self):
+        """A 1 mm chamfer on the 4 vertical edges of a 20x10x5 plate removes four
+        right-triangular prisms: 4 * (d^2/2) * h = 4 * 0.5 * 5 = 10 mm^3, exactly."""
+        backend = BlenderBackend()
+        run_ops(backend, PLATE_OPS
+                + [{"op": "chamfer", "edges": ["|Z"], "distance": 1.0}])
+        self.assertAlmostEqual(backend.query("measure")["volume"],
+                               PLATE_VOLUME - 10.0, delta=1e-3)
+
+    def test_the_build_fails_loudly_when_the_script_raises(self):
+        """Blender's --python-exit-code "Set the exit-code in [0..255] to exit if a
+        Python exception is raised... zero disables" -- and ZERO IS THE DEFAULT. A
+        traceback in the build script used to exit 0, so a crashed build that left a
+        stale file behind reported success. The runner now passes 1 and checks it."""
+        from harnesscad.io.backends import blender as blender_mod
+
+        backend = BlenderBackend()
+        run_ops(backend, PLATE_OPS)
+        with tempfile.TemporaryDirectory() as tmp:
+            out = os.path.join(tmp, "model.stl")
+            broken = blender_mod.BUILD_SCRIPT.replace(
+                "def main():", "def main():\n    raise RuntimeError('boom')\n", 1)
+            original = blender_mod.BUILD_SCRIPT
+            blender_mod.BUILD_SCRIPT = broken
+            try:
+                with self.assertRaises(RuntimeError) as caught:
+                    backend._run(backend.program(), tmp, out)
+            finally:
+                blender_mod.BUILD_SCRIPT = original
+        self.assertIn("exit 1", str(caught.exception))
+
+    def test_the_cache_key_tracks_the_blender_version(self):
+        """BLENDER_PATTERNS globs for the NEWEST install, so an upgrade would swap the
+        geometry kernel underneath an unchanged content-addressed cache key."""
+        from harnesscad.io.backends import blender as blender_mod
+
+        backend = BlenderBackend()
+        run_ops(backend, BOX_OPS)
+        program = json.loads(backend.program())
+        self.assertIn("kernel", program)
+        self.assertTrue(program["kernel"].lower().startswith("blender"))
+        self.assertEqual(program["kernel"],
+                         blender_mod.blender_version(backend.executable))
+
+    def test_leaf_meshes_are_validated_before_the_exact_solver_sees_them(self):
+        """The boolean manual: "Only Manifold meshes are guaranteed to give proper
+        results", and Mesh.from_pydata does no validation at all."""
+        script = _script()
+        self.assertIn("bmesh.ops.remove_doubles", script)
+        self.assertIn("bmesh.ops.dissolve_degenerate", script)
+        self.assertIn("me.validate(", script)
+
     def test_boolean_uses_the_exact_solver(self):
         """BooleanModifier.solver: 'FLOAT' is the fast solver and is documented as
         "without support for overlapping geometry" -- which is precisely the case a
@@ -453,6 +584,38 @@ class BlenderVsCadQueryTest(unittest.TestCase):
                                  + [{"op": "chamfer", "edges": [], "distance": 2.0}])
         self.assertAlmostEqual(blend["volume"], occt["volume"],
                                delta=1e-3 * occt["volume"])
+
+    def test_per_edge_fillet_agrees_with_occt(self):
+        """The differential oracle could not catch the "fillet everything" bug,
+        because every backend dropped ``Fillet.edges`` and so they agreed while all
+        being wrong. Now both kernels parse the SAME selector with the SAME DSL, and
+        must select the same edges: a mesh fillet's arc is a polygon, so it is very
+        slightly under OCCT's true cylinder, but no more than that.
+
+        20x10x5 plate, r=1: |Z (4 vertical edges) -> OCCT 995.708; all 12 -> 971.295.
+        Two different parts -- which is the whole point.
+        """
+        for selector, tolerance in ((["|Z"], 0.002), ([">Z"], 0.002), ([], 0.002)):
+            blend, occt = self._pair(
+                PLATE_OPS + [{"op": "fillet", "edges": list(selector), "radius": 1.0}])
+            self.assertAlmostEqual(blend["volume"], occt["volume"],
+                                   delta=tolerance * occt["volume"],
+                                   msg="selector %r" % (selector,))
+
+    def test_two_radii_agree_with_occt(self):
+        blend, occt = self._pair(PLATE_OPS + [
+            {"op": "fillet", "edges": ["|Z"], "radius": 1.0},
+            {"op": "fillet", "edges": [">Z"], "radius": 0.5},
+        ])
+        self.assertAlmostEqual(blend["volume"], occt["volume"],
+                               delta=0.002 * occt["volume"])
+
+    def test_per_edge_chamfer_agrees_with_occt_exactly(self):
+        """A chamfer is flat, so there is no faceting error at all: the two kernels
+        must return the same number."""
+        blend, occt = self._pair(
+            PLATE_OPS + [{"op": "chamfer", "edges": ["|Z"], "distance": 1.0}])
+        self.assertAlmostEqual(blend["volume"], occt["volume"], delta=1e-3)
 
     def test_booleans_agree_with_occt(self):
         blend, occt = self._pair(CUT_OPS)
