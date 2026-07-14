@@ -50,6 +50,7 @@ from harnesscad.core.cisp.ops import (
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 from harnesscad.io.backends.base import ApplyResult, BackendUnavailable
+from harnesscad.io.backends.frep import check_constraint_arity, solve_constraint
 from harnesscad.core.constraints import ConstraintGraph
 from harnesscad.domain.geometry.topology.selector_dsl import SelectorError
 from harnesscad.domain.geometry.topology.selector_dsl import parse as parse_selector
@@ -196,6 +197,13 @@ class CadQueryBackend:
         self.mates: list = []         # [{kind, a, b, value}]
         self.solid_present = False
         self._solids: list = []       # list of cq.Workplane, each a real solid
+        #: fid -> (index into _solids, the solid AS OF that feature). A pattern or a
+        #: mirror names a FEATURE, and it used to replicate self._solids[-1] instead
+        #: -- the last body, whatever it was handed. Patterning the pad is not
+        #: patterning the pad-plus-fillet, and in a model with two bodies it is
+        #: simply the wrong one. Recorded centrally in apply(), so no handler can
+        #: forget to.
+        self._snapshots: dict = {}
         self._oplog: list = []        # successfully applied mutating ops (no SetParam)
         self._n = {"sk": 0, "e": 0, "f": 0, "i": 0}
 
@@ -221,10 +229,38 @@ class CadQueryBackend:
         # logging (and must never itself be logged, to keep replay finite).
         if isinstance(op, SetParam):
             return self._set_param(op)
+        before = len(self.features)
         result = self._dispatch(op)
         if result.ok:
             self._oplog.append(op)
+            # Snapshot every feature this op created, against the solid it left
+            # behind. cq.Workplane objects are replaced functionally (a fillet
+            # produces a NEW Workplane), so holding the reference IS the snapshot.
+            if self._solids:
+                for feat in self.features[before:]:
+                    self._snapshots[feat["id"]] = (len(self._solids) - 1,
+                                                   self._solids[-1])
         return result
+
+    def _feature_target(self, ref: str):
+        """``(index into _solids, the solid)`` a pattern/mirror ``feature`` names.
+
+        An empty ref keeps the historical meaning -- the last solid, as it stands --
+        so streams that never named a feature are unchanged.
+        """
+        if not self._solids:
+            return None, _err("no-solid", "this op requires an existing solid")
+        if not ref:
+            return (len(self._solids) - 1, self._solids[-1]), None
+        snap = self._snapshots.get(ref)
+        if snap is None:
+            return None, _err("bad-ref", f"unknown feature '{ref}'", ref)
+        index, solid = snap
+        if index >= len(self._solids):
+            return None, _err("bad-ref",
+                              f"feature '{ref}' belonged to a body a later boolean "
+                              f"consumed", ref)
+        return (index, solid), None
 
     def _dispatch(self, op: Op) -> ApplyResult:
         if isinstance(op, NewSketch):
@@ -369,16 +405,28 @@ class CadQueryBackend:
         return ApplyResult(True, [])
 
     def _constrain(self, op: Constrain) -> ApplyResult:
+        """Constrain the sketch -- and MOVE it.
+
+        Two bugs here, and they are the same bug. ``b`` was accepted for kinds that
+        have no second entity (``Constrain(kind="radius", a="e1", b="e2")`` is
+        malformed, and was taken); and ``value`` was fed to a DOF counter and never
+        to the geometry, so a radius constraint of 8 on an r=6 circle left it at 6
+        and reported one fewer degree of freedom. The arity is now declared
+        (:data:`~harnesscad.io.backends.frep.CONSTRAINT_ARITY`) and enforced, and
+        the constraint is RESOLVED onto the sketch entities by the same solver frep
+        uses -- so the same op moves the same geometry on both engines, which is the
+        only way the differential oracle can mean anything here.
+        """
         # Real DOF analysis via constraints.ConstraintGraph (rank-style, with
         # redundancy detection) rather than a bare additive heuristic.
-        if op.kind not in CONSTRAINT_DOF:
-            return _err("bad-value", f"unknown constraint kind '{op.kind}'")
-        if op.kind in ("distance", "radius") and op.value is None:
-            return _err("bad-value", f"'{op.kind}' constraint requires a value")
+        bad = check_constraint_arity(op)
+        if bad is not None:
+            return _err(*bad)
         if op.a not in self.entities:
             return _err("bad-ref", f"unknown entity '{op.a}'", op.a)
         if op.b is not None and op.b not in self.entities:
             return _err("bad-ref", f"unknown entity '{op.b}'", op.b)
+        solve_constraint(op, self.entities)
         sid = self.entities[op.a]["sketch"]
         graph = self.sketches[sid]["graph"]
         # Only couple a second entity when it lives in the same sketch's graph.
@@ -742,8 +790,10 @@ class CadQueryBackend:
             return _err("no-solid", "linear_pattern requires an existing solid")
         if op.count < 2:
             return _err("bad-value", f"linear_pattern count must be >= 2 (got {op.count})")
-        if op.feature and op.feature not in self._feature_ids():
-            return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        target, bad = self._feature_target(op.feature)
+        if bad is not None:
+            return bad
+        index, base = target
         # BUG: the direction was used RAW, so a non-unit direction scaled the
         # spacing (direction=(2,0,0), spacing=10 stepped 20mm here but 10mm on
         # frep). Normalise, exactly as frep does, so spacing means spacing.
@@ -754,8 +804,7 @@ class CadQueryBackend:
         ux, uy, uz = d[0] / norm, d[1] / norm, d[2] / norm
         try:
             _cq()
-            base = self._solids[-1]
-            result = base
+            result = self._solids[index]
             for i in range(1, op.count):
                 off = (ux * op.spacing * i, uy * op.spacing * i, uz * op.spacing * i)
                 result = result.union(base.translate(off))
@@ -768,7 +817,7 @@ class CadQueryBackend:
             return _err("kernel-error", f"linear_pattern failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "linear_pattern", "id": fid, "count": op.count})
-        self._solids[-1] = result
+        self._solids[index] = result
         return ApplyResult(True, [fid])
 
     def _circular_pattern(self, op: CircularPattern) -> ApplyResult:
@@ -776,11 +825,12 @@ class CadQueryBackend:
             return _err("no-solid", "circular_pattern requires an existing solid")
         if op.count < 2:
             return _err("bad-value", f"circular_pattern count must be >= 2 (got {op.count})")
-        if op.feature and op.feature not in self._feature_ids():
-            return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        target, bad = self._feature_target(op.feature)
+        if bad is not None:
+            return bad
+        index, base = target
         try:
             _cq()
-            base = self._solids[-1]
             a = op.axis
             # PITCH RULE -- copied from CadQuery's own Workplane.polarArray(fill=True)
             # (cq.py; classreference.html#cadquery.Workplane.polarArray):
@@ -794,7 +844,7 @@ class CadQueryBackend:
                 step = float(op.angle) / float(op.count)
             else:
                 step = float(op.angle) / float(op.count - 1)
-            result = base
+            result = self._solids[index]
             for i in range(1, op.count):
                 rotated = base.rotate((a[0], a[1], a[2]), (a[3], a[4], a[5]), step * i)
                 result = result.union(rotated)
@@ -807,7 +857,7 @@ class CadQueryBackend:
             return _err("kernel-error", f"circular_pattern failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "circular_pattern", "id": fid, "count": op.count})
-        self._solids[-1] = result
+        self._solids[index] = result
         return ApplyResult(True, [fid])
 
     def _mirror(self, op: Mirror) -> ApplyResult:
@@ -815,14 +865,13 @@ class CadQueryBackend:
             return _err("no-solid", "mirror requires an existing solid")
         if op.plane not in ("XY", "XZ", "YZ"):
             return _err("bad-value", f"unknown mirror plane '{op.plane}'")
-        if op.feature_or_body and op.feature_or_body not in self._feature_ids():
-            return _err("bad-ref", f"unknown feature '{op.feature_or_body}'",
-                        op.feature_or_body)
+        target, bad = self._feature_target(op.feature_or_body)
+        if bad is not None:
+            return bad
+        index, base = target
         try:
             _cq()
-            base = self._solids[-1]
-            mirrored = base.mirror(op.plane)
-            result = base.union(mirrored)
+            result = self._solids[index].union(base.mirror(op.plane))
             bad = _degenerate(result, "mirror")
             if bad is not None:
                 return bad
@@ -832,7 +881,7 @@ class CadQueryBackend:
             return _err("kernel-error", f"mirror failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "mirror", "id": fid, "plane": op.plane})
-        self._solids[-1] = result
+        self._solids[index] = result
         return ApplyResult(True, [fid])
 
     # -- loft / sweep / draft (real geometry) -------------------------------

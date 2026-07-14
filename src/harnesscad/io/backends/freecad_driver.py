@@ -43,6 +43,15 @@ import Part
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 V = FreeCAD.Vector
+Base = FreeCAD.Base
+
+#: OCCT's join type for an offset/thickness, by the CadQuery name
+#: (``ops.Shell.kind``). BRepOffset_Arc = 0 rolls a radius around the corner;
+#: BRepOffset_Intersection = 2 extends the offset faces until they meet. FreeCAD
+#: exposes it as the ``join`` argument of ``makeThickness`` / ``makeOffsetShape``
+#: (https://wiki.freecad.org/Part_scripting). The driver used to omit it, so it
+#: always took the default (arc) and ``Shell.kind`` was accepted and dropped.
+SHELL_JOIN = {"arc": 0, "intersection": 2}
 
 # The plane convention is the harness's (frep._PLANES): (u_axis, v_axis, w_axis).
 PLANES = {"XY": (0, 1, 2), "XZ": (0, 2, 1), "YZ": (1, 2, 0)}
@@ -505,6 +514,18 @@ def build(node, subs):
         lo, hi = (w0, w1) if w0 <= w1 else (w1, w0)
         base = to_world(plane, node["cu"], node["cv"], lo)
         return Part.makeCylinder(float(node["r"]), hi - lo, base, normal_of(plane))
+    if t == "cone":
+        # A COUNTERSINK. Part.makeCone(r1, r2, h, pnt, dir) is a truncated cone --
+        # exactly the tool a countersink cuts. The F-rep tree had no cone node, so
+        # a countersink, a counterbore and a plain hole all lowered to the SAME
+        # makeCylinder: three parts, one geometry, no diagnostic.
+        plane = node["plane"]
+        w0, w1 = float(node["w0"]), float(node["w1"])
+        r0, r1 = float(node["r0"]), float(node["r1"])
+        if w1 < w0:
+            w0, w1, r0, r1 = w1, w0, r1, r0
+        base = to_world(plane, node["cu"], node["cv"], w0)
+        return Part.makeCone(r0, r1, w1 - w0, base, normal_of(plane))
     if t == "revolve":
         plane = node["plane"]
         au, av, du, dv, nu, nv = node["axis"]
@@ -534,7 +555,23 @@ def build(node, subs):
         child = build(node["child"], subs)
         if child is None:
             return None
-        return shell_solid(child, float(node["thickness"]), node.get("faces") or [])
+        return shell_solid(child, float(node["thickness"]), node.get("faces") or [],
+                           str(node.get("kind") or "arc"))
+    if t == "blend":
+        # A fillet/chamfer AT ITS POSITION IN THE FEATURE HISTORY. These used to be
+        # collected from the op log and applied to the finished root, so patterning
+        # feature f1 (the pad) and feature f2 (the pad plus its fillet) produced the
+        # same shape -- the fillet went on last either way. Here it goes on the
+        # sub-shape it was applied to, which is what the op means.
+        child = build(node["child"], subs)
+        if child is None:
+            return None
+        return apply_blends(child, [{
+            "kind": node.get("kind", "fillet"),
+            "value": float(node.get("value") or 0.0),
+            "value2": node.get("value2"),
+            "selectors": list(node.get("selectors") or []),
+        }])
     if t == "mirror":
         child = build(node["child"], subs)
         if child is None:
@@ -546,18 +583,25 @@ def build(node, subs):
         child = build(node["child"], subs)
         if child is None:
             return None
+        # Each transform is a RIGID 3x4 matrix, row-major. It used to be
+        # (dx, dy, dz, angle_about_Z), which could not express a rotation about any
+        # other axis -- so CircularPattern.axis was read, validated and then thrown
+        # away, and every circular pattern spun about Z. Base.Matrix takes the 4x4
+        # directly, so the axis the op names is the axis the shape turns about.
         parts = []
-        for (dx, dy, dz, ang) in node["transforms"]:
+        for m in node["transforms"]:
+            m = [float(v) for v in m]
             c = child.copy()
-            if ang:
-                c.rotate(V(0, 0, 0), V(0, 0, 1), float(ang))
-            c.translate(V(float(dx), float(dy), float(dz)))
+            c.transformShape(Base.Matrix(m[0], m[1], m[2], m[3],
+                                         m[4], m[5], m[6], m[7],
+                                         m[8], m[9], m[10], m[11],
+                                         0.0, 0.0, 0.0, 1.0), True)
             parts.append(c)
         return fuse_all(parts)
     raise ValueError("unknown F-rep node kind '%s'" % t)
 
 
-def shell_solid(child, thickness, faces):
+def shell_solid(child, thickness, faces, kind="arc"):
     """Hollow INWARD. The outer surface must NOT move.
 
     Two cases, and they are different OCCT operations:
@@ -584,15 +628,25 @@ def shell_solid(child, thickness, faces):
       Thickness's "Reversed / make thickness inwards" flag
       (https://wiki.freecad.org/PartDesign_Thickness), whose default is OUTWARD --
       so a backend that omitted the minus sign would silently grow the part.
+
+    ``kind`` is the offset JOIN (``ops.Shell.kind``): OCCT's arc join rolls a radius
+    around a corner of the offset surface, its intersection join extends the offset
+    faces until they meet. It is the ``join`` argument, and it was omitted -- so
+    every shell got the default and ``kind`` was accepted and ignored. On a convex
+    box the two joins agree (there is no corner to roll around); on a concave one
+    they do not, which is the whole point of the field.
     """
     t = abs(float(thickness))
+    join = SHELL_JOIN.get(str(kind), 0)
     if not faces:
-        inner = child.makeOffsetShape(-t, 1e-6)
+        # makeOffsetShape(offset, tol, inter, self_inter, offsetMode, join, fill)
+        inner = child.makeOffsetShape(-t, 1e-6, False, False, 0, join, False)
         if inner is None or not inner.Solids:
             raise ValueError("shell: inward offset of %g collapsed the solid" % t)
         return solidify(child.cut(inner))
     picked = select_subshapes(child, "faces", faces)
-    return child.makeThickness(picked, -t, 1e-3)
+    # makeThickness(faces, offset, tolerance, inter, self_inter, offsetMode, join)
+    return child.makeThickness(picked, -t, 1e-3, False, False, 0, join)
 
 
 def apply_blends(shape, blends):
@@ -602,6 +656,12 @@ def apply_blends(shape, blends):
     (https://wiki.freecad.org/Part_scripting) take an explicit edge list. The CISP
     op carries a tuple of selector strings; an EMPTY tuple still means every edge,
     so op streams that never selected are unchanged.
+
+    ``Chamfer.distance2`` is the SECOND setback of an asymmetric chamfer, and OCCT
+    has it: ``makeChamfer`` is overloaded as ``(size, size2, edges)``. The driver
+    only ever called the one-argument form, so an asymmetric chamfer came out
+    symmetric -- the field was accepted and dropped, and the part was wrong by
+    exactly the asymmetry that was asked for.
     """
     for b in blends or []:
         if shape is None:
@@ -613,7 +673,11 @@ def apply_blends(shape, blends):
         if not edges:
             continue
         if b.get("kind") == "chamfer":
-            shape = shape.makeChamfer(value, edges)
+            value2 = b.get("value2")
+            if value2 is None:
+                shape = shape.makeChamfer(value, edges)
+            else:
+                shape = shape.makeChamfer(value, float(value2), edges)
         else:
             shape = shape.makeFillet(value, edges)
     return shape
@@ -765,6 +829,9 @@ def main():
         if root is None:
             shape = None
         else:
+            # The blends are IN the tree now (the "blend" node), applied at their
+            # own position in the history. spec["blends"] is still accepted for
+            # backward compatibility with a spec that carries none.
             shape = solidify(apply_blends(build(root, subs), spec.get("blends") or []))
         if shape is None:
             out = {"ok": True, "solid_present": False,

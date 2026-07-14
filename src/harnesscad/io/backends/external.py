@@ -233,6 +233,17 @@ class ExternalToolBackend:
     UNSUPPORTED: Dict[str, str] = {}
     FORMATS: Tuple[str, ...] = ("stl", "stl-ascii", "stl-binary", "glb")
 
+    #: Shell join kinds THIS tool's kernel can build (``ops.Shell.kind``).
+    #:
+    #: The composed FRepBackend is the op-state model, and it refuses what ITS OWN
+    #: field cannot evaluate -- an SDF's inward offset is the arc join and nothing
+    #: else. But this backend does not build the SDF: it lowers the tree onto a real
+    #: kernel, which may well have both joins (OpenSCAD's ``offset(r=)`` vs
+    #: ``offset(delta=)``; OCCT's ``join`` argument). So each subclass declares what
+    #: its kernel can actually do, and the op-state model is widened to match.
+    #: Declaring a join here without lowering it would put the original bug back.
+    SHELL_JOINS: Tuple[str, ...] = ("arc",)
+
     def __init__(self, segments: int = DEFAULT_SEGMENTS,
                  executable: Optional[str] = None,
                  timeout: int = DEFAULT_TIMEOUT) -> None:
@@ -240,6 +251,18 @@ class ExternalToolBackend:
         self.timeout = int(timeout)
         self.executable = executable or self.locate()
         self._frep = FRepBackend()
+        # The op-state model is frep's, but the GEOMETRY is a real kernel's, and two
+        # of frep's refusals are about frep's sampling grid rather than about the
+        # op: a wall thinner than a grid cell (these kernels sample no grid -- their
+        # booleans are exact), and a shell join its field cannot express. Neither
+        # limit is this tool's, so neither is imposed on it.
+        self._frep.SHELL_MIN_WALL_CELLS = 0.0
+        self._frep.SHELL_JOINS = tuple(self.SHELL_JOINS)
+        # These kernels have REAL B-rep edges and select them themselves, from the
+        # op log, against their own topology (freecad's apply_blends, blender's
+        # bevel). frep must therefore not ALSO cut the edges it approximated from a
+        # bounding box, or every named fillet would be applied twice.
+        self._frep.EDGE_SELECTORS = True
         self._mesh_cache: Optional[Tuple[str, Mesh]] = None
         self._stl_cache: Optional[Tuple[str, bytes]] = None
 
@@ -494,8 +517,19 @@ class ExternalToolBackend:
         raise ValueError("%s backend cannot export '%s' (supported: %s)"
                          % (self.TOOL, fmt, ", ".join(self.FORMATS)))
 
-    def write_stl(self, path: str) -> int:
+    def write_stl(self, path: str, force: bool = False) -> int:
+        """Write the model to ``path`` -- through the output gate.
+
+        A backend's own ``write_stl`` bypasses the format registry, so the gate
+        has to stand here too, or this becomes the hole the registry's gate was
+        built to close.
+        """
+        from harnesscad.io import gate
+
         data = self.stl_bytes()
+        report = gate.guard(data, str(path), source=self, force=force)
         with open(path, "wb") as fh:
             fh.write(data)
+        if not report.ok:                              # forced through the gate
+            gate.write_sidecar(str(path), report)
         return len(self.triangles())

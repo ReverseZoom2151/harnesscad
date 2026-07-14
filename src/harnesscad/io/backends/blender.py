@@ -139,18 +139,24 @@ def _reflector(plane: str) -> Xform:
 
 
 def _patterner(tr: Sequence[float]) -> Xform:
-    """Rotate about Z then translate -- the forward form of frep's ``_untransform``."""
-    dx, dy, dz, ang = (float(tr[0]), float(tr[1]), float(tr[2]), float(tr[3]))
-    a = math.radians(ang)
-    ca, sa = math.cos(a), math.sin(a)
+    """A pattern instance's rigid 3x4 matrix, as a point transform.
+
+    It used to take ``(dx, dy, dz, angle_about_Z)``, which is why
+    ``CircularPattern.axis`` was dead here: the tree could not carry any axis but Z.
+    frep now emits a full rigid matrix (``frep.rigid_transform``), so the axis the
+    op names is the axis the mesh is rotated about.
+    """
+    m = [float(v) for v in tr]
 
     def place(p: Vec3) -> Vec3:
         x, y, z = p
-        if ang:
-            x, y = ca * x - sa * y, sa * x + ca * y
-        return (x + dx, y + dy, z + dz)
+        return (m[0] * x + m[1] * y + m[2] * z + m[3],
+                m[4] * x + m[5] * y + m[6] * z + m[7],
+                m[8] * x + m[9] * y + m[10] * z + m[11])
 
     return place
+
+
 
 
 def prism(loop: Sequence[Tuple[float, float]], plane: str, w0: float, w1: float,
@@ -166,6 +172,33 @@ def prism(loop: Sequence[Tuple[float, float]], plane: str, w0: float, w1: float,
     n = len(loop)
     verts: List[Vec3] = [xform(to_world(plane, u, v, lo)) for (u, v) in loop]
     verts += [xform(to_world(plane, u, v, hi)) for (u, v) in loop]
+    faces: List[List[int]] = [list(reversed(range(n))), list(range(n, 2 * n))]
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append([i, j, n + j, n + i])
+    return verts, faces
+
+
+def frustum(cu: float, cv: float, r0: float, r1: float, plane: str,
+            w0: float, w1: float, segments: int,
+            xform: Xform) -> Tuple[List[Vec3], List[List[int]]]:
+    """A truncated cone: radius ``r0`` at ``w0`` opening to ``r1`` at ``w1``.
+
+    This is a COUNTERSINK. It is the same topology as :func:`prism` -- two caps and
+    a quad per segment -- with a different radius at each end, which is the whole
+    difference between a countersink and the plain cylinder Blender used to build
+    for it. The facet count comes from the larger rim, so the cone and the bore it
+    opens out of are tessellated compatibly.
+    """
+    lo, hi = slab(float(w0), float(w1))
+    ra, rb = (r0, r1) if float(w0) <= float(w1) else (r1, r0)
+    pts = _circle_pts(max(abs(ra), abs(rb)), segments)
+    n = len(pts)
+    unit = [(px / max(abs(ra), abs(rb)), py / max(abs(ra), abs(rb))) for (px, py) in pts]
+    verts: List[Vec3] = [xform(to_world(plane, cu + ux * ra, cv + uy * ra, lo))
+                         for (ux, uy) in unit]
+    verts += [xform(to_world(plane, cu + ux * rb, cv + uy * rb, hi))
+              for (ux, uy) in unit]
     faces: List[List[int]] = [list(reversed(range(n))), list(range(n, 2 * n))]
     for i in range(n):
         j = (i + 1) % n
@@ -260,6 +293,12 @@ class _Lowering:
                         for (px, py) in _circle_pts(r, self.segments)])
             return _leaf(self._name("cyl"),
                          *prism(loop, plane, node.d["w0"], node.d["w1"], xform))
+        if t == "cone":
+            return _leaf(self._name("cone"),
+                         *frustum(float(node.d["cu"]), float(node.d["cv"]),
+                                  float(node.d["r0"]), float(node.d["r1"]),
+                                  node.d["plane"], node.d["w0"], node.d["w1"],
+                                  self.segments, xform))
         if t == "revolve":
             plane = node.d["plane"]
             loops = profile_loops(node.d["profile"], self.segments)
@@ -272,9 +311,18 @@ class _Lowering:
             return {"t": "bool", "op": node.d["op"],
                     "a": self.node(node.d["a"], xform),
                     "b": self.node(node.d["b"], xform)}
+        if t == "blend":
+            # The fillet/chamfer AT ITS POSITION IN THE HISTORY -- see _lower.
+            width = float(node.d.get("value") or 0.0)
+            return {"t": "bevel", "child": self.node(node.d["child"], xform),
+                    "width": width,
+                    "segments": (BEVEL_SEGMENTS
+                                 if node.d.get("kind") == "fillet" else 1),
+                    "selector": join_selectors(node.d.get("selectors") or ())}
         if t == "shell":
             return {"t": "shell", "child": self.node(node.d["child"], xform),
-                    "thickness": float(node.d["thickness"])}
+                    "thickness": float(node.d["thickness"]),
+                    "faces": list(node.d.get("faces") or ())}
         if t == "mirror":
             child = node.d["child"]
             flip = _compose(xform, _reflector(node.d["plane"]))
@@ -336,7 +384,16 @@ def _blends(features) -> List[Tuple[str, float, str]]:
 
 
 def _lower(root: Node, segments: int, blends=()) -> dict:
-    """The whole model as a Blender build plan (world-space leaves + kernel ops)."""
+    """The whole model as a Blender build plan (world-space leaves + kernel ops).
+
+    ``blends`` is a LEGACY tail: fillets and chamfers are now ``blend`` NODES in the
+    F-rep tree (frep's ``_blend``), lowered at their own position in the feature
+    history by :meth:`_Lowering.node`. They used to be collected from the op log and
+    wrapped around the finished root, which meant every fillet went on LAST -- so
+    ``LinearPattern(feature="f1")`` (pattern the pad) and ``feature="f2"`` (pattern
+    the pad AND its fillet) built the same object. It is kept only so a plan built
+    from a tree that carries none still applies them.
+    """
     plan = _Lowering(segments).node(root, _identity)
     for (kind, width, selector) in blends:
         if width <= 0.0:
@@ -497,6 +554,13 @@ def build(node):
         return out
     if kind == "shell":
         ob = build(node["child"])
+        # OPEN THE NAMED FACES FIRST. Shell.faces was dropped entirely here, so
+        # Shell(faces=(">Z",)) and Shell(faces=("<Z",)) built the SAME closed,
+        # hollow box -- the field was accepted and ignored. Solidify has no notion
+        # of an opening; the way you shell with one in Blender is to DELETE the
+        # faces and then solidify, and use_rim closes the wall around the hole. So
+        # the named faces are deleted from the mesh before the modifier runs.
+        open_faces(ob, node.get("faces") or [])
         mod = ob.modifiers.new(name="solidify", type="SOLIDIFY")
         mod.solidify_mode = "EXTRUDE"          # Simple: our input is manifold
         mod.thickness = node["thickness"]
@@ -572,6 +636,55 @@ def select_edges(bm, selector):
     if not picked:
         raise SystemExit("blender: edge selector %r selected no edges" % selector)
     return picked
+
+
+#: The face names frep's shell node carries, as (axis, +1 max / -1 min). Kept in
+#: step with frep.SHELL_FACES -- frep canonicalises every selector down to these
+#: six spellings, so this table only ever sees "+x".."-z".
+FACE_AXIS = {"+x": (0, 1), "-x": (0, -1), "+y": (1, 1),
+             "-y": (1, -1), "+z": (2, 1), "-z": (2, -1)}
+
+
+def open_faces(ob, faces):
+    """Delete the named faces, so the solidify below leaves an OPENING there.
+
+    A face is "the +z face" if its normal points that way AND it sits at the
+    extreme of the mesh along that axis -- both tests, because a hole's inner wall
+    can have an upward-facing ring that is nowhere near the top of the part.
+    """
+    if not faces:
+        return
+    wanted = [FACE_AXIS[str(f).strip().lower()] for f in faces
+              if str(f).strip().lower() in FACE_AXIS]
+    if not wanted:
+        return
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bm.faces.ensure_lookup_table()
+    coords = [v.co for v in bm.verts]
+    if not coords:
+        bm.free()
+        return
+    lo = [min(c[i] for c in coords) for i in range(3)]
+    hi = [max(c[i] for c in coords) for i in range(3)]
+    tol = 1e-4
+    doomed = []
+    for f in bm.faces:
+        n = f.normal
+        c = f.calc_center_median()
+        for (axis, sign) in wanted:
+            if abs(n[axis] - sign) > 1e-3:
+                continue
+            extreme = hi[axis] if sign > 0 else lo[axis]
+            if abs(c[axis] - extreme) <= tol:
+                doomed.append(f)
+                break
+    if not doomed:
+        raise SystemExit("blender: shell face selector matched no face")
+    bmesh.ops.delete(bm, geom=doomed, context="FACES")
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob.data.update()
 
 
 def bevel(ob, width, segments, selector):
@@ -743,7 +856,10 @@ class BlenderBackend(ExternalToolBackend):
         root = self.root()
         if root is None:
             raise ValueError("blender backend: no solid to build")
-        return _lower(root, self.segments, _blends(self.features))
+        # No op-log blends: they are 'blend' NODES in the tree now, lowered at
+        # their own position in the feature history. Passing them here as well
+        # would bevel the model twice.
+        return _lower(root, self.segments)
 
     def program(self) -> str:
         """The model as JSON, stamped with the digest of the bpy script AND the

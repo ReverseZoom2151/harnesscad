@@ -220,6 +220,10 @@ class FreeCADBackend(ExternalToolBackend):
                  "(FreeCAD op: sweep_sketch)",
     }
 
+    #: OCCT offsets with either join, exposed as the ``join`` argument of
+    #: ``makeThickness`` / ``makeOffsetShape``. The driver now passes it.
+    SHELL_JOINS: Tuple[str, ...] = ("arc", "intersection")
+
     #: Real B-rep exports -- STEP and BREP are the kernel's own, not a mesh.
     FORMATS: Tuple[str, ...] = ("step", "brep", "iges", "stl", "stl-ascii",
                                 "stl-binary", "glb")
@@ -385,6 +389,8 @@ class FreeCADBackend(ExternalToolBackend):
                                "selectors": [str(s) for s in op.edges]})
             elif isinstance(op, Chamfer):
                 blends.append({"kind": "chamfer", "value": float(op.distance),
+                               "value2": (None if op.distance2 is None
+                                          else float(op.distance2)),
                                "selectors": [str(s) for s in op.edges]})
         return blends
 
@@ -477,7 +483,12 @@ class FreeCADBackend(ExternalToolBackend):
         declared export settings."""
         return {
             "root": self._root_spec(),
-            "blends": self._blends(),
+            # NO op-log blends. Each Fillet/Chamfer is a "blend" NODE in the tree,
+            # applied at its own position in the feature history (so a pattern can
+            # replicate the pad WITHOUT its fillet). Sending them here as well
+            # applied every blend a SECOND time, at the root -- which re-selected
+            # "|Z" on a shape whose vertical edges were already arcs and rounded the
+            # rest, turning a 995.6 part into the 971.3 all-twelve-edges part.
             "sketches": self._sketch_specs(),
             "exports": list(self.DRIVER_EXPORTS),
             "stl_linear_deflection": STL_LINEAR_DEFLECTION,
