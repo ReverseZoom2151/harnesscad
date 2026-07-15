@@ -184,8 +184,17 @@ def _pick(b, shapes, selectors, default: Optional[str]):
 
 
 class Build123dBackend:
-    #: exports this backend can produce (OCCT B-rep -> STEP/STL/BREP/3MF).
-    FORMATS = ("step", "stl", "brep", "3mf")
+    #: exports this backend can produce.
+    #:
+    #: The 3D B-rep / mesh formats (STEP/STL/BREP/3MF/IGES) serialise the whole
+    #: solid; the 2D drawing formats (DXF/SVG) serialise a planar CROSS-SECTION of
+    #: the solid taken through its centroid normal to +Z (a section view), which is
+    #: what those vector-drawing formats represent. IGES reaches parity with the
+    #: CadQuery backend (both drive the same OCP ``IGESControl_Writer``); DXF/SVG
+    #: cover build123d's ``ExportDXF`` / ``ExportSVG`` 2D exporters, which the first
+    #: pass did not expose. build123d natively lacks IGES, so it is driven through
+    #: OCP directly (the same kernel build123d itself is built on).
+    FORMATS = ("step", "stl", "brep", "3mf", "iges", "dxf", "svg", "gltf")
 
     def __init__(self) -> None:
         self.reset()
@@ -1169,7 +1178,80 @@ class Build123dBackend:
         if fmt == "brep":
             return self._export_file(b, shape, ".brep",
                                      lambda p: b.export_brep(shape, p))
+        if fmt == "iges":
+            return self._export_iges(shape)
+        if fmt in ("dxf", "svg"):
+            return self._export_2d(b, shape, fmt)
+        if fmt == "gltf":
+            return self._export_file(
+                b, shape, ".gltf",
+                lambda p: b.export_gltf(shape, p, binary=False,
+                                        linear_deflection=lin,
+                                        angular_deflection=ang))
         return self._export_3mf(b, shape, lin, ang)
+
+    @staticmethod
+    def _export_iges(shape) -> str:
+        """IGES via the OCP ``IGESControl_Writer``.
+
+        build123d ships no IGES exporter, but it is built on OCP (OCCT), so the
+        kernel's own IGES writer is available and produces the SAME AP-neutral
+        surface serialisation the CadQuery backend does — this is why the two
+        OCCT front-ends now export the same format set. ``shape.wrapped`` is the
+        underlying ``TopoDS_Shape``.
+        """
+        from OCP.IGESControl import IGESControl_Writer
+
+        fd, path = tempfile.mkstemp(suffix=".iges")
+        os.close(fd)
+        try:
+            writer = IGESControl_Writer()
+            writer.AddShape(shape.wrapped)
+            writer.ComputeModel()
+            if not writer.Write(path):
+                raise ValueError("IGES writer reported failure")
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+    @staticmethod
+    def _export_2d(b, shape, fmt: str) -> str:
+        """A 2D drawing (DXF or SVG) of a planar section of the solid.
+
+        DXF and SVG are vector *drawing* formats, not solid formats: build123d's
+        ``ExportDXF`` / ``ExportSVG`` draw wires/edges/faces that lie in a plane.
+        Feeding them a 3D solid draws every edge flattened onto Z=0 (build123d
+        warns "points found outside the XY plane"), which is not a meaningful
+        drawing. Instead this takes a real CROSS-SECTION of the solid — the plane
+        through the solid's centroid with a +Z normal — and moves that planar
+        section onto Z=0 so the exporter receives clean in-plane geometry. The
+        result is a section VIEW of the part, which is exactly what a DXF/SVG of a
+        solid conventionally means.
+        """
+        bb = shape.bounding_box()
+        z_mid = float((bb.min.Z + bb.max.Z) / 2.0)
+        section = b.section(shape, section_by=b.Plane.XY.offset(z_mid))
+        if not section.faces() and not section.edges():
+            raise ValueError("nothing to draw: the section plane missed the solid")
+        planar = section.moved(b.Location((0.0, 0.0, -z_mid)))
+        exporter = (b.ExportDXF() if fmt == "dxf" else b.ExportSVG())
+        suffix = "." + fmt
+        fd, path = tempfile.mkstemp(suffix=suffix)
+        os.close(fd)
+        try:
+            exporter.add_shape(planar)
+            exporter.write(path)
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        finally:
+            try:
+                os.remove(path)
+            except OSError:
+                pass
 
     @staticmethod
     def _export_file(b, shape, suffix: str, writer) -> str:

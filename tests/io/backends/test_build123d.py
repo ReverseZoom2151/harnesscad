@@ -198,6 +198,29 @@ class TestExactGeometry(unittest.TestCase):
         expected = math.pi * (15.0 ** 2 - 10.0 ** 2) * 20.0
         self.assertAlmostEqual(b.query("measure")["volume"], expected, places=6)
 
+    def test_nested_same_sketch_profiles_union_matching_freecad(self):
+        """A rectangle with a CONCENTRIC inner circle in the SAME sketch is a
+        genuine cross-kernel semantic split, verified against all three backends:
+
+          * CadQuery's Workplane applies the even-odd rule, so the inner circle
+            becomes a HOLE (volume = prism - bore);
+          * build123d's algebra mode and the FreeCAD backend UNION the two faces,
+            so the inner circle is absorbed (volume = the full prism).
+
+        build123d must side with the FreeCAD reading (both drive OCP the same
+        way); "fixing" _build_profile to CadQuery's even-odd would make build123d
+        AGREE with CadQuery but DISAGREE with FreeCAD, which is why it is left as a
+        face union. This test pins that so the split cannot be silently flipped.
+        """
+        b = Build123dBackend()
+        b.apply(NewSketch(plane="XY"))
+        b.apply(AddRectangle(sketch="sk1", x=-10.0, y=-10.0, w=20.0, h=20.0))
+        b.apply(AddCircle(sketch="sk1", cx=0.0, cy=0.0, r=5.0))
+        self.assertTrue(b.apply(Extrude(sketch="sk1", distance=10.0)).ok)
+        # Full prism, no bore: the two faces were unioned (FreeCAD-consistent).
+        self.assertAlmostEqual(b.query("measure")["volume"], 20.0 * 20.0 * 10.0,
+                               places=6)
+
     def test_zero_volume_revolve_is_rejected(self):
         b = Build123dBackend()
         b.apply(NewSketch(plane="XZ"))
@@ -596,6 +619,40 @@ class TestExport(unittest.TestCase):
     def test_brep_export_is_the_native_kernel_format(self):
         self.assertIn("CASCADE", _ref_plate().export("brep"))
 
+    def test_iges_export_reaches_cadquery_format_parity(self):
+        """build123d ships no IGES writer; the backend drives OCP's own
+        IGESControl_Writer so the two OCCT front-ends export the SAME format set.
+        A valid IGES has section-letter markers in column 72 (S/G/D/P/T)."""
+        iges = _ref_plate().export("iges")
+        lines = [ln for ln in iges.splitlines() if len(ln) > 72]
+        self.assertTrue(lines, "IGES output had no fixed-format records")
+        self.assertEqual(lines[0][72], "S")                 # Start section
+        self.assertTrue(any(ln[72] == "T" for ln in lines))  # Terminate section
+
+    def test_iges_is_in_the_declared_format_set(self):
+        self.assertIn("iges", Build123dBackend.FORMATS)
+
+    def test_dxf_export_is_a_2d_section_drawing(self):
+        """DXF is a vector DRAWING format: the backend sections the solid and
+        exports the planar cross-section, not a flattened 3D soup."""
+        dxf = _ref_plate().export("dxf")
+        self.assertIn("SECTION", dxf)
+        self.assertIn("ENTITIES", dxf)
+
+    def test_svg_export_is_a_2d_section_drawing(self):
+        svg = _ref_plate().export("svg")
+        self.assertTrue(svg.lstrip().startswith("<?xml"))
+        self.assertIn("<svg", svg)
+
+    def test_gltf_export_is_native_json(self):
+        """glTF is a native build123d exporter (export_gltf); ASCII .gltf is a
+        JSON document, so the text-returning export() contract holds."""
+        import json
+        gltf = _ref_plate().export("gltf")
+        doc = json.loads(gltf)                       # must be valid JSON
+        self.assertIn("asset", doc)
+        self.assertIn("meshes", doc)
+
     def test_unsupported_format_is_a_clear_error(self):
         with self.assertRaises(ValueError):
             _ref_plate().export("dwg")
@@ -685,6 +742,58 @@ class TestAgreesWithCadQuery(unittest.TestCase):
                       AddRectangle(sketch="sk1", x=0, y=0, w=40, h=24),
                       Extrude(sketch="sk1", distance=8),
                       Draft(faces=(), angle=5.0, neutral_plane="<Z")],
+            # -- variants the first pass left out of the agreement suite --------
+            "blind_hole": [NewSketch(plane="XY"),
+                           AddRectangle(sketch="sk1", x=0, y=0, w=40, h=24),
+                           Extrude(sketch="sk1", distance=8),
+                           Hole(face_or_sketch="solid", x=20, y=12, diameter=6,
+                                depth=4.0, through=False, kind="simple")],
+            "blind_counterbore": [NewSketch(plane="XY"),
+                                  AddRectangle(sketch="sk1", x=0, y=0, w=40, h=24),
+                                  Extrude(sketch="sk1", distance=8),
+                                  Hole(face_or_sketch="solid", x=20, y=12,
+                                       diameter=6, depth=6.0, through=False,
+                                       kind="counterbore", cbore_diameter=12,
+                                       cbore_depth=3)],
+            "bool_union": [NewSketch(plane="XY"),
+                           AddRectangle(sketch="sk1", x=0, y=0, w=20, h=20),
+                           Extrude(sketch="sk1", distance=10),
+                           NewSketch(plane="XY"),
+                           AddRectangle(sketch="sk2", x=10, y=0, w=20, h=20),
+                           Extrude(sketch="sk2", distance=10),
+                           Boolean(kind="union", target="f1", tool="f2")],
+            "bool_intersect": [NewSketch(plane="XY"),
+                               AddRectangle(sketch="sk1", x=0, y=0, w=20, h=20),
+                               Extrude(sketch="sk1", distance=10),
+                               NewSketch(plane="XY"),
+                               AddRectangle(sketch="sk2", x=10, y=0, w=20, h=20),
+                               Extrude(sketch="sk2", distance=10),
+                               Boolean(kind="intersect", target="f1", tool="f2")],
+            "circular_pattern": [NewSketch(plane="XY"),
+                                 AddRectangle(sketch="sk1", x=40, y=-5, w=10, h=10),
+                                 Extrude(sketch="sk1", distance=5),
+                                 CircularPattern(count=6, angle=360.0,
+                                                 axis=(0, 0, 0, 0, 0, 1))],
+            "circular_pattern_arc": [NewSketch(plane="XY"),
+                                     AddRectangle(sketch="sk1", x=40, y=-5,
+                                                  w=10, h=10),
+                                     Extrude(sketch="sk1", distance=5),
+                                     CircularPattern(count=4, angle=180.0,
+                                                     axis=(0, 0, 0, 0, 0, 1))],
+            "mirror": [NewSketch(plane="XY"),
+                       AddRectangle(sketch="sk1", x=0, y=0, w=10, h=10),
+                       Extrude(sketch="sk1", distance=5),
+                       Mirror(feature_or_body="", plane="YZ")],
+            "asymmetric_chamfer": [NewSketch(plane="XY"),
+                                   AddRectangle(sketch="sk1", x=0, y=0, w=20, h=10),
+                                   Extrude(sketch="sk1", distance=5),
+                                   Chamfer(edges=("|Z",), distance=1.0,
+                                           distance2=2.0)],
+            "multi_selector_fillet": [NewSketch(plane="XY"),
+                                      AddRectangle(sketch="sk1", x=0, y=0,
+                                                   w=20, h=10),
+                                      Extrude(sketch="sk1", distance=5),
+                                      Fillet(edges=("|Z", ">Z"), radius=1.0)],
         }
         for name, ops in streams.items():
             vbd, vcq = self._both(ops)
