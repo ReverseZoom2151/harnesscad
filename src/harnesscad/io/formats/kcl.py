@@ -45,8 +45,14 @@ What maps to real KCL
 ``NewSketch``         chooses the ``startSketchOn`` plane (XY/XZ/YZ)
 ``AddRectangle``      a closed ``startProfile |> xLine |> yLine ... close``
 ``AddCircle``         ``startSketchOn(P) |> circle(center=, radius=)``
+``AddArc``            an exact three-point ``arc(interiorAbsolute=, endAbsolute=)``
+``AddPolygon``        an arbitrary closed ``startProfile |> line ... |> close``
 ``AddLine``           an open two-point profile (not extrudable, but exact)
 ``AddPoint``          a bare ``startProfile(at=[x, y])`` (coordinates kept)
+``Primitive``         sketch+``extrude`` (box/cylinder/wedge) or ``revolve`` (sphere/cone/torus)
+``Transform``         ``solid |> rotate(roll=,pitch=,yaw=) |> translate(x=,y=,z=)``
+``Scale``             ``solid |> scale(x=sx, y=sy, z=sz)``
+``PatternTransform``  one ``rotate |> translate`` copy per placement, ``union``ed
 ``Extrude``           ``extrude(profile, length = d)`` (sign preserved)
 ``Revolve``           ``revolve(profile, axis = X|Y|Z, angle = a)``
 ``Boolean``           ``subtract`` / ``union`` / ``intersect``
@@ -62,7 +68,12 @@ What is annotated (all fields kept, no fabricated tags)
 implicitly by the explicit coordinates the profile already carries), ``Fillet``,
 ``Chamfer``, ``Draft``, ``Mirror``, ``AddInstance``, ``Mate`` -- each because it
 needs a KCL edge/face tag, an assembly-import graph, or a joint model that a flat
-selector/ref string cannot supply offline.
+selector/ref string cannot supply offline. Also ``AddEllipse`` and ``AddSpline``
+(KCL has no native ellipse or through-points spline, and sampling either into a
+polyline would approximate), ``Split`` (no infinite half-space / plane-section
+op), ``Thicken`` (KCL shells caps but has no general surface offset), ``Hull``
+(no convex-hull operator) and ``Minkowski`` (no Minkowski-sum / SDF-offset op) --
+each refused rather than faked, exactly as the finishing ops are.
 
 A KCL round trip (program text -> geometry -> program text) is not offline-
 feasible: reading a ``.kcl`` back into geometry means *executing* it on Zoo's
@@ -76,11 +87,15 @@ stdlib-only, deterministic (no wall clock, no randomness, no imports of the SDK)
 
 from __future__ import annotations
 
+import math
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+    AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
+    Primitive, Split, Thicken, Hull, Minkowski,
+    Transform, Scale, PatternTransform,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -119,10 +134,22 @@ OP_KCL_MAPPING: Dict[str, str] = {
     "AddLine": "startProfile(at=[x1, y1]) |> line(endAbsolute=[x2, y2])",
     "AddCircle": "startSketchOn(P) |> circle(center=[cx, cy], radius=r)",
     "AddRectangle": "startProfile(at=[x, y]) |> xLine |> yLine |> xLine |> close()",
+    "AddArc": "startProfile(at=<start>) |> arc(interiorAbsolute=<mid>, endAbsolute=<end>)",
+    "AddPolygon": "startProfile(at=[x0, y0]) |> line(endAbsolute=...) ... |> close()",
+    "AddEllipse": "annotation (KCL has no native ellipse; a sampled polyline would approximate)",
+    "AddSpline": "annotation (KCL has no through-points spline; sampling would approximate)",
     "Constrain": "annotation (KCL encodes constraints as explicit coordinates)",
     "Extrude": "extrude(profile, length=distance)  (sign preserved)",
     "Revolve": "revolve(profile, axis=X|Y|Z, angle=angle)",
     "Boolean": "subtract(a, tools=[b]) | union([a, b]) | intersect([a, b])",
+    "Primitive": "sketch + extrude (box/cylinder/wedge) | revolve (sphere/cone/torus)",
+    "Split": "annotation (KCL has no infinite half-space / plane-section op)",
+    "Thicken": "annotation (KCL has shell but no general solid-surface offset)",
+    "Hull": "annotation (KCL has no convex-hull operator)",
+    "Minkowski": "annotation (KCL has no Minkowski-sum / SDF-offset operator)",
+    "Transform": "solid |> rotate(roll=, pitch=, yaw=) |> translate(x=, y=, z=)",
+    "Scale": "solid |> scale(x=sx, y=sy, z=sz)",
+    "PatternTransform": "per-placement rotate |> translate copies, union()ed",
     "Hole": "subtract(solid, tools=[<positioned cylinder / stepped tool>])",
     "Shell": "shell(solid, thickness=t, faces=[END|START])",
     "LinearPattern": "patternLinear3d(solid, instances=, distance=, axis=)",
@@ -324,6 +351,79 @@ class _Emitter:
         self.sketch_profiles[sid].append((var, True))
         self.entity_sketch[eid] = sid
 
+    def _op_AddArc(self, op: AddArc) -> None:
+        # An open circular-arc boundary curve. KCL's arc() has an exact absolute
+        # three-point form -- arc(interiorAbsolute=<mid>, endAbsolute=<end>) from
+        # the profile's current point -- so we sample the start/mid/end points on
+        # the circle exactly and hand KCL those three points. No approximation.
+        sid = op.sketch
+        self._require_sketch(sid)
+        if op.r <= 0:
+            raise KclEmitError("AddArc.r must be > 0 (got %r)" % op.r)
+        a0 = math.radians(float(op.start))
+        a1 = math.radians(float(op.end))
+        amid = math.radians((float(op.start) + float(op.end)) / 2.0)
+        p0 = (op.cx + op.r * math.cos(a0), op.cy + op.r * math.sin(a0))
+        pm = (op.cx + op.r * math.cos(amid), op.cy + op.r * math.sin(amid))
+        p1 = (op.cx + op.r * math.cos(a1), op.cy + op.r * math.sin(a1))
+        eid = self._new_id("e")
+        var = "profile%s" % eid[1:]
+        plane = self.sketch_plane[sid]
+        self.lines.append("%s = startSketchOn(%s)" % (var, plane))
+        self.lines.append("  |> startProfile(at = %s)" % _vec(p0))
+        self.lines.append("  |> arc(interiorAbsolute = %s, endAbsolute = %s)"
+                          "  // arc cx=%s cy=%s r=%s start=%s end=%s"
+                          % (_vec(pm), _vec(p1), _num(op.cx), _num(op.cy),
+                             _num(op.r), _num(op.start), _num(op.end)))
+        self.lines.append("")
+        # An open boundary curve (like AddLine): not itself an extrudable region.
+        self.sketch_profiles[sid].append((var, False))
+        self.entity_sketch[eid] = sid
+
+    def _op_AddPolygon(self, op: AddPolygon) -> None:
+        # An arbitrary closed polygon. KCL's polygon() builds only REGULAR
+        # polygons, but a closed line chain (the same primitives AddRectangle
+        # uses) expresses an arbitrary vertex list exactly.
+        sid = op.sketch
+        self._require_sketch(sid)
+        pts = tuple(float(v) for v in op.points)
+        if len(pts) % 2 != 0:
+            raise KclEmitError(
+                "AddPolygon.points must be a flat (x, y, ...) tuple of even length")
+        if len(pts) < 6:
+            raise KclEmitError(
+                "AddPolygon needs >= 3 vertices (6 coordinates) to close a region")
+        verts = [(pts[i], pts[i + 1]) for i in range(0, len(pts), 2)]
+        eid = self._new_id("e")
+        var = "profile%s" % eid[1:]
+        plane = self.sketch_plane[sid]
+        self.lines.append("%s = startSketchOn(%s)" % (var, plane))
+        self.lines.append("  |> startProfile(at = %s)" % _vec(verts[0]))
+        for vx in verts[1:]:
+            self.lines.append("  |> line(endAbsolute = %s)" % _vec(vx))
+        self.lines.append("  |> close()")
+        self.lines.append("")
+        self.sketch_profiles[sid].append((var, True))
+        self.entity_sketch[eid] = sid
+
+    def _op_AddEllipse(self, op: AddEllipse) -> None:
+        # KCL has circle() but no native ellipse primitive, and a sampled polyline
+        # would be an approximation -- so, per the codec's "emit exactly or refuse
+        # to fake it" rule, annotate with every field preserved.
+        self.lines.extend(_annotation(
+            "AddEllipse", sketch=op.sketch, center=[op.cx, op.cy],
+            rx=op.rx, ry=op.ry, rotation=op.rotation,
+            note="KCL has no native ellipse; a sampled polyline would approximate"))
+        self.lines.append("")
+
+    def _op_AddSpline(self, op: AddSpline) -> None:
+        # KCL has no through-points spline in its offline standard library, and a
+        # sampled polyline would be an approximation -- annotate, fields preserved.
+        self.lines.extend(_annotation(
+            "AddSpline", sketch=op.sketch, points=list(op.points), closed=op.closed,
+            note="KCL has no through-points spline op; sampling would approximate"))
+        self.lines.append("")
+
     def _op_Constrain(self, op: Constrain) -> None:
         # KCL is imperative code-CAD with no runtime constraint solver: the
         # constraint is already satisfied by the explicit coordinates the profile
@@ -511,7 +611,195 @@ class _Emitter:
         self.feature_var[fid] = var
         self.last_solid = var
 
+    # -- parametric primitives (sketch + feature, real KCL) -------------
+    def _op_Primitive(self, op: Primitive) -> None:
+        shape = str(op.shape).lower()
+        pid = self._new_id("e")
+        pvar = "primitive%s" % pid[1:]
+        fid = self._new_id("f")
+        var = "solid%s" % fid[1:]
+        if shape == "box":
+            if op.dx <= 0 or op.dy <= 0 or op.dz <= 0:
+                raise KclEmitError("Primitive box needs dx, dy, dz > 0")
+            self.lines.append("%s = startSketchOn(XY)" % pvar)
+            self.lines.append("  |> startProfile(at = [0, 0])")
+            self.lines.append("  |> xLine(length = %s)" % _num(op.dx))
+            self.lines.append("  |> yLine(length = %s)" % _num(op.dy))
+            self.lines.append("  |> xLine(length = %s)" % _num(-op.dx))
+            self.lines.append("  |> close()")
+            self.lines.append("%s = extrude(%s, length = %s)"
+                              % (var, pvar, _num(op.dz)))
+        elif shape == "wedge":
+            if op.dx <= 0 or op.dy <= 0 or op.dz <= 0:
+                raise KclEmitError("Primitive wedge needs dx, dy, dz > 0")
+            self.lines.append("%s = startSketchOn(XY)" % pvar)
+            self.lines.append("  |> startProfile(at = [0, 0])")
+            self.lines.append("  |> xLine(length = %s)" % _num(op.dx))
+            self.lines.append("  |> line(endAbsolute = [0, %s])" % _num(op.dy))
+            self.lines.append("  |> close()")
+            self.lines.append("%s = extrude(%s, length = %s)"
+                              % (var, pvar, _num(op.dz)))
+        elif shape == "cylinder":
+            if op.r <= 0 or op.h <= 0:
+                raise KclEmitError("Primitive cylinder needs r > 0 and h > 0")
+            self.lines.append("%s = startSketchOn(XY)" % pvar)
+            self.lines.append("  |> circle(center = [0, 0], radius = %s)"
+                              % _num(op.r))
+            self.lines.append("%s = extrude(%s, length = %s)"
+                              % (var, pvar, _num(op.h)))
+        elif shape == "sphere":
+            if op.r <= 0:
+                raise KclEmitError("Primitive sphere needs r > 0")
+            # A half-disk in XZ (flat side on the Z axis) revolved 360 about Z.
+            self.lines.append("%s = startSketchOn(XZ)" % pvar)
+            self.lines.append("  |> startProfile(at = [0, %s])" % _num(-op.r))
+            self.lines.append("  |> arc(interiorAbsolute = [%s, 0], "
+                              "endAbsolute = [0, %s])"
+                              % (_num(op.r), _num(op.r)))
+            self.lines.append("  |> close()")
+            self.lines.append("%s = revolve(%s, axis = Z, angle = 360)"
+                              % (var, pvar))
+        elif shape == "cone":
+            if op.r <= 0 or op.h <= 0:
+                raise KclEmitError("Primitive cone needs r > 0 and h > 0")
+            if op.r2 < 0:
+                raise KclEmitError("Primitive cone needs r2 >= 0")
+            # A radial profile in XZ (base radius r at z=0, top radius r2 at z=h)
+            # revolved 360 about Z. r2 == 0 gives a true cone (triangle apex).
+            self.lines.append("%s = startSketchOn(XZ)" % pvar)
+            self.lines.append("  |> startProfile(at = [0, 0])")
+            self.lines.append("  |> line(endAbsolute = [%s, 0])" % _num(op.r))
+            if op.r2 > 0:
+                self.lines.append("  |> line(endAbsolute = [%s, %s])"
+                                  % (_num(op.r2), _num(op.h)))
+            self.lines.append("  |> line(endAbsolute = [0, %s])" % _num(op.h))
+            self.lines.append("  |> close()")
+            self.lines.append("%s = revolve(%s, axis = Z, angle = 360)"
+                              % (var, pvar))
+        elif shape == "torus":
+            if op.r <= 0 or op.r2 <= 0:
+                raise KclEmitError("Primitive torus needs r (major) > 0 and "
+                                   "r2 (minor) > 0")
+            # A minor-radius circle offset by the major radius, revolved about Z.
+            self.lines.append("%s = startSketchOn(XZ)" % pvar)
+            self.lines.append("  |> circle(center = [%s, 0], radius = %s)"
+                              % (_num(op.r), _num(op.r2)))
+            self.lines.append("%s = revolve(%s, axis = Z, angle = 360)"
+                              % (var, pvar))
+        else:
+            raise KclEmitError(
+                "Primitive.shape %r is not a KCL-expressible primitive "
+                "(box|sphere|cylinder|cone|torus|wedge)" % op.shape)
+        self.lines.append("")
+        self.feature_var[fid] = var
+        self.last_solid = var
+
+    # -- affine placement (real KCL translate / rotate / scale) ---------
+    def _emit_rigid(self, dst: str, src: str,
+                    tx: float, ty: float, tz: float,
+                    rx: float, ry: float, rz: float) -> None:
+        """Emit ``dst = src |> rotate(...) |> translate(...)``.
+
+        KCL rotate takes intrinsic Euler angles roll/pitch/yaw about X/Y/Z in that
+        order, which is exactly CISP's rotate-then-translate convention. Both lines
+        are always emitted so every field is live even when a component is zero.
+        """
+        self.lines.append("%s = %s" % (dst, src))
+        self.lines.append("  |> rotate(roll = %s, pitch = %s, yaw = %s)"
+                          % (_num(rx), _num(ry), _num(rz)))
+        self.lines.append("  |> translate(x = %s, y = %s, z = %s)"
+                          % (_num(tx), _num(ty), _num(tz)))
+
+    def _op_Transform(self, op: Transform) -> None:
+        src = (self._solid_ref(op.feature_or_body)
+               if op.feature_or_body else self._solid_ref("last"))
+        fid = self._new_id("f")
+        var = "solid%s" % fid[1:]
+        self._emit_rigid(var, src, op.tx, op.ty, op.tz, op.rx, op.ry, op.rz)
+        self.lines.append("")
+        self.feature_var[fid] = var
+        self.last_solid = var
+
+    def _op_Scale(self, op: Scale) -> None:
+        if op.sx <= 0 or op.sy <= 0 or op.sz <= 0:
+            raise KclEmitError(
+                "Scale factors must all be > 0 (got sx=%r sy=%r sz=%r); "
+                "reflection is Mirror's job" % (op.sx, op.sy, op.sz))
+        src = (self._solid_ref(op.feature_or_body)
+               if op.feature_or_body else self._solid_ref("last"))
+        fid = self._new_id("f")
+        var = "solid%s" % fid[1:]
+        self.lines.append("%s = %s" % (var, src))
+        self.lines.append("  |> scale(x = %s, y = %s, z = %s)"
+                          % (_num(op.sx), _num(op.sy), _num(op.sz)))
+        self.lines.append("")
+        self.feature_var[fid] = var
+        self.last_solid = var
+
+    def _op_PatternTransform(self, op: PatternTransform) -> None:
+        # KCL patternTransform always keeps the original untransformed as an
+        # implicit instance, but CISP's placement list does NOT imply the identity
+        # -- so lowering to patternTransform would add a stray body. Instead emit
+        # one explicit rotate/translate copy per placement (real KCL) and union
+        # them, which reproduces the placement list exactly.
+        src = self._solid_ref(op.feature) if op.feature else self._solid_ref("last")
+        flat = tuple(float(v) for v in op.placements)
+        if len(flat) == 0 or len(flat) % 6 != 0:
+            raise KclEmitError(
+                "PatternTransform.placements must be a non-empty flat tuple whose "
+                "length is a multiple of 6 (got %d)" % len(flat))
+        n = len(flat) // 6
+        fid = self._new_id("f")
+        var = "solid%s" % fid[1:]
+        self.lines.append("// pattern_transform: %d explicit placement(s)" % n)
+        copies: List[str] = []
+        for i in range(n):
+            tx, ty, tz, rx, ry, rz = flat[i * 6:i * 6 + 6]
+            copy = "%s_%d" % (var, i)
+            copies.append(copy)
+            self._emit_rigid(copy, src, tx, ty, tz, rx, ry, rz)
+        if len(copies) == 1:
+            self.lines.append("%s = %s" % (var, copies[0]))
+        else:
+            self.lines.append("%s = union([%s])" % (var, ", ".join(copies)))
+        self.lines.append("")
+        self.feature_var[fid] = var
+        self.last_solid = var
+
     # -- annotated ops (tags/refs KCL cannot bind offline) --------------
+    def _op_Split(self, op: Split) -> None:
+        # A plane section needs an infinite half-space to cut against; KCL has no
+        # half-space primitive and no section/split op offline, and a finite
+        # cutting box would be an unbounded approximation. Annotate, fields kept.
+        self.lines.extend(_annotation(
+            "Split", plane=op.plane, offset=op.offset, keep=op.keep,
+            note="KCL has no infinite half-space or plane-section op offline"))
+        self.lines.append("")
+
+    def _op_Thicken(self, op: Thicken) -> None:
+        # KCL has shell() (hollowing by opening named caps) but no general
+        # solid-surface offset / thicken op, so a faithful lowering is impossible.
+        self.lines.extend(_annotation(
+            "Thicken", faces=list(op.faces) or "ALL", thickness=op.thickness,
+            both=op.both,
+            note="KCL has shell() but no general solid-surface offset/thicken op"))
+        self.lines.append("")
+
+    def _op_Hull(self, op: Hull) -> None:
+        # Convex hull is a genuine kernel capability but KCL exposes no hull
+        # operator, so refuse rather than fabricate a wrong solid.
+        self.lines.extend(_annotation(
+            "Hull", target=op.target or "ALL", tool=op.tool or "ALL",
+            note="KCL has no convex-hull operator"))
+        self.lines.append("")
+
+    def _op_Minkowski(self, op: Minkowski) -> None:
+        # Minkowski sum / SDF-offset dilation has no KCL operator, so refuse.
+        self.lines.extend(_annotation(
+            "Minkowski", radius=op.radius,
+            note="KCL has no Minkowski-sum / signed-distance-offset operator"))
+        self.lines.append("")
+
     def _op_Fillet(self, op: Fillet) -> None:
         self.lines.extend(_annotation(
             "Fillet", radius=op.radius,
