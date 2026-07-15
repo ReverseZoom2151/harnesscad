@@ -243,6 +243,47 @@ class Thicken(Op):
     both: bool = False
 
 
+@dataclass(frozen=True)
+class Hull(Op):
+    """Convex hull of the current live bodies (a non-boolean set operator).
+
+    With ``target`` and ``tool`` both empty (the default) the hull encloses EVERY
+    live body and replaces them with the single hulled solid; naming ``target``
+    and/or ``tool`` hulls only the referenced bodies and leaves the rest. The
+    convex hull of a set is the convex hull of the union of their vertices, so a
+    hull of one already-convex body is that body unchanged.
+
+    This is a genuine kernel capability, not universally expressible: OpenSCAD
+    (``hull()``) and Manifold (``Manifold.hull``) build it exactly; a
+    signed-distance kernel (frep) has no closed-form convex-hull operator (the
+    hull of a set of SDFs is not itself an SDF its leaves compose to) and a pure
+    boolean B-rep kernel has no hull primitive -- both REFUSE with a typed
+    ``unsupported-op`` rather than fabricate a wrong solid.
+    """
+
+    OP: ClassVar[str] = "hull"
+    target: str = ""
+    tool: str = ""
+
+
+@dataclass(frozen=True)
+class Minkowski(Op):
+    """Minkowski sum of the current solid with a ball of ``radius`` (> 0).
+
+    This is a rounding / dilation: every point within ``radius`` of the solid is
+    added, so convex edges are rounded and the outer bounding box grows by
+    ``radius`` on every side. It is EXACTLY the outward offset of a
+    signed-distance field (``field - radius``), so frep builds it as an SDF
+    dilation and OpenSCAD as ``minkowski(){ solid; sphere(radius); }``. Kernels
+    without a true 3D Minkowski / SDF-offset (Manifold's is corner-rounding-only
+    for this purpose, the OCCT B-rep front ends, the mesh and container backends)
+    REFUSE it with a typed ``unsupported-op`` rather than approximate it.
+    """
+
+    OP: ClassVar[str] = "minkowski"
+    radius: float = 1.0
+
+
 # --- extended mechanical features -----------------------------------------
 @dataclass(frozen=True)
 class Revolve(Op):
@@ -427,6 +468,17 @@ class Mate(Op):
     many rigid-body DOF the mate removes. ``a``/``b`` reference the two
     instances (or bodies) being coupled; ``value`` is an optional mate parameter
     (e.g. a target angle / offset), unused by the pure DOF count.
+
+    PORT-TYPED MATES (ASSEMCAD, closes audit gap #35). A mate may additionally
+    name the two attachment ports it joins (``base_port`` / ``incoming_port``) and
+    their semantic PORT TYPES (``base_port_type`` / ``incoming_port_type``, each
+    one of :data:`domain.geometry.assembly.mates.PORT_TYPES`). When port types are
+    given, :func:`check_mate_ports` runs the ASSEMCAD port-type compatibility gate
+    (``mates.PORT_MATE_COMPATIBILITY`` / ``mates.ports_compatible``): the ``kind``
+    must be an ASSEMCAD port-typed mate (face_to_face / coaxial / coaxial_face /
+    gear_mesh / press_fit / thread_engage / snap_to_face) and the two port types
+    must be admissible for it, else the op is REFUSED with a typed diagnostic. A
+    mate that names no ports is the historical id-only mate, unchanged.
     """
 
     OP: ClassVar[str] = "mate"
@@ -434,6 +486,10 @@ class Mate(Op):
     a: str = ""
     b: str = ""
     value: Optional[float] = None
+    base_port: str = ""
+    incoming_port: str = ""
+    base_port_type: str = ""
+    incoming_port_type: str = ""
 
 
 @dataclass(frozen=True)
@@ -479,7 +535,7 @@ _REGISTRY = {
         NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
         AddArc, AddEllipse, AddPolygon, AddSpline,
         Constrain, Extrude, Fillet, Boolean,
-        Primitive, Split, Thicken,
+        Primitive, Split, Thicken, Hull, Minkowski,
         Revolve, Chamfer, Hole, Shell, Draft,
         Loft, Sweep, LinearPattern, CircularPattern, Mirror,
         AddInstance, Mate, SetParam,
@@ -512,6 +568,54 @@ def parse_op(d: dict) -> Op:
 def canonical_json(op: Op) -> str:
     """Deterministic serialisation of an op (sorted keys) for content hashing."""
     return json.dumps(op.to_dict(), sort_keys=True, separators=(",", ":"))
+
+
+def check_mate_ports(op: "Mate"):
+    """Run the ASSEMCAD port-type compatibility gate for a port-typed Mate.
+
+    Returns ``None`` when the mate carries no port typing (the historical id-only
+    mate) or when the typed ports are admissible; otherwise an ``(code, msg,
+    where)`` triple a backend turns into a typed ``ApplyResult`` diagnostic.
+
+    This WIRES the CISP Mate op onto the existing
+    :mod:`harnesscad.domain.geometry.assembly.mates` tables (``PORT_TYPES``,
+    ``PORT_MATE_COMPATIBILITY``, ``Port``, ``ports_compatible``) without
+    re-declaring any of them -- so the op stream and the ASSEMCAD admissibility
+    relation can never drift. The tables are imported lazily to keep ``ops`` free
+    of a domain import at module load. Closes audit gap #35.
+    """
+    from harnesscad.domain.geometry.assembly.mates import (
+        PORT_TYPES, PORT_MATE_COMPATIBILITY, Port, ports_compatible,
+    )
+
+    bt = str(getattr(op, "base_port_type", "") or "").strip()
+    it = str(getattr(op, "incoming_port_type", "") or "").strip()
+    bp = str(getattr(op, "base_port", "") or "").strip()
+    ip = str(getattr(op, "incoming_port", "") or "").strip()
+    if not (bt or it or bp or ip):
+        return None                       # a plain id-only mate: nothing to gate
+    if not bt or not it:
+        return ("bad-value",
+                "a port-typed mate needs both base_port_type and "
+                "incoming_port_type (got base=%r, incoming=%r)" % (bt, it), None)
+    for who, t in (("base", bt), ("incoming", it)):
+        if t not in PORT_TYPES:
+            return ("unsupported-port-type",
+                    "unknown %s port type %r (known: %s)"
+                    % (who, t, ", ".join(PORT_TYPES)), None)
+    if op.kind not in PORT_MATE_COMPATIBILITY:
+        return ("bad-value",
+                "port-typed mate kind %r is not an ASSEMCAD port-typed mate; "
+                "valid kinds: %s"
+                % (op.kind, ", ".join(sorted(PORT_MATE_COMPATIBILITY))), None)
+    port_a = Port(name=bp or "base", origin=(0.0, 0.0, 0.0), kind=bt)
+    port_b = Port(name=ip or "incoming", origin=(0.0, 0.0, 0.0), kind=it)
+    if not ports_compatible(op.kind, port_a, port_b):
+        return ("port-incompatible",
+                "port types (%s, %s) are incompatible with mate %r (allowed: %s)"
+                % (bt, it, op.kind,
+                   ", ".join(sorted(PORT_MATE_COMPATIBILITY[op.kind]))), None)
+    return None
 
 
 def edit_oplog(oplog, op: "SetParam"):
