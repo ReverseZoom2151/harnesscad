@@ -15,3 +15,7 @@ dist/
 
 # pressure-test model-output cache (large, machine-local, regenerable)
 .pressure_cache/
+
+# model-output caches from the memory A/B (obsolete lineup; not committed)
+.memory_ab_cache/
+.memory_ab_corpus_cache/
