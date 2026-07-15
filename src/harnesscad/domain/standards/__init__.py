@@ -17,6 +17,13 @@ reasons over them:
   * :mod:`standards.conflict` — :func:`detect_conflicts` finds mutually
     contradictory active rules on the same parameter + scope.
 
+Two standards-derived accounting surfaces over a *finished* design --
+:mod:`standards.embodied_carbon` (embodied-CO2e tally over a bill of materials)
+and :mod:`standards.evidence_bundle` (cited-provenance roll-up over a spec) --
+are dispatched by :mod:`standards.accounting`; they are deliberately not
+re-exported here because a re-exported ``embodied_carbon`` function would shadow
+the submodule of the same name.
+
 Deliberately decoupled from ``verifiers/``: this package *produces* rule records
 that a verifier can later *consume*; it never imports the hardcoded rule engines.
 Stdlib only, deterministic, no third-party YAML dependency.
