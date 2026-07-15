@@ -1,0 +1,103 @@
+FIND housing-boss-shell      0 ops  engines=0   consensus=0   disagree=0 crash=0 viol=0
+ok   shaft-shoulders        12 ops  engines=5   consensus=3   disagree=0 crash=0 viol=0  refused: cadquery,openscad
+ok   sheave-vbelt           15 ops  engines=5   consensus=4   disagree=0 crash=0 viol=0  refused: cadquery
+ok   chain-link              7 ops  engines=5   consensus=3   disagree=0 crash=0 viol=0  refused: cadquery,openscad
+ok   plate-fillet-holes      9 ops  engines=5   consensus=3   disagree=0 crash=0 viol=0  refused: cadquery,openscad
+ok   shell-and-holes         7 ops  engines=5   consensus=4   disagree=0 crash=0 viol=0  refused: cadquery
+FIND thinwall-tall           4 ops  engines=5   consensus=5   disagree=0 crash=0 viol=5
+ok   mirror-rib              9 ops  engines=5   consensus=4   disagree=0 crash=0 viol=0  refused: openscad
+ok   assembly-mate           7 ops  engines=5   consensus=4   disagree=0 crash=0 viol=0  refused: cadquery
+FIND loft-duct               5 ops  engines=5   consensus=1   disagree=0 crash=0 viol=2  refused: blender,freecad,frep,openscad
+ok   draft-taper             4 ops  engines=5   consensus=0   disagree=0 crash=0 viol=0  refused: blender,cadquery,freecad,frep,openscad
+
+TIER 2 -- complex shapes, no closed form, no ground truth
+==========================================================================
+
+PROVES:
+  + six independently-built engines were run on the same op stream and
+    their measured geometry (volume, bbox, genus, watertightness) did not
+    disagree beyond each engine's physically-derived tolerance
+  + the metamorphic laws held -- in particular scale_is_cubic, which
+    relates two runs of the SAME engine and therefore holds even for an
+    engine whose absolute numbers are all wrong
+  + the solid that was WRITTEN TO DISK was re-measured by the output gate
+    and was a closed, 2-manifold, positive-volume solid
+  + an engine that REFUSED the plan said so, rather than building a
+    different part quietly
+DOES NOT PROVE:
+  - that any part here is CORRECT -- there is no ground truth in this
+    tier, by construction; that is the whole reason it can be pointed at a
+    gyroid
+  - that the engines are right -- they can SHARE a bug, and a consensus of
+    five wrong answers is indistinguishable here from a consensus of five
+    right ones
+  - that the part matches any brief or intent -- the compared signature is
+    MANY-TO-ONE, and a part with every hole bored in the wrong place
+    matches every number in this report
+  - that an op whose meaning is UNDERDETERMINED was implemented correctly
+    -- six engines can agree because they share a reading of an ambiguous
+    spec
+  - anything at all about a feature finer than the coarsest engine's
+    tessellation
+
+corpus: 11 parts, depth 22 max / 7 median (golden's max is 8)
+        33 op pairs NEVER previously co-emitted (baseline had 40)
+        ops used for the first time: add_instance, draft, loft, mate, mirror
+engines: frep, cadquery, freecad, openscad, blender
+
+stream                   ops consensus                         spread findings
+--------------------------------------------------------------------------
+housing-boss-shell         0 -                                      - agreed
+shaft-shoulders           12 freecad,blender,frep               0.44% 2 refused
+sheave-vbelt              15 freecad,openscad,blender,frep      0.16% 1 refused
+chain-link                 7 freecad,blender,frep               1.18% 2 refused
+plate-fillet-holes         9 freecad,blender,frep               0.08% 2 refused
+shell-and-holes            7 freecad,openscad,blender,frep      0.04% 1 refused
+thinwall-tall              4 cadquery,freecad,openscad,blender,frep     0.00% 5 law
+mirror-rib                 9 cadquery,freecad,blender,frep      0.26% 1 refused
+assembly-mate              7 freecad,openscad,blender,frep      0.02% 1 refused
+loft-duct                  5 cadquery                               - 2 law, 4 refused
+draft-taper                4 -                                      - 5 refused
+
+BROKEN LAWS (metamorphic / property oracle)
+--------------------------------------------------------------------------
+  thinwall-tall          shell_wall_is_thickness_t  frep      shell(t=1.5) of a 30x30x90 box: volume 1
+  thinwall-tall          shell_wall_is_thickness_t  cadquery  shell(t=1.5) of a 30x30x90 box: volume 1
+  thinwall-tall          shell_wall_is_thickness_t  freecad   shell(t=1.5) of a 30x30x90 box: volume 1
+  thinwall-tall          shell_wall_is_thickness_t  openscad  shell(t=1.5) of a 30x30x90 box: volume 1
+  thinwall-tall          shell_wall_is_thickness_t  blender   shell(t=1.5) of a 30x30x90 box: volume 1
+  loft-duct              scale_is_cubic             cadquery  scaling every length by 2 took volume 43
+  loft-duct              scale_is_cubic             cadquery  scaling every length by 2 took bbox [40.
+
+GATE FAILURES -- the solid WRITTEN TO DISK did not pass
+--------------------------------------------------------------------------
+  mirror-rib             cadquery  extrude-wrong-height: extrude(distance=5.0) produc
+
+REFUSALS -- capability gaps, NOT bugs (the engine declined rather than
+            building the part wrong)
+--------------------------------------------------------------------------
+  shaft-shoulders        cadquery  rejected revolve (empty-sketch,under-constra
+  shaft-shoulders        openscad  rejected chamfer (under-constrained,unsuppor
+  sheave-vbelt           cadquery  rejected revolve (empty-sketch,under-constra
+  chain-link             cadquery  rejected hole (bad-value,under-constrained)
+  chain-link             openscad  rejected fillet (under-constrained,unsupport
+  plate-fillet-holes     cadquery  rejected hole (bad-value,under-constrained)
+  plate-fillet-holes     openscad  rejected fillet (under-constrained,unsupport
+  shell-and-holes        cadquery  rejected hole (bad-value,under-constrained)
+  mirror-rib             openscad  rejected chamfer (under-constrained,unsuppor
+  assembly-mate          cadquery  rejected hole (bad-value,under-constrained)
+  loft-duct              blender   rejected loft (under-constrained,unsupported
+  loft-duct              freecad   rejected loft (under-constrained,unsupported
+  loft-duct              frep      rejected loft (under-constrained,unsupported
+  loft-duct              openscad  rejected loft (under-constrained,unsupported
+  draft-taper            blender   rejected draft (under-constrained,unsupporte
+  draft-taper            cadquery  rejected draft (kernel-error,under-constrain
+  draft-taper            freecad   rejected draft (under-constrained,unsupporte
+  draft-taper            frep      rejected draft (under-constrained,unsupporte
+  draft-taper            openscad  rejected draft (under-constrained,unsupporte
+
+8/11 streams: no engine disagreed.
+READ THAT PRECISELY. It means no counterexample was found by an oracle
+that is capable of producing one. It does NOT mean these parts are correct:
+there is no ground truth in this tier, the engines can share a bug, and the
+signature compared is many-to-one. Tier 2 is a bug DETECTOR, not a proof.

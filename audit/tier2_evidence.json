@@ -1,0 +1,1690 @@
+{
+  "counts": {
+    "agreed": 8,
+    "crashes": 0,
+    "disagreements": 0,
+    "gate_failures": 1,
+    "property_violations": 7,
+    "streams": 11,
+    "structural": 0
+  },
+  "coverage": {
+    "baseline_pair_count": 40,
+    "capability_gaps": [
+      "loft",
+      "draft",
+      "sweep"
+    ],
+    "closed_form_parts": 0,
+    "max_depth": 22,
+    "median_depth": 7,
+    "novel_ops": [
+      "add_instance",
+      "draft",
+      "loft",
+      "mate",
+      "mirror"
+    ],
+    "novel_pair_count": 33,
+    "novel_pairs": [
+      "add_circle+fillet",
+      "add_circle+loft",
+      "add_circle+shell",
+      "add_instance+add_rectangle",
+      "add_instance+extrude",
+      "add_instance+hole",
+      "add_instance+mate",
+      "add_instance+new_sketch",
+      "add_line+chamfer",
+      "add_rectangle+draft",
+      "add_rectangle+loft",
+      "add_rectangle+mate",
+      "add_rectangle+mirror",
+      "boolean+chamfer",
+      "boolean+fillet",
+      "boolean+mirror",
+      "boolean+shell",
+      "chamfer+fillet",
+      "chamfer+hole",
+      "chamfer+mirror",
+      "chamfer+revolve",
+      "draft+extrude",
+      "draft+new_sketch",
+      "extrude+mate",
+      "extrude+mirror",
+      "fillet+hole",
+      "fillet+shell",
+      "hole+mate",
+      "hole+revolve",
+      "hole+shell",
+      "loft+new_sketch",
+      "mate+new_sketch",
+      "mirror+new_sketch"
+    ],
+    "parts": 11
+  },
+  "does_not_prove": [
+    "that any part here is CORRECT -- there is no ground truth in this tier, by construction; that is the whole reason it can be pointed at a gyroid",
+    "that the engines are right -- they can SHARE a bug, and a consensus of five wrong answers is indistinguishable here from a consensus of five right ones",
+    "that the part matches any brief or intent -- the compared signature is MANY-TO-ONE, and a part with every hole bored in the wrong place matches every number in this report",
+    "that an op whose meaning is UNDERDETERMINED was implemented correctly -- six engines can agree because they share a reading of an ambiguous spec",
+    "anything at all about a feature finer than the coarsest engine's tessellation"
+  ],
+  "engines": [
+    "frep",
+    "cadquery",
+    "freecad",
+    "openscad",
+    "blender"
+  ],
+  "findings": 8,
+  "oracle": "tier2-differential",
+  "proves": [
+    "six independently-built engines were run on the same op stream and their measured geometry (volume, bbox, genus, watertightness) did not disagree beyond each engine's physically-derived tolerance",
+    "the metamorphic laws held -- in particular scale_is_cubic, which relates two runs of the SAME engine and therefore holds even for an engine whose absolute numbers are all wrong",
+    "the solid that was WRITTEN TO DISK was re-measured by the output gate and was a closed, 2-manifold, positive-volume solid",
+    "an engine that REFUSED the plan said so, rather than building a different part quietly"
+  ],
+  "streams": [
+    {
+      "agreed": false,
+      "clusters": [],
+      "consensus": [],
+      "crashed": {},
+      "depth": 0,
+      "disagreements": [],
+      "engines": [],
+      "error": "worker timed out after 1800s",
+      "gate": {},
+      "measurements": [],
+      "name": "housing-boss-shell",
+      "ops": [],
+      "property_checks": 0,
+      "refused": {},
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": null
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 12,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 18298.801931075894,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 18216.522615187485,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 18294.686130472914,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            28.037035933420274,
+            28.03703593342027,
+            66.00036953552804
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": true,
+          "volume": 18294.686130473452,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "empty-sketch",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            28.0,
+            28.0,
+            66.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 18219.14299571841,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            28.0,
+            28.0,
+            66.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": false,
+          "volume": 18292.34967486325,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            28.0,
+            28.0,
+            66.00000762939453
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": true,
+          "volume": 18298.801930914567,
+          "watertight": true
+        }
+      ],
+      "name": "shaft-shoulders",
+      "ops": [
+        "add_line",
+        "chamfer",
+        "hole",
+        "new_sketch",
+        "revolve"
+      ],
+      "property_checks": 15,
+      "refused": {
+        "cadquery": "rejected revolve (empty-sketch,under-constrained)",
+        "openscad": "rejected chamfer (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.004353232277003938
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "openscad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "openscad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 15,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 87134.88570989994,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 87257.81154150063,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 87199.80439901588,
+          "watertight": true
+        },
+        "openscad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 87134.88199179742,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            80.01722048459766,
+            80.01722048459766,
+            22.000407811756318
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 6,
+          "ok": true,
+          "volume": 87199.8043990241,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "empty-sketch",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            80.0,
+            80.0,
+            22.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 87275.01471305122,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            80.0,
+            80.0,
+            22.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 6,
+          "ok": true,
+          "volume": 87134.88199179742,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            80.0,
+            80.0,
+            22.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 6,
+          "ok": true,
+          "volume": 87134.88570989994,
+          "watertight": true
+        }
+      ],
+      "name": "sheave-vbelt",
+      "ops": [
+        "add_line",
+        "hole",
+        "new_sketch",
+        "revolve"
+      ],
+      "property_checks": 20,
+      "refused": {
+        "cadquery": "rejected revolve (empty-sketch,under-constrained)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.0016056453466612374
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 7,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 7689.507561670344,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 7706.215586086287,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 7781.508137102625,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            60.0160663140631,
+            24.016355101492366,
+            8.000501417159498
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 2,
+          "ok": true,
+          "volume": 7781.5081371024335,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            60.0,
+            24.000000000000004,
+            8.0
+          ],
+          "codes": [
+            "bad-value",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 10611.805027498001,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            60.0,
+            24.000000000000004,
+            8.000000000000002
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 7706.234062716092,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            60.0,
+            24.0,
+            8.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 11520.0,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            60.0,
+            24.0,
+            8.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 2,
+          "ok": true,
+          "volume": 7689.507561670344,
+          "watertight": true
+        }
+      ],
+      "name": "chain-link",
+      "ops": [
+        "add_rectangle",
+        "chamfer",
+        "extrude",
+        "fillet",
+        "hole",
+        "new_sketch"
+      ],
+      "property_checks": 18,
+      "refused": {
+        "cadquery": "rejected hole (bad-value,under-constrained)",
+        "openscad": "rejected fillet (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.011822974905523519
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 9,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 56604.70494229067,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 56608.733770534105,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 56563.312332143134,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            90.05087930908216,
+            60.052326063981575,
+            12.000348530307283
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 5,
+          "ok": true,
+          "volume": 56563.312332139154,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            90.0,
+            60.0,
+            12.0
+          ],
+          "codes": [
+            "bad-value",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 64140.74315795695,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            90.0,
+            60.0,
+            12.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 56608.083620591635,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            90.0,
+            60.0,
+            12.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 64800.0,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            90.0,
+            60.0,
+            12.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 5,
+          "ok": true,
+          "volume": 56604.70494229067,
+          "watertight": true
+        }
+      ],
+      "name": "plate-fillet-holes",
+      "ops": [
+        "add_rectangle",
+        "extrude",
+        "fillet",
+        "hole",
+        "new_sketch"
+      ],
+      "property_checks": 18,
+      "refused": {
+        "cadquery": "rejected hole (bad-value,under-constrained)",
+        "openscad": "rejected fillet (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.0007908992071265754
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "openscad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "openscad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 7,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16464.020479228555,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16463.689607135617,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16458.24583170928,
+          "watertight": true
+        },
+        "openscad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16464.02098203007,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            59.99988549331853,
+            40.000077758969375,
+            25.000001211630135
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 3,
+          "ok": true,
+          "volume": 16458.245831712724,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            60.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "bad-value",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 16687.499999999996,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            60.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 16463.661523431714,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            60.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 3,
+          "ok": true,
+          "volume": 16464.02098203007,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            60.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 3,
+          "ok": true,
+          "volume": 16464.020479228555,
+          "watertight": true
+        }
+      ],
+      "name": "shell-and-holes",
+      "ops": [
+        "add_rectangle",
+        "extrude",
+        "hole",
+        "new_sketch",
+        "shell"
+      ],
+      "property_checks": 36,
+      "refused": {
+        "cadquery": "rejected hole (bad-value,under-constrained)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.00035077398915181273
+    },
+    {
+      "agreed": false,
+      "clusters": [
+        [
+          "cadquery",
+          "freecad",
+          "openscad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 4,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16483.499913096428,
+          "watertight": true
+        },
+        "cadquery": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16483.704459112374,
+          "watertight": true
+        },
+        "openscad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            30.000163719406903,
+            30.000163719406903,
+            89.99981319684274
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": true,
+          "volume": 16483.70445911266,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            30.0,
+            30.0,
+            90.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            30.0,
+            30.0,
+            90.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            30.0,
+            30.0,
+            90.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": true,
+          "volume": 16483.5,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            30.0,
+            30.0,
+            90.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": true,
+          "volume": 16483.499913096428,
+          "watertight": true
+        }
+      ],
+      "name": "thinwall-tall",
+      "ops": [
+        "add_rectangle",
+        "extrude",
+        "new_sketch",
+        "shell"
+      ],
+      "property_checks": 50,
+      "refused": {},
+      "structural_disagreements": 0,
+      "violations": [
+        {
+          "backend": "frep",
+          "detail": "shell(t=1.5) of a 30x30x90 box: volume 16483.7, closed hollow says 17577.0 (off by -6.2%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk1\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"distance\":90.0,\"op\":\"extrude\",\"sketch\":\"sk1\"}",
+            "{\"faces\":[\">Z\"],\"kind\":\"arc\",\"op\":\"shell\",\"thickness\":1.5}"
+          ],
+          "property": "shell_wall_is_thickness_t",
+          "stream": "thinwall-tall"
+        },
+        {
+          "backend": "cadquery",
+          "detail": "shell(t=1.5) of a 30x30x90 box: volume 16483.5, closed hollow says 17577.0 (off by -6.2%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk1\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"distance\":90.0,\"op\":\"extrude\",\"sketch\":\"sk1\"}",
+            "{\"faces\":[\">Z\"],\"kind\":\"arc\",\"op\":\"shell\",\"thickness\":1.5}"
+          ],
+          "property": "shell_wall_is_thickness_t",
+          "stream": "thinwall-tall"
+        },
+        {
+          "backend": "freecad",
+          "detail": "shell(t=1.5) of a 30x30x90 box: volume 16483.5, closed hollow says 17577.0 (off by -6.2%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk1\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"distance\":90.0,\"op\":\"extrude\",\"sketch\":\"sk1\"}",
+            "{\"faces\":[\">Z\"],\"kind\":\"arc\",\"op\":\"shell\",\"thickness\":1.5}"
+          ],
+          "property": "shell_wall_is_thickness_t",
+          "stream": "thinwall-tall"
+        },
+        {
+          "backend": "openscad",
+          "detail": "shell(t=1.5) of a 30x30x90 box: volume 16483.5, closed hollow says 17577.0 (off by -6.2%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk1\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"distance\":90.0,\"op\":\"extrude\",\"sketch\":\"sk1\"}",
+            "{\"faces\":[\">Z\"],\"kind\":\"arc\",\"op\":\"shell\",\"thickness\":1.5}"
+          ],
+          "property": "shell_wall_is_thickness_t",
+          "stream": "thinwall-tall"
+        },
+        {
+          "backend": "blender",
+          "detail": "shell(t=1.5) of a 30x30x90 box: volume 16483.5, closed hollow says 17577.0 (off by -6.2%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk1\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"distance\":90.0,\"op\":\"extrude\",\"sketch\":\"sk1\"}",
+            "{\"faces\":[\">Z\"],\"kind\":\"arc\",\"op\":\"shell\",\"thickness\":1.5}"
+          ],
+          "property": "shell_wall_is_thickness_t",
+          "stream": "thinwall-tall"
+        }
+      ],
+      "volume_spread": 1.2408983474611416e-05
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "cadquery",
+          "freecad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "cadquery",
+        "freecad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 9,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 27526.666666666668,
+          "watertight": true
+        },
+        "cadquery": {
+          "failures": [
+            "extrude-wrong-height: extrude(distance=5.0) produced a part 25.000 mm tall along Z (the XY sketch normal)"
+          ],
+          "genus": null,
+          "ok": false,
+          "volume": 27526.666666666668,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 27526.666666666668,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 27597.155722428724,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            89.9993466463956,
+            39.999939804353914,
+            25.000299439461724
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": true,
+          "volume": 27597.155722430318,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            90.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 27526.666666666668,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            90.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 27526.666666666668,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            90.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 27600.0,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            90.0,
+            40.0,
+            25.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": true,
+          "volume": 27526.666666666668,
+          "watertight": true
+        }
+      ],
+      "name": "mirror-rib",
+      "ops": [
+        "add_rectangle",
+        "boolean",
+        "chamfer",
+        "extrude",
+        "mirror",
+        "new_sketch"
+      ],
+      "property_checks": 28,
+      "refused": {
+        "openscad": "rejected chamfer (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.0025542145166198454
+    },
+    {
+      "agreed": true,
+      "clusters": [
+        [
+          "freecad",
+          "openscad",
+          "blender",
+          "frep"
+        ]
+      ],
+      "consensus": [
+        "freecad",
+        "openscad",
+        "blender",
+        "frep"
+      ],
+      "crashed": {},
+      "depth": 7,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "blender": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 15498.15224936264,
+          "watertight": true
+        },
+        "freecad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 15497.408241972093,
+          "watertight": true
+        },
+        "frep": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 15495.16396275917,
+          "watertight": true
+        },
+        "openscad": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 15498.152400126739,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            40.000024063348626,
+            40.000024063348626,
+            9.999830186337347
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": true,
+          "volume": 15495.163962757439,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            40.0,
+            40.0,
+            10.0
+          ],
+          "codes": [
+            "bad-value",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 15999.999999999996,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            40.0,
+            40.0,
+            10.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 15497.34517542563,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            40.0,
+            40.0,
+            10.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": true,
+          "volume": 15498.152400126739,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            40.0,
+            40.0,
+            10.0
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": 1,
+          "ok": true,
+          "volume": 15498.15224936264,
+          "watertight": true
+        }
+      ],
+      "name": "assembly-mate",
+      "ops": [
+        "add_instance",
+        "add_rectangle",
+        "extrude",
+        "hole",
+        "mate",
+        "new_sketch"
+      ],
+      "property_checks": 24,
+      "refused": {
+        "cadquery": "rejected hole (bad-value,under-constrained)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": 0.00019282539570819173
+    },
+    {
+      "agreed": false,
+      "clusters": [
+        [
+          "cadquery"
+        ]
+      ],
+      "consensus": [
+        "cadquery"
+      ],
+      "crashed": {},
+      "depth": 5,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {
+        "cadquery": {
+          "failures": [],
+          "genus": null,
+          "ok": true,
+          "volume": 43159.28174803367,
+          "watertight": true
+        }
+      },
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            40.0000002,
+            40.0000002,
+            40.0000002
+          ],
+          "codes": [
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": true,
+          "volume": 43160.22187454041,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 0.0,
+          "watertight": false
+        }
+      ],
+      "name": "loft-duct",
+      "ops": [
+        "add_circle",
+        "add_rectangle",
+        "loft",
+        "new_sketch"
+      ],
+      "property_checks": 5,
+      "refused": {
+        "blender": "rejected loft (under-constrained,unsupported-op)",
+        "freecad": "rejected loft (under-constrained,unsupported-op)",
+        "frep": "rejected loft (under-constrained,unsupported-op)",
+        "openscad": "rejected loft (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [
+        {
+          "backend": "cadquery",
+          "detail": "scaling every length by 2 took volume 43160.2 -> 172640.9; k^3 says 345281.8 (off by -50.0%)",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"cx\":0.0,\"cy\":0.0,\"op\":\"add_circle\",\"r\":20.0,\"sketch\":\"sk1\"}",
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk2\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"offsets\":[0.0,40.0],\"op\":\"loft\",\"ruled\":false,\"sketches\":[\"sk1\",\"sk2\"]}"
+          ],
+          "property": "scale_is_cubic",
+          "stream": "loft-duct"
+        },
+        {
+          "backend": "cadquery",
+          "detail": "scaling every length by 2 took bbox [40.0, 40.0, 40.0] -> [80.0, 80.0, 40.0]; k says [80.0, 80.0, 80.0]",
+          "ops": [
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"cx\":0.0,\"cy\":0.0,\"op\":\"add_circle\",\"r\":20.0,\"sketch\":\"sk1\"}",
+            "{\"op\":\"new_sketch\",\"plane\":\"XY\"}",
+            "{\"h\":30.0,\"op\":\"add_rectangle\",\"sketch\":\"sk2\",\"w\":30.0,\"x\":-15.0,\"y\":-15.0}",
+            "{\"offsets\":[0.0,40.0],\"op\":\"loft\",\"ruled\":false,\"sketches\":[\"sk1\",\"sk2\"]}"
+          ],
+          "property": "scale_is_cubic",
+          "stream": "loft-duct"
+        }
+      ],
+      "volume_spread": null
+    },
+    {
+      "agreed": true,
+      "clusters": [],
+      "consensus": [],
+      "crashed": {},
+      "depth": 4,
+      "disagreements": [],
+      "engines": [
+        "frep",
+        "cadquery",
+        "freecad",
+        "openscad",
+        "blender"
+      ],
+      "error": "",
+      "gate": {},
+      "measurements": [
+        {
+          "backend": "frep",
+          "bbox": [
+            39.99989199288729,
+            39.99989199288729,
+            29.999713749848596
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 47998.87294578308,
+          "watertight": true
+        },
+        {
+          "backend": "cadquery",
+          "bbox": [
+            40.0,
+            40.0,
+            30.0
+          ],
+          "codes": [
+            "kernel-error",
+            "under-constrained"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 48000.0,
+          "watertight": true
+        },
+        {
+          "backend": "freecad",
+          "bbox": [
+            40.0,
+            40.0,
+            30.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": null,
+          "ok": false,
+          "volume": 48000.0,
+          "watertight": true
+        },
+        {
+          "backend": "openscad",
+          "bbox": [
+            40.0,
+            40.0,
+            30.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 48000.0,
+          "watertight": true
+        },
+        {
+          "backend": "blender",
+          "bbox": [
+            40.0,
+            40.0,
+            30.0
+          ],
+          "codes": [
+            "under-constrained",
+            "unsupported-op"
+          ],
+          "error": "",
+          "genus": 0,
+          "ok": false,
+          "volume": 48000.0,
+          "watertight": true
+        }
+      ],
+      "name": "draft-taper",
+      "ops": [
+        "add_rectangle",
+        "draft",
+        "extrude",
+        "new_sketch"
+      ],
+      "property_checks": 0,
+      "refused": {
+        "blender": "rejected draft (under-constrained,unsupported-op)",
+        "cadquery": "rejected draft (kernel-error,under-constrained)",
+        "freecad": "rejected draft (under-constrained,unsupported-op)",
+        "frep": "rejected draft (under-constrained,unsupported-op)",
+        "openscad": "rejected draft (under-constrained,unsupported-op)"
+      },
+      "structural_disagreements": 0,
+      "violations": [],
+      "volume_spread": null
+    }
+  ],
+  "tier": 2
+}
