@@ -74,6 +74,65 @@ class AddRectangle(Op):
 
 
 @dataclass(frozen=True)
+class AddArc(Op):
+    """A circular arc entity: centre (cx, cy), radius r, from ``start`` to ``end``
+    degrees (CCW). An arc is a boundary curve, not a closed region on its own — it
+    contributes its sampled points to the sketch's polyline chain exactly as a run
+    of ``AddLine``s would, so a profile of lines+arcs closes into one region. A
+    backend whose profile system cannot chain a curved segment refuses it.
+    """
+
+    OP: ClassVar[str] = "add_arc"
+    sketch: str = ""
+    cx: float = 0.0
+    cy: float = 0.0
+    r: float = 1.0
+    start: float = 0.0
+    end: float = 90.0
+
+
+@dataclass(frozen=True)
+class AddEllipse(Op):
+    """A closed ellipse entity centred at (cx, cy), semi-axes rx/ry, rotated
+    ``rotation`` degrees CCW about its centre. Self-closing (its own region), like
+    a circle."""
+
+    OP: ClassVar[str] = "add_ellipse"
+    sketch: str = ""
+    cx: float = 0.0
+    cy: float = 0.0
+    rx: float = 1.0
+    ry: float = 0.5
+    rotation: float = 0.0
+
+
+@dataclass(frozen=True)
+class AddPolygon(Op):
+    """A closed polygon entity. ``points`` is a FLAT tuple of coordinates
+    (x0, y0, x1, y1, ...) — kept flat (not a tuple of pairs) so the op stays
+    hashable and round-trips through JSON without a nested-list snag. Three or
+    more vertices form a closed region (the closing edge is implied)."""
+
+    OP: ClassVar[str] = "add_polygon"
+    sketch: str = ""
+    points: tuple = ()
+
+
+@dataclass(frozen=True)
+class AddSpline(Op):
+    """A spline entity through control/interpolation ``points`` (a FLAT tuple
+    (x0, y0, x1, y1, ...)). ``closed`` makes it a closed region; otherwise it is a
+    boundary curve that contributes its sampled points to the sketch's polyline
+    chain (like :class:`AddArc`). Backends that cannot express a freeform curve in
+    their profile system refuse it."""
+
+    OP: ClassVar[str] = "add_spline"
+    sketch: str = ""
+    points: tuple = ()
+    closed: bool = False
+
+
+@dataclass(frozen=True)
 class Constrain(Op):
     """A geometric/dimensional constraint. `kind` is one of the CONSTRAINT_DOF keys.
 
@@ -119,6 +178,69 @@ class Boolean(Op):
     kind: str = "union"  # union | cut | intersect
     target: str = ""
     tool: str = ""
+
+
+@dataclass(frozen=True)
+class Primitive(Op):
+    """A parametric solid primitive placed at the origin (before any transform).
+
+    ``shape`` selects the family; only the fields that shape uses are read::
+
+        box       -> dx, dy, dz          (axis-aligned box, corner at origin)
+        sphere    -> r
+        cylinder  -> r, h                 (axis along +Z)
+        cone      -> r, r2, h             (r at base, r2 at top; r2=0 = a point)
+        torus     -> r, r2                (r = major radius, r2 = minor/tube)
+        wedge     -> dx, dy, dz           (right-triangular prism)
+
+    Unused fields are ignored. Every geometry kernel already carries these
+    builders internally (holes use a cylinder, countersinks a cone), so exposing
+    them as one op closes the "cannot make a sphere from its own ops" gap. A
+    backend that cannot build ``shape`` refuses with a typed ``unsupported-op`` —
+    the same discipline Shell / Draft already use.
+    """
+
+    OP: ClassVar[str] = "primitive"
+    shape: str = "box"        # box | sphere | cylinder | cone | torus | wedge
+    dx: float = 1.0
+    dy: float = 1.0
+    dz: float = 1.0
+    r: float = 1.0
+    r2: float = 0.0
+    h: float = 1.0
+
+
+@dataclass(frozen=True)
+class Split(Op):
+    """Section the current solid by an infinite plane; keep one or both halves.
+
+    ``plane`` is a named datum (XY | XZ | YZ) offset by ``offset`` along its
+    normal. ``keep`` is 'positive' (the +normal side), 'negative', or 'both'. It
+    lowers to a boolean cut against a half-space, so every solid backend with a
+    boolean path can express it.
+    """
+
+    OP: ClassVar[str] = "split"
+    plane: str = "XY"
+    offset: float = 0.0
+    keep: str = "positive"   # positive | negative | both
+
+
+@dataclass(frozen=True)
+class Thicken(Op):
+    """Grow / shrink a solid by a wall ``thickness`` (an offset-solid).
+
+    ``faces`` optionally selects the surfaces to thicken (empty = the whole outer
+    surface). ``thickness`` may be negative (inward). ``both`` thickens
+    symmetrically about the surface. Exact in an SDF kernel (a field offset) and
+    in OCCT (``MakeThickSolid`` / ``makeOffsetShape``); a mesh-boolean kernel with
+    a 2D-only offset refuses it honestly.
+    """
+
+    OP: ClassVar[str] = "thicken"
+    faces: tuple = ()
+    thickness: float = 1.0
+    both: bool = False
 
 
 # --- extended mechanical features -----------------------------------------
@@ -343,14 +465,21 @@ CONSTRAINT_DOF = {
     "equal": 1,
 }
 
-# DOF contributed by each sketch primitive.
-PRIMITIVE_DOF = {"point": 2, "line": 4, "circle": 3, "rectangle": 4}
+# DOF contributed by each sketch primitive. The curve entities (arc/ellipse/
+# spline/polygon) carry a nominal count — PRIMITIVE_DOF is an explicit placeholder
+# for a real constraint solver, and these are not pinned by any oracle.
+PRIMITIVE_DOF = {
+    "point": 2, "line": 4, "circle": 3, "rectangle": 4,
+    "arc": 5, "ellipse": 5, "polygon": 4, "spline": 4,
+}
 
 _REGISTRY = {
     c.OP: c
     for c in (
         NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+        AddArc, AddEllipse, AddPolygon, AddSpline,
         Constrain, Extrude, Fillet, Boolean,
+        Primitive, Split, Thicken,
         Revolve, Chamfer, Hole, Shell, Draft,
         Loft, Sweep, LinearPattern, CircularPattern, Mirror,
         AddInstance, Mate, SetParam,
