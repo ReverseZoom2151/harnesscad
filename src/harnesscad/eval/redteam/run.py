@@ -40,6 +40,9 @@ runs a handful, and the full sweep is opt-in behind ``HARNESSCAD_REDTEAM_FULL=1`
 
 from __future__ import annotations
 
+import argparse
+import json
+import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -49,7 +52,8 @@ from harnesscad.eval.selftest.probe import plan_opdag, resolve
 from harnesscad.eval.verifiers import registry as fleet_registry
 from harnesscad.eval.verifiers.verify import Severity
 
-__all__ = ["FalsePositive", "RedTeamReport", "run", "format_text"]
+__all__ = ["FalsePositive", "RedTeamReport", "run", "format_text",
+           "add_arguments", "run_cli", "main"]
 
 
 @dataclass
@@ -290,3 +294,52 @@ def format_text(report: RedTeamReport) -> str:
         if len(report.uncertified) > 12:
             lines.append("  ... and %d more" % (len(report.uncertified) - 12))
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# CLI -- the full sweep is a report a human asks for (see the module docstring).
+# ---------------------------------------------------------------------------
+def add_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--seed", type=int, default=SEED,
+                        help="attack-generation seed (default %d)" % SEED)
+    parser.add_argument("--backend", default="frep",
+                        help="the geometry backend to build attacks on")
+    parser.add_argument("--family", action="append", default=None, dest="families",
+                        metavar="NAME", help="restrict to this attack family "
+                        "(repeatable)")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="cap the number of attacks (the full sweep is costly; "
+                        "opt in with HARNESSCAD_REDTEAM_FULL=1 for no cap)")
+    parser.add_argument("--json", action="store_true",
+                        help="emit the report as JSON instead of text")
+
+
+def run_cli(args: argparse.Namespace) -> int:
+    limit = getattr(args, "limit", None)
+    if limit is None and os.environ.get("HARNESSCAD_REDTEAM_FULL") != "1":
+        # The full sweep builds a real solid per attack (~1-3 s each); default to
+        # a bounded run and say so LOUDLY, never silently.
+        limit = 8
+        print("redteam: bounded to %d attacks (set HARNESSCAD_REDTEAM_FULL=1 or "
+              "--limit for the full sweep)" % limit, flush=True)
+    report = run(seed=getattr(args, "seed", SEED),
+                 backend=getattr(args, "backend", "frep"),
+                 families=getattr(args, "families", None),
+                 limit=limit)
+    if getattr(args, "json", False):
+        print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+    else:
+        print(format_text(report))
+    return 0 if report.ok else 1
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="harnesscad redteam",
+        description="adversarial hunt for FALSE POSITIVES in the verifier fleet")
+    add_arguments(parser)
+    return run_cli(parser.parse_args(list(argv) if argv is not None else None))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
