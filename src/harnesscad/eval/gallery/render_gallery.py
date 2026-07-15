@@ -347,15 +347,60 @@ def build_part(part: Part, backend: Optional[str] = None) -> dict:
     }
 
 
+def gate_part(built: dict) -> dict:
+    """Re-measure the built solid through :mod:`harnesscad.io.gate`.
+
+    Returns ``{ok, failures, volume, watertight, genus}``. This runs on EVERY
+    part, before anything is written.
+
+    It used to run on only the four parts flagged ``drawing``, on the reasoning
+    that a dimensioned engineering drawing of a wrong part is the most dangerous
+    artifact the harness can emit. That is true, and it is not a reason to ship
+    an ungated PNG: a render is the artifact a human actually looks at and
+    believes, and the README is made of renders. When the gate was finally
+    pointed at the whole catalogue it failed SIX of the seven mesh parts --
+    including ``blend-smooth-union``, which had been shipping as an OPEN,
+    non-watertight surface (196 boundary edges) because its marching-cubes sample
+    box did not contain its own slab. The picture looked fine. It always does.
+    """
+    from harnesscad.io import gate as gate_route
+
+    report = gate_route.check(built["mesh"], source=built.get("session"))
+    m = report.measurement if isinstance(report.measurement, dict) else {}
+    return {
+        "ok": bool(report.ok),
+        "failures": [str(f) for f in (report.failures or [])],
+        "volume": m.get("volume"),
+        "watertight": m.get("watertight"),
+        "manifold": m.get("manifold"),
+        "genus": m.get("genus"),
+    }
+
+
 def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
-                stem: Optional[str] = None) -> dict:
-    """Build, render, QC. Returns the manifest row; raises GalleryError on failure."""
+                stem: Optional[str] = None, strict_gate: bool = True) -> dict:
+    """Build, GATE, render, QC. Returns the manifest row; raises GalleryError on failure.
+
+    The gate runs BEFORE a single byte is written. A part that cannot prove it is
+    a closed, 2-manifold, positive-volume solid is not rendered at all -- it is
+    raised as a :class:`GalleryError` and lands in the manifest's ``failed`` list
+    with the gate's own reasons. ``strict_gate=False`` downgrades that to a
+    recorded warning, and exists ONLY so the failing parts can still be
+    inspected; the gallery build never uses it.
+    """
     built = build_part(part, backend=backend)
     if not built["ok"]:
         codes = ", ".join("%s: %s" % (d["code"], d["message"])
                           for d in built["diagnostics"]) or "no geometry"
         raise GalleryError("%s did not build on %s (%s)"
                            % (part.name, built["backend"], codes))
+
+    # THE GATE -- before anything is written.
+    verdict = gate_part(built)
+    if not verdict["ok"] and strict_gate:
+        raise GalleryError("%s FAILED THE GATE on %s: %s"
+                           % (part.name, built["backend"],
+                              "; ".join(verdict["failures"]) or "unknown"))
 
     os.makedirs(out_dir, exist_ok=True)
     base = stem or part.name
@@ -391,6 +436,7 @@ def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
         "sha256": _sha256(png),
         "mesh_sha256": _mesh_digest(built["mesh"]),
         "qc": metrics,
+        "gate": verdict,
     }
 
     if part.drawing:
@@ -399,8 +445,9 @@ def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
             built["mesh"], views=("front", "top", "side", "iso"),
             width=1100.0, height=800.0, show_hidden=True, show_dimensions=True,
             title="harnesscad / " + part.name)
-        # THE GATE: a dimensioned engineering drawing of a wrong part is the
-        # single most dangerous artifact the harness can emit.
+        # The part already cleared gate_part() above; guard() re-asserts it at the
+        # point of writing, because a dimensioned engineering drawing of a wrong
+        # part is the single most dangerous artifact the harness can emit.
         gate.guard(built["mesh"], svg_path, source=built.get("session"))
         with open(svg_path, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(svg)

@@ -435,8 +435,16 @@ def build_blend() -> Mesh:
     fail. A B-rep kernel has no operation with these semantics: it can only
     boolean-then-fillet, which produces a different (and here, unfilletable)
     solid.
+
+    THE SAMPLE BOX MUST CONTAIN THE SOLID. It did not: the slab is
+    ``box_exact(..., (64, 30, 10))`` centred on the origin, so it spans
+    x = -32..+32, and the box stopped at x = +24. Marching cubes has no
+    iso-surface to close against at the wall of its own grid, so it simply
+    stopped -- and emitted an OPEN surface with 196 boundary edges, which the
+    output gate rejects as not-watertight. The render still looked plausible,
+    which is exactly why a picture is not evidence and the gate is.
     """
-    return _tessellate(blend_field, ((-34.0, -18.0, -8.0), (24.0, 18.0, 30.0)), 140)
+    return _tessellate(blend_field, ((-34.0, -18.0, -8.0), (34.0, 18.0, 30.0)), 140)
 
 
 # ---------------------------------------------------------------------------
