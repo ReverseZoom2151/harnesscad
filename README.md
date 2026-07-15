@@ -148,9 +148,9 @@ gallery renders were not corrupted by any of the bugs recorded below.
 The same typed op stream runs on roughly a dozen backends and integrations:
 `cadquery`, `freecad` and `build123d` (all OCCT B-rep); `openscad` (CSG) and
 `blender` (a mesh kernel); `frep` (kernel-free SDF); plus `manifold`, `truck`,
-`rhino3dm`, `onshape`, `zoo` and `microcad`. Twelve or more file formats read and
-write the same geometry (STL, STEP, OBJ, PLY, glTF/GLB, AMF, 3MF, DXF, SVG, 3DM,
-LDraw, KCL, xcsg, and more).
+`rhino3dm`, `onshape`, `zoo` and `microcad`. More than a dozen file formats read and
+write the same geometry (STL, STEP, STEP AP242, OBJ, PLY, glTF/GLB, AMF, 3MF, DXF,
+SVG, 3DM, LDraw, KCL, xcsg, USD/USDZ, OFF, VRML, and more).
 
 But a differential oracle is only as strong as the **independence** of the kernels
 it cross-checks, and here honesty matters more than the headline count. A prior pass
@@ -281,6 +281,34 @@ is the shared instrument the oracle and the hard corpus read from, so "watertigh
 "manifold", "genus" and "self-intersection" mean one thing across the whole
 codebase rather than being re-derived, differently, in five places.
 
+## Parts-Driven Development
+
+Reading the spec-driven-development literature end to end (the SDD paper and
+GitHub's spec-kit, plus MAS-Lab, traceSDD, TDAD and the Kitchen Loop) surfaced why
+software spec-driven development stalls at *spec-anchored*: its validation is
+fallible prose-testing, so a passing spec-test only proves the code matches the
+spec, never that the spec is right. CAD is the exception. A part's acceptance
+criteria are **measurable quantities of the artifact** (volume, genus, wall
+thickness, mass, hole positions, assembly mobility), so the same discipline reaches
+a rung software cannot: **parts-as-measured-source**, where you do not trust the
+generator, you measure its output and refuse on mismatch.
+
+`agents/pdd/` and `domain/spec/contract.py` build this as **Parts-Driven
+Development (PDD)**, mapping the four spec-driven phases onto the harness. Specify
+becomes a **Measured Geometric Contract**: predicates with tolerances, and a
+`[NEEDS CLARIFICATION]` marker for any measurable the brief left unstated, because
+a guessed millimetre is exactly the anti-pattern this repo deleted. Plan is the
+typed op stream, Implement runs it, and Validate is the measured gate above plus
+the differential oracle. A part is certified only when the gate did not refuse, the
+independent kernels agree, every measured predicate passes, and every op is
+attributed to a real geometry change. Three standing gates enforce it: an
+orphan-provenance gate (every op must move real geometry, the traceSDD orphan-REQ
+check applied to a solid), a verifier-fleet mutation score (inject known defects
+and require the oracle kills them), and an op-by-backend-by-format coverage census
+with a drift pause-gate. The design is in `audit/pdd_synthesis.md`, and every
+verdict carries the same honest residual as the oracle: a PASS means the part
+passes every measured predicate, not that it matches the designer's intent.
+
 ## Driving a real CAD GUI
 
 `io/cua/` and `agents/cua/` are a computer-use system for CAD, built from a full
@@ -297,6 +325,11 @@ domain.
   measures through `io/gate.py` and the differential oracle, so a whole trajectory is
   labelled for free. The success signal is measured geometry, not a model's opinion
   of a screenshot.
+
+Environments are built for FreeCAD and Onshape, and for the desktop suites
+SolidWorks, Fusion 360 and Inventor, each reading its result back through the
+application's own mass-property API (COM or in-process) rather than a screenshot, so
+success is a measured volume change and never a click that returned.
 
 The limits are stated plainly in `audit/cua_synthesis.md`: the console tier only
 exists for apps that ship one, Blender draws its own UI and must be driven through
@@ -320,14 +353,16 @@ theorem) or MEASURED (an observed fact) diagnostics may instruct a model, and a 
 HEURISTIC may block a build but never rewrite an answer. That fix and the v2
 apparatus are built. **The frontier re-run that would demonstrate it is pending.**
 
-**The op vocabulary is complete for the shared core, not for everything the
-integrations express.** `audit/cisp_completeness.md` records that the op protocol
-covers the sketch-extrude-feature-history B-rep core every backend shares, but has
-no primitive-solid op, no split or thicken, no hull or minkowski, no arc or spline
-sketch entity, among others. Designs for the three lowest-risk closures (Primitive,
-Split, Thicken) are written down; none were added, because naming a new op is a
-schema change every backend's dispatch depends on, and that is a coordinated change,
-not a solo edit.
+**The op vocabulary now reaches past the shared core, and what remains is named.**
+`audit/cisp_completeness.md` recorded that the protocol covered the
+sketch-extrude-feature-history B-rep core every backend shares. The three
+lowest-risk closures it flagged (Primitive, Split, Thicken) and four sketch
+entities (arc, ellipse, polygon, spline) have since been added and mapped
+**implement-or-refuse across all thirteen backends**: a backend either lowers a new
+op to its kernel or refuses it with a typed diagnostic that taints the measurement,
+never accepting it as garbage. What is still open is the higher-risk vocabulary
+(hull, minkowski, port-typed assembly mates), because naming those is a coordinated
+schema change every backend's dispatch depends on, not a solo edit.
 
 ## The two public boards
 
