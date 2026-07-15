@@ -180,6 +180,61 @@ reachable:
   best. Be explicit about which contract predicates are measured vs advisory -- exactly the
   PROVEN/MEASURED/HEURISTIC split we already ship.
 
+## Convergent prior art: four independent papers land on the same discipline
+
+Four more spec-driven papers (added to resources 2026-07-15) each arrive, from a different
+domain, at the exact discipline HarnessCAD already runs -- and each hands PDD one concrete
+buildable idea. That four independent groups converge here is the strongest evidence the
+PDD rung is real, not branding.
+
+- **MAS-Lab** (Auge et al., Cisco, arXiv 2606.30546) -- "what is specified can be
+  validated." A declarative spec binds to **contracts at every I/O boundary**; the runtime
+  refuses undeclared tool calls and enforces **policy-before-execution** in an
+  open->govern->record->execute->record->close Mealy cycle where **the absence of an
+  external call is explicit in the trace, not inferred from missing logs.** That is our
+  measured-gate + refuse-with-taint almost verbatim (our "third outcome never occurs").
+  Their governance *overlays* (constrain without touching base logic) = our soundness
+  tiers. *Buildable:* formalize the gate as MAS-Lab's six-step boundary contract so a
+  refused op leaves an explicit trace event, not a silence.
+
+- **Citation Discipline / traceSDD** (Panda, arXiv 2606.30689) -- the **orphan-REQ check**.
+  Per-line REQ-XXX citations make hallucination detection a set-difference (86-88% TDR, 0%
+  FPR). The killer finding: **every injected hallucination passed all functional tests** --
+  test-passing != correct, so traceability catches what measurement cannot. *Buildable and
+  high-value:* **CISP provenance citations** -- every geometry feature cites the op(s) that
+  produced it; an orphan feature (geometry no op claims) or orphan op (op that changed
+  nothing) is an automatically detectable defect. This extends our field-liveness census
+  (every (op,field) must change geometry) into a traceSDD-style orphan gate, and directly
+  attacks the MGC's many-to-one residual: a part can hit the right volume for the wrong
+  reason, but it cannot cite an op that isn't there.
+
+- **TDAD** (Rehan, Fiverr Labs, arXiv 2603.08806) -- anti-gaming for spec-driven
+  generation: hidden/visible test splits, **semantic mutation testing** (generate
+  plausible-faulty variants, measure whether the suite catches them -> Mutation Score), and
+  spec-evolution regression. We already ship `test_defect_injection` and the new
+  `heldout_isolation` gate. *Buildable:* promote them to a standing **Mutation Score over
+  the verifier fleet** (inject defects into known-good parts, require the oracle to kill
+  them) and a **hidden-predicate split of the MGC** (hold out contract predicates during
+  generation, evaluate on them) so the model cannot game the visible contract. TDAD's
+  central risk -- "tests become the optimization target" -- is our CUA reward-hacking guard.
+
+- **The Kitchen Loop** (Roy, arXiv 2603.25697) -- **"unbeatable tests: ground-truth
+  verification the code author cannot fake; the test doesn't care HOW the code achieves the
+  result, only that it does."** That is our differential oracle in their words. Their
+  Backtest Service Gap (38 green unit tests, feature totally broken because nobody ran it)
+  is our measured-gate lesson. Their **coverage matrix** (feature x platform x action) = our
+  op x backend x format matrix; their **drift pause gates** = the precision-floor /
+  warning-channel gates we just landed; and their finding that **deterministic verification
+  beats LLM-tribunal judgment for safety-critical gates** = our PROVEN/MEASURED > HEURISTIC
+  tiering. *Buildable:* an explicit op x backend x format **coverage-matrix census** with a
+  drift pause-gate, closing the loop from field-liveness (per-field) up to whole-matrix
+  coverage.
+
+The common shape across all four -- spec/contract + ground-truth verification the generator
+cannot fake + anti-gaming (hidden splits, mutation, deterministic gates) + drift control --
+is PDD's shape. HarnessCAD's edge is that in CAD the ground truth is *measured geometry*,
+so the "unbeatable test" is not a fixture someone wrote but a property of the artifact.
+
 ## One-line thesis
 
 Software spec-driven development is stuck at spec-anchored because its validation is
