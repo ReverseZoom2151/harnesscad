@@ -84,6 +84,23 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.agent.code_repair_rules",
+      "imports": [],
+      "layer": "agents",
+      "name": "code_repair_rules",
+      "package": "agent",
+      "summary": "Deterministic error-to-hint-to-autofix rules for generated CAD code.",
+      "symbols": [
+        "RepairSuggestion",
+        "apply_first_repair",
+        "precheck_syntax",
+        "suggest_repair"
+      ],
+      "tags": [
+        "repair"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.agent.compiler_refine",
       "imports": [
         "harnesscad.eval.judge.compiler_review",
@@ -293,6 +310,25 @@
       "tags": [
         "verify"
       ]
+    },
+    {
+      "dotted": "harnesscad.agents.agent.progressive_escalation",
+      "imports": [],
+      "layer": "agents",
+      "name": "progressive_escalation",
+      "package": "agent",
+      "summary": "Cost-aware progressive escalation policy for a text-to-CAD pipeline.",
+      "symbols": [
+        "EscalationConfig",
+        "PipelineState",
+        "ValidationCheck",
+        "advance",
+        "decide_next_stage",
+        "has_critical_failure",
+        "run_policy",
+        "validation_passed"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.agents.agent.runner",
@@ -8033,6 +8069,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.fabrication.nesting",
+      "imports": [],
+      "layer": "domain",
+      "name": "nesting",
+      "package": "fabrication",
+      "summary": "2-D rectangular part nesting for sheet fabrication (skyline bin-packing).",
+      "symbols": [
+        "NestResult",
+        "NestingError",
+        "Part",
+        "Placement",
+        "SheetLayout",
+        "nest_parts",
+        "nest_report"
+      ],
+      "tags": [
+        "fabrication"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.fabrication.openscad_export",
       "imports": [],
       "layer": "domain",
@@ -8081,6 +8137,52 @@
       "tags": [
         "curves",
         "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.fabrication.planar_layout",
+      "imports": [],
+      "layer": "domain",
+      "name": "planar_layout",
+      "package": "fabrication",
+      "summary": "DBU-quantised planar layout with a deterministic design-rule checker (DRC).",
+      "symbols": [
+        "DRCReport",
+        "Finding",
+        "LayoutError",
+        "PlanarLayout",
+        "Rect",
+        "box_spacing_dbu",
+        "boxes_overlap",
+        "maps_exactly",
+        "run_drc",
+        "to_dbu"
+      ],
+      "tags": [
+        "fabrication",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.fabrication.printability_verdict",
+      "imports": [],
+      "layer": "domain",
+      "name": "printability_verdict",
+      "package": "fabrication",
+      "summary": "Deterministic printability verdict, issue-code taxonomy and fit check.",
+      "symbols": [
+        "FitResult",
+        "Issue",
+        "Measurements",
+        "PrinterProfile",
+        "check_fit",
+        "classify_issues",
+        "printability_verdict",
+        "score_issues"
+      ],
+      "tags": [
+        "fabrication",
+        "verify"
       ]
     },
     {
@@ -11236,6 +11338,29 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.sketch.section_properties",
+      "imports": [],
+      "layer": "domain",
+      "name": "section_properties",
+      "package": "geometry",
+      "summary": "Planar section properties of closed polygons (Open CAD Studio ``MASSPROP``).",
+      "symbols": [
+        "SectionError",
+        "SectionProperties",
+        "area_moments",
+        "centroid",
+        "perimeter",
+        "polygon_area",
+        "principal_moments",
+        "section_properties",
+        "signed_area"
+      ],
+      "tags": [
+        "geometry",
+        "sketch"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.sketch.symmetry",
       "imports": [],
       "layer": "domain",
@@ -13592,6 +13717,28 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.procedural.exterior_completion",
+      "imports": [],
+      "layer": "domain",
+      "name": "exterior_completion",
+      "package": "procedural",
+      "summary": "Parametric roof generation and structural-consistency metrics (ShellMaker).",
+      "symbols": [
+        "GableRoof",
+        "bounding_box",
+        "footprint_violation",
+        "generate_gable_roof",
+        "opening_preservation"
+      ],
+      "tags": [
+        "benchmark",
+        "features",
+        "llm",
+        "parametric",
+        "procedural"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.procedural.incremental_rebuild",
       "imports": [],
       "layer": "domain",
@@ -15164,6 +15311,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.programs.validate.code_safety",
+      "imports": [],
+      "layer": "domain",
+      "name": "code_safety",
+      "package": "programs",
+      "summary": "Static safety gate for model-generated CAD scripts (Text23D).",
+      "symbols": [
+        "CodeSafetyError",
+        "SafetyReport",
+        "SafetyViolation",
+        "allowed_import_roots",
+        "assert_cad_code_safe",
+        "check_cad_code"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.programs.validate.diagnostics",
       "imports": [],
       "layer": "domain",
@@ -16594,6 +16760,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.reconstruction.param_feature_recognition",
+      "imports": [],
+      "layer": "domain",
+      "name": "param_feature_recognition",
+      "package": "reconstruction",
+      "summary": "Parameter-aware topological feature recognition with confidence tiers.",
+      "symbols": [
+        "Face",
+        "FeatureResult",
+        "recognize_center_cutout",
+        "recognize_rounded_corners",
+        "recognize_through_holes"
+      ],
+      "tags": [
+        "parametric",
+        "reconstruction",
+        "topology"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.reconstruction.recognize.dedup",
       "imports": [
         "harnesscad.domain.reconstruction.tokens.cmt",
@@ -17140,6 +17326,26 @@
         "answer_question"
       ],
       "tags": [
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.scene.assembly_trace",
+      "imports": [],
+      "layer": "domain",
+      "name": "assembly_trace",
+      "package": "reconstruction",
+      "summary": "Progressive assembly traces from part hierarchies (Shape of Thought).",
+      "symbols": [
+        "Part",
+        "assembly_order",
+        "build_trace",
+        "component_numeracy",
+        "trace_faithfulness"
+      ],
+      "tags": [
+        "assembly",
+        "curves",
         "reconstruction"
       ]
     },
@@ -19699,6 +19905,29 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.part_brief_parser",
+      "imports": [],
+      "layer": "domain",
+      "name": "part_brief_parser",
+      "package": "spec",
+      "summary": "Deterministic dimensional-brief parser and parametric OpenSCAD emitter.",
+      "symbols": [
+        "BriefParseError",
+        "PartSpec",
+        "brief_to_openscad",
+        "emit_openscad",
+        "hole_positions",
+        "parse_part_brief"
+      ],
+      "tags": [
+        "benchmark",
+        "drawings",
+        "parametric",
+        "parsing",
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.plate_spec",
       "imports": [],
       "layer": "domain",
@@ -20030,6 +20259,30 @@
         "top_level_commands"
       ],
       "tags": [
+        "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.spec.zoo_ml_feedback",
+      "imports": [],
+      "layer": "domain",
+      "name": "zoo_ml_feedback",
+      "package": "spec",
+      "summary": "Zoo ML text-to-CAD *response + feedback* model and acceptance metric.",
+      "symbols": [
+        "AcceptanceStats",
+        "ApiCallStatus",
+        "CreatedAtSortMode",
+        "MlFeedback",
+        "TextToCadResponse",
+        "acceptance_stats",
+        "is_success",
+        "is_terminal",
+        "paginate",
+        "sort_by_created_at"
+      ],
+      "tags": [
+        "benchmark",
         "spec"
       ]
     },
@@ -20853,6 +21106,24 @@
         "paper_casebook"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.bench.data.operation_coverage",
+      "imports": [],
+      "layer": "eval",
+      "name": "operation_coverage",
+      "package": "bench",
+      "summary": "Operation-coverage, diversity and readability metrics for CAD sequence datasets (Zero-to-CAD).",
+      "symbols": [
+        "beyond_sketch_extrude",
+        "operation_coverage",
+        "operation_diversity",
+        "readability"
+      ],
+      "tags": [
+        "benchmark",
+        "dataset"
+      ]
     },
     {
       "dotted": "harnesscad.eval.bench.data.operator_profile",
@@ -21933,6 +22204,27 @@
       ],
       "tags": [
         "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.geometry.scaled_chamfer_reward",
+      "imports": [],
+      "layer": "eval",
+      "name": "scaled_chamfer_reward",
+      "package": "bench",
+      "summary": "Scaled Chamfer Distance reward with a fail-stage taxonomy (StepForge).",
+      "symbols": [
+        "RewardConfig",
+        "RewardResult",
+        "chamfer_distance",
+        "compute_reward",
+        "r_geo",
+        "scaled_chamfer_distance"
+      ],
+      "tags": [
+        "features",
+        "format",
+        "io"
       ]
     },
     {
@@ -23324,6 +23616,41 @@
         "benchmark",
         "optimization",
         "topology"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.protocols.typed_requirements",
+      "imports": [],
+      "layer": "eval",
+      "name": "typed_requirements",
+      "package": "bench",
+      "summary": "Typed engineering-requirement checking with partial credit (Self-Improving FEA).",
+      "symbols": [
+        "Requirement",
+        "check",
+        "grade",
+        "mean_requirement_pass",
+        "strict_pass"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.protocols.unified_multitask",
+      "imports": [],
+      "layer": "eval",
+      "name": "unified_multitask",
+      "package": "bench",
+      "summary": "Unified multi-task, multi-modal CAD scorecard and CAD-QA metric (UniCAD).",
+      "symbols": [
+        "TaskSpec",
+        "cad_qa_accuracy",
+        "normalise_score",
+        "unified_score"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -26622,6 +26949,32 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.quality.geometry.defect_injection",
+      "imports": [],
+      "layer": "eval",
+      "name": "defect_injection",
+      "package": "quality",
+      "summary": "Injected-defect benchmark for geometry verifiers (Roshera certificate).",
+      "symbols": [
+        "BenchmarkResult",
+        "DefectError",
+        "Mesh",
+        "inject_degenerate_facet",
+        "inject_flipped_normal",
+        "inject_non_manifold",
+        "inject_torn_seam",
+        "run_benchmark",
+        "topology_verifier",
+        "unit_cube_mesh",
+        "unit_tetrahedron"
+      ],
+      "tags": [
+        "benchmark",
+        "quality",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.quality.geometry.frame_coherence",
       "imports": [],
       "layer": "eval",
@@ -26673,6 +27026,23 @@
       "tags": [
         "benchmark",
         "meshing",
+        "quality"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.quality.geometry.solid_usability",
+      "imports": [],
+      "layer": "eval",
+      "name": "solid_usability",
+      "package": "quality",
+      "summary": "Solid-usability gate over *measured* geometry descriptors (cadsmith).",
+      "symbols": [
+        "Measurement",
+        "UsabilityFinding",
+        "UsabilityReport",
+        "assess"
+      ],
+      "tags": [
         "quality"
       ]
     },
@@ -26964,6 +27334,27 @@
         "motor_torque_budget",
         "rectangular_section",
         "simply_supported_deflection"
+      ],
+      "tags": [
+        "quality",
+        "simulation"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.quality.physics.cae_credibility_ladder",
+      "imports": [],
+      "layer": "eval",
+      "name": "cae_credibility_ladder",
+      "package": "quality",
+      "summary": "CAE credibility ladder -- an evidence-tier classifier for CAE results.",
+      "symbols": [
+        "CaeEvidence",
+        "CredibilityAssessment",
+        "MeshStatus",
+        "assess_cae_credibility",
+        "assess_vnv40_tier",
+        "ladder_rank",
+        "vnv40_rank"
       ],
       "tags": [
         "quality",
