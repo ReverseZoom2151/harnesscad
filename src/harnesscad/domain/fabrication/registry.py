@@ -42,8 +42,13 @@ __all__ = [
     "readiness",
     "panels",
     "nest",
+    "nest_parts",
     "bricks",
     "brick_colors",
+    "brick_assembly",
+    "overhangs",
+    "planar_drc",
+    "printability",
     "difficulty",
     "feature_attributes",
     "export_plan",
@@ -200,8 +205,65 @@ def nest(exterior_height: float, exterior_width: float, exterior_depth: float,
 
 
 # --------------------------------------------------------------------------- #
+# Sheet nesting (an already-flattened list of rectangles -> a sheet layout)
+# --------------------------------------------------------------------------- #
+def nest_parts(parts: Sequence[Mapping[str, Any]], sheet_w: float, sheet_h: float,
+               kerf: float = 0.0, margin: float = 0.0,
+               allow_rotate: bool = True, material: Optional[str] = None) -> dict:
+    """Pack rectangular blanks onto stock sheets (skyline bottom-left nesting).
+
+    Distinct from :func:`nest`, which DERIVES a cabinet's panels first. This
+    takes an already-flattened list of ``{name, w, h, qty}`` rectangles and
+    answers the shop-floor questions: how many sheets, what utilisation, cut
+    length. Parts that exceed the usable area are reported, never dropped.
+    """
+    from harnesscad.domain.fabrication.nesting import (
+        Part, nest_parts as nest_parts_impl, nest_report,
+    )
+
+    blanks = [Part(name=str(p["name"]), w=float(p["w"]), h=float(p["h"]),
+                   qty=int(p.get("qty", 1))) for p in parts]
+    result = nest_parts_impl(blanks, float(sheet_w), float(sheet_h),
+                             kerf=float(kerf), margin=float(margin),
+                             allow_rotate=bool(allow_rotate))
+    return {
+        "ok": bool(result.ok),
+        "error": result.error,
+        "sheets_used": result.sheets_used,
+        "utilization": result.utilization,
+        "cut_length": result.cut_length,
+        "placements": [{"name": p.name, "x": p.x, "y": p.y, "w": p.w, "h": p.h,
+                        "rotated": bool(p.rotated), "sheet": p.sheet}
+                       for p in result.placements],
+        "report": nest_report(result, material=material, kerf=float(kerf)),
+    }
+
+
+# --------------------------------------------------------------------------- #
 # Bricks
 # --------------------------------------------------------------------------- #
+def brick_assembly(text: str, world_dim: int = 20) -> dict:
+    """Parse BrickGPT ``HxW (x,y,z)`` text and return the buildability verdict.
+
+    A structure is buildable only when every brick is in bounds, non-overlapping,
+    supported (not floating), and connected to the ground -- the deterministic,
+    solver-free structural predicates a verifier-first harness re-prompts on.
+    """
+    from harnesscad.domain.fabrication.brick_assembly import parse_text, validate
+
+    structure = parse_text(text, world_dim=int(world_dim))
+    report = validate(structure)
+    return {
+        "buildable": bool(report.buildable),
+        "out_of_bounds": bool(report.out_of_bounds),
+        "collisions": bool(report.collisions),
+        "floating": bool(report.floating),
+        "disconnected": bool(report.disconnected),
+        "reasons": list(report.reasons),
+        "brick_count": len(structure),
+    }
+
+
 def bricks(voxels: Sequence[Tuple[int, int, int]], seed: Optional[int] = 0) -> List[dict]:
     """A voxel occupancy set -> a LEGAL brick layout that covers it exactly."""
     from harnesscad.domain.fabrication.legolization import covers_exactly, legolize
@@ -254,6 +316,106 @@ def feature_attributes(feature: str, raw: Mapping[str, Any]) -> dict:
         "declares": list(attributes_of(name)),
         "attributes": extract_attributes(name, dict(raw)),
     }
+
+
+# --------------------------------------------------------------------------- #
+# DFAM: overhang detection + build-orientation search
+# --------------------------------------------------------------------------- #
+def overhangs(faces: Sequence[Mapping[str, Any]],
+              build_dir: Sequence[float] = (0.0, 0.0, 1.0),
+              threshold_deg: float = 45.0) -> dict:
+    """Flag unsupported FDM overhang faces and pick the best build orientation.
+
+    Each face carries an outward ``normal`` (and optional ``area``/``id``). A
+    downward-facing surface tilted past the threshold cannot print without
+    support; :func:`best_orientation` minimises total overhang area over the six
+    axis-aligned build directions. AgentsCAD's deterministic DFAM floor.
+    """
+    from harnesscad.domain.fabrication.overhang import (
+        best_orientation, overhang_faces, total_overhang_area,
+    )
+
+    faces = list(faces)
+    bd = tuple(float(c) for c in build_dir)
+    flagged = overhang_faces(faces, bd, float(threshold_deg))
+    best_dir, best_area = best_orientation(faces, threshold_deg=float(threshold_deg))
+    return {
+        "overhang_faces": [{"face_id": f.face_id, "angle_from_up_deg": f.angle_from_up_deg,
+                            "overhang_deg": f.overhang_deg, "area": f.area}
+                           for f in flagged],
+        "total_overhang_area": total_overhang_area(faces, bd, float(threshold_deg)),
+        "best_orientation": list(best_dir),
+        "best_overhang_area": best_area,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Planar (mask-style) layout DRC
+# --------------------------------------------------------------------------- #
+def planar_drc(boxes: Sequence[Mapping[str, Any]],
+               layers: Optional[Mapping[str, Sequence[int]]] = None,
+               dbu_um: float = 0.001, min_width_um: Optional[float] = None,
+               min_spacing_um: Optional[float] = None,
+               check_shorts: bool = True) -> dict:
+    """DBU-quantised planar layout + design-rule checker.
+
+    ``boxes`` are ``{layer, x1, y1, x2, y2}`` rectangles authored in micrometres
+    and stored as exact integer database units. Checks positive closed area,
+    minimum width, same-layer spacing, and same-layer overlaps (shorts). The
+    2-D, integer-grid checking counterpart to :func:`nest_parts`.
+    """
+    from harnesscad.domain.fabrication.planar_layout import PlanarLayout, run_drc
+
+    layout = PlanarLayout(dbu_um=float(dbu_um))
+    for name, spec in dict(layers or {}).items():
+        spec = list(spec)
+        layout.ensure_layer(name, int(spec[0]),
+                            int(spec[1]) if len(spec) > 1 else 0)
+    for b in boxes:
+        layer = str(b["layer"])
+        if layer not in layout.layers:
+            layout.ensure_layer(layer, len(layout.layers))
+        layout.add_box_um(layer, float(b["x1"]), float(b["y1"]),
+                          float(b["x2"]), float(b["y2"]))
+    report = run_drc(layout, min_width_um=min_width_um,
+                     min_spacing_um=min_spacing_um, check_shorts=bool(check_shorts))
+    return {
+        "passed": bool(report.passed),
+        "rule_ids": report.rule_ids(),
+        "findings": [{"severity": f.severity, "rule_id": f.rule_id,
+                      "layer": f.layer, "message": f.message}
+                     for f in report.findings],
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Printability verdict (judges already-measured metrics)
+# --------------------------------------------------------------------------- #
+def printability(size_mm: Sequence[float], is_valid_solid: Optional[bool] = None,
+                 is_watertight: Optional[bool] = None,
+                 min_wall_mm: Optional[float] = None,
+                 overhang_area_ratio: Optional[float] = None,
+                 short_edges: int = 0, tiny_faces: int = 0,
+                 profile: Optional[Mapping[str, Any]] = None) -> dict:
+    """Judge already-measured geometry metrics into forgent3d's printability contract.
+
+    Turns numbers (bbox size, min wall, overhang ratio, small-feature counts)
+    into issue codes, a 0-100 score and a printable verdict. Distinct from
+    :func:`overhangs`, which DETECTS overhang; this JUDGES a measured bundle
+    against a printer profile, with one deterministic scoring definition.
+    """
+    from harnesscad.domain.fabrication.printability_verdict import (
+        Measurements, PrinterProfile, printability_verdict,
+    )
+
+    prof = PrinterProfile(**dict(profile)) if profile else PrinterProfile()
+    m = Measurements(
+        size_mm=tuple(float(v) for v in size_mm),
+        is_valid_solid=is_valid_solid, is_watertight=is_watertight,
+        min_wall_mm=min_wall_mm, overhang_area_ratio=overhang_area_ratio,
+        short_edges=int(short_edges), tiny_faces=int(tiny_faces),
+    )
+    return printability_verdict(m, prof)
 
 
 # --------------------------------------------------------------------------- #
@@ -316,12 +478,22 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "the go/no-go prototype gate (watertight, fragmentation, volume, provenance)"),
     ("flatpack", "panels", _FAB + "flatpack_panels",
      "a cabinet -> panels -> a sheet-bed nesting report"),
+    ("flatpack", "nest_parts", _FAB + "nesting",
+     "2-D rectangular part nesting onto stock sheets (skyline bin-packing)"),
     ("brick", "bricks", _FAB + "legolization",
      "a voxel model -> a legal brick layout that covers it exactly"),
     ("brick", "brick_colors", _FAB + "brick_coloring",
      "per-brick LEGO palette colours from per-voxel face colours"),
     ("brick", "bricks", _FAB + "brick_library",
      "the legal brick parts, their serialisation and raster ordering"),
+    ("brick", "brick_assembly", _FAB + "brick_assembly",
+     "BrickGPT brick structure + buildability checks (bounds, collision, floating, connectivity)"),
+    ("dfam", "overhangs", _FAB + "overhang",
+     "FDM overhang detection + build-orientation search (AgentsCAD DFAM floor)"),
+    ("dfam", "printability", _FAB + "printability_verdict",
+     "printability verdict, issue-code taxonomy and build-volume fit (forgent3d)"),
+    ("layout", "planar_drc", _FAB + "planar_layout",
+     "DBU-quantised planar layout + mask-style design-rule checker"),
     ("feature", "difficulty", _FAB + "feature_difficulty",
      "machining difficulty from a feature histogram; dataset stratification"),
     ("feature", "feature_attributes", _FAB + "feature_attributes",
