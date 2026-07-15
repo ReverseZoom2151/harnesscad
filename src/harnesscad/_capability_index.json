@@ -1657,6 +1657,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.generation.modeling_plan_scaffold",
+      "imports": [],
+      "layer": "agents",
+      "name": "modeling_plan_scaffold",
+      "package": "generation",
+      "summary": "Five-part CAD modeling-plan scaffold (UniCAD structured description hierarchy).",
+      "symbols": [
+        "classify_line",
+        "coverage",
+        "empty_scaffold",
+        "render",
+        "structure_description"
+      ],
+      "tags": [
+        "curves",
+        "generation"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.generation.plate_stack_assembly",
       "imports": [
         "harnesscad.domain.geometry.sketch.parametric_profile",
@@ -3012,6 +3031,8 @@
         "harnesscad.core.trace.JsonlTracer",
         "harnesscad.data",
         "harnesscad.data.pipeline",
+        "harnesscad.domain.assembly",
+        "harnesscad.domain.assembly.registry",
         "harnesscad.domain.editing",
         "harnesscad.domain.editing.registry",
         "harnesscad.domain.fabrication",
@@ -3066,6 +3087,7 @@
         "build_parser",
         "cmd_agent",
         "cmd_apply",
+        "cmd_assembly",
         "cmd_bench",
         "cmd_build",
         "cmd_capabilities",
@@ -10657,6 +10679,25 @@
       "tags": [
         "geometry",
         "sketch"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.sketch.constraint_satisfaction",
+      "imports": [],
+      "layer": "domain",
+      "name": "constraint_satisfaction",
+      "package": "geometry",
+      "summary": "Sketch constraint-satisfaction checker (HistCAD, Dong et al. 2026, Table 3).",
+      "symbols": [
+        "Constraint",
+        "satisfaction_rate",
+        "satisfies"
+      ],
+      "tags": [
+        "constraints",
+        "geometry",
+        "sketch",
+        "verify"
       ]
     },
     {
