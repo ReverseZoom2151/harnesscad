@@ -43,6 +43,25 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.agent.assembly_trace",
+      "imports": [],
+      "layer": "agents",
+      "name": "assembly_trace",
+      "package": "agent",
+      "summary": "Progressive assembly-trace plan structuring, mined from Shape-of-Thought",
+      "symbols": [
+        "AssemblyStep",
+        "AssemblyTrace",
+        "build_trace",
+        "component_numeracy",
+        "rationale_alignment",
+        "trace_stability"
+      ],
+      "tags": [
+        "assembly"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.agent.attachments",
       "imports": [],
       "layer": "agents",
@@ -63,6 +82,26 @@
         "verify",
         "vision"
       ]
+    },
+    {
+      "dotted": "harnesscad.agents.agent.compiler_refine",
+      "imports": [
+        "harnesscad.eval.judge.compiler_review",
+        "harnesscad.eval.judge.compiler_review.ReviewResult",
+        "harnesscad.eval.judge.compiler_review.feedback_message",
+        "harnesscad.eval.judge.compiler_review.review_sequence"
+      ],
+      "layer": "agents",
+      "name": "compiler_refine",
+      "package": "agent",
+      "summary": "Compiler-review refine loop (CRM), mined from cad-judge (arXiv:2508.04002).",
+      "symbols": [
+        "RefineResult",
+        "RefineStep",
+        "build_refine_prompt",
+        "run_refine_loop"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.agents.agent.edit_session",
@@ -148,6 +187,21 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.agent.locate_then_infill",
+      "imports": [],
+      "layer": "agents",
+      "name": "locate_then_infill",
+      "package": "agent",
+      "summary": "Locate-then-infill edit-plan construction, mined from CAD-Editor",
+      "symbols": [
+        "InfillPlan",
+        "apply_infill",
+        "build_infill_plan",
+        "locate_span"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.agents.agent.observation",
       "imports": [],
       "layer": "agents",
@@ -162,6 +216,25 @@
         "infra",
         "io"
       ]
+    },
+    {
+      "dotted": "harnesscad.agents.agent.pair_programming",
+      "imports": [],
+      "layer": "agents",
+      "name": "pair_programming",
+      "package": "agent",
+      "summary": "Driver/Navigator pair-programming loop controller, mined from PairCoder++",
+      "symbols": [
+        "PairResult",
+        "Round",
+        "SwitchPolicy",
+        "build_driver_fix_prompt",
+        "build_navigator_prompt",
+        "run_pair_loop",
+        "select_best",
+        "should_switch"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.agents.agent.plan_envelope",
@@ -431,6 +504,22 @@
         "step_accuracy",
         "trajectory_from_steps",
         "trajectory_from_trace"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.agent.triz_matrix",
+      "imports": [],
+      "layer": "agents",
+      "name": "triz_matrix",
+      "package": "agent",
+      "summary": "TRIZ contradiction matrix as a deterministic ideation scaffold (Lee et al.,",
+      "symbols": [
+        "enhancement_context",
+        "parameter_name",
+        "principle_name",
+        "recommend_named",
+        "recommend_principles"
       ],
       "tags": []
     },
@@ -4455,6 +4544,19 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.data.dataengine.preference.compiler_judge",
+      "imports": [],
+      "layer": "data",
+      "name": "compiler_judge",
+      "package": "dataengine",
+      "summary": "Compiler-as-a-Judge (CJM) binary labelling rule (CAD-Judge, Zhou et al.,",
+      "symbols": [
+        "cjm_label",
+        "label_batch"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.data.dataengine.preference.dpo_pairs",
       "imports": [],
       "layer": "data",
@@ -4533,7 +4635,10 @@
         "ppo_clip_objective",
         "select_strongest"
       ],
-      "tags": []
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
     },
     {
       "dotted": "harnesscad.data.dataengine.reward.curriculum_reward",
@@ -4639,7 +4744,10 @@
         "partition_questions",
         "select_objective"
       ],
-      "tags": []
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
     },
     {
       "dotted": "harnesscad.data.dataengine.reward.iou_reward",
@@ -4734,7 +4842,10 @@
         "total_reward",
         "work_plane_reward"
       ],
-      "tags": []
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
     },
     {
       "dotted": "harnesscad.data.dataengine.schemas.anomaly",
@@ -6091,7 +6202,35 @@
         "InterferenceResult",
         "check_interference"
       ],
-      "tags": []
+      "tags": [
+        "assembly"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.assembly.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.domain.assembly.interference",
+        "harnesscad.domain.assembly.interference.AABB",
+        "harnesscad.domain.assembly.interference.check_interference",
+        "harnesscad.registry"
+      ],
+      "layer": "domain",
+      "name": "registry",
+      "package": "assembly",
+      "summary": "The assembly-checks surface -- dispatch into deterministic placement checks.",
+      "symbols": [
+        "add_arguments",
+        "check",
+        "discover",
+        "main",
+        "routed_modules",
+        "run_cli"
+      ],
+      "tags": [
+        "assembly",
+        "verify"
+      ]
     },
     {
       "dotted": "harnesscad.domain.drawings.annotation_mapping",
@@ -6347,6 +6486,24 @@
       ],
       "tags": [
         "assembly",
+        "drawings"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.drawings.hough_primitives",
+      "imports": [],
+      "layer": "domain",
+      "name": "hough_primitives",
+      "package": "drawings",
+      "summary": "Hough-transform line and circle detection from 2D edge points.",
+      "symbols": [
+        "HoughCircle",
+        "HoughLine",
+        "hough_circles",
+        "hough_lines",
+        "point_line_distance"
+      ],
+      "tags": [
         "drawings"
       ]
     },
@@ -6749,6 +6906,28 @@
         "drawings",
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.drawings.text_symbol_graph",
+      "imports": [],
+      "layer": "domain",
+      "name": "text_symbol_graph",
+      "package": "drawings",
+      "summary": "Text-enhanced primitive graph with type-aware edge features for symbol spotting.",
+      "symbols": [
+        "Node",
+        "annotation_counts",
+        "build_nodes",
+        "edge_relation",
+        "edge_type_onehot",
+        "filter_annotations",
+        "knn_neighbors",
+        "type_aware_edge_features"
+      ],
+      "tags": [
+        "drawings",
+        "graph"
       ]
     },
     {
@@ -7515,6 +7694,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.fabrication.brick_assembly",
+      "imports": [],
+      "layer": "domain",
+      "name": "brick_assembly",
+      "package": "fabrication",
+      "summary": "Discrete brick-assembly representation with deterministic validity checks,",
+      "symbols": [
+        "AssemblyReport",
+        "Brick",
+        "BrickStructure",
+        "parse_text",
+        "validate"
+      ],
+      "tags": [
+        "assembly",
+        "fabrication",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.fabrication.brick_coloring",
       "imports": [
         "harnesscad.domain.fabrication.brick_library",
@@ -7689,6 +7888,28 @@
         "warnings_only"
       ],
       "tags": [
+        "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.fabrication.overhang",
+      "imports": [],
+      "layer": "domain",
+      "name": "overhang",
+      "package": "fabrication",
+      "summary": "FDM overhang detection, build-orientation search, and stability descriptors.",
+      "symbols": [
+        "FaceOverhang",
+        "best_orientation",
+        "elongation_index",
+        "is_overhang",
+        "overhang_angle_deg",
+        "overhang_faces",
+        "radius_of_gyration",
+        "total_overhang_area"
+      ],
+      "tags": [
+        "curves",
         "fabrication"
       ]
     },
@@ -8040,6 +8261,33 @@
       "tags": [
         "assembly",
         "geometry"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.assembly.mobility",
+      "imports": [
+        "harnesscad.domain.geometry.assembly.mates",
+        "harnesscad.domain.geometry.assembly.mates.CONTACT_MATES",
+        "harnesscad.domain.geometry.assembly.mates.MATE_DOF_REMOVED",
+        "harnesscad.domain.geometry.assembly.mates.MATE_TYPES"
+      ],
+      "layer": "domain",
+      "name": "mobility",
+      "package": "geometry",
+      "summary": "Mechanism mobility, kinematic-tree validity, and mate-aware clash classification.",
+      "symbols": [
+        "MobilityReport",
+        "assembly_connectivity",
+        "classify_clash",
+        "kutzbach_mobility",
+        "mate_freedom",
+        "tree_dof",
+        "validate_kinematic_tree"
+      ],
+      "tags": [
+        "assembly",
+        "geometry",
+        "kinematics"
       ]
     },
     {
@@ -10556,6 +10804,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.sketch.flat_sketch",
+      "imports": [],
+      "layer": "domain",
+      "name": "flat_sketch",
+      "package": "geometry",
+      "summary": "Flat sketch representation via symmetric difference (HistCAD, Dong et al. 2026).",
+      "symbols": [
+        "SubPrimitive",
+        "flatten_edge_keys",
+        "flatten_faces",
+        "is_boundary_valid",
+        "merge_collinear",
+        "recover_loops"
+      ],
+      "tags": [
+        "benchmark",
+        "geometry",
+        "sketch"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.sketch.loop_validity",
       "imports": [],
       "layer": "domain",
@@ -11958,6 +12227,26 @@
         "library",
         "parametric",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.library.gear_train",
+      "imports": [],
+      "layer": "domain",
+      "name": "gear_train",
+      "package": "library",
+      "summary": "Deterministic spur/helical gear-train parameter math, mined from CAD-GPT.",
+      "symbols": [
+        "GearGeometry",
+        "MeshResult",
+        "gear_geometry",
+        "mesh_pair",
+        "snap_module"
+      ],
+      "tags": [
+        "library",
+        "mechanical",
+        "parametric"
       ]
     },
     {
@@ -14409,6 +14698,25 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.domain.programs.topological_naming",
+      "imports": [],
+      "layer": "domain",
+      "name": "topological_naming",
+      "package": "programs",
+      "summary": "Persistent topological-element naming and query-based entity references.",
+      "symbols": [
+        "EntityQuery",
+        "EntityRecord",
+        "PersistentName",
+        "make_persistent_name",
+        "reference_survives",
+        "resolve_query"
+      ],
+      "tags": [
+        "topology"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.programs.validate.bpy_script",
       "imports": [],
       "layer": "domain",
@@ -14771,6 +15079,29 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.reconstruction.brep.coedge_walk",
+      "imports": [],
+      "layer": "domain",
+      "name": "coedge_walk",
+      "package": "reconstruction",
+      "summary": "Half-edge (co-edge) topological walk over a B-Rep, A2Z style.",
+      "symbols": [
+        "CoEdge",
+        "HalfEdgeStructure",
+        "boundary_co_edges",
+        "build_half_edges",
+        "is_manifold",
+        "loop_of",
+        "mate_face",
+        "walk_loop"
+      ],
+      "tags": [
+        "brep",
+        "reconstruction",
+        "topology"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.reconstruction.brep.entity_features",
       "imports": [],
       "layer": "domain",
@@ -14943,6 +15274,27 @@
       "tags": [
         "brep",
         "graph",
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.brep.voronoi_half_patch",
+      "imports": [],
+      "layer": "domain",
+      "name": "voronoi_half_patch",
+      "package": "reconstruction",
+      "summary": "Voronoi Half-Patch decomposition of a B-Rep face's parametric domain.",
+      "symbols": [
+        "HalfPatch",
+        "VoronoiHalfPatches",
+        "decompose_face",
+        "distance_to_polyline",
+        "nearest_curve"
+      ],
+      "tags": [
+        "benchmark",
+        "brep",
+        "parametric",
         "reconstruction"
       ]
     },
@@ -15455,6 +15807,25 @@
         "make_silhouette"
       ],
       "tags": [
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.fitting.wire_assembly",
+      "imports": [],
+      "layer": "domain",
+      "name": "wire_assembly",
+      "package": "reconstruction",
+      "summary": "Weld a bag of edge polylines into oriented closed loops (faceformer wires).",
+      "symbols": [
+        "LoopAssembly",
+        "WeldResult",
+        "assemble_loops",
+        "circle_from_three_points",
+        "weld_endpoints"
+      ],
+      "tags": [
+        "assembly",
         "reconstruction"
       ]
     },
@@ -16147,6 +16518,23 @@
       "tags": [
         "benchmark",
         "rag",
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.recognize.uv_grid_style",
+      "imports": [],
+      "layer": "domain",
+      "name": "uv_grid_style",
+      "package": "reconstruction",
+      "summary": "UV-grid Gram style fingerprints (the deterministic core of UVStyle-Net).",
+      "symbols": [
+        "gram_vector",
+        "style_distance",
+        "style_fingerprint"
+      ],
+      "tags": [
+        "fabrication",
         "reconstruction"
       ]
     },
@@ -16955,6 +17343,21 @@
         "reconstruction",
         "sketch",
         "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.sequences.spcc_components",
+      "imports": [],
+      "layer": "domain",
+      "name": "spcc_components",
+      "package": "reconstruction",
+      "summary": "SPCC component segmentation and extrusion-direction labelling (CAD-Llama, Li",
+      "symbols": [
+        "classify_extrusion_direction",
+        "collapse_equivalent_components"
+      ],
+      "tags": [
+        "reconstruction"
       ]
     },
     {
@@ -20163,6 +20566,23 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.generative.text2cad_complexity",
+      "imports": [],
+      "layer": "eval",
+      "name": "text2cad_complexity",
+      "package": "bench",
+      "summary": "Text2CAD-Bench complexity-level classifier (L1-L3) for CadQuery programs.",
+      "symbols": [
+        "LevelReport",
+        "classify_level",
+        "complexity_report",
+        "method_calls"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.geometry.accuracy_completeness",
       "imports": [
         "harnesscad.domain.geometry.transforms.umeyama",
@@ -21274,7 +21694,10 @@
         "ablation_matrix",
         "promotion"
       ],
-      "tags": []
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
     },
     {
       "dotted": "harnesscad.eval.bench.harness.tool_retrieval",
@@ -21495,6 +21918,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.multiobjective",
+      "imports": [],
+      "layer": "eval",
+      "name": "multiobjective",
+      "package": "bench",
+      "summary": "Deterministic multi-objective design scoring (feasibility + hypervolume).",
+      "symbols": [
+        "ScoreCard",
+        "feasibility_mask",
+        "feasibility_rate",
+        "hypervolume",
+        "normalize_objectives",
+        "score_population"
+      ],
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.protocols.appearance_invariance",
       "imports": [],
       "layer": "eval",
@@ -21548,6 +21991,30 @@
       ],
       "tags": [
         "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.protocols.cad_cae_closed_loop",
+      "imports": [],
+      "layer": "eval",
+      "name": "cad_cae_closed_loop",
+      "package": "bench",
+      "summary": "Closed-loop CAD-CAE result extraction, cost, and multi-constraint reward.",
+      "symbols": [
+        "Feasibility",
+        "constraint_reward",
+        "displacement_magnitude",
+        "evaluate_feasibility",
+        "feasible_then_stop_penalty",
+        "format_reward",
+        "material_cost",
+        "max_displacement",
+        "max_von_mises",
+        "total_reward",
+        "von_mises"
+      ],
+      "tags": [
+        "constraints"
       ]
     },
     {
@@ -22439,6 +22906,7 @@
       "tags": [
         "benchmark",
         "graph",
+        "optimization",
         "rag"
       ]
     },
@@ -22965,7 +23433,10 @@
         "used_arg_slots",
         "visibility_mask"
       ],
-      "tags": []
+      "tags": [
+        "benchmark",
+        "optimization"
+      ]
     },
     {
       "dotted": "harnesscad.eval.bench.sequence.multilevel_sequence_eval",
@@ -23106,6 +23577,22 @@
         "long_sequence_ratio"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.bench.sequence.soft_target_distribution",
+      "imports": [],
+      "layer": "eval",
+      "name": "soft_target_distribution",
+      "package": "bench",
+      "summary": "Soft target distribution for CAD parameter prediction (Drawing2CAD, Qin et",
+      "symbols": [
+        "soft_cross_entropy",
+        "soft_target"
+      ],
+      "tags": [
+        "drawings",
+        "parametric"
+      ]
     },
     {
       "dotted": "harnesscad.eval.bench.sequence.structure_consistency",
@@ -25121,6 +25608,8 @@
       "tags": [
         "acceleration",
         "assembly",
+        "benchmark",
+        "optimization",
         "quality"
       ]
     },
@@ -26297,6 +26786,31 @@
         "target_dims_objective"
       ],
       "tags": [
+        "benchmark",
+        "optimization",
+        "quality"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.quality.reward.hypervolume",
+      "imports": [],
+      "layer": "eval",
+      "name": "hypervolume",
+      "package": "quality",
+      "summary": "Hypervolume indicator and constraint-violation aggregation for design sets.",
+      "symbols": [
+        "ConstraintSuite",
+        "constraint_satisfaction_rate",
+        "feasible_designs",
+        "hypervolume",
+        "mean_constraint_violation",
+        "non_dominated",
+        "positive_dimensions",
+        "triangle_inequality_ok"
+      ],
+      "tags": [
+        "benchmark",
+        "constraints",
         "quality"
       ]
     },
@@ -26337,6 +26851,8 @@
         "trade_off_matrix"
       ],
       "tags": [
+        "benchmark",
+        "optimization",
         "quality"
       ]
     },
@@ -26395,6 +26911,24 @@
         "assess_sequence_confidence"
       ],
       "tags": [
+        "quality"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.quality.sequence.design_state",
+      "imports": [],
+      "layer": "eval",
+      "name": "design_state",
+      "package": "quality",
+      "summary": "Design-state extraction and an editability score for a CAD program.",
+      "symbols": [
+        "DesignState",
+        "construction_order_score",
+        "editability_score",
+        "extract_design_state"
+      ],
+      "tags": [
+        "benchmark",
         "quality"
       ]
     },
@@ -27491,6 +28025,7 @@
         "with_access"
       ],
       "tags": [
+        "assembly",
         "verify"
       ]
     },
@@ -27615,6 +28150,7 @@
       ],
       "tags": [
         "acceleration",
+        "assembly",
         "verify"
       ]
     },
@@ -28979,6 +29515,62 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.backends.build123d",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddInstance",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Draft",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Mirror",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.core.constraints",
+        "harnesscad.core.constraints.ConstraintGraph",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.domain.geometry.topology.selector_dsl.Entity",
+        "harnesscad.domain.geometry.topology.selector_dsl.SelectorError",
+        "harnesscad.domain.geometry.topology.selector_dsl.select",
+        "harnesscad.eval.verifiers.assembly",
+        "harnesscad.eval.verifiers.assembly.mate_dof",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.check_constraint_arity",
+        "harnesscad.io.backends.frep.solve_constraint"
+      ],
+      "layer": "io",
+      "name": "build123d",
+      "package": "backends",
+      "summary": "Build123dBackend \u2014 a real-geometry GeometryBackend over build123d (OCCT).",
+      "symbols": [
+        "Build123dBackend"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.io.backends.cadquery",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -29317,6 +29909,39 @@
         "csg",
         "meshing"
       ]
+    },
+    {
+      "dotted": "harnesscad.io.backends.microcad",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.find_executable",
+        "harnesscad.io.backends.external.plane_axes",
+        "harnesscad.io.backends.external.slab",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.Node"
+      ],
+      "layer": "io",
+      "name": "microcad",
+      "package": "backends",
+      "summary": "MicrocadBackend \u2014 CISP ops emitted as microcad (\u00b5cad) source, built by its CLI.",
+      "symbols": [
+        "MicrocadBackend",
+        "MicrocadError",
+        "fmt_mm",
+        "header",
+        "lower",
+        "render"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.io.backends.occt_catalog",
@@ -31945,6 +32570,7 @@
         "harnesscad.io.backends.base.BackendUnavailable",
         "harnesscad.io.backends.blender",
         "harnesscad.io.backends.blender.BlenderBackend",
+        "harnesscad.io.backends.build123d",
         "harnesscad.io.backends.cadquery",
         "harnesscad.io.backends.freecad",
         "harnesscad.io.backends.freecad.FreeCADBackend",
@@ -31952,6 +32578,8 @@
         "harnesscad.io.backends.frep.FRepBackend",
         "harnesscad.io.backends.manifold",
         "harnesscad.io.backends.manifold.ManifoldBackend",
+        "harnesscad.io.backends.microcad",
+        "harnesscad.io.backends.microcad.MicrocadBackend",
         "harnesscad.io.backends.openscad",
         "harnesscad.io.backends.openscad.OpenScadBackend",
         "harnesscad.io.backends.rhino3dm",
