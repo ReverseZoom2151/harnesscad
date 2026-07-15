@@ -26,11 +26,16 @@ This is the Aider-style loop from the blueprint, kernel-agnostic:
 from __future__ import annotations
 
 import hashlib
-from typing import List, Optional, Sequence
+from typing import Callable, List, Mapping, Optional, Sequence
 
 from harnesscad.io.backends.base import GeometryBackend
 from harnesscad.core.cisp.ops import Op, canonical_json
 from harnesscad.core.cisp.protocol import ApplyOpsResult
+# Read-only reuse of the built provenance structures (OpDelta / Provenance / the
+# measurement-diff and the two set differences). This module NEVER redefines them;
+# native recording just accumulates the same Provenance the orphan gate consumes,
+# so the gate no longer has to rebuild a session per op-prefix via build_provenance.
+from harnesscad.core.cisp import provenance as _provenance
 from harnesscad.core.state.opdag import OpDAG
 from harnesscad.core.trace import NullTracer, Tracer
 from harnesscad.eval.verifiers.verify import Diagnostic, VerifyReport, Verifier, default_verifiers
@@ -57,7 +62,10 @@ class HarnessSession:
                  fleet_tiers: Optional[Sequence[str]] = None,
                  fleet_only: Optional[Sequence[str]] = None,
                  fleet_skip: Sequence[str] = (),
-                 fleet_blocking: bool = False) -> None:
+                 fleet_blocking: bool = False,
+                 record_provenance: bool = False,
+                 provenance_measure: Optional[
+                     Callable[["HarnessSession"], Optional[Mapping]]] = None) -> None:
         self.backend = backend
         self.opdag = OpDAG()
         self.verifiers = verifiers if verifiers is not None else default_verifiers()
@@ -77,8 +85,24 @@ class HarnessSession:
         #: this is the process signal that says WHICH op broke it.
         self.step_rewards: List[dict] = []
         self._run_seq = 0
+        #: Native op->geometry-delta provenance (traceSDD orphan-op / orphan-feature
+        #: check). Opt-in and OFF by default: when record_provenance is False the
+        #: whole loop is byte-for-byte the old behaviour and pays nothing. When True
+        #: the session accumulates a `provenance.Provenance` incrementally as ops
+        #: land -- it measures the state once per accepted+verified op and diffs
+        #: successive measurements, so the orphan gate never has to replay op
+        #: prefixes through build_provenance. See `provenance()` / `orphan_ops()`.
+        self.record_provenance = bool(record_provenance)
+        self._provenance_measure = provenance_measure
+        self._prov: Optional[_provenance.Provenance] = None
+        self._prov_saw_measurement = False
         self.backend.reset()
         self.opdag.checkpoint("start")
+        if self.record_provenance:
+            self._prov = _provenance.Provenance()
+            baseline = self._measure_state() or {}
+            self._prov.measurements.append(baseline)
+            self._prov_saw_measurement = bool(baseline)
 
     def _make_run_id(self, ops: List[Op]) -> str:
         """Deterministic, wall-clock-free run id.
@@ -110,6 +134,126 @@ class HarnessSession:
         if not self.step_rewards:
             return 0.0
         return sum(r["reward"] for r in self.step_rewards) / len(self.step_rewards)
+
+    # --- native provenance (opt-in) ---------------------------------------
+    def _default_provenance_measure(self) -> Optional[Mapping]:
+        """A backend-agnostic Measurement of the CURRENT state via read-only queries.
+
+        Reuses the queries every GeometryBackend already answers: the `summary`
+        counts/flags (sketch/entity/feature counts, solid presence) plus the total
+        sketch DOF, so a Constrain that only tightens a sketch still reads as live.
+        Returns a plain mapping of comparable quantities -- exactly the contract
+        provenance.build_provenance expects -- or None when nothing is measurable
+        (which degrades the provenance to a clean `skipped` PASS, no engine case).
+        """
+        measurement: dict = {}
+        try:
+            summary = self.backend.query("summary")
+        except Exception:  # noqa: BLE001 - a query crash is a non-measurement
+            summary = None
+        if isinstance(summary, Mapping):
+            for key, value in summary.items():
+                if isinstance(value, (int, float, bool, str)):
+                    measurement[key] = value
+        try:
+            dof = self.backend.query("sketch_dof")
+        except Exception:  # noqa: BLE001
+            dof = None
+        if isinstance(dof, Mapping) and dof:
+            total = 0.0
+            for value in dof.values():
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    total += float(value)
+            measurement["sketch_dof_total"] = total
+        return measurement or None
+
+    def _measure_state(self) -> Optional[Mapping]:
+        """Measure the current backend state, via the caller's hook or the default.
+
+        A custom `provenance_measure` (backend that can report volume/n_faces/...)
+        takes precedence; otherwise the query-based default is used. Never raises:
+        a measurement crash is recorded as "no measurement", never propagated into
+        the loop (provenance is advisory and must not break the transaction).
+        """
+        try:
+            if self._provenance_measure is not None:
+                return self._provenance_measure(self)
+            return self._default_provenance_measure()
+        except Exception:  # noqa: BLE001
+            return None
+
+    def _record_provenance(self, op: Op) -> None:
+        """Attribute the just-applied op's measured geometry delta.
+
+        Called once per accepted+verified op (the op is already appended to the
+        opdag and the backend already holds its state). Measures now, diffs against
+        the previous measurement with the same helper build_provenance uses, and
+        appends the resulting OpDelta -- an op that moved nothing measurable lands
+        as an orphan. Delta index matches the op's opdag position, so a later
+        rollback can trim the tail cleanly (see `_trim_provenance`).
+        """
+        if self._prov is None:
+            return
+        prev: Mapping = self._prov.measurements[-1] if self._prov.measurements else {}
+        after = self._measure_state() or {}
+        if after:
+            self._prov_saw_measurement = True
+        changed, magnitude = _provenance._feature_delta(prev, after)
+        index = len(self.opdag) - 1
+        self._prov.deltas.append(_provenance.OpDelta(
+            index=index,
+            op_id=_provenance._op_id(index, op),
+            op_tag=op.OP,
+            before=prev,
+            after=after,
+            changed=changed,
+            magnitude=magnitude,
+            error="",
+        ))
+        self._prov.measurements.append(after)
+
+    def _trim_provenance(self) -> None:
+        """Keep the recorded provenance aligned with the (possibly truncated) opdag.
+
+        After a rollback the opdag is shorter; drop the deltas/measurements for the
+        ops that no longer exist. measurements holds the baseline plus one per op,
+        so it keeps len(opdag)+1 entries. Replaying rebuilds identical geometry
+        deterministically, so the retained tail measurement stays valid.
+        """
+        if self._prov is None:
+            return
+        n = len(self.opdag)
+        del self._prov.deltas[n:]
+        del self._prov.measurements[n + 1:]
+
+    def provenance(self) -> Optional["_provenance.Provenance"]:
+        """The accumulated op->geometry-delta provenance, or None when not recording.
+
+        The returned Provenance is the same structure the orphan gate consumes
+        (`provenance.orphan_ops` / `unattributed_features` accept it directly), built
+        natively as ops landed -- no per-prefix session rebuild. When no state was
+        ever measurable it is flagged `skipped`, degrading downstream checks to a
+        clean PASS exactly as build_provenance does for the no-engine case.
+        """
+        if self._prov is None:
+            return None
+        if not self._prov_saw_measurement:
+            self._prov.skipped = ("measure_state returned no state for any prefix "
+                                  "(no engine / empty measurement)")
+        else:
+            self._prov.skipped = ""
+        return self._prov
+
+    def orphan_ops(self) -> List["_provenance.OpDelta"]:
+        """Ops that landed but moved nothing measurable (the orphan set difference).
+
+        Convenience over `provenance()`: returns [] when not recording. Delegates to
+        provenance.orphan_ops so the definition of "orphan" stays single-sourced.
+        """
+        prov = self.provenance()
+        if prov is None:
+            return []
+        return _provenance.orphan_ops(prov)
 
     # --- core loop --------------------------------------------------------
     def apply_ops(self, ops: List[Op]) -> ApplyOpsResult:
@@ -171,6 +315,9 @@ class HarnessSession:
                                       diags, rejected=op.to_dict())
             self._step_reward(run_id, index, op, 1.0, "applied+verified")
             applied += 1
+            # Native provenance: attribute this op's measured geometry delta now,
+            # while its state is live. No-op unless record_provenance was requested.
+            self._record_provenance(op)
             label = f"auto-{len(self.opdag)}"
             self.opdag.checkpoint(label)
             self.tracer.event("checkpoint", run_id, {
@@ -223,10 +370,12 @@ class HarnessSession:
     def rollback(self, label: str) -> None:
         self.opdag.rollback(label)
         self._replay()
+        self._trim_provenance()
 
     def _rollback_last(self) -> None:
         self.opdag.truncate(len(self.opdag) - 1)
         self._replay()
+        self._trim_provenance()
 
     def _replay(self) -> None:
         self.backend.reset()
