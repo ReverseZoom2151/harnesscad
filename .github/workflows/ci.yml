@@ -165,3 +165,86 @@ jobs:
       - run: pip install -e .
       - name: orphan ceiling
         run: python -m unittest tests.test_registry
+
+  # -------------------------------------------------------------------------
+  # 6. THE HELD-OUT ISOLATION GATE. A private test set stops being private the
+  #    moment a second module can read it. This scans every source/test file and
+  #    fails if any held-out brief split (corpus OR hardcorpus) is imported by
+  #    anything but its sanctioned scorer -- the mitigation the audit prescribed
+  #    for benchmark contamination (14.8.1) and Goodhart's Law (14.8.3), lifted
+  #    from a unit test to a standing, first-class gate that covers both splits.
+  # -------------------------------------------------------------------------
+  heldout-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: held-out split reachable only through its scorer
+        run: python -m harnesscad.eval.gates.heldout_isolation
+
+  # -------------------------------------------------------------------------
+  # 7. THE WARNING-CHANNEL GATE. precision_floor gates the ERROR channel; this
+  #    gates the WARNING one. A verifier that WARNS on the majority of provably-
+  #    correct parts is uncorrelated with correctness and trains its reader to
+  #    ignore it -- "not a verifier". Built from the fleet_audit KNOWN_GOOD corpus
+  #    (frep, always available); --with-redteam extends it with certified attacks.
+  # -------------------------------------------------------------------------
+  warning-channel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: no verifier warns on the majority of provably-correct parts
+        run: python -m harnesscad.eval.gates.warning_channel --backend frep
+
+  # -------------------------------------------------------------------------
+  # 8. THE ORPHAN ENTRY POINTS. The six metric/preference modules the audit found
+  #    "imported by nothing but their own test" now each have a runnable
+  #    `python -m harnesscad.eval.entry.<name>` face. --selfcheck runs each on a
+  #    fixed in-code fixture: it proves the wiring end to end with NO model, NO
+  #    data file and NO geometry engine. A capability nothing can invoke is a
+  #    decoration; this is the check that it can be invoked.
+  # -------------------------------------------------------------------------
+  entry-points:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: every wired orphan is reachable and computes on its fixture
+        run: |
+          set -euo pipefail
+          for m in judge_calibration judge_human_agreement metric_correlation \
+                   pass_at_k ablation_matrix dpo_pairs; do
+            echo "::group::eval.entry.$m"
+            python -m "harnesscad.eval.entry.$m" --selfcheck >/dev/null
+            echo "::endgroup::"
+          done
+
+  # -------------------------------------------------------------------------
+  # 9. THE CORPUS GRADER, INCLUDING THE FULL MEASUREMENT VECTOR. The grader is
+  #    many-to-one on the envelope families alone (a hole in the wrong place scores
+  #    perfectly). eval/corpus/measurement.py composes the shape IoU and the SDF
+  #    probes into one measurement vector the runner now reports; these tests drive
+  #    the runner (property gate -> reference self-test -> grade -> vector) on frep.
+  # -------------------------------------------------------------------------
+  corpus-grader:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: corpus grader and held-out isolation unit test
+        run: |
+          python -m unittest tests.eval.corpus.test_corpus
+          python -m unittest tests.eval.corpus.test_holdout_isolation
