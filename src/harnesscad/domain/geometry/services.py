@@ -118,7 +118,10 @@ from harnesscad.domain.geometry.sdf import csg_bounds
 from harnesscad.domain.geometry.sdf import developability
 from harnesscad.domain.geometry.sdf import developable_detect
 from harnesscad.domain.geometry.sdf import extra_shapes
+from harnesscad.domain.geometry.sdf import rounded_csg
 from harnesscad.domain.geometry.sdf import spiral
+from harnesscad.domain.geometry.sdf import sweep
+from harnesscad.domain.geometry.sdf import symmetry as sdf_symmetry
 from harnesscad.domain.geometry.sdf import tpms
 
 # -- geometry: sketch --------------------------------------------------------
@@ -416,6 +419,25 @@ _TABLE: Tuple[Tuple[str, str, Callable[..., Any], Tuple[str, ...], str], ...] = 
      ("sdf",), "SDF of a triangular prism."),
     ("sdf.shape.link", _G + "sdf.extra_shapes", extra_shapes.link,
      ("sdf",), "SDF of a chain link."),
+    ("sdf.csg.rounded_union", _G + "sdf.rounded_csg", rounded_csg.rounded_union,
+     ("sdf", "csg", "features"),
+     "ImplicitCAD circular-arc filleted union (radius-r rounded min)."),
+    ("sdf.csg.rounded_intersection", _G + "sdf.rounded_csg",
+     rounded_csg.rounded_intersection, ("sdf", "csg", "features"),
+     "ImplicitCAD circular-arc filleted intersection (radius-r rounded max)."),
+    ("sdf.csg.rounded_difference", _G + "sdf.rounded_csg",
+     rounded_csg.rounded_difference, ("sdf", "csg", "features"),
+     "ImplicitCAD circular-arc filleted difference (rounds the cut edge)."),
+    ("sdf.mirror", _G + "sdf.symmetry", sdf_symmetry.mirror,
+     ("sdf",), "Mirror an SDF across an arbitrary origin hyperplane (ImplicitCAD)."),
+    ("sdf.scale_geometric", _G + "sdf.symmetry", sdf_symmetry.scale_geometric,
+     ("sdf",), "Anisotropic SDF scale with geometric-mean compensation (ImplicitCAD)."),
+    ("sdf.extrude.twist", _G + "sdf.sweep", sweep.twist_extrude,
+     ("sdf", "features"), "Twisted linear extrude of a 2D field (OpenSCAD/ImplicitCAD)."),
+    ("sdf.extrude.taper", _G + "sdf.sweep", sweep.taper_extrude,
+     ("sdf", "features"), "Tapered (frustum) linear extrude of a 2D field."),
+    ("sdf.extrude.linear", _G + "sdf.sweep", sweep.linear_extrude,
+     ("sdf", "features"), "OpenSCAD linear_extrude with twist and scale of a 2D field."),
     ("sdf.bounds", _G + "sdf.csg_bounds", csg_bounds.bounding_box,
      ("sdf", "csg", "acceleration"),
      "Propagate a bounding box through a typed CSG tree (no kernel)."),
