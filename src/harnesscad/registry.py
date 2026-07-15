@@ -577,6 +577,9 @@ DYNAMIC_DISPATCHERS: Dict[str, Tuple[str, ...]] = {
     # declared op-support surface; without this its whole column of backends would
     # be misreported as orphans.
     "harnesscad.eval.gates.coverage_matrix": ("harnesscad.io.backends",),
+    # The drawing-understanding subsystem's registry, mirroring every other domain
+    # dispatcher; it lazy-imports its member modules per route.
+    "harnesscad.domain.drawings.registry": ("harnesscad.domain.drawings",),
 }
 
 #: Modules that are legitimately imported by nothing because they ARE the entry
@@ -615,6 +618,26 @@ ROOTS: Tuple[str, ...] = (
     # test evidence is not miscounted as dead. (Its production consumer, the
     # Constraint-Aware Editability Benchmark, is not yet written.)
     "harnesscad.domain.geometry.sketch.constraint_satisfaction",
+    # The geometry capability surface: a static operation table consumed via
+    # services.call(...). Its only current caller is its committed unit test
+    # (tests/domain/geometry/test_services.py); its production consumer is the
+    # gallery (eval/gallery/parts.py, SERVICES_BACKEND="services"), not yet wired.
+    "harnesscad.domain.geometry.services",
+    # The two public leaderboards and the eval report/corpus surfaces: each is a
+    # `python -m` entry point with a main() + __main__ guard that ranks or emits
+    # reports a run produces. An entry point is not an orphan.
+    "harnesscad.eval.leaderboard.cadspot_board",     # python -m ... (grounding board)
+    "harnesscad.eval.leaderboard.hardcorpus_board",  # python -m ... (text-to-CAD board)
+    "harnesscad.eval.hardcorpus.report",             # python -m ... (hard-corpus report)
+    "harnesscad.eval.showcase.cli",                  # python -m ... (showcase CLI)
+    "harnesscad.eval.memory.ab_corpus",              # python -m ... (A/B memory corpus)
+    "harnesscad.eval.grounding.trajectory_corpus",   # python -m ... (verified-traj corpus)
+    # The corpus runner/scorer. Reachable consumers (eval.hardcorpus.score,
+    # eval.hardcorpus.contract_grader) import these LAZILY inside functions, on
+    # purpose, so the OCCT kernel is not pulled at module top -- a real runtime
+    # call path the source-only AST scan cannot see (same case as services above).
+    "harnesscad.eval.corpus.run",
+    "harnesscad.eval.corpus.score",
 )
 
 

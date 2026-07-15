@@ -522,6 +522,13 @@ def cmd_fabricate(args: argparse.Namespace) -> int:
     return fabrication_registry.run_cli(args)
 
 
+def cmd_drawings(args: argparse.Namespace) -> int:
+    # Imported here so the drawings tree is only touched by `drawings`.
+    from harnesscad.domain.drawings import registry as drawings_registry
+
+    return drawings_registry.run_cli(args)
+
+
 def cmd_govern(args: argparse.Namespace) -> int:
     # Imported here so the governance tree is only touched by `govern`.
     from harnesscad.governance import registry as governance_registry
@@ -879,6 +886,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     _fabrication_registry.add_arguments(p_fabricate)
     p_fabricate.set_defaults(func=cmd_fabricate)
+
+    p_drawings = sub.add_parser(
+        "drawings",
+        help="drawing-understanding surface: Hough primitives, symbol points, "
+             "primitive graphs, raster codec/metrics, render self-supervision")
+    from harnesscad.domain.drawings import registry as _drawings_registry
+
+    _drawings_registry.add_arguments(p_drawings)
+    p_drawings.set_defaults(func=cmd_drawings)
 
     p_govern = sub.add_parser(
         "govern",
