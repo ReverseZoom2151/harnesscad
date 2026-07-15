@@ -46,6 +46,14 @@ from harnesscad.io.surfaces.mcp.tools import (
     reward_from_verify,
 )
 from harnesscad.io.surfaces.mcp.gym import CADGymEnv
+from harnesscad.io.surfaces.mcp.client import (
+    McpCapabilityError,
+    McpClient,
+    McpConnectionError,
+    McpError,
+    McpProtocolError,
+    McpRpcError,
+)
 
 __all__ = [
     "Annotations",
@@ -66,4 +74,10 @@ __all__ = [
     "reward_from_apply",
     "reward_from_verify",
     "CADGymEnv",
+    "McpClient",
+    "McpError",
+    "McpConnectionError",
+    "McpProtocolError",
+    "McpCapabilityError",
+    "McpRpcError",
 ]
