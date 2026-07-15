@@ -35,7 +35,7 @@ class TestConstraintGraphDof(unittest.TestCase):
     def test_unknown_kinds_raise(self):
         g = ConstraintGraph()
         with self.assertRaises(ValueError):
-            g.add_entity("e1", "spline")
+            g.add_entity("e1", "bezier")
         g.add_entity("e1", "rectangle")
         with self.assertRaises(ValueError):
             g.add_constraint("tangent", "e1")
