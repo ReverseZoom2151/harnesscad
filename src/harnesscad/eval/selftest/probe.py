@@ -74,17 +74,21 @@ __all__ = [
 
 #: Every backend the harness can drive, in the order a report should list them.
 BACKENDS: Tuple[str, ...] = (
-    "stub", "frep", "cadquery", "freecad", "openscad", "blender", "manifold",
-    "rhino3dm")
+    "stub", "frep", "cadquery", "build123d", "freecad", "openscad", "blender",
+    "manifold", "rhino3dm", "microcad")
 
 #: The ones that answer ``query('measure')`` with real geometry. ``stub`` does
 #: not: it is a bookkeeping backend and cannot take part in a geometric oracle.
 GEOMETRIC_BACKENDS: Tuple[str, ...] = (
-    "frep", "cadquery", "freecad", "openscad", "blender", "manifold", "rhino3dm")
+    "frep", "cadquery", "build123d", "freecad", "openscad", "blender", "manifold",
+    "rhino3dm", "microcad")
 
 #: Preference order when a consensus has to be named: an exact B-rep kernel first.
+#: build123d and cadquery are both OCCT B-rep, so they rank alongside freecad.
+#: microcad is a meshed CSG language (like openscad), so it ranks with the meshers.
 EXACTNESS_ORDER: Tuple[str, ...] = (
-    "cadquery", "freecad", "openscad", "blender", "manifold", "rhino3dm", "frep")
+    "cadquery", "build123d", "freecad", "openscad", "blender", "manifold",
+    "microcad", "rhino3dm", "frep")
 
 
 @dataclass(frozen=True)
@@ -145,6 +149,7 @@ _FREP_HALF_CELL = 0.5 / _FREP_CELLS
 TOLERANCES: Dict[str, Tolerance] = {
     # Exact OCCT B-rep: an analytic volume must match to machine precision.
     "cadquery": Tolerance(1e-9, 1e-6, 0.0, 0.0, 0, "brep"),
+    "build123d": Tolerance(1e-9, 1e-6, 0.0, 0.0, 0, "brep"),
     "freecad": Tolerance(1e-9, 1e-6, 0.0, 0.0, 0, "brep"),
     # Meshed CSG: exact on planar parts, polygonisation error on curved ones.
     "openscad": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
@@ -153,6 +158,9 @@ TOLERANCES: Dict[str, Tolerance] = {
     # other mesh engines -- exact on planar parts, shared polygonisation error on
     # curved ones (it facets a circle by the SAME $fn law, so the error matches).
     "manifold": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
+    # microcad: a meshed CSG *language* (µcad CLI). Same regime as the other mesh
+    # engines -- exact on planar parts, polygonisation error on curved ones.
+    "microcad": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
     # Sampled SDF: the error scales with the grid, and the grid scales with the
     # part. 1% on a chunky part, plus 20% of (cell / thinnest extent) -- which is
     # the measured behaviour: a 100x50x3 plate (cell/min = 0.69) lands 4.4% low, a

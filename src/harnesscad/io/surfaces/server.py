@@ -43,8 +43,8 @@ FLEET_TIERS = (LINT, PHYSICS, DOMAIN)
 #: BackendUnavailable and we fall back to the stub WITH A NOTE rather than
 #: crashing. `cadquery` and `freecad` are the two real B-rep kernels (exact
 #: volumes, STEP in and out); the rest are meshes or fields.
-BACKENDS = ("stub", "cadquery", "frep", "blender", "openscad", "freecad",
-            "manifold", "rhino3dm")
+BACKENDS = ("stub", "cadquery", "build123d", "frep", "blender", "openscad",
+            "freecad", "manifold", "rhino3dm", "microcad")
 
 
 def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
@@ -56,6 +56,14 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",
                     f"cadquery backend unavailable ({exc}); fell back to stub")
+    if name == "build123d":
+        # The second OCCT B-rep front-end: build123d (algebra mode) over OCP.
+        try:
+            from harnesscad.io.backends import build123d as build123d_backend  # type: ignore
+            return build123d_backend.Build123dBackend(), "build123d", None
+        except Exception as exc:  # pragma: no cover - depends on optional dep
+            return (StubBackend(), "stub",
+                    f"build123d backend unavailable ({exc}); fell back to stub")
     if name == "frep":
         # Kernel-free SDF backend: real geometry, zero third-party dependencies.
         from harnesscad.io.backends.frep import FRepBackend
@@ -110,6 +118,17 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         except BackendUnavailable as exc:
             return (StubBackend(), "stub",
                     f"rhino3dm backend unavailable ({exc}); fell back to stub")
+    if name == "microcad":
+        # The microcad (µcad) CLI: a NEW declarative CAD *language* (Rust, v0.5.0
+        # alpha). Integrates like OpenSCAD -- emit source, shell out, read the STL
+        # back. Absent unless `cargo install microcad` produced a runnable binary.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.microcad import MicrocadBackend
+        try:
+            return MicrocadBackend(), "microcad", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"microcad backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
 
 
