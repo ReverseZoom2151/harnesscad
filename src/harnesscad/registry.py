@@ -594,6 +594,20 @@ ROOTS: Tuple[str, ...] = (
     "harnesscad.eval.entry.pass_at_k",
     "harnesscad.eval.entry.ablation_matrix",
     "harnesscad.eval.entry.dpo_pairs",
+    # The gallery's Tier-2 evidence runners. Both are `python -m` targets with a
+    # main() + __main__ guard (tier2 additionally re-invokes itself as a worker
+    # subprocess); the AST scan sees no importer because nothing in the source
+    # tree imports an entry point -- exactly the precision_floor/liveness_floor
+    # case above.
+    "harnesscad.eval.gallery.tier2",             # python -m ... (Tier-2 report)
+    "harnesscad.eval.gallery.formats_matrix",    # python -m ... (format matrix)
+    # HistCAD constraint-satisfaction checker. Not an entry point: it is a pure
+    # library whose only current caller is its committed unit test
+    # (tests/domain/geometry/sketch/test_constraint_satisfaction.py) -- a real
+    # call path the source-only AST scan cannot see. Rooted so that reachable-by-
+    # test evidence is not miscounted as dead. (Its production consumer, the
+    # Constraint-Aware Editability Benchmark, is not yet written.)
+    "harnesscad.domain.geometry.sketch.constraint_satisfaction",
 )
 
 
