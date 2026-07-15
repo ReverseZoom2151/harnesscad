@@ -248,3 +248,67 @@ jobs:
         run: |
           python -m unittest tests.eval.corpus.test_corpus
           python -m unittest tests.eval.corpus.test_holdout_isolation
+
+  # -------------------------------------------------------------------------
+  # 10. THE ORPHAN-PROVENANCE GATE. traceSDD lifted onto CISP: replay an op
+  #     stream, attribute the measured geometry delta to the op that caused it,
+  #     and fail on an ORPHAN OP (a build step that moved nothing measurable) or
+  #     an ORPHAN FEATURE (measured geometry no op claims). --selfcheck drives
+  #     the whole pure pipeline on a synthetic fixture with a planted orphan op
+  #     and orphan feature -- NO model, NO kernel -- so it is safe on a bare
+  #     runner. The real-session run is supplied a CISP program by its caller.
+  # -------------------------------------------------------------------------
+  orphan-provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: orphan-provenance selfcheck (kernel-free synthetic fixture)
+        run: python -m harnesscad.eval.gates.orphan_provenance --selfcheck
+
+  # -------------------------------------------------------------------------
+  # 11. THE VERIFIER-FLEET MUTATION SCORE GATE. TDAD semantic mutation testing
+  #     over the differential oracle: inject the harness's defect classes into
+  #     provably-good parts and score the fraction the fleet KILLS. A low score
+  #     indicts the verifiers, not the parts. The real fleet needs kernels that
+  #     may be absent here, so CI runs --selfcheck: synthetic verifiers + defects,
+  #     NO kernel and NO model. The MS floor is a constant (DEFAULT_MS_FLOOR 0.9,
+  #     overridable via --floor); it has no committed baseline artifact, and the
+  #     real-fleet fleet run over live kernels belongs to the testing phase.
+  # -------------------------------------------------------------------------
+  mutation-score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: verifier-fleet mutation score selfcheck (synthetic, no kernel)
+        run: python -m harnesscad.eval.gates.mutation_score --selfcheck
+
+  # -------------------------------------------------------------------------
+  # 12. THE COVERAGE-MATRIX CENSUS + DRIFT PAUSE-GATE. Statically censuses every
+  #     CISP op crossed with every (backend, format) the harness can emit and
+  #     classifies each cell IMPLEMENTED / REFUSED / UNKNOWN off DECLARED backend
+  #     metadata -- no kernel, no model. --selfcheck proves the classifier and a
+  #     drift-down FAILURE on a synthetic fixture. Then the live census runs
+  #     against the COMMITTED baseline (coverage_baseline.json): a drop in fill
+  #     rate or a growth in UNKNOWN cells fails the build. REFUSED is honest,
+  #     filled coverage; only UNKNOWN cells are debt.
+  # -------------------------------------------------------------------------
+  coverage-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: coverage-matrix selfcheck (synthetic classification + drift-down)
+        run: python -m harnesscad.eval.gates.coverage_matrix --selfcheck
+      - name: coverage-matrix drift gate against the committed baseline
+        run: python -m harnesscad.eval.gates.coverage_matrix --baseline src/harnesscad/eval/gates/coverage_baseline.json
