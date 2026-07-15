@@ -54,11 +54,16 @@ from harnesscad.io.formats import dxf as dxf_codec
 from harnesscad.io.formats import kcl as kcl_codec
 from harnesscad.io.formats import glb as glb_codec
 from harnesscad.io.formats import obj as obj_codec
+from harnesscad.io.formats import off as off_codec
 from harnesscad.io.formats import ply as ply_codec
 from harnesscad.io.formats import step as step_codec
+from harnesscad.io.formats import step_ap242 as step_ap242_codec
 from harnesscad.io.formats import stl as stl_codec
 from harnesscad.io.formats import threedm as threedm_codec
 from harnesscad.io.formats import threemf as threemf_codec
+from harnesscad.io.formats import threemf_extensions as threemf_ext_codec
+from harnesscad.io.formats import usd as usd_codec
+from harnesscad.io.formats import vrml as vrml_codec
 from harnesscad.io.formats import svg as svg_codec
 from harnesscad.io.formats import xcsg as xcsg_codec
 
@@ -371,6 +376,105 @@ def _write_3dm(obj: Any, path: str, **_: Any) -> None:
     threedm_codec.write_3dm(path, verts, faces, unit=unit, name=mesh.name)
 
 
+def _read_off(path: str, **_: Any) -> Mesh:
+    with open(path, "rb") as fh:
+        data = fh.read()
+    verts, faces, unit = off_codec.parse_off(data)
+    return Mesh.from_vertices_faces(verts, faces, name=os.path.basename(path),
+                                    unit=unit or "millimeter")
+
+
+def _write_off(obj: Any, path: str, **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in off_codec.UNITS else "millimeter"
+    off_codec.write_off(path, verts, faces, unit=unit)
+
+
+def _read_wrl(path: str, **_: Any) -> Mesh:
+    with open(path, "rb") as fh:
+        data = fh.read()
+    verts, faces, unit, _axis = vrml_codec.parse_wrl(data)
+    return Mesh.from_vertices_faces(verts, faces, name=os.path.basename(path),
+                                    unit=unit or "millimeter")
+
+
+def _write_wrl(obj: Any, path: str, up_axis: str = "Z", **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in vrml_codec.UNITS else "millimeter"
+    vrml_codec.write_wrl(path, verts, faces, unit=unit, up_axis=up_axis,
+                         name=mesh.name)
+
+
+def _read_usd(path: str, **_: Any) -> Mesh:
+    if str(path).lower().endswith(".usdz"):
+        verts, faces, unit, _axis = usd_codec.read_usdz(path)
+    else:
+        with open(path, "rb") as fh:
+            data = fh.read()
+        verts, faces, unit, _axis = usd_codec.parse_usda(data)
+    return Mesh.from_vertices_faces(verts, faces, name=os.path.basename(path),
+                                    unit=unit or "millimeter")
+
+
+def _write_usd(obj: Any, path: str, up_axis: str = "Z", **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in usd_codec.UNIT_METERS else "millimeter"
+    if str(path).lower().endswith(".usdz"):
+        usd_codec.write_usdz(path, verts, faces, unit=unit, up_axis=up_axis,
+                             name=mesh.name)
+    else:
+        usd_codec.write_usda(path, verts, faces, unit=unit, up_axis=up_axis,
+                             name=mesh.name)
+
+
+def _read_ap242(path: str, **_: Any) -> step_codec.StepFile:
+    with open(path, "r", encoding="utf-8") as fh:
+        return step_ap242_codec.parse_ap242(fh.read())
+
+
+def _write_ap242(obj: Any, path: str, **_: Any) -> None:
+    step_file = _ap242_stepfile(obj)
+    step_ap242_codec.write_ap242(path, step_file)
+
+
+def _ap242_stepfile(obj: Any) -> step_codec.StepFile:
+    """Coerce anything STEP-shaped into a StepFile for AP242 re-emission."""
+    if isinstance(obj, step_codec.StepFile):
+        return obj
+    text = _step_text(obj)
+    return step_codec.parse(text)
+
+
+def _read_3mf_ext(path: str, **_: Any) -> Mesh:
+    verts, tris, unit, _colors = threemf_ext_codec.read_3mf_materials(path)
+    return Mesh.from_vertices_faces(verts, tris, name=os.path.basename(path),
+                                    unit=unit)
+
+
+def _write_3mf_ext(obj: Any, path: str, colors: Any = None, color: Any = None,
+                   **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in threemf_ext_codec.UNITS else "millimeter"
+    # One colour per triangle: explicit per-face colours, or a single colour
+    # broadcast across the mesh (a solid painted one colour via the extension).
+    n_tris = len(faces)
+    if colors is not None:
+        palette = list(colors)
+        if len(palette) != n_tris:
+            raise ExportError(
+                "3mf-extensions needs one colour per triangle: %d for %d"
+                % (len(palette), n_tris))
+    else:
+        fill = color if color is not None else "#CCCCCCFF"
+        palette = [fill] * n_tris
+    threemf_ext_codec.write_3mf_materials(path, verts, faces, palette,
+                                          unit=unit, name=mesh.name)
+
+
 def _read_step(path: str, **_: Any) -> step_codec.StepFile:
     with open(path, "r", encoding="utf-8") as fh:
         return step_codec.parse(fh.read())
@@ -545,6 +649,62 @@ _ADAPTERS: Dict[str, _Adapter] = {
         reader=_read_step, writer=_write_step, lossless=True,
         note="ISO 10303-21 part-21 text. read() returns a StepFile; write() accepts "
              "a StepFile, raw part-21 text, or a session whose backend exports STEP.",
+    ),
+    "harnesscad.io.formats.step_ap242": _Adapter(
+        extensions=(".ap242", ".stp242"), mime="model/step", kind="brep",
+        read_symbols=("parse_ap242",),
+        write_symbols=("write_ap242", "serialize_ap242"),
+        reader=_read_ap242, writer=_write_ap242, lossless=True,
+        note="STEP AP242 (Managed Model Based 3D Engineering). Writes the correct "
+             "AP242 MIM FILE_SCHEMA header and reuses the part-21 geometry "
+             "serialisation; units stay in the DATA section, unchanged. PMI "
+             "(semantic GD&T, datums, saved views) is NOT emitted -- see "
+             "step_ap242.pmi_gaps(). Routed under .ap242/.stp242 so it never "
+             "clobbers the AP203/214 codec on .step/.stp.",
+    ),
+    "harnesscad.io.formats.off": _Adapter(
+        extensions=(".off",), mime="model/vnd.off", kind="mesh",
+        read_symbols=("parse_off",),
+        write_symbols=("write_off", "serialize_off"),
+        reader=_read_off, writer=_write_off, lossless=True,
+        note="Object File Format: the trivial indexed mesh every mesh library "
+             "reads (CGAL, libigl, MeshLab, Geomview). Right-handed, +Z-up, no "
+             "silent rotation. OFF has no native unit, so the mesh unit is kept in "
+             "a '# unit <name>' comment that round-trips.",
+    ),
+    "harnesscad.io.formats.vrml": _Adapter(
+        extensions=(".wrl", ".vrml"), mime="model/vrml", kind="mesh",
+        read_symbols=("parse_wrl",),
+        write_symbols=("write_wrl", "serialize_wrl"),
+        reader=_read_wrl, writer=_write_wrl, lossless=True,
+        note="VRML97 IndexedFaceSet (.wrl). Default writes coordinates unchanged in "
+             "the harness +Z-up frame (recorded as '# up-axis Z'); up_axis='Y' does "
+             "an EXPLICIT, reversible Z-up->Y-up rotation for VRML-convention "
+             "viewers. Unit kept in a '# unit' comment; both round-trip.",
+    ),
+    "harnesscad.io.formats.usd": _Adapter(
+        extensions=(".usd", ".usda", ".usdz"), mime="model/vnd.usdz+zip",
+        kind="mesh",
+        read_symbols=("parse_usda", "read_usdz"),
+        write_symbols=("write_usda", "write_usdz"),
+        reader=_read_usd, writer=_write_usd, lossless=True,
+        note="Pixar USD: minimal UsdGeomMesh. .usda ASCII stage and the .usdz "
+             "stored+64-byte-aligned AR container. upAxis and metersPerUnit are "
+             "written EXPLICITLY (harness: upAxis='Z', millimetre -> 0.001) and read "
+             "back -- no glTF-style silent reframe. .usdc binary crate is not read.",
+    ),
+    "harnesscad.io.formats.threemf_extensions": _Adapter(
+        extensions=(".3mfx",), mime="model/3mf", kind="mesh",
+        read_symbols=("read_3mf_materials", "loads_material_model"),
+        write_symbols=("write_3mf_materials", "write_3mf_beamlattice"),
+        reader=_read_3mf_ext, writer=_write_3mf_ext, lossless=True,
+        note="3MF material+colour and beam-lattice EXTENSION parts over the core "
+             "3MF codec (base threemf.py untouched). The registered write path is "
+             "the gated per-triangle-colour solid mesh; the beam-lattice strut "
+             "graph is a specialised builder (write_3mf_beamlattice). +Z-up, unit "
+             "on <model unit=>. Routed under .3mfx so it never clobbers base .3mf; "
+             "the payload is a spec-valid 3MF OPC package (rename to .3mf for "
+             "slicers).",
     ),
     "harnesscad.io.formats.xcsg": _Adapter(
         extensions=(".xcsg",), mime="application/xml", kind="csg",
