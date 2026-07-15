@@ -3494,6 +3494,8 @@
         "harnesscad.domain.fabrication.registry",
         "harnesscad.domain.library",
         "harnesscad.domain.library.registry",
+        "harnesscad.domain.numeric",
+        "harnesscad.domain.numeric.registry",
         "harnesscad.domain.procedural",
         "harnesscad.domain.procedural.registry",
         "harnesscad.domain.programs",
@@ -3511,10 +3513,16 @@
         "harnesscad.eval.bench.registry",
         "harnesscad.eval.gallery",
         "harnesscad.eval.gallery.render_gallery",
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.registry",
+        "harnesscad.eval.judge",
+        "harnesscad.eval.judge.registry",
         "harnesscad.eval.pressure",
         "harnesscad.eval.pressure.cli",
         "harnesscad.eval.quality",
         "harnesscad.eval.quality.registry",
+        "harnesscad.eval.reliability",
+        "harnesscad.eval.reliability.registry",
         "harnesscad.eval.selftest",
         "harnesscad.eval.selftest.registry",
         "harnesscad.governance",
@@ -3522,6 +3530,8 @@
         "harnesscad.io",
         "harnesscad.io.adapters",
         "harnesscad.io.adapters.registry",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.registry",
         "harnesscad.io.formats",
         "harnesscad.io.formats.registry",
         "harnesscad.io.gate",
@@ -3548,6 +3558,7 @@
         "cmd_capabilities",
         "cmd_catalog",
         "cmd_core",
+        "cmd_cua",
         "cmd_dataset",
         "cmd_demo",
         "cmd_drawings",
@@ -3559,12 +3570,16 @@
         "cmd_gallery",
         "cmd_generate",
         "cmd_govern",
+        "cmd_grounding",
         "cmd_ingest",
+        "cmd_judge",
+        "cmd_numeric",
         "cmd_pdd",
         "cmd_pressure",
         "cmd_procedural",
         "cmd_program",
         "cmd_reconstruct",
+        "cmd_reliability",
         "cmd_render",
         "cmd_report",
         "cmd_search",
@@ -13931,6 +13946,73 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.numeric.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.domain.numeric.categorical_diffusion",
+        "harnesscad.domain.numeric.categorical_diffusion.uniform_transition_matrix",
+        "harnesscad.domain.numeric.decoder_regularizer",
+        "harnesscad.domain.numeric.decoder_regularizer.decoder_distance",
+        "harnesscad.domain.numeric.dmd_distillation",
+        "harnesscad.domain.numeric.dmd_distillation.dmd_gradient",
+        "harnesscad.domain.numeric.flow_ode",
+        "harnesscad.domain.numeric.flow_ode.clean_flow_ode_endpoint",
+        "harnesscad.domain.numeric.gradient_variance",
+        "harnesscad.domain.numeric.gradient_variance.scaled_gradient_variance",
+        "harnesscad.domain.numeric.integral_noise",
+        "harnesscad.domain.numeric.integral_noise.ReferenceNoise",
+        "harnesscad.domain.numeric.integral_noise.transport",
+        "harnesscad.domain.numeric.joint_diffusion",
+        "harnesscad.domain.numeric.joint_diffusion.joint_posterior_mean",
+        "harnesscad.domain.numeric.mask_and_replace",
+        "harnesscad.domain.numeric.mask_and_replace.mask_and_replace_matrix",
+        "harnesscad.domain.numeric.multiscale_attention",
+        "harnesscad.domain.numeric.multiscale_attention.masked_attention",
+        "harnesscad.domain.numeric.multiscale_pyramid",
+        "harnesscad.domain.numeric.multiscale_pyramid.build_pyramid",
+        "harnesscad.domain.numeric.scan_directions",
+        "harnesscad.domain.numeric.scan_directions.multidirectional_scan",
+        "harnesscad.domain.numeric.sqrt_noise_schedule",
+        "harnesscad.domain.numeric.sqrt_noise_schedule.SqrtNoiseSchedule",
+        "harnesscad.domain.numeric.variance_augmentation",
+        "harnesscad.domain.numeric.variance_augmentation.augmented_schedule",
+        "harnesscad.domain.numeric.zoh_discretization",
+        "harnesscad.domain.numeric.zoh_discretization.discretize",
+        "harnesscad.registry"
+      ],
+      "layer": "domain",
+      "name": "registry",
+      "package": "numeric",
+      "summary": "The NUMERIC surface -- the deterministic building blocks of generative models.",
+      "symbols": [
+        "NumericError",
+        "add_arguments",
+        "augmented_schedule",
+        "decoder_distance",
+        "directional_scan",
+        "discover",
+        "distill_gradient",
+        "flow_endpoint",
+        "gradient_variance",
+        "groups",
+        "integral_transport",
+        "joint_posterior",
+        "main",
+        "mask_replace",
+        "noise_schedule",
+        "pyramid",
+        "routed_modules",
+        "run_cli",
+        "transition",
+        "unadapted",
+        "windowed_attention",
+        "zoh_discretize"
+      ],
+      "tags": [
+        "numeric"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.numeric.scan_directions",
       "imports": [
         "harnesscad.domain.numeric.geometric_state_space",
@@ -20855,6 +20937,35 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.standards.accounting",
+      "imports": [
+        "harnesscad",
+        "harnesscad.domain.standards.embodied_carbon",
+        "harnesscad.domain.standards.evidence_bundle",
+        "harnesscad.registry"
+      ],
+      "layer": "domain",
+      "name": "accounting",
+      "package": "standards",
+      "summary": "The design-ACCOUNTING surface -- what a finished design owes.",
+      "symbols": [
+        "StandardsAccountingError",
+        "add_arguments",
+        "carbon_intensity",
+        "carbon_top",
+        "carbon_total",
+        "discover",
+        "main",
+        "provenance",
+        "routed_modules",
+        "run_cli",
+        "unadapted"
+      ],
+      "tags": [
+        "standards"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.standards.aci_color",
       "imports": [],
       "layer": "domain",
@@ -26420,6 +26531,7 @@
         "harnesscad.eval.gallery.parts.COMPARE_BACKENDS",
         "harnesscad.eval.gallery.parts.COMPARE_PART",
         "harnesscad.eval.gallery.parts.Part",
+        "harnesscad.eval.gallery.provenance",
         "harnesscad.io",
         "harnesscad.io.drawing",
         "harnesscad.io.formats",
@@ -26829,6 +26941,44 @@
         "write_corpus"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.cadspot",
+        "harnesscad.eval.grounding.catalogue",
+        "harnesscad.eval.grounding.corpus",
+        "harnesscad.eval.grounding.som",
+        "harnesscad.eval.grounding.som.SetOfMarks",
+        "harnesscad.eval.grounding.trajectory_corpus",
+        "harnesscad.registry"
+      ],
+      "layer": "eval",
+      "name": "registry",
+      "package": "grounding",
+      "summary": "The GROUNDING surface -- how a CAD agent turns \"the Pad button\" into a click.",
+      "symbols": [
+        "GroundingError",
+        "add_arguments",
+        "benchmark",
+        "benchmarks",
+        "click_corpus",
+        "discover",
+        "field_counts",
+        "field_map",
+        "main",
+        "marks",
+        "marks_from_elements",
+        "routed_modules",
+        "run_cli",
+        "trajectory_corpus",
+        "unadapted"
+      ],
+      "tags": [
+        "agent"
+      ]
     },
     {
       "dotted": "harnesscad.eval.grounding.som",
@@ -27282,6 +27432,52 @@
       "tags": [
         "features",
         "sketch"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.judge.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.eval.judge.best_of_n",
+        "harnesscad.eval.judge.best_of_n.Candidate",
+        "harnesscad.eval.judge.best_of_n.SampleResult",
+        "harnesscad.eval.judge.best_of_n.aggregate_run",
+        "harnesscad.eval.judge.best_of_n.select_best",
+        "harnesscad.eval.judge.betti",
+        "harnesscad.eval.judge.betti.betti_from_mesh",
+        "harnesscad.eval.judge.cad_score",
+        "harnesscad.eval.judge.cad_score.BETTI_SHARPNESS",
+        "harnesscad.eval.judge.cad_score.cad_score",
+        "harnesscad.eval.judge.cad_score.topology_match",
+        "harnesscad.eval.judge.compiler_review",
+        "harnesscad.eval.judge.compiler_review.ReviewResult",
+        "harnesscad.eval.judge.compiler_review.feedback_message",
+        "harnesscad.eval.judge.compiler_review.review_sequence",
+        "harnesscad.registry"
+      ],
+      "layer": "eval",
+      "name": "registry",
+      "package": "judge",
+      "summary": "The JUDGE surface -- score a generated part with checkable properties, not a VLM.",
+      "symbols": [
+        "JudgeError",
+        "add_arguments",
+        "aggregate",
+        "betti",
+        "cad_score",
+        "discover",
+        "feedback",
+        "main",
+        "review",
+        "routed_modules",
+        "run_cli",
+        "select_best",
+        "topology_match",
+        "unadapted"
+      ],
+      "tags": [
+        "benchmark",
+        "verify"
       ]
     },
     {
@@ -29440,8 +29636,11 @@
       "symbols": [
         "FalsePositive",
         "RedTeamReport",
+        "add_arguments",
         "format_text",
-        "run"
+        "main",
+        "run",
+        "run_cli"
       ],
       "tags": []
     },
@@ -29647,6 +29846,57 @@
       "symbols": [
         "LoopDetector",
         "signature"
+      ],
+      "tags": [
+        "reliability"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.reliability.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.eval.reliability.brep_repair",
+        "harnesscad.eval.reliability.brep_repair.RepairAdvisor",
+        "harnesscad.eval.reliability.brep_repair.repair_solid",
+        "harnesscad.eval.reliability.code_error",
+        "harnesscad.eval.reliability.code_error.normalize",
+        "harnesscad.eval.reliability.compiler_diagnostics",
+        "harnesscad.eval.reliability.compiler_diagnostics.normalize_compiler_error",
+        "harnesscad.eval.reliability.cot_grammar_gate",
+        "harnesscad.eval.reliability.cot_grammar_gate.gc_check",
+        "harnesscad.eval.reliability.fallback",
+        "harnesscad.eval.reliability.fallback.RetrievalFallback",
+        "harnesscad.eval.reliability.repair_loop",
+        "harnesscad.eval.reliability.repair_loop.repair_until_feasible",
+        "harnesscad.eval.reliability.repair_metrics",
+        "harnesscad.eval.reliability.repair_metrics.benchmark_repair",
+        "harnesscad.eval.reliability.repair_metrics.feasibility_report",
+        "harnesscad.eval.reliability.strategies.mcts",
+        "harnesscad.eval.reliability.strategies.mcts.mcts_search",
+        "harnesscad.registry"
+      ],
+      "layer": "eval",
+      "name": "registry",
+      "package": "reliability",
+      "summary": "The RELIABILITY surface -- detect a bad build, then act on it.",
+      "symbols": [
+        "ReliabilityError",
+        "add_arguments",
+        "advise",
+        "benchmark",
+        "converge",
+        "discover",
+        "fallback",
+        "feasibility",
+        "grammar_gate",
+        "heal",
+        "main",
+        "normalize_code_error",
+        "normalize_compiler",
+        "routed_modules",
+        "run_cli",
+        "search",
+        "unadapted"
       ],
       "tags": [
         "reliability"
@@ -33103,6 +33353,30 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.cua.registry",
+      "imports": [
+        "harnesscad",
+        "harnesscad.registry"
+      ],
+      "layer": "io",
+      "name": "registry",
+      "package": "cua",
+      "summary": "The COMPUTER-USE surface -- drive a real CAD GUI, and know which one can run here.",
+      "symbols": [
+        "CuaError",
+        "add_arguments",
+        "discover",
+        "environment_class",
+        "environment_names",
+        "environments",
+        "main",
+        "routed_modules",
+        "run_cli",
+        "unadapted"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.io.cua.reset",
       "imports": [],
       "layer": "io",
@@ -33457,11 +33731,15 @@
       "dotted": "harnesscad.io.formats.kcl",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.Chamfer",
         "harnesscad.core.cisp.ops.CircularPattern",
@@ -33470,16 +33748,24 @@
         "harnesscad.core.cisp.ops.Extrude",
         "harnesscad.core.cisp.ops.Fillet",
         "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.Hull",
         "harnesscad.core.cisp.ops.LinearPattern",
         "harnesscad.core.cisp.ops.Loft",
         "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Minkowski",
         "harnesscad.core.cisp.ops.Mirror",
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.PatternTransform",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Scale",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
-        "harnesscad.core.cisp.ops.Sweep"
+        "harnesscad.core.cisp.ops.Split",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
+        "harnesscad.core.cisp.ops.Transform"
       ],
       "layer": "io",
       "name": "kcl",

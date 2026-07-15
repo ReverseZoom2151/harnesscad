@@ -580,6 +580,18 @@ DYNAMIC_DISPATCHERS: Dict[str, Tuple[str, ...]] = {
     # The drawing-understanding subsystem's registry, mirroring every other domain
     # dispatcher; it lazy-imports its member modules per route.
     "harnesscad.domain.drawings.registry": ("harnesscad.domain.drawings",),
+    # The computer-use subsystem: environments (freecad/onshape/solidworks/fusion/
+    # inventor) + action primitives, lazy-imported per route.
+    "harnesscad.io.cua.registry": ("harnesscad.io.cua",),
+    # The numeric building-block subsystem (diffusion/flow/schedule/multiscale/
+    # distill/statespace), deterministic halves lazy-imported per route.
+    "harnesscad.domain.numeric.registry": ("harnesscad.domain.numeric",),
+    # The repair-loop subsystem: brep/code/compiler repair, fallback, mcts search.
+    "harnesscad.eval.reliability.registry": ("harnesscad.eval.reliability",),
+    # The deterministic CAD graders (cad_score, betti, best-of-n, compiler-review).
+    "harnesscad.eval.judge.registry": ("harnesscad.eval.judge",),
+    # The CAD-viewport grounding stack (catalogue, set-of-marks, corpora).
+    "harnesscad.eval.grounding.registry": ("harnesscad.eval.grounding",),
 }
 
 #: Modules that are legitimately imported by nothing because they ARE the entry
@@ -638,6 +650,11 @@ ROOTS: Tuple[str, ...] = (
     # call path the source-only AST scan cannot see (same case as services above).
     "harnesscad.eval.corpus.run",
     "harnesscad.eval.corpus.score",
+    # Two `python -m` entry points (main() + __main__ guard) that are not domain
+    # registries, so they root here rather than via a cli.py verb: the standards
+    # carbon/evidence accounting surface, and the red-team false-positive sweep.
+    "harnesscad.domain.standards.accounting",
+    "harnesscad.eval.redteam.run",
 )
 
 

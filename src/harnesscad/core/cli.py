@@ -529,6 +529,41 @@ def cmd_drawings(args: argparse.Namespace) -> int:
     return drawings_registry.run_cli(args)
 
 
+def cmd_cua(args: argparse.Namespace) -> int:
+    # Imported here so the computer-use tree is only touched by `cua`.
+    from harnesscad.io.cua import registry as cua_registry
+
+    return cua_registry.run_cli(args)
+
+
+def cmd_numeric(args: argparse.Namespace) -> int:
+    # Imported here so the numeric tree is only touched by `numeric`.
+    from harnesscad.domain.numeric import registry as numeric_registry
+
+    return numeric_registry.run_cli(args)
+
+
+def cmd_reliability(args: argparse.Namespace) -> int:
+    # Imported here so the repair tree is only touched by `reliability`.
+    from harnesscad.eval.reliability import registry as reliability_registry
+
+    return reliability_registry.run_cli(args)
+
+
+def cmd_judge(args: argparse.Namespace) -> int:
+    # Imported here so the judge tree is only touched by `judge`.
+    from harnesscad.eval.judge import registry as judge_registry
+
+    return judge_registry.run_cli(args)
+
+
+def cmd_grounding(args: argparse.Namespace) -> int:
+    # Imported here so the grounding tree is only touched by `grounding`.
+    from harnesscad.eval.grounding import registry as grounding_registry
+
+    return grounding_registry.run_cli(args)
+
+
 def cmd_govern(args: argparse.Namespace) -> int:
     # Imported here so the governance tree is only touched by `govern`.
     from harnesscad.governance import registry as governance_registry
@@ -895,6 +930,50 @@ def build_parser() -> argparse.ArgumentParser:
 
     _drawings_registry.add_arguments(p_drawings)
     p_drawings.set_defaults(func=cmd_drawings)
+
+    p_cua = sub.add_parser(
+        "cua",
+        help="computer-use surface: the five live-GUI CAD environments and the "
+             "deterministic action primitives they compose from")
+    from harnesscad.io.cua import registry as _cua_registry
+
+    _cua_registry.add_arguments(p_cua)
+    p_cua.set_defaults(func=cmd_cua)
+
+    p_numeric = sub.add_parser(
+        "numeric",
+        help="numeric building blocks: diffusion, flow/ODE, noise schedules, "
+             "multiscale, distillation, state-space")
+    from harnesscad.domain.numeric import registry as _numeric_registry
+
+    _numeric_registry.add_arguments(p_numeric)
+    p_numeric.set_defaults(func=cmd_numeric)
+
+    p_reliability = sub.add_parser(
+        "reliability",
+        help="repair-loop surface: brep/code/compiler repair, fallback, "
+             "infeasibility taxonomy, mcts search")
+    from harnesscad.eval.reliability import registry as _reliability_registry
+
+    _reliability_registry.add_arguments(p_reliability)
+    p_reliability.set_defaults(func=cmd_reliability)
+
+    p_judge = sub.add_parser(
+        "judge",
+        help="deterministic CAD graders: cad-score, betti, best-of-n, "
+             "compiler-review")
+    from harnesscad.eval.judge import registry as _judge_registry
+
+    _judge_registry.add_arguments(p_judge)
+    p_judge.set_defaults(func=cmd_judge)
+
+    p_grounding = sub.add_parser(
+        "grounding",
+        help="CAD-viewport grounding stack: catalogue, set-of-marks, corpora")
+    from harnesscad.eval.grounding import registry as _grounding_registry
+
+    _grounding_registry.add_arguments(p_grounding)
+    p_grounding.set_defaults(func=cmd_grounding)
 
     p_govern = sub.add_parser(
         "govern",
