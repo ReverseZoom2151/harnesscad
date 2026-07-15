@@ -8,6 +8,13 @@ This is the Aider-style loop from the blueprint, kernel-agnostic:
     preserved) and returns.
   - checkpoint on success: every accepted+verified op is checkpointed, giving
     deterministic replay and rollback to any point.
+  - PER-STEP CREDIT: every op the loop decides about emits a `step_reward` event
+    (1.0 applied+verified, 0.0 for the op that broke the trajectory) and lands in
+    `session.step_rewards`. The harness was running outcome-only supervision on a
+    3-8-op trajectory while carrying a finished process-reward implementation
+    (`agents/agent/tool_reward.py`). A per-step reward shows a loop being poisoned
+    at op 3 instead of at brief 12. `agents/agent/trace_reward.py` folds this
+    vector into the full R = a*R_ORM + b*mean(R_step) + c*R_format.
   - the verifier FLEET: at verify_level="full" the session additionally runs
     every verifier discovered by harnesscad.eval.verifiers.registry (DFM, plan
     preflight, standards, interference, kernel preflight, plausibility, ...).
@@ -65,6 +72,10 @@ class HarnessSession:
         self.fleet_only = tuple(fleet_only) if fleet_only is not None else None
         self.fleet_skip = tuple(fleet_skip)
         self.fleet_blocking = fleet_blocking
+        #: Per-op reward vector of the LAST batch (see _step_reward). The loop
+        #: is a multi-step trajectory and was graded only on its final solid;
+        #: this is the process signal that says WHICH op broke it.
+        self.step_rewards: List[dict] = []
         self._run_seq = 0
         self.backend.reset()
         self.opdag.checkpoint("start")
@@ -80,13 +91,36 @@ class HarnessSession:
         h = hashlib.sha256(f"{self._run_seq}|{blob}".encode()).hexdigest()
         return f"run-{self._run_seq}-{h[:12]}"
 
+    # --- per-step credit assignment ---------------------------------------
+    def _step_reward(self, run_id: str, index: int, op: Op,
+                     reward: float, reason: str) -> None:
+        """Emit the PER-OP reward and record it on the session.
+
+        1.0 for an op that applied and verified; 0.0 for the op that broke the
+        trajectory. Ops after the break are never reached and never scored --
+        trajectory slicing, not collective punishment.
+        """
+        record = {"index": index, "op": op.to_dict()["op"],
+                  "reward": float(reward), "reason": reason}
+        self.step_rewards.append(record)
+        self.tracer.event("step_reward", run_id, dict(record))
+
+    def mean_step_reward(self) -> float:
+        """Mean per-op reward of the last batch; 0.0 when nothing was scored."""
+        if not self.step_rewards:
+            return 0.0
+        return sum(r["reward"] for r in self.step_rewards) / len(self.step_rewards)
+
     # --- core loop --------------------------------------------------------
     def apply_ops(self, ops: List[Op]) -> ApplyOpsResult:
         diags: List[Diagnostic] = []
         applied = 0
         run_id = self._make_run_id(ops)
+        # The per-op reward vector of THIS batch. Reset per batch so a caller
+        # reading it after apply_ops always sees the trajectory it just ran.
+        self.step_rewards: List[dict] = []
         self.tracer.event("run_start", run_id, {"op_count": len(ops)})
-        for op in ops:
+        for index, op in enumerate(ops):
             res = self.backend.apply(op)
             if not res.ok:
                 diags += res.diagnostics
@@ -95,9 +129,12 @@ class HarnessSession:
                     "reason": "backend-rejected",
                     "diagnostics": [d.to_dict() for d in res.diagnostics],
                 })
+                self._step_reward(run_id, index, op, 0.0, "backend-rejected")
                 self.tracer.event("run_end", run_id, {
                     "ok": False, "applied": applied,
-                    "digest": self.backend.state_digest()})
+                    "digest": self.backend.state_digest(),
+                    "step_rewards": list(self.step_rewards),
+                    "mean_step_reward": self.mean_step_reward()})
                 return ApplyOpsResult(False, applied, self.backend.state_digest(),
                                       diags, rejected=op.to_dict())
             self.opdag.append(op)
@@ -123,12 +160,16 @@ class HarnessSession:
                     "reason": "verify-failed",
                     "diagnostics": [d.to_dict() for d in report.diagnostics],
                 })
+                self._step_reward(run_id, index, op, 0.0, "verify-failed")
                 self._rollback_last()
                 self.tracer.event("run_end", run_id, {
                     "ok": False, "applied": applied,
-                    "digest": self.backend.state_digest()})
+                    "digest": self.backend.state_digest(),
+                    "step_rewards": list(self.step_rewards),
+                    "mean_step_reward": self.mean_step_reward()})
                 return ApplyOpsResult(False, applied, self.backend.state_digest(),
                                       diags, rejected=op.to_dict())
+            self._step_reward(run_id, index, op, 1.0, "applied+verified")
             applied += 1
             label = f"auto-{len(self.opdag)}"
             self.opdag.checkpoint(label)
@@ -145,7 +186,9 @@ class HarnessSession:
                 "diagnostics": [d.to_dict() for d in fleet]})
         digest = self.backend.state_digest()
         self.tracer.event("run_end", run_id, {
-            "ok": True, "applied": applied, "digest": digest})
+            "ok": True, "applied": applied, "digest": digest,
+            "step_rewards": list(self.step_rewards),
+            "mean_step_reward": self.mean_step_reward()})
         return ApplyOpsResult(True, applied, digest, diags)
 
     def _verify(self) -> VerifyReport:

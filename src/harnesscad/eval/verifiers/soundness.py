@@ -214,6 +214,28 @@ SOUNDNESS: Dict[str, Soundness] = {
             "promoted to PROVEN -- see by_code."),
     ),
 
+    "edge-fillet": Soundness(
+        PROVEN,
+        reason=(
+            "PROVEN: the SOUND per-edge replacement for preflight-RADIUS_TOO_LARGE. "
+            "A fillet of radius r consumes a strip of width r from each adjacent "
+            "face, measured perpendicular to the edge (the tangent line of the "
+            "radius-r arc lies distance r from the edge). When the parallel edge on "
+            "the far side of that face is filleted too, the two strips consume 2r; "
+            "they would have to overlap -- impossible -- exactly when 2r > the "
+            "face's perpendicular extent (r > extent when only one edge is "
+            "rounded; 2r == extent is the valid bullnose limit, so the boundary is "
+            "STRICT). That is a theorem of tangent-arc geometry, "
+            "the same offset-surface argument that makes the shell 2t >= extent "
+            "rule PROVEN. Unlike the whole-body rule it measures the extent of the "
+            "EDGE's own adjacent faces, so it does not reject the 50x30x6 plate "
+            "filleted r=5 on its VERTICAL edges (adjacent to the 50 and 30 mm "
+            "faces) that the whole-body rule falsely condemned. It is proved only "
+            "inside the scope where the edge topology is exactly known -- one "
+            "XY-plane rectangle, one extrude, fillets/chamfers only -- and ABSTAINS "
+            "otherwise, so it can never fire on a correct part."),
+    ),
+
     # -- symbolic plan lint --------------------------------------------------
 
     "precheck": Soundness(

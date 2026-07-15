@@ -197,15 +197,49 @@ KNOWN_BAD: Dict[str, List[Op]] = {
 #: resolution fine enough for a 3 mm wall on a 60 mm box.
 _RESOLUTION = 64
 
+#: PINNED to marching_cubes. The suite is about verifier PRECISION, not the
+#: mesher, and DEFAULT_MESHER flipping to dual_contouring (commit 2e69da5) doubled
+#: this file's runtime with zero coverage change: every corpus part was built
+#: under BOTH meshers at this resolution and every verifier reached an IDENTICAL
+#: verdict (same diagnostic codes, same build success) on all nine. Unlike the
+#: GATE corpus -- where dual_contouring was the ONLY mesher to produce a
+#: self-intersecting mesh, so pinning MC there would have dropped a refusal path
+#: (see tests/eval/gates) -- nothing in THIS corpus's pass/fail assertions is
+#: mesh-dependent: the known-bad detections are symbolic (preflight-
+#: THICKNESS_TOO_LARGE) or backend-measured (empty-sketch), and no known-good part
+#: meshes to an invalid B-rep under either mesher. MC is the faster of the two and
+#: costs nothing here.
+_MESHER = "marching_cubes"
+
 
 def _build(ops: List[Op]):
-    """Apply an op stream at verify_level='full' and return (result, session)."""
-    session = HarnessSession(FRepBackend(resolution=_RESOLUTION), verify_level="full")
-    return session.apply_ops(ops), session
+    """Apply an op stream at verify_level='full' and return (result, session).
+
+    Memoised on the op stream: every part in this file is built once and read by
+    a dozen assertions. The build is deterministic and the (result, session) are
+    only ever READ downstream, so sharing them across assertions changes no
+    verdict -- it only stops the suite paying for the same B-rep a dozen times.
+    """
+    key = tuple(ops)
+    cached = _BUILD_CACHE.get(key)
+    if cached is None:
+        session = HarnessSession(
+            FRepBackend(resolution=_RESOLUTION, mesher=_MESHER), verify_level="full")
+        cached = (session.apply_ops(ops), session)
+        _BUILD_CACHE[key] = cached
+    return cached
+
+
+#: op-stream -> (result, session). Cleared never: the corpus is a handful of parts.
+_BUILD_CACHE: Dict[tuple, object] = {}
 
 
 def _all_diagnostics(ops: List[Op]) -> List[Diagnostic]:
     """Every diagnostic the product produces for `ops`: core checks + full fleet."""
+    key = tuple(ops)
+    cached = _DIAG_CACHE.get(key)
+    if cached is not None:
+        return cached
     result, session = _build(ops)
     diags = list(result.diagnostics)
     # The fleet only auto-runs on an ACCEPTED batch; run it explicitly so a
@@ -216,7 +250,12 @@ def _all_diagnostics(ops: List[Op]) -> List[Diagnostic]:
     for d in run_all(state):
         if (d.severity, d.code, d.message) not in seen:
             diags.append(d)
+    _DIAG_CACHE[key] = diags
     return diags
+
+
+#: op-stream -> aggregated diagnostics (see _all_diagnostics).
+_DIAG_CACHE: Dict[tuple, List[Diagnostic]] = {}
 
 
 def _errors(diags: List[Diagnostic]) -> List[Diagnostic]:
@@ -586,8 +625,10 @@ class TestCensus(unittest.TestCase):
             proven_codes,
             ["preflight-INVALID_INPUT", "preflight-THICKNESS_TOO_LARGE",
              "preflight-ZERO_VOLUME"])
-        # A negative sketch DOF count is a proof of unsatisfiability.
-        self.assertEqual(proven_verifiers, ["sketch-constraint"])
+        # A negative sketch DOF count is a proof of unsatisfiability; the per-edge
+        # fillet ceiling is a tangent-arc theorem inside the box scope it restricts
+        # itself to (verifiers.edge_fillet).
+        self.assertEqual(proven_verifiers, ["edge-fillet", "sketch-constraint"])
 
 
 if __name__ == "__main__":

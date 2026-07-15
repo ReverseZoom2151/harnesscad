@@ -20,7 +20,23 @@ Event kinds (the loop emits exactly these):
   verify_result — verifier ran          data: {ok, diagnostics}
   rejected      — an op was blocked      data: {op, reason, diagnostics}
   checkpoint    — history checkpointed  data: {label, index}
-  run_end       — batch finished        data: {ok, applied, digest}
+  step_reward   — PER-OP credit          data: {index, op, reward, reason}
+  run_end       — batch finished        data: {ok, applied, digest, step_rewards,
+                                               mean_step_reward}
+
+PER-STEP CREDIT ASSIGNMENT (``step_reward``)
+--------------------------------------------
+The loop used to be graded on its final solid alone. A six-op plan that produced
+a wrong part got one scalar and attributed nothing: ops 1-4 may have been
+perfect, and nothing knew. `agents/agent/tool_reward.py` implemented the
+per-step (process) reward — ``R = alpha*R_ORM + beta*mean(R_step) +
+gamma*R_format`` — and its only importers were a dispatch table and its own test.
+
+The loop now emits a ``step_reward`` event for every op it decides about: 1.0 for
+an op that applied AND verified, 0.0 for the op that broke the trajectory. Ops
+after the break are never reached and are never punished — that is the book's
+trajectory slicing (negative reward only on the first divergent op), and it is
+the instrument that shows a loop being poisoned at op 3 instead of at brief 12.
 
 Per-event token/cost/latency hooks: any tracer accepts these inside ``data``
 (e.g. ``{"tokens": ..., "cost_usd": ..., "latency_ms": ...}``) as placeholders
@@ -41,6 +57,7 @@ EVENT_KINDS = (
     "verify_result",
     "rejected",
     "checkpoint",
+    "step_reward",
     "run_end",
 )
 

@@ -72,9 +72,18 @@ class TestPlanner(unittest.TestCase):
         # system + user
         sent = mock.calls[0]
         self.assertEqual(sent[0].role, "system")
-        self.assertEqual(sent[0].content, SYSTEM_PROMPT)
+        # The prompt is no longer zero-shot: it carries the static contract PLUS
+        # the verified worked examples that best tile THIS brief. `exemplars=0`
+        # restores the old prompt byte for byte, and the assertion below pins both.
+        self.assertTrue(sent[0].content.startswith(SYSTEM_PROMPT))
+        self.assertIn("WORKED EXAMPLES", sent[0].content)
         self.assertIn("make a plate", sent[1].content)
         self.assertIn("CURRENT MODEL STATE", sent[1].content)
+
+    def test_zero_shot_prompt_is_still_reachable(self):
+        mock = MockLLM([plate_ops_json()])
+        Planner(mock, exemplars=0).plan("make a plate")
+        self.assertEqual(mock.calls[0][0].content, SYSTEM_PROMPT)
 
     def test_plan_includes_diagnostics_in_prompt(self):
         mock = MockLLM([plate_ops_json()])

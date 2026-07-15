@@ -171,6 +171,13 @@ def _v(alt: Any, **base: Any) -> Tuple[Any, Dict[str, Any]]:
 _BOX: Tuple[Op, ...] = (
     NewSketch("XY"), AddRectangle("sk1", 0.0, 0.0, 60.0, 40.0), Extrude("sk1", 20.0))
 
+#: A CONCAVE (L-shaped) prism: 60 x 40 and 20 x 70 unioned in one sketch, extruded
+#: 20. The reflex corner at (20, 40) is the whole point -- it is the only place a
+#: shell's JOIN TYPE can manifest. See the "shell" Case.
+_L_PRISM: Tuple[Op, ...] = (
+    NewSketch("XY"), AddRectangle("sk1", 0.0, 0.0, 60.0, 40.0),
+    AddRectangle("sk1", 0.0, 0.0, 20.0, 70.0), Extrude("sk1", 20.0))
+
 #: An off-axis 20 x 20 x 10 block (f1) plus a fillet (f2) -- two features, so a
 #: pattern/mirror ``feature`` reference has two distinct things to point at, and
 #: the body is away from the origin so a rotation about Z actually moves it.
@@ -289,18 +296,22 @@ def _cases() -> Dict[str, Case]:
                                 depth=None, csk_diameter=16.0, csk_angle=82.0),
             },
         ),
-        # CAVEAT ON shell.kind, stated because a DEAD cell here is the one verdict
-        # in this file that is not conclusive on its own. ``kind`` is OCCT's JOIN
-        # TYPE, and a join type can only show itself where the offset faces do NOT
-        # meet cleanly. On a convex box they meet cleanly, so "arc" and
-        # "intersection" may legitimately produce the same solid, and a DEAD here
-        # is then a weakness of THIS FIXTURE, not proof of a dropped field. Before
-        # filing shell.kind as a bug, check whether the backend passes kind through
-        # at all; and if a concave fixture is wanted, this is the line to change.
+        # THE FIXTURE WAS THE BUG, for shell.kind. ``kind`` is OCCT's JOIN TYPE, and
+        # a join can only show itself where the offset faces do NOT meet cleanly. On
+        # the convex _BOX this Case used to use, they meet cleanly: "arc" and
+        # "intersection" produce THE SAME SOLID, and the DEAD cell that reported was
+        # a weakness of the fixture, not a dropped field. So the substrate is now an
+        # L-shaped prism (:data:`_L_PRISM`), whose reflex corner is exactly the
+        # corner a join type has to decide about -- an arc rolls a radius round it,
+        # an intersection runs the two offset faces on until they meet. A backend
+        # that drops ``kind`` now produces identical state and is caught; one that
+        # honours it is not. The wall is 5mm on a 70mm part so that frep's sampling
+        # grid can resolve it (see frep.MIN_WALL_CELLS) -- a fixture below the cell
+        # size would test the mesher, not the field.
         "shell": Case(
-            prelude=_BOX,
-            op=Shell((">Z",), 3.0, "arc"),
-            variants={"faces": _v(("<Z",)), "thickness": _v(6.0),
+            prelude=_L_PRISM,
+            op=Shell((">Z",), 5.0, "arc"),
+            variants={"faces": _v(("<Z",)), "thickness": _v(8.0),
                       "kind": _v("intersection")},
         ),
         "draft": Case(

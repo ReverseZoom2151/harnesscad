@@ -24,9 +24,19 @@ from harnesscad.agents.memory.skills import (
     plate_ops,
     bracket_ops,
 )
+from harnesscad.agents.memory.harness_memory import (
+    HarnessMemory,
+    OracleVerdict,
+    Recalled,
+    gate_oracle,
+)
 
 __all__ = [
     "Episode",
+    "HarnessMemory",
+    "OracleVerdict",
+    "Recalled",
+    "gate_oracle",
     "MemoryStore",
     "Similarity",
     "TokenOverlapSimilarity",

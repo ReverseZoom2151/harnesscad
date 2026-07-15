@@ -86,6 +86,27 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.agent.feedback",
+      "imports": [
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.MODEL_FACING_TIERS",
+        "harnesscad.eval.verifiers.soundness.human_facing",
+        "harnesscad.eval.verifiers.soundness.model_facing",
+        "harnesscad.eval.verifiers.soundness.tier_of"
+      ],
+      "layer": "agents",
+      "name": "feedback",
+      "package": "agent",
+      "summary": "THE feedback channel: one gate, one formatter, for every loop and surface.",
+      "symbols": [
+        "format_diagnostics",
+        "gate",
+        "render",
+        "withheld"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.agents.agent.host_feedback",
       "imports": [],
       "layer": "agents",
@@ -159,8 +180,17 @@
     {
       "dotted": "harnesscad.agents.agent.planner",
       "imports": [
+        "harnesscad.agents.agent.feedback",
+        "harnesscad.agents.agent.feedback.MODEL_FACING_TIERS",
+        "harnesscad.agents.agent.feedback.PRIOR_ATTEMPT_HEADER",
+        "harnesscad.agents.agent.feedback.gate",
+        "harnesscad.agents.agent.feedback.render",
         "harnesscad.agents.agent.system_prompt",
         "harnesscad.agents.agent.system_prompt.SYSTEM_PROMPT",
+        "harnesscad.agents.agent.system_prompt.build_system_prompt",
+        "harnesscad.agents.agents.roles",
+        "harnesscad.agents.agents.roles.Finding",
+        "harnesscad.agents.agents.roles.prioritize",
         "harnesscad.agents.llm.base",
         "harnesscad.agents.llm.base.LLM",
         "harnesscad.agents.llm.base.Message",
@@ -172,9 +202,10 @@
         "harnesscad.agents.llm.structured.validate_ops",
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.Op",
-        "harnesscad.eval.verifiers.soundness",
-        "harnesscad.eval.verifiers.soundness.MODEL_FACING_TIERS",
-        "harnesscad.eval.verifiers.soundness.model_facing"
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.surfaces.mcp.tools",
+        "harnesscad.io.surfaces.mcp.tools.ToolCatalog"
       ],
       "layer": "agents",
       "name": "planner",
@@ -182,7 +213,9 @@
       "summary": "`Planner` \u2014 natural-language brief -> validated CISP ops.",
       "symbols": [
         "PlanError",
-        "Planner"
+        "Planner",
+        "build_emit_ops_tool",
+        "prioritize_diagnostics"
       ],
       "tags": [
         "verify"
@@ -191,18 +224,20 @@
     {
       "dotted": "harnesscad.agents.agent.runner",
       "imports": [
-        "harnesscad.agents.agent.planner",
-        "harnesscad.agents.agent.planner.PlanError",
-        "harnesscad.agents.agent.planner.Planner",
         "harnesscad.core.cisp.protocol",
         "harnesscad.core.cisp.protocol.ApplyOpsResult",
+        "harnesscad.core.harness",
+        "harnesscad.core.harness.AgentHarness",
         "harnesscad.core.loop",
-        "harnesscad.core.loop.HarnessSession"
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity"
       ],
       "layer": "agents",
       "name": "runner",
       "package": "agent",
-      "summary": "The plan -> apply -> observe -> replan loop.",
+      "summary": "`run` \u2014 the plan -> apply -> observe -> replan loop, as a THIN VIEW of the one loop.",
       "symbols": [
         "run"
       ],
@@ -214,6 +249,8 @@
     {
       "dotted": "harnesscad.agents.agent.system_prompt",
       "imports": [
+        "harnesscad.agents.context.cisp_exemplars",
+        "harnesscad.agents.context.cisp_exemplars.few_shot_block",
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.AddCircle",
         "harnesscad.core.cisp.ops.AddLine",
@@ -367,6 +404,33 @@
         "parse_react_trajectory",
         "render_step",
         "rollout"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.agent.trace_reward",
+      "imports": [
+        "harnesscad.agents.agent.tool_reward",
+        "harnesscad.agents.agent.tool_reward.ToolUseReward",
+        "harnesscad.agents.agent.tool_reward.aggregate_reward",
+        "harnesscad.agents.agent.tool_schema",
+        "harnesscad.agents.agent.tool_schema.InterfaceResult",
+        "harnesscad.agents.agent.tool_schema.ToolCall",
+        "harnesscad.agents.agent.tool_trajectory",
+        "harnesscad.agents.agent.tool_trajectory.ToolTrajectory",
+        "harnesscad.agents.agent.tool_trajectory.TrajectoryStep"
+      ],
+      "layer": "agents",
+      "name": "trace_reward",
+      "package": "agent",
+      "summary": "Wire `tool_reward` to the loop \u2014 the process reward the harness never used.",
+      "symbols": [
+        "first_divergence",
+        "reward_for_session",
+        "reward_for_steps",
+        "step_accuracy",
+        "trajectory_from_steps",
+        "trajectory_from_trace"
       ],
       "tags": []
     },
@@ -573,6 +637,29 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.context.cisp_exemplars",
+      "imports": [
+        "harnesscad.agents.context.spec_components",
+        "harnesscad.agents.context.spec_components.ComponentSet",
+        "harnesscad.agents.context.spec_components.DEFAULT_GRANULARITIES",
+        "harnesscad.agents.rag.exemplar_select",
+        "harnesscad.agents.rag.exemplar_select.dst_select"
+      ],
+      "layer": "agents",
+      "name": "cisp_exemplars",
+      "package": "context",
+      "summary": "The few-shot exemplar bank \u2014 verified brief -> CISP op streams.",
+      "symbols": [
+        "Exemplar",
+        "few_shot_block",
+        "render",
+        "select"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.context.exemplar_prompt",
       "imports": [
         "harnesscad.agents.context.spec_components",
@@ -689,6 +776,150 @@
       ],
       "tags": [
         "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.briefs",
+      "imports": [],
+      "layer": "agents",
+      "name": "briefs",
+      "package": "cua",
+      "summary": "briefs \u2014 natural-language design briefs with MACHINE-CHECKABLE targets.",
+      "symbols": [
+        "Brief",
+        "Target",
+        "buildable",
+        "by_id"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.grade",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.BackendEnvironment",
+        "harnesscad.core.environment.require",
+        "harnesscad.io",
+        "harnesscad.io.backends.freecad",
+        "harnesscad.io.backends.freecad.FreeCADBackend",
+        "harnesscad.io.gate"
+      ],
+      "layer": "agents",
+      "name": "grade",
+      "package": "cua",
+      "summary": "grade \u2014 the geometric oracle. The whole reason this agent exists.",
+      "symbols": [
+        "Differential",
+        "GradeResult",
+        "differential",
+        "grade_ops",
+        "scripted_measure"
+      ],
+      "tags": [
+        "agent",
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.loop",
+      "imports": [
+        "harnesscad.agents.agent.feedback",
+        "harnesscad.agents.agent.feedback.MODEL_FACING_TIERS",
+        "harnesscad.agents.agent.planner",
+        "harnesscad.agents.agent.planner.Planner",
+        "harnesscad.agents.cua.grade",
+        "harnesscad.agents.cua.grade.GradeResult",
+        "harnesscad.agents.cua.grade.grade_ops",
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.protocol",
+        "harnesscad.core.cisp.protocol.ApplyOpsResult",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.core.harness",
+        "harnesscad.core.harness.AgentHarness",
+        "harnesscad.eval.reliability.loopdetect",
+        "harnesscad.eval.reliability.loopdetect.LoopDetector",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity"
+      ],
+      "layer": "agents",
+      "name": "loop",
+      "package": "cua",
+      "summary": "loop \u2014 a MODEL in the verified GUI environment, reusing AgentHarness.",
+      "symbols": [
+        "ActionTier",
+        "CuaSolve",
+        "EnvSession",
+        "EnvironmentExecutor",
+        "GeometryGradeVerifier",
+        "TierCounts",
+        "build_cua_harness",
+        "solve"
+      ],
+      "tags": [
+        "agent",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.models",
+      "imports": [
+        "harnesscad.agents.llm.base",
+        "harnesscad.agents.llm.base.user",
+        "harnesscad.agents.llm.litellm_backend",
+        "harnesscad.agents.llm.litellm_backend.LiteLLMClient"
+      ],
+      "layer": "agents",
+      "name": "models",
+      "package": "cua",
+      "summary": "models \u2014 local Ollama model discovery and LLM construction.",
+      "symbols": [
+        "ModelInfo",
+        "discover_models",
+        "largest_available",
+        "make_llm",
+        "select_models"
+      ],
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.run",
+      "imports": [
+        "harnesscad.agents.cua.briefs",
+        "harnesscad.agents.cua.briefs.BRIEFS",
+        "harnesscad.agents.cua.briefs.Brief",
+        "harnesscad.agents.cua.briefs.buildable",
+        "harnesscad.agents.cua.loop",
+        "harnesscad.agents.cua.loop.CuaSolve",
+        "harnesscad.agents.cua.loop.solve",
+        "harnesscad.agents.cua.models",
+        "harnesscad.agents.cua.models.discover_models",
+        "harnesscad.agents.cua.models.make_llm",
+        "harnesscad.agents.cua.models.select_models",
+        "harnesscad.io.cua.environment_freecad",
+        "harnesscad.io.cua.environment_freecad.FreeCADGuiEnvironment"
+      ],
+      "layer": "agents",
+      "name": "run",
+      "package": "cua",
+      "summary": "run \u2014 the campaign. Put each model in the GUI, drive the briefs, score.",
+      "symbols": [
+        "ModelScore",
+        "format_scorecard",
+        "main",
+        "run_campaign",
+        "run_one"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -1797,6 +2028,44 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.memory.harness_memory",
+      "imports": [
+        "harnesscad.agents.memory.decay",
+        "harnesscad.agents.memory.decay.Salience",
+        "harnesscad.agents.memory.decay.decay_sweep",
+        "harnesscad.agents.memory.decay.reinforce",
+        "harnesscad.agents.memory.decay.retention",
+        "harnesscad.agents.memory.error_notebook",
+        "harnesscad.agents.memory.error_notebook.ErrorNotebook",
+        "harnesscad.agents.memory.error_notebook.ErrorNotebookEntry",
+        "harnesscad.agents.memory.skills",
+        "harnesscad.agents.memory.skills.Skill",
+        "harnesscad.agents.memory.skills.SkillLibrary",
+        "harnesscad.agents.memory.store",
+        "harnesscad.agents.memory.store.Episode",
+        "harnesscad.agents.memory.store.MemoryStore",
+        "harnesscad.agents.memory.store.Similarity",
+        "harnesscad.eval.reliability.strategies.reflexion",
+        "harnesscad.eval.reliability.strategies.reflexion.heuristic_reflect",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "agents",
+      "name": "harness_memory",
+      "package": "memory",
+      "summary": "HarnessMemory \u2014 the one memory the agent that builds parts actually has.",
+      "symbols": [
+        "HarnessMemory",
+        "OracleVerdict",
+        "Recalled",
+        "gate_oracle"
+      ],
+      "tags": [
+        "agent",
+        "memory"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.memory.skills",
       "imports": [
         "harnesscad.agents.memory.store",
@@ -2157,6 +2426,234 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.selftrain.corpus",
+      "imports": [
+        "harnesscad.agents.agent.tool_reward",
+        "harnesscad.agents.agent.tool_reward.aggregate_reward",
+        "harnesscad.agents.agent.tool_schema",
+        "harnesscad.agents.agent.tool_schema.InterfaceResult",
+        "harnesscad.agents.agent.tool_schema.ToolCall",
+        "harnesscad.agents.agent.tool_trajectory",
+        "harnesscad.agents.agent.tool_trajectory.ToolTrajectory",
+        "harnesscad.agents.agent.tool_trajectory.TrajectoryStep",
+        "harnesscad.agents.selftrain",
+        "harnesscad.agents.selftrain.SCHEMA_VERSION",
+        "harnesscad.agents.selftrain.divergence",
+        "harnesscad.agents.selftrain.ledger",
+        "harnesscad.agents.selftrain.preference",
+        "harnesscad.agents.selftrain.rft",
+        "harnesscad.agents.selftrain.trajectory",
+        "harnesscad.agents.selftrain.trajectory.AttemptCapture",
+        "harnesscad.agents.selftrain.trajectory.Trajectory",
+        "harnesscad.agents.selftrain.trajectory.capture_from_pressure_record",
+        "harnesscad.agents.selftrain.trajectory.trajectory_id",
+        "harnesscad.agents.selftrain.trajectory.write_jsonl",
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.briefs"
+      ],
+      "layer": "agents",
+      "name": "corpus",
+      "package": "selftrain",
+      "summary": "The driver: a pressure ``results.json`` in, a training corpus out.",
+      "symbols": [
+        "build_corpus",
+        "build_trajectory",
+        "main",
+        "manifest"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.divergence",
+      "imports": [
+        "harnesscad.agents.selftrain.trajectory",
+        "harnesscad.agents.selftrain.trajectory.StepReward",
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.shape",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "agents",
+      "name": "divergence",
+      "package": "selftrain",
+      "summary": "The process reward, and the FIRST-DIVERGENCE detector -- computed, not guessed.",
+      "symbols": [
+        "DivergenceReport",
+        "StepAnalysis",
+        "analyse",
+        "step_rewards"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.ledger",
+      "imports": [
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.metrics",
+        "harnesscad.eval.pressure.oracle"
+      ],
+      "layer": "agents",
+      "name": "ledger",
+      "package": "selftrain",
+      "summary": "THE ORACLE CAPABILITY LEDGER -- what the reward can and cannot see.",
+      "symbols": [
+        "Certificate",
+        "Instrument",
+        "blind_spots_of_brief",
+        "certify"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.preference",
+      "imports": [
+        "harnesscad.agents.selftrain.trajectory",
+        "harnesscad.agents.selftrain.trajectory.Trajectory",
+        "harnesscad.data.dataengine.preference",
+        "harnesscad.data.dataengine.preference.dpo_pairs"
+      ],
+      "layer": "agents",
+      "name": "preference",
+      "package": "selftrain",
+      "summary": "Preference pairs with a GROUND-TRUTH label -- DPO and KTO, oracle-adjudicated.",
+      "symbols": [
+        "DPORecord",
+        "KTORecord",
+        "build_dpo",
+        "build_kto",
+        "group_by_brief",
+        "pair_reward",
+        "preference_stats"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.recipe",
+      "imports": [],
+      "layer": "agents",
+      "name": "recipe",
+      "package": "selftrain",
+      "summary": "The training recipe and its cost. Stated, not run.",
+      "symbols": [
+        "Stage",
+        "format_recipe",
+        "total_cost"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.rft",
+      "imports": [
+        "harnesscad.agents.selftrain.trajectory",
+        "harnesscad.agents.selftrain.trajectory.Trajectory"
+      ],
+      "layer": "agents",
+      "name": "rft",
+      "package": "selftrain",
+      "summary": "Rejection-Sampling Fine-Tuning (RFT / STaR) -- the cheapest use of a verifiable reward.",
+      "symbols": [
+        "AcceptPolicy",
+        "SFTRecord",
+        "acceptance_stats",
+        "build",
+        "rationalized_records"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.data",
+      "imports": [
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.prompts"
+      ],
+      "layer": "agents",
+      "name": "data",
+      "package": "selftrain",
+      "summary": "Turn the certified JSONL corpora into tokenised, prompt-masked training tensors.",
+      "symbols": [
+        "DataStats",
+        "dpo_dataset",
+        "kto_dataset",
+        "messages_for",
+        "sft_dataset"
+      ],
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.generate",
+      "imports": [
+        "harnesscad.agents.selftrain",
+        "harnesscad.agents.selftrain.ledger",
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.prompts"
+      ],
+      "layer": "agents",
+      "name": "generate",
+      "package": "selftrain",
+      "summary": "Raise the certified-candidate count by sampling a STRONGER model, honestly.",
+      "symbols": [
+        "GenStats",
+        "append_jsonl",
+        "is_reasoning_model",
+        "main",
+        "sample_and_certify",
+        "strip_think"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.sft",
+      "imports": [
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.data",
+        "harnesscad.agents.selftrain.train.require"
+      ],
+      "layer": "agents",
+      "name": "sft",
+      "package": "selftrain",
+      "summary": "STAGE 1 -- RFT / STaR as QLoRA SFT. The recipe in ``recipe.py``, actually run.",
+      "symbols": [
+        "SFTResult",
+        "load_base",
+        "main",
+        "seed_everything",
+        "train_sft"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.trajectory",
+      "imports": [
+        "harnesscad.agents.selftrain",
+        "harnesscad.agents.selftrain.SCHEMA_VERSION"
+      ],
+      "layer": "agents",
+      "name": "trajectory",
+      "package": "selftrain",
+      "summary": "The graded trajectory -- a versioned, stable on-disk format, and the hook.",
+      "symbols": [
+        "AttemptCapture",
+        "StepReward",
+        "Trajectory",
+        "TrajectorySink",
+        "capture_from_pressure_record",
+        "captures_from_results",
+        "read_jsonl",
+        "trajectory_id",
+        "write_jsonl"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.core.cisp.annotations",
       "imports": [],
       "layer": "core",
@@ -2406,6 +2903,38 @@
       ]
     },
     {
+      "dotted": "harnesscad.core.environment",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic"
+      ],
+      "layer": "core",
+      "name": "environment",
+      "package": "",
+      "summary": "Environment \u2014 the interface an agent acts against, and what it HONESTLY offers.",
+      "symbols": [
+        "BackendEnvironment",
+        "Capabilities",
+        "CapabilityError",
+        "Environment",
+        "Observation",
+        "StepResult",
+        "coerce_ops",
+        "require",
+        "supported_subset"
+      ],
+      "tags": [
+        "agent",
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.core.grammar",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -2454,8 +2983,15 @@
     {
       "dotted": "harnesscad.core.harness",
       "imports": [
+        "harnesscad.agents.agent.feedback",
+        "harnesscad.agents.agent.feedback.MODEL_FACING_TIERS",
+        "harnesscad.agents.agent.feedback.gate",
+        "harnesscad.agents.agent.feedback.withheld",
         "harnesscad.agents.llm.structured",
         "harnesscad.agents.llm.structured.ParsedOps",
+        "harnesscad.agents.memory.harness_memory",
+        "harnesscad.agents.memory.harness_memory.OracleVerdict",
+        "harnesscad.agents.memory.harness_memory.gate_oracle",
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.canonical_json",
@@ -2469,9 +3005,15 @@
         "harnesscad.core.trace",
         "harnesscad.core.trace.NullTracer",
         "harnesscad.core.trace.Tracer",
+        "harnesscad.eval.reliability.executor",
+        "harnesscad.eval.reliability.executor.SessionToolExecutor",
+        "harnesscad.eval.reliability.executor.ToolExecutor",
+        "harnesscad.eval.reliability.executor._make_policy",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
-        "harnesscad.eval.verifiers.verify.Severity"
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.surfaces.ui.approval",
+        "harnesscad.io.surfaces.ui.approval.ApprovalPolicy"
       ],
       "layer": "core",
       "name": "harness",
@@ -2565,16 +3107,26 @@
       "imports": [
         "harnesscad.agents.agent.planner",
         "harnesscad.agents.agent.planner.Planner",
-        "harnesscad.agents.agent.runner",
-        "harnesscad.agents.agent.runner.run",
+        "harnesscad.agents.agent.trace_reward",
+        "harnesscad.agents.agent.trace_reward.first_divergence",
+        "harnesscad.agents.agent.trace_reward.reward_for_session",
+        "harnesscad.agents.agent.trace_reward.step_accuracy",
+        "harnesscad.agents.context.manager",
+        "harnesscad.agents.context.manager.ContextManager",
         "harnesscad.agents.llm.base",
         "harnesscad.agents.llm.base.LLM",
         "harnesscad.agents.llm.litellm_backend",
         "harnesscad.agents.llm.litellm_backend.LiteLLMClient",
+        "harnesscad.core.harness",
+        "harnesscad.core.harness.AgentHarness",
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
         "harnesscad.core.trace",
         "harnesscad.core.trace.Tracer",
+        "harnesscad.eval.reliability.loopdetect",
+        "harnesscad.eval.reliability.loopdetect.LoopDetector",
+        "harnesscad.eval.reliability.strategies.best_of_n",
+        "harnesscad.eval.reliability.strategies.best_of_n.best_of_n",
         "harnesscad.io.backends.cadquery",
         "harnesscad.io.backends.cadquery.CadQueryBackend",
         "harnesscad.io.backends.stub",
@@ -20203,6 +20755,29 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.bench.harness.pressure_correlation",
+      "imports": [
+        "harnesscad.eval.bench.harness.metric_correlation",
+        "harnesscad.eval.bench.harness.metric_correlation.pearson"
+      ],
+      "layer": "eval",
+      "name": "pressure_correlation",
+      "package": "bench",
+      "summary": "Do our intrinsic metrics predict whether the part actually SOLVED?",
+      "symbols": [
+        "add_arguments",
+        "correlate",
+        "features",
+        "format_text",
+        "main",
+        "rows",
+        "run"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.harness.resource_tradeoff",
       "imports": [],
       "layer": "eval",
@@ -22710,6 +23285,332 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.corpus.analytic",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.corpus.spec.Vec3",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.golden.annulus_volume",
+        "harnesscad.eval.selftest.golden.chamfered_box_volume",
+        "harnesscad.eval.selftest.golden.rounded_box_volume",
+        "harnesscad.eval.selftest.golden.shelled_box_volume"
+      ],
+      "layer": "eval",
+      "name": "analytic",
+      "package": "corpus",
+      "summary": "Brief FACTORIES whose ground truth is arithmetic.",
+      "symbols": [
+        "chamfered_plate",
+        "disc",
+        "filleted_plate",
+        "hollow_box",
+        "l_bracket",
+        "notched_block",
+        "plate",
+        "plate_with_holes",
+        "tube"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.consensus",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.GEOMETRIC_BACKENDS",
+        "harnesscad.eval.selftest.probe.Observation",
+        "harnesscad.eval.selftest.probe.available",
+        "harnesscad.eval.selftest.probe.observe",
+        "harnesscad.eval.selftest.probe.tolerance"
+      ],
+      "layer": "eval",
+      "name": "consensus",
+      "package": "corpus",
+      "summary": "The differential oracle as an INDEPENDENT GRADER.",
+      "symbols": [
+        "Corroboration",
+        "corroborate",
+        "corroborate_all",
+        "format_text"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.dev",
+      "imports": [
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.analytic",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.corpus.spec.check_unique",
+        "harnesscad.eval.corpus.standards"
+      ],
+      "layer": "eval",
+      "name": "dev",
+      "package": "corpus",
+      "summary": "The DEV split -- the corpus you are allowed to look at.",
+      "symbols": [
+        "by_id",
+        "ids"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.grade",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.shape",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.Observation",
+        "harnesscad.eval.selftest.probe.observe",
+        "harnesscad.eval.selftest.probe.tolerance"
+      ],
+      "layer": "eval",
+      "name": "grade",
+      "package": "corpus",
+      "summary": "The referee. It never asks the verifier fleet anything.",
+      "symbols": [
+        "Score",
+        "grade",
+        "grade_reference",
+        "resolvable"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.heldout",
+      "imports": [
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.analytic",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.corpus.spec.check_unique",
+        "harnesscad.eval.corpus.standards"
+      ],
+      "layer": "eval",
+      "name": "heldout",
+      "package": "corpus",
+      "summary": "THE HELD-OUT SPLIT. DO NOT IMPORT THIS MODULE.",
+      "symbols": [
+        "ids"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.run",
+      "imports": [
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.consensus",
+        "harnesscad.eval.corpus.dev",
+        "harnesscad.eval.corpus.grade",
+        "harnesscad.eval.corpus.grade.Score",
+        "harnesscad.eval.corpus.grade.grade",
+        "harnesscad.eval.corpus.grade.grade_reference",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.properties"
+      ],
+      "layer": "eval",
+      "name": "run",
+      "package": "corpus",
+      "summary": "The corpus runner. THE PROPERTY GATE COMES FIRST, AND IT IS A GATE.",
+      "symbols": [
+        "CorpusReport",
+        "format_text",
+        "property_gate",
+        "run"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.score",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.grade",
+        "harnesscad.eval.corpus.grade.Score",
+        "harnesscad.eval.corpus.grade.grade",
+        "harnesscad.eval.corpus.grade.resolvable",
+        "harnesscad.eval.corpus.heldout",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Split"
+      ],
+      "layer": "eval",
+      "name": "score",
+      "package": "corpus",
+      "summary": "The ONLY module allowed to import the held-out split.",
+      "symbols": [
+        "HeldOutReport",
+        "failures",
+        "reference_score",
+        "score",
+        "size"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.shape",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.resolve"
+      ],
+      "layer": "eval",
+      "name": "shape",
+      "package": "corpus",
+      "summary": "The SHAPE metric: volumetric IoU against a reference solid. Reusable.",
+      "symbols": [
+        "ShapeScore",
+        "build",
+        "iou_of_backends",
+        "iou_of_ops",
+        "reference_solid"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.spec",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.canonical_json"
+      ],
+      "layer": "eval",
+      "name": "spec",
+      "package": "corpus",
+      "summary": "The brief type, and the two invariants a contaminated corpus cannot satisfy.",
+      "symbols": [
+        "Brief",
+        "Source",
+        "Split",
+        "check_unique"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.standards",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.domain.standards.thread_database",
+        "harnesscad.domain.standards.thread_database.thread_lookup",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.golden.annulus_volume"
+      ],
+      "layer": "eval",
+      "name": "standards",
+      "package": "corpus",
+      "summary": "Brief factories whose dimensions come from a PUBLISHED STANDARD.",
+      "symbols": [
+        "centres_to_probes",
+        "clearance_plate",
+        "flange_dn50_pn16",
+        "nominal_diameter",
+        "washer"
+      ],
+      "tags": [
+        "drawings"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.gallery.complex_parts",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.eval.gallery",
+        "harnesscad.eval.gallery.parts",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.golden"
+      ],
+      "layer": "eval",
+      "name": "complex_parts",
+      "package": "gallery",
+      "summary": "Tier-2 corpus: parts with NO closed form, for the differential oracle.",
+      "symbols": [
+        "ComplexPart",
+        "baseline_pairs",
+        "corpus_pairs",
+        "coverage_report",
+        "get",
+        "names",
+        "novel_ops",
+        "novel_pairs",
+        "ops_of",
+        "streams"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.gallery.formats_matrix",
+      "imports": [
+        "harnesscad.eval.gallery",
+        "harnesscad.eval.gallery.complex_parts",
+        "harnesscad.io",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.registry",
+        "harnesscad.io.gate",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "formats_matrix",
+      "package": "gallery",
+      "summary": "Every registered format, exported and ROUND-TRIPPED. A container is not passive.",
+      "symbols": [
+        "FormatMatrix",
+        "FormatResult",
+        "check_format",
+        "format_text",
+        "main",
+        "run"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.gallery.parts",
       "imports": [
         "harnesscad.domain.geometry.features",
@@ -22762,6 +23663,22 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.gallery.provenance",
+      "imports": [],
+      "layer": "eval",
+      "name": "provenance",
+      "package": "gallery",
+      "summary": "WHO MADE THIS PART? The only question a gallery must never fudge.",
+      "symbols": [
+        "BypassPart",
+        "bypass_report",
+        "caption_for",
+        "classify",
+        "classify_run"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.gallery.render_gallery",
       "imports": [
         "harnesscad.eval.gallery",
@@ -22791,6 +23708,7 @@
         "compare_backends",
         "consistently_wound",
         "decode_png",
+        "gate_part",
         "main",
         "render_part",
         "run_cli",
@@ -22800,6 +23718,452 @@
         "format",
         "io",
         "render"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.gallery.tier2",
+      "imports": [
+        "harnesscad.eval.gallery",
+        "harnesscad.eval.gallery.complex_parts",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.differential",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.GEOMETRIC_BACKENDS",
+        "harnesscad.eval.selftest.probe.available",
+        "harnesscad.eval.selftest.properties",
+        "harnesscad.io",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.registry",
+        "harnesscad.io.gate",
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "tier2",
+      "package": "gallery",
+      "summary": "Tier-2 evidence: what can be claimed about a part with no closed form.",
+      "symbols": [
+        "StreamEvidence",
+        "Tier2Report",
+        "format_text",
+        "main",
+        "measure_stream",
+        "run"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.gates.judge_gate",
+      "imports": [
+        "harnesscad.eval.bench.judges.judge_calibration",
+        "harnesscad.eval.bench.judges.judge_calibration.calibrate_threshold",
+        "harnesscad.eval.bench.judges.judge_calibration.select_threshold",
+        "harnesscad.eval.bench.judges.judge_human_agreement",
+        "harnesscad.eval.bench.judges.judge_human_agreement.agreement_report"
+      ],
+      "layer": "eval",
+      "name": "judge_gate",
+      "package": "gates",
+      "summary": "THE JUDGE GATE \u2014 an uncalibrated evaluator may not instruct.",
+      "symbols": [
+        "Calibration",
+        "JudgeGateReport",
+        "UncalibratedJudge",
+        "add_arguments",
+        "calibrate",
+        "calibration_for",
+        "check",
+        "format_text",
+        "is_calibrated",
+        "load_calibrations",
+        "main",
+        "require_calibrated",
+        "run"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.gates.liveness_floor",
+      "imports": [
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.field_liveness"
+      ],
+      "layer": "eval",
+      "name": "liveness_floor",
+      "package": "gates",
+      "summary": "THE LIVENESS FLOOR \u2014 no NEW op field may be silently ignored by a backend.",
+      "symbols": [
+        "LivenessGateReport",
+        "add_arguments",
+        "baseline",
+        "check",
+        "format_text",
+        "main",
+        "measure",
+        "run",
+        "write_baseline"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.gates.precision_floor",
+      "imports": [
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.fleet_audit",
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.MODEL_FACING_TIERS",
+        "harnesscad.eval.verifiers.soundness.SOUNDNESS"
+      ],
+      "layer": "eval",
+      "name": "precision_floor",
+      "package": "gates",
+      "summary": "THE PRECISION FLOOR \u2014 the gate that would have prevented the -8.3.",
+      "symbols": [
+        "GateReport",
+        "Violation",
+        "add_arguments",
+        "baseline",
+        "check",
+        "format_text",
+        "is_model_facing",
+        "main",
+        "measure",
+        "model_facing_codes",
+        "run",
+        "write_baseline"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.cadspot",
+      "imports": [
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.corpus",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.uia",
+        "harnesscad.io.cua.viewport"
+      ],
+      "layer": "eval",
+      "name": "cadspot",
+      "package": "grounding",
+      "summary": "CADSpot -- a ScreenSpot-style GUI grounding benchmark for a CAD application.",
+      "symbols": [
+        "Adjudicator",
+        "RegionScore",
+        "Report",
+        "Target",
+        "baseline_report",
+        "build",
+        "center_predictor",
+        "chrome_targets",
+        "evaluate",
+        "load",
+        "main",
+        "oracle_predictor",
+        "random_predictor",
+        "save",
+        "viewport_targets"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.corpus",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.data.datagen.generators",
+        "harnesscad.data.datagen.generators.ParametricSampler",
+        "harnesscad.io.backends.freecad",
+        "harnesscad.io.backends.freecad.FreeCADBackend",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.viewport"
+      ],
+      "layer": "eval",
+      "name": "corpus",
+      "package": "grounding",
+      "summary": "The self-labelling CAD-viewport grounding corpus.",
+      "symbols": [
+        "CorpusGenerator",
+        "CorpusStats",
+        "GroundingPair",
+        "build_step",
+        "generate",
+        "main",
+        "read_pairs",
+        "sample_parts",
+        "write_corpus"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.discriminative",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.corpus.spec.Vec3",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.oracle",
+        "harnesscad.eval.hardcorpus.weak"
+      ],
+      "layer": "eval",
+      "name": "discriminative",
+      "package": "hardcorpus",
+      "summary": "THE NOVEL CONTRIBUTION: briefs whose plausible WRONG answer passes the field.",
+      "symbols": [
+        "CaseVerdict",
+        "NearMiss",
+        "cases",
+        "grade_case",
+        "table"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.generate",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.corpus.spec.Vec3",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.golden.chamfered_box_volume",
+        "harnesscad.eval.selftest.golden.rounded_box_volume"
+      ],
+      "layer": "eval",
+      "name": "generate",
+      "package": "hardcorpus",
+      "summary": "INVERT THE GENERATOR: the op stream IS the ground truth, so the truth is free.",
+      "symbols": [
+        "GeneratedPart",
+        "all_briefs",
+        "chamfered_drilled_plate",
+        "filleted_drilled_plate",
+        "loft_rect_frustum",
+        "loft_round_frustum",
+        "revolve_ring",
+        "rib_array",
+        "sample",
+        "shell_open",
+        "sweep_bar",
+        "tooth_ring"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.occt",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "eval",
+      "name": "occt",
+      "package": "hardcorpus",
+      "summary": "THE INSTRUMENT. Exact measurements on the solid the model actually built.",
+      "symbols": [
+        "Built",
+        "Section",
+        "bbox_of",
+        "boolean_iou",
+        "bore_radius_at",
+        "build",
+        "chamfer_distance",
+        "classify",
+        "extents_of",
+        "inside",
+        "mesh_of",
+        "min_wall_estimate",
+        "ray_chords",
+        "sample_surface",
+        "section_at",
+        "void_depth_at",
+        "volume_of"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.oracle",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.occt",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "eval",
+      "name": "oracle",
+      "package": "hardcorpus",
+      "summary": "THE MEASURED ORACLE. It grades WHERE the material is, not how much.",
+      "symbols": [
+        "OracleScore",
+        "grade",
+        "grade_reference"
+      ],
+      "tags": [
+        "assembly",
+        "material"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.weak",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.shape",
+        "harnesscad.eval.corpus.shape.IOU_MATCH",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.occt",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "eval",
+      "name": "weak",
+      "package": "hardcorpus",
+      "summary": "THE FIELD'S OWN ORACLE, implemented faithfully and in its STRONGEST form.",
+      "symbols": [
+        "WeakScore",
+        "invalidity_rate",
+        "score_weak"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.memory.ab",
+      "imports": [
+        "harnesscad.agents.agent.planner",
+        "harnesscad.agents.agent.planner.Planner",
+        "harnesscad.agents.memory.harness_memory",
+        "harnesscad.agents.memory.harness_memory.HarnessMemory",
+        "harnesscad.agents.memory.harness_memory.OracleVerdict",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.Brief",
+        "harnesscad.eval.pressure.briefs.briefs_for",
+        "harnesscad.eval.pressure.cache",
+        "harnesscad.eval.pressure.cache.CompletionCache",
+        "harnesscad.eval.pressure.metrics",
+        "harnesscad.eval.pressure.metrics.grade",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.CachedClient",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.OllamaClient",
+        "harnesscad.eval.pressure.model.extract_ops",
+        "harnesscad.eval.pressure.model.ops_to_dicts"
+      ],
+      "layer": "eval",
+      "name": "ab",
+      "package": "memory",
+      "summary": "The memory A/B: same briefs, same model, same seed, memory ON vs OFF.",
+      "symbols": [
+        "ABReport",
+        "ArmResult",
+        "BriefRun",
+        "format_text",
+        "main",
+        "run",
+        "run_arm",
+        "run_brief"
+      ],
+      "tags": [
+        "memory"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.memory.ab_corpus",
+      "imports": [
+        "harnesscad.agents.agent.planner",
+        "harnesscad.agents.agent.planner.Planner",
+        "harnesscad.agents.memory.harness_memory",
+        "harnesscad.agents.memory.harness_memory.HarnessMemory",
+        "harnesscad.agents.memory.harness_memory.OracleVerdict",
+        "harnesscad.agents.memory.harness_memory.gate_oracle",
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.dev",
+        "harnesscad.eval.corpus.grade",
+        "harnesscad.eval.corpus.grade.grade",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.memory.ab",
+        "harnesscad.eval.memory.ab.ABReport",
+        "harnesscad.eval.memory.ab.ARM_OFF",
+        "harnesscad.eval.memory.ab.ARM_ON",
+        "harnesscad.eval.memory.ab.ArmResult",
+        "harnesscad.eval.memory.ab.BriefRun",
+        "harnesscad.eval.memory.ab.DEFAULT_MAX_ATTEMPTS",
+        "harnesscad.eval.memory.ab.DEFAULT_SEED",
+        "harnesscad.eval.memory.ab._NoLLM",
+        "harnesscad.eval.memory.ab.format_text",
+        "harnesscad.eval.pressure.cache",
+        "harnesscad.eval.pressure.cache.CompletionCache",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.CachedClient",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.OllamaClient",
+        "harnesscad.eval.pressure.model.extract_ops",
+        "harnesscad.eval.pressure.model.ops_to_dicts",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.FRepBackend"
+      ],
+      "layer": "eval",
+      "name": "ab_corpus",
+      "package": "memory",
+      "summary": "The memory A/B on the CONTAMINATION-CONTROLLED corpus dev split.",
+      "symbols": [
+        "main",
+        "run",
+        "run_arm",
+        "run_brief"
+      ],
+      "tags": [
+        "memory"
       ]
     },
     {
@@ -22844,9 +24208,12 @@
         "harnesscad.eval.pressure.briefs.CATEGORIES",
         "harnesscad.eval.pressure.briefs.briefs_for",
         "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.ALL_LOOPS",
         "harnesscad.eval.pressure.loops.BLIND",
         "harnesscad.eval.pressure.loops.HARNESS",
         "harnesscad.eval.pressure.loops.LOOPS",
+        "harnesscad.eval.pressure.loops.ORACLE_BON",
+        "harnesscad.eval.pressure.loops.SELF_CONSISTENCY",
         "harnesscad.eval.pressure.report",
         "harnesscad.eval.pressure.runner"
       ],
@@ -22876,30 +24243,38 @@
         "harnesscad.eval.pressure.model.Client",
         "harnesscad.eval.pressure.model.extract_ops",
         "harnesscad.eval.pressure.model.ops_to_dicts",
+        "harnesscad.eval.pressure.oracle",
         "harnesscad.eval.pressure.prompts",
-        "harnesscad.io.surfaces.server",
-        "harnesscad.io.surfaces.server.CISPServer"
+        "harnesscad.eval.pressure.session",
+        "harnesscad.eval.pressure.session.frep_server"
       ],
       "layer": "eval",
       "name": "loops",
       "package": "pressure",
       "summary": "The two loops. They are the same loop.",
       "symbols": [
-        "run_brief"
+        "run_brief",
+        "run_sampling",
+        "sampling_seeds"
       ],
       "tags": []
     },
     {
       "dotted": "harnesscad.eval.pressure.metrics",
       "imports": [
+        "harnesscad.eval.pressure",
         "harnesscad.eval.pressure.briefs",
         "harnesscad.eval.pressure.briefs.Brief",
         "harnesscad.eval.pressure.briefs.Expect",
         "harnesscad.eval.pressure.briefs.OpSpec",
         "harnesscad.eval.pressure.prompts",
         "harnesscad.eval.pressure.prompts.is_actionable",
-        "harnesscad.io.surfaces.server",
-        "harnesscad.io.surfaces.server.CISPServer"
+        "harnesscad.eval.pressure.prompts.model_facing",
+        "harnesscad.eval.pressure.session",
+        "harnesscad.eval.pressure.session.frep_server",
+        "harnesscad.eval.pressure.shape",
+        "harnesscad.io",
+        "harnesscad.io.gate"
       ],
       "layer": "eval",
       "name": "metrics",
@@ -22940,8 +24315,37 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.pressure.oracle",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.eval.pressure.session",
+        "harnesscad.eval.pressure.session.frep_server",
+        "harnesscad.eval.pressure.session.pin",
+        "harnesscad.eval.selftest",
+        "harnesscad.eval.selftest.differential",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "eval",
+      "name": "oracle",
+      "package": "pressure",
+      "summary": "The selector for the Best-of-N arm: differential oracle + output gate.",
+      "symbols": [
+        "OracleScore",
+        "rank",
+        "score_ops"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.pressure.prompts",
-      "imports": [],
+      "imports": [
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.soundness"
+      ],
       "layer": "eval",
       "name": "prompts",
       "package": "pressure",
@@ -22951,6 +24355,7 @@
         "format_parse_error",
         "format_typed",
         "is_actionable",
+        "model_facing",
         "user_prompt"
       ],
       "tags": [
@@ -22960,10 +24365,16 @@
     {
       "dotted": "harnesscad.eval.pressure.report",
       "imports": [
+        "harnesscad.eval.pressure",
         "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.ALL_LOOPS",
         "harnesscad.eval.pressure.loops.BLIND",
         "harnesscad.eval.pressure.loops.HARNESS",
-        "harnesscad.eval.pressure.loops.LOOPS"
+        "harnesscad.eval.pressure.loops.LOOPS",
+        "harnesscad.eval.pressure.loops.ORACLE_BON",
+        "harnesscad.eval.pressure.loops.SELF_CONSISTENCY",
+        "harnesscad.eval.pressure.shape",
+        "harnesscad.eval.pressure.stats"
       ],
       "layer": "eval",
       "name": "report",
@@ -22971,12 +24382,18 @@
       "summary": "Aggregation and the tables.",
       "symbols": [
         "aggregate",
+        "arm_table",
+        "arms_present",
         "fleet_holes",
         "headline",
+        "matched_tests",
+        "pass_k_table",
         "per_brief",
         "render_all",
         "render_split",
-        "render_table"
+        "render_table",
+        "render_v2",
+        "selector_scorecard"
       ],
       "tags": []
     },
@@ -22989,11 +24406,15 @@
         "harnesscad.eval.pressure.cache",
         "harnesscad.eval.pressure.cache.CompletionCache",
         "harnesscad.eval.pressure.loops",
+        "harnesscad.eval.pressure.loops.ALL_LOOPS",
         "harnesscad.eval.pressure.loops.BLIND",
         "harnesscad.eval.pressure.loops.DEFAULT_MAX_ATTEMPTS",
         "harnesscad.eval.pressure.loops.HARNESS",
         "harnesscad.eval.pressure.loops.LOOPS",
+        "harnesscad.eval.pressure.loops.SAMPLING_TEMPERATURE",
+        "harnesscad.eval.pressure.loops.SELECTION_LOOPS",
         "harnesscad.eval.pressure.loops.run_brief",
+        "harnesscad.eval.pressure.loops.run_sampling",
         "harnesscad.eval.pressure.model",
         "harnesscad.eval.pressure.model.CachedClient",
         "harnesscad.eval.pressure.model.Client",
@@ -23011,6 +24432,62 @@
       "tags": [
         "infra"
       ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.session",
+      "imports": [
+        "harnesscad.io.surfaces.server",
+        "harnesscad.io.surfaces.server.CISPServer"
+      ],
+      "layer": "eval",
+      "name": "session",
+      "package": "pressure",
+      "summary": "THE PINNED BACKEND. Every F-rep session this experiment builds comes through",
+      "symbols": [
+        "frep_server",
+        "pin"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.shape",
+      "imports": [
+        "harnesscad.eval.pressure.session",
+        "harnesscad.eval.pressure.session.frep_server"
+      ],
+      "layer": "eval",
+      "name": "shape",
+      "package": "pressure",
+      "summary": "A SHAPE metric, to sit beside the envelope metrics -- v2.",
+      "symbols": [
+        "ShapeScore",
+        "iou_of_backends",
+        "reference_backend",
+        "score"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.pressure.stats",
+      "imports": [
+        "harnesscad.eval.bench.sequence.pass_at_k",
+        "harnesscad.eval.bench.sequence.pass_at_k.estimate_pass_at_k"
+      ],
+      "layer": "eval",
+      "name": "stats",
+      "package": "pressure",
+      "summary": "Statistics. v1 had none -- not one interval, not one test.",
+      "symbols": [
+        "Interval",
+        "McNemar",
+        "mcnemar",
+        "pass_at_k",
+        "pass_hat_k",
+        "wilson"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.quality.assembly.contact_correspondence",
@@ -24486,6 +25963,94 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.redteam.attacks",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.eval.selftest.golden",
+        "harnesscad.eval.selftest.golden.annulus_volume",
+        "harnesscad.eval.selftest.golden.chamfered_box_volume",
+        "harnesscad.eval.selftest.golden.rounded_box_volume",
+        "harnesscad.eval.selftest.golden.shelled_box_volume"
+      ],
+      "layer": "eval",
+      "name": "attacks",
+      "package": "redteam",
+      "summary": "The attack surface: op streams that are CORRECT and that a rule might refuse.",
+      "symbols": [
+        "Attack",
+        "generate"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.redteam.oracle",
+      "imports": [
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.redteam.attacks",
+        "harnesscad.eval.redteam.attacks.Attack",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.selftest.probe.tolerance",
+        "harnesscad.io",
+        "harnesscad.io.gate"
+      ],
+      "layer": "eval",
+      "name": "oracle",
+      "package": "redteam",
+      "summary": "Proving a part is FINE, before anybody is accused of rejecting it.",
+      "symbols": [
+        "Certificate",
+        "certify"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.redteam.run",
+      "imports": [
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.redteam.attacks",
+        "harnesscad.eval.redteam.attacks.Attack",
+        "harnesscad.eval.redteam.attacks.SEED",
+        "harnesscad.eval.redteam.attacks.generate",
+        "harnesscad.eval.redteam.oracle",
+        "harnesscad.eval.redteam.oracle.Certificate",
+        "harnesscad.eval.redteam.oracle.certify",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.plan_opdag",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.registry",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Severity"
+      ],
+      "layer": "eval",
+      "name": "run",
+      "package": "redteam",
+      "summary": "Run the red team: certify the part, then show it to the whole fleet.",
+      "symbols": [
+        "FalsePositive",
+        "RedTeamReport",
+        "format_text",
+        "run"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.reliability.brep_repair",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -24577,9 +26142,7 @@
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.surfaces.ui.approval",
-        "harnesscad.io.surfaces.ui.approval.ApprovalGate",
-        "harnesscad.io.surfaces.ui.approval.ApprovalTier",
-        "harnesscad.io.surfaces.ui.approval.tier_for"
+        "harnesscad.io.surfaces.ui.approval.ApprovalPolicy"
       ],
       "layer": "eval",
       "name": "executor",
@@ -24588,6 +26151,7 @@
       "symbols": [
         "ExecResult",
         "LogicalClock",
+        "SessionToolExecutor",
         "ToolExecutor"
       ],
       "tags": [
@@ -24892,6 +26456,59 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.selftest.field_liveness",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddInstance",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Draft",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Mirror",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops._REGISTRY",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.BACKENDS",
+        "harnesscad.eval.selftest.probe.BackendFactory",
+        "harnesscad.eval.selftest.probe.resolve"
+      ],
+      "layer": "eval",
+      "name": "field_liveness",
+      "package": "selftest",
+      "summary": "Field-liveness oracle \u2014 does an op's DECLARED field actually reach the kernel?",
+      "symbols": [
+        "Case",
+        "Cell",
+        "FieldLivenessReport",
+        "Outcome",
+        "check_field",
+        "format_text",
+        "op_fields",
+        "run",
+        "signature",
+        "unmapped"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.selftest.fleet_audit",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -25055,6 +26672,7 @@
       "imports": [
         "harnesscad.eval.selftest",
         "harnesscad.eval.selftest.differential",
+        "harnesscad.eval.selftest.field_liveness",
         "harnesscad.eval.selftest.fleet_audit",
         "harnesscad.eval.selftest.golden",
         "harnesscad.eval.selftest.probe",
@@ -25528,6 +27146,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.verifiers.edge_fillet",
+      "imports": [
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.selector_dsl"
+      ],
+      "layer": "eval",
+      "name": "edge_fillet",
+      "package": "verifiers",
+      "summary": "Per-edge fillet ceiling -- the SOUND replacement for the whole-body radius rule.",
+      "symbols": [
+        "Box",
+        "Finding",
+        "box_extents",
+        "degenerate_fillets"
+      ],
+      "tags": [
+        "features",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.verifiers.edit_consistency",
       "imports": [
         "harnesscad.domain.reconstruction.sequences.modeling_sequence",
@@ -25793,6 +27432,10 @@
         "harnesscad.eval.verifiers.drag_proxy",
         "harnesscad.eval.verifiers.drag_proxy.LinearDragModel",
         "harnesscad.eval.verifiers.drag_proxy.car_dimensions_from_points",
+        "harnesscad.eval.verifiers.edge_fillet",
+        "harnesscad.eval.verifiers.edge_fillet.CODE",
+        "harnesscad.eval.verifiers.edge_fillet.box_extents",
+        "harnesscad.eval.verifiers.edge_fillet.degenerate_fillets",
         "harnesscad.eval.verifiers.edit_consistency",
         "harnesscad.eval.verifiers.edit_consistency.check_constraints",
         "harnesscad.eval.verifiers.kernel_preflight",
@@ -25944,7 +27587,8 @@
         "soundness_of",
         "soundness_or_untrusted",
         "stamp",
-        "tier_of"
+        "tier_of",
+        "tier_of_code"
       ],
       "tags": [
         "verify"
@@ -26035,6 +27679,7 @@
     {
       "dotted": "harnesscad.eval.verifiers.verify",
       "imports": [
+        "harnesscad.eval.verifiers",
         "harnesscad.eval.verifiers.geometry",
         "harnesscad.eval.verifiers.geometry.BRepValidityCheck",
         "harnesscad.eval.verifiers.soundness",
@@ -26062,6 +27707,8 @@
       "imports": [
         "harnesscad.agents.llm.base",
         "harnesscad.agents.llm.base.Message",
+        "harnesscad.eval.gates",
+        "harnesscad.eval.gates.judge_gate",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
@@ -26685,16 +28332,25 @@
     {
       "dotted": "harnesscad.io.backends.blender",
       "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Op",
         "harnesscad.domain.geometry.parametric",
         "harnesscad.domain.geometry.parametric.facets",
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.domain.geometry.topology.selector_dsl.SelectorError",
+        "harnesscad.domain.geometry.topology.selector_dsl.parse",
         "harnesscad.domain.programs.validate",
         "harnesscad.domain.programs.validate.bpy_script",
         "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
         "harnesscad.io.backends.base.BackendUnavailable",
         "harnesscad.io.backends.external",
         "harnesscad.io.backends.external.DEFAULT_SEGMENTS",
         "harnesscad.io.backends.external.ExternalToolBackend",
-        "harnesscad.io.backends.external.blend_radius",
+        "harnesscad.io.backends.external._err",
         "harnesscad.io.backends.external.cache_dir",
         "harnesscad.io.backends.external.ccw",
         "harnesscad.io.backends.external.find_executable",
@@ -26714,6 +28370,9 @@
       "summary": "BlenderBackend \u2014 CISP ops driven through a headless Blender.",
       "symbols": [
         "BlenderBackend",
+        "blender_version",
+        "frustum",
+        "join_selectors",
         "prism",
         "revolve_mesh"
       ],
@@ -26762,7 +28421,10 @@
         "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.backends.base",
         "harnesscad.io.backends.base.ApplyResult",
-        "harnesscad.io.backends.base.BackendUnavailable"
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.check_constraint_arity",
+        "harnesscad.io.backends.frep.solve_constraint"
       ],
       "layer": "io",
       "name": "cadquery",
@@ -26927,6 +28589,8 @@
         "harnesscad.domain.geometry.sdf.field_transforms",
         "harnesscad.domain.geometry.sdf.polygon",
         "harnesscad.domain.geometry.sdf.primitives",
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.selector_dsl",
         "harnesscad.domain.geometry.volumes.dual_contouring_3d",
         "harnesscad.domain.geometry.volumes.dual_contouring_3d.dual_contour",
         "harnesscad.domain.geometry.volumes.marching_cubes",
@@ -26960,12 +28624,21 @@
         "FRepBackend",
         "Node",
         "blend_tree",
+        "check_constraint_arity",
+        "check_stepped_hole",
+        "countersink_depth",
+        "edge_entities",
         "eval_node",
+        "face_entities",
         "grid_extent",
         "mesh_triangles",
         "node_bounds",
         "resolution_for_tolerance",
+        "resolve_edges",
+        "resolve_faces",
+        "rigid_transform",
         "sample_grid",
+        "solve_constraint",
         "tessellate",
         "weld"
       ],
@@ -27028,13 +28701,19 @@
     {
       "dotted": "harnesscad.io.backends.openscad",
       "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Shell",
         "harnesscad.domain.fabrication",
         "harnesscad.domain.fabrication.openscad_export",
         "harnesscad.domain.programs.emit",
         "harnesscad.domain.programs.emit.openscad_emit",
         "harnesscad.domain.programs.validate",
         "harnesscad.domain.programs.validate.openscad_check",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
         "harnesscad.io.backends.base.BackendUnavailable",
         "harnesscad.io.backends.external",
         "harnesscad.io.backends.external.ExternalToolBackend",
@@ -27049,7 +28728,11 @@
         "harnesscad.io.backends.external.slab",
         "harnesscad.io.backends.external.to_world",
         "harnesscad.io.backends.frep",
-        "harnesscad.io.backends.frep.Node"
+        "harnesscad.io.backends.frep.Node",
+        "harnesscad.io.backends.frep.SHELL_FACES",
+        "harnesscad.io.backends.frep.countersink_depth",
+        "harnesscad.io.backends.frep.node_bounds",
+        "harnesscad.io.backends.frep.resolve_faces"
       ],
       "layer": "io",
       "name": "openscad",
@@ -27058,6 +28741,7 @@
       "symbols": [
         "OpenScadBackend",
         "OpenScadError",
+        "header",
         "lower",
         "render"
       ],
@@ -27163,6 +28847,221 @@
         "StubBackend"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.bindings_freecad",
+      "imports": [],
+      "layer": "io",
+      "name": "bindings_freecad",
+      "package": "cua",
+      "summary": "bindings_freecad \u2014 the CISP-op -> UIA-control table, as DATA.",
+      "symbols": [
+        "Control",
+        "FieldBind",
+        "Guard",
+        "Recipe",
+        "bind_values",
+        "check_guards",
+        "match_recipes",
+        "recipe_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.environment_freecad",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.Capabilities",
+        "harnesscad.core.environment.CapabilityError",
+        "harnesscad.core.environment.Observation",
+        "harnesscad.core.environment.StepResult",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.bindings_freecad",
+        "harnesscad.io.cua.frames",
+        "harnesscad.io.cua.guardrails",
+        "harnesscad.io.cua.uia"
+      ],
+      "layer": "io",
+      "name": "environment_freecad",
+      "package": "cua",
+      "summary": "environment_freecad \u2014 a live FreeCAD GUI as a first-class Environment.",
+      "symbols": [
+        "FreeCADGuiEnvironment",
+        "available",
+        "find_gui_executable"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.environment_onshape",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.Capabilities",
+        "harnesscad.core.environment.CapabilityError",
+        "harnesscad.core.environment.Observation",
+        "harnesscad.core.environment.StepResult",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.guardrails"
+      ],
+      "layer": "io",
+      "name": "environment_onshape",
+      "package": "cua",
+      "summary": "environment_onshape - a live Onshape browser session as an Environment, with",
+      "symbols": [
+        "BoundingBox",
+        "BrowserActuator",
+        "DocumentRef",
+        "GuiField",
+        "GuiRecipe",
+        "MassProperties",
+        "OnshapeApiError",
+        "OnshapeCredentials",
+        "OnshapeGuiEnvironment",
+        "OnshapeOracle",
+        "OnshapeUnavailable",
+        "PlaywrightActuator",
+        "available",
+        "value_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.frames",
+      "imports": [],
+      "layer": "io",
+      "name": "frames",
+      "package": "cua",
+      "summary": "frames \u2014 DPI awareness and the ONE immutable coordinate frame.",
+      "symbols": [
+        "Frame",
+        "FrameError",
+        "Monitor",
+        "assert_frames_agree",
+        "dpi_detail",
+        "ensure_dpi_aware",
+        "monitors",
+        "primary_monitor",
+        "register_screen_size",
+        "screen_frame",
+        "system_metrics",
+        "window_frame"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.guardrails",
+      "imports": [],
+      "layer": "io",
+      "name": "guardrails",
+      "package": "cua",
+      "summary": "guardrails \u2014 resolve-before-click, so we can REFUSE.",
+      "symbols": [
+        "GuardrailViolation",
+        "Guardrails",
+        "Refusal",
+        "Scratch",
+        "dirty_tripwire",
+        "guarded_invoke",
+        "is_confirm_in_dangerous_dialog",
+        "is_denied",
+        "normalize_name",
+        "rect_contains"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.quantity",
+      "imports": [],
+      "layer": "io",
+      "name": "quantity",
+      "package": "cua",
+      "summary": "quantity \u2014 locale-correct numeric entry with a MANDATORY read-back assert.",
+      "symbols": [
+        "Locale",
+        "QuantityError",
+        "QuantityMismatch",
+        "WriteReport",
+        "detect_locale",
+        "format_quantity",
+        "parse_quantity",
+        "values_match",
+        "write_quantity"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.uia",
+      "imports": [
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.frames",
+        "harnesscad.io.cua.quantity",
+        "harnesscad.io.cua.quantity.Locale",
+        "harnesscad.io.cua.quantity.QuantityError",
+        "harnesscad.io.cua.quantity.QuantityMismatch",
+        "harnesscad.io.cua.quantity.WriteReport",
+        "harnesscad.io.cua.quantity.detect_locale",
+        "harnesscad.io.cua.quantity.parse_quantity",
+        "harnesscad.io.cua.quantity.values_match",
+        "harnesscad.io.cua.quantity.write_quantity"
+      ],
+      "layer": "io",
+      "name": "uia",
+      "package": "cua",
+      "summary": "uia \u2014 the Windows UIAutomation driver. Every action returns a VERIFIED outcome.",
+      "symbols": [
+        "Element",
+        "Outcome",
+        "Snapshot",
+        "UiaDriver",
+        "UiaError",
+        "UiaUnavailable",
+        "available",
+        "select_all",
+        "send_key",
+        "send_text"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.cua.viewport",
+      "imports": [],
+      "layer": "io",
+      "name": "viewport",
+      "package": "cua",
+      "summary": "Deterministic 3D-viewport interaction: project, click, and VERIFY the pick.",
+      "symbols": [
+        "Entity",
+        "FreeCADGuiBridge",
+        "GuiUnavailable",
+        "OrthoCamera",
+        "VerifiedPick",
+        "ViewportController",
+        "ViewportError",
+        "axis_angle_to_quat",
+        "describe_entity",
+        "find_gui_executable",
+        "gui_available",
+        "parse_camera",
+        "quat_inverse",
+        "quat_rotate"
+      ],
+      "tags": [
+        "verify"
+      ]
     },
     {
       "dotted": "harnesscad.io.drawing",
@@ -27502,6 +29401,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.formats.ply",
+      "imports": [],
+      "layer": "io",
+      "name": "ply",
+      "package": "formats",
+      "summary": "PLY (Polygon File Format / Stanford triangle format) reader and writer.",
+      "symbols": [
+        "PlyError",
+        "dumps_ascii",
+        "parse_ply",
+        "serialize_ply",
+        "write_ply"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.formats.registry",
       "imports": [
         "harnesscad",
@@ -27516,9 +29434,11 @@
         "harnesscad.io.formats.dxf",
         "harnesscad.io.formats.glb",
         "harnesscad.io.formats.obj",
+        "harnesscad.io.formats.ply",
         "harnesscad.io.formats.step",
         "harnesscad.io.formats.stl",
         "harnesscad.io.formats.svg",
+        "harnesscad.io.formats.threemf",
         "harnesscad.io.formats.xcsg",
         "harnesscad.io.gate",
         "harnesscad.io.render",
@@ -27766,6 +29686,26 @@
         "drawings",
         "format",
         "graph",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.threemf",
+      "imports": [],
+      "layer": "io",
+      "name": "threemf",
+      "package": "formats",
+      "summary": "3MF (3D Manufacturing Format) reader and writer.",
+      "symbols": [
+        "ThreeMFError",
+        "dumps_model",
+        "loads_model",
+        "read_3mf",
+        "serialize",
+        "write_3mf"
+      ],
+      "tags": [
+        "format",
         "io"
       ]
     },
@@ -28469,7 +30409,10 @@
         "harnesscad.agents.a2a.task.IllegalTransition",
         "harnesscad.agents.a2a.task.TaskStore",
         "harnesscad.io.surfaces.a2a_server",
-        "harnesscad.io.surfaces.a2a_server.wire"
+        "harnesscad.io.surfaces.a2a_server.wire",
+        "harnesscad.io.surfaces.ui.approval",
+        "harnesscad.io.surfaces.ui.approval.ApprovalDenied",
+        "harnesscad.io.surfaces.ui.approval.ApprovalPolicy"
       ],
       "layer": "io",
       "name": "handler",
@@ -28888,6 +30831,10 @@
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
         "harnesscad.io.surfaces.mcp",
+        "harnesscad.io.surfaces.mcp.annotations",
+        "harnesscad.io.surfaces.mcp.annotations.TIER_AUTO",
+        "harnesscad.io.surfaces.mcp.annotations.TIER_NOTIFY",
+        "harnesscad.io.surfaces.mcp.annotations.TIER_REQUIRE",
         "harnesscad.io.surfaces.mcp.jsonrpc",
         "harnesscad.io.surfaces.mcp.jsonrpc.INTERNAL_ERROR",
         "harnesscad.io.surfaces.mcp.jsonrpc.INVALID_PARAMS",
@@ -28900,7 +30847,11 @@
         "harnesscad.io.surfaces.mcp.tools.ToolValidationError",
         "harnesscad.io.surfaces.mcp.tools.UnknownToolError",
         "harnesscad.io.surfaces.server",
-        "harnesscad.io.surfaces.server._make_backend"
+        "harnesscad.io.surfaces.server._make_backend",
+        "harnesscad.io.surfaces.ui.approval",
+        "harnesscad.io.surfaces.ui.approval.ApprovalDenied",
+        "harnesscad.io.surfaces.ui.approval.ApprovalPolicy",
+        "harnesscad.io.surfaces.ui.approval.ApprovalTier"
       ],
       "layer": "io",
       "name": "server",
@@ -29123,9 +31074,13 @@
       "summary": "Three-tier approval model (docs/blueprint.md sec.14, sec.10, sec.5).",
       "symbols": [
         "ApprovalDecision",
+        "ApprovalDenied",
         "ApprovalGate",
+        "ApprovalPolicy",
+        "ApprovalRecord",
         "ApprovalTier",
         "DryRunPreview",
+        "HeadlessPolicy",
         "RiskLevel",
         "op_name",
         "risk_for",
@@ -29167,6 +31122,7 @@
         "ModuleEntry",
         "add_arguments",
         "build_index",
+        "dynamic_edges",
         "find",
         "get",
         "import_graph",

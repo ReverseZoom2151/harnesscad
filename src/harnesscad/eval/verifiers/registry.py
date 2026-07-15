@@ -439,6 +439,55 @@ def _adapter_kernel_preflight() -> FunctionVerifier:
                             "harnesscad.eval.verifiers.kernel_preflight")
 
 
+def _adapter_edge_fillet() -> FunctionVerifier:
+    """`edge-fillet` -- the SOUND per-edge fillet ceiling.
+
+    ``preflight-RADIUS_TOO_LARGE`` measures a fillet against half the WHOLE-BODY
+    bbox and is unsound, because a fillet acts on an EDGE that need not span the
+    body's smallest extent (that false alarm is why it is quarantined HEURISTIC
+    and reaches no model). This rule proves the ceiling per edge instead: a fillet
+    of radius r on an edge consumes a strip of width r from each adjacent face,
+    measured perpendicular to the edge; the operation is degenerate when that strip
+    (doubled, if the opposite parallel edge is filleted too) meets or crosses the
+    adjacent face's perpendicular extent. That is a tangent-arc theorem -- the same
+    offset-surface argument that makes the shell rule PROVEN -- and it is proved
+    only inside the scope where the edge topology is EXACTLY known: a single
+    XY-plane rectangle extruded once. Outside that scope it ABSTAINS, so it can
+    never fire on a correct part. See :mod:`verifiers.edge_fillet`.
+    """
+
+    def applies(state: ModelState) -> bool:
+        from harnesscad.eval.verifiers.edge_fillet import box_extents
+        from harnesscad.core.cisp.ops import Chamfer, Fillet
+
+        if box_extents(state.ops()) is None:
+            return False
+        return bool(state.ops_of(Fillet, Chamfer))
+
+    def run(state: ModelState) -> List[Diagnostic]:
+        from harnesscad.eval.verifiers.edge_fillet import CODE, degenerate_fillets
+
+        diags: List[Diagnostic] = []
+        for f in degenerate_fillets(state.ops()):
+            how = ("both this edge and the parallel edge on the far side are "
+                   "filleted, so the two arcs together consume %s of it"
+                   % _num(f.consumed)) if f.opposite_filleted else (
+                   "the fillet strip of width %s runs off the far side" % _num(f.radius))
+            msg = _soundness.observe(
+                "fillet radius %s on the %s exceeds what the adjacent face can carry"
+                % (_num(f.radius), f.edge),
+                "that face is only %s across perpendicular to the edge, and %s -- "
+                "the arcs would have to overlap, so the fillet cannot close (the "
+                "kernel throws)" % (_num(f.extent), how),
+                "reduce the radius to at most %s" % _num(
+                    f.extent / 2.0 if f.opposite_filleted else f.extent))
+            diags.append(_err(CODE, msg, f"op[{f.op_index}]:fillet"))
+        return diags
+
+    return FunctionVerifier("edge-fillet", LINT, applies, run,
+                            "harnesscad.eval.verifiers.edge_fillet")
+
+
 def _adapter_shell_envelope() -> FunctionVerifier:
     """`shell-envelope` -- a Shell must not GROW the part.
 
@@ -808,6 +857,7 @@ def _adapter_drag_proxy() -> FunctionVerifier:
 # bespoke code* -- the discovery of the protocol-native verifiers below is not.
 _ADAPTERS = (
     _adapter_clearance_shift,
+    _adapter_edge_fillet,
     _adapter_kernel_preflight,
     _adapter_shell_envelope,
     _adapter_plausibility,
