@@ -10,18 +10,159 @@ Fusion default is **Reciprocal Rank Fusion** (RRF): scale-free, no score
 normalisation needed, robust to BM25's unbounded scores vs cosine's [0, 1]. A
 weighted-score mode is available for when both indexes are well-calibrated.
 
+SPARSE + DENSE, NOT JUST TOKEN OVERLAP (blueprint sec.16.3). Both signals reuse
+``harnesscad.agents.memory.similarity`` when it is importable, so the RAG and
+memory layers score relevance identically:
+
+  - the SPARSE side prefers ``similarity.BM25Similarity`` (Okapi BM25+, corpus-
+    aware ``rank``, [0, 1]-normalised) over the local ``index.BM25Index``; if the
+    similarity module is absent it degrades to that local BM25;
+  - the DENSE side stays embedding-free (hashed n-gram cosine) by default, but a
+    real embedding function can be injected (``embed_fn=``) and is wrapped into
+    the vector index -- the same "inject an embedder, no hard dependency" seam
+    ``similarity.EmbeddingSimilarity`` uses.
+
+The similarity module is imported LAZILY and every reuse is guarded: a missing or
+broken backend never fails a retrieval, it just falls back to the stdlib path.
+
 ``build_from_docs`` is the convenience entry point: hand it file paths, raw
 texts, or ``(text, source)`` pairs and it chunks + indexes everything.
 """
 
 from __future__ import annotations
 
+import importlib
 import os
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from harnesscad.agents.rag.chunk import Chunk, chunk_document
 from harnesscad.agents.rag.index import BM25Index, Embedder, HashedVectorIndex
+
+
+# ---------------------------------------------------------------------------
+# Sparse reuse: agents.memory.similarity.BM25Similarity (lazy, optional)
+# ---------------------------------------------------------------------------
+class SimilarityBM25Index:
+    """BM25 index backed by ``agents.memory.similarity.BM25Similarity``.
+
+    Exposes the same ``add(chunk)`` / ``search(query, k) -> [(chunk, score)]``
+    interface as ``index.BM25Index`` so it drops straight into the fusion, but
+    ranks with the memory layer's Okapi BM25+ (non-negative IDF, [0, 1]-
+    normalised, IDF recomputed over the live candidate set on each search). Using
+    it means the RAG and memory layers agree on what "lexically relevant" means.
+    """
+
+    def __init__(self, backend: Any = None) -> None:
+        if backend is None:
+            from harnesscad.agents.memory.similarity import BM25Similarity
+            backend = BM25Similarity()
+        self._sim = backend
+        self.chunks: List[Chunk] = []
+
+    def add(self, chunk: Chunk) -> None:
+        self.chunks.append(chunk)
+
+    def search(self, query: str, k: int = 5) -> List[Tuple[Chunk, float]]:
+        if not self.chunks:
+            return []
+        scores = self._sim.rank(query, [c.text for c in self.chunks])
+        scored = [(float(s), i) for i, s in enumerate(scores) if s > 0.0]
+        scored.sort(key=lambda t: (-t[0], t[1]))
+        return [(self.chunks[i], s) for s, i in scored[:k]]
+
+
+def _load_similarity_bm25() -> Optional[SimilarityBM25Index]:
+    """Build a similarity-backed BM25 index, or None if the module is absent.
+
+    Imported lazily and guarded: a missing memory.similarity module (or an
+    import-time failure) returns None so the caller degrades to local BM25.
+    """
+    try:
+        importlib.import_module("harnesscad.agents.memory.similarity")
+        return SimilarityBM25Index()
+    except Exception:  # noqa: BLE001 - module absent / import failure -> degrade
+        return None
+
+
+def _resolve_bm25(bm25: str) -> Tuple[Any, str]:
+    """Choose the sparse index: 'auto' | 'similarity' | 'local'.
+
+    'auto' and 'similarity' reuse memory.similarity's BM25 when importable;
+    'auto' silently falls back to the local BM25, 'similarity' also falls back
+    (reuse is a preference, never a hard requirement). Returns (index, kind).
+    """
+    if bm25 not in ("auto", "similarity", "local"):
+        raise ValueError("bm25 must be 'auto', 'similarity', or 'local'")
+    if bm25 != "local":
+        sim = _load_similarity_bm25()
+        if sim is not None:
+            return sim, "similarity"
+    return BM25Index(), "local"
+
+
+# ---------------------------------------------------------------------------
+# Dense reuse: an injected embedding function (the EmbeddingSimilarity seam)
+# ---------------------------------------------------------------------------
+def _to_sparse(vec: Any) -> Dict[int, float]:
+    """Project a dense vector (or sparse mapping) into the ``Dict[int, float]``
+    form the hashed-vector cosine consumes. Unusable inputs collapse to ``{}``."""
+    if vec is None:
+        return {}
+    if isinstance(vec, dict):
+        out: Dict[int, float] = {}
+        for k, v in vec.items():
+            try:
+                out[int(k)] = float(v)
+            except (TypeError, ValueError):
+                continue
+        return out
+    try:
+        return {i: float(v) for i, v in enumerate(vec) if float(v) != 0.0}
+    except (TypeError, ValueError):
+        return {}
+
+
+class SimilarityEmbedder:
+    """Adapt a raw ``text -> vector`` embedding function to the ``Embedder``
+    protocol (``embed(text) -> Dict[int, float]``).
+
+    This is the same injection seam ``similarity.EmbeddingSimilarity`` uses: no
+    model library is imported here, the dependency lives entirely in the injected
+    callable. The dense vector it returns is projected into the sparse form the
+    ``HashedVectorIndex`` cosine already ranks by, so a real embedder drops into
+    the existing fusion without touching the index. A failing embed call degrades
+    to an empty vector rather than raising.
+    """
+
+    def __init__(self, fn: Callable[[str], Any]) -> None:
+        if not callable(fn):
+            raise TypeError("embed_fn must be callable str -> sequence[float]")
+        self._fn = fn
+
+    def embed(self, text: str) -> Dict[int, float]:
+        try:
+            vec = self._fn(text)
+        except Exception:  # noqa: BLE001 - a broken embedder degrades to no vector
+            return {}
+        return _to_sparse(vec)
+
+
+def _resolve_embedder(embedder: Embedder,
+                      embed_fn: Optional[Callable[[str], Any]]
+                      ) -> Tuple[Optional[Embedder], str]:
+    """Pick the dense embedder and report its kind.
+
+    - an explicit ``embedder`` wins (kind ``"custom"``);
+    - an ``embed_fn`` is wrapped into a :class:`SimilarityEmbedder` (``"embed_fn"``);
+    - otherwise ``None`` lets ``HashedVectorIndex`` build its default embedding-
+      free ``HashedEmbedder`` (``"hashed"``), preserving the prior behaviour.
+    """
+    if embedder is not None:
+        return embedder, "custom"
+    if embed_fn is not None:
+        return SimilarityEmbedder(embed_fn), "embed_fn"
+    return None, "hashed"
 
 
 @dataclass
@@ -61,6 +202,8 @@ class HybridRetriever:
         rrf_k: int = 60,
         bm25_weight: float = 0.5,
         vector_weight: float = 0.5,
+        bm25: str = "auto",
+        embed_fn: Optional[Callable[[str], Any]] = None,
     ) -> None:
         if fusion not in ("rrf", "weighted"):
             raise ValueError("fusion must be 'rrf' or 'weighted'")
@@ -68,8 +211,13 @@ class HybridRetriever:
         self.rrf_k = rrf_k
         self.bm25_weight = bm25_weight
         self.vector_weight = vector_weight
-        self.bm25 = BM25Index()
-        self.vector = HashedVectorIndex(embedder=embedder)
+        # SPARSE. 'auto' reuses memory.similarity's BM25 when importable, else the
+        # local BM25 -- either way the same add/search interface feeds the fusion.
+        self.bm25, self.bm25_kind = _resolve_bm25(bm25)
+        # DENSE. Embedding-free hashed cosine by default; an injected embed_fn (or
+        # an explicit embedder) upgrades the vector index to real embeddings.
+        resolved, self.embedder_kind = _resolve_embedder(embedder, embed_fn)
+        self.vector = HashedVectorIndex(embedder=resolved)
         self.chunks: List[Chunk] = []
 
     # --- ingestion --------------------------------------------------------
