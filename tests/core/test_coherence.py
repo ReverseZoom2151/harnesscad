@@ -210,9 +210,15 @@ class TestOneLoop(unittest.TestCase):
 
     def test_runner_run_now_has_loop_detection_as_a_parameter(self):
         # The minimal loop had none. The one loop takes it as a collaborator.
+        # Loop detection fires on the AGENT re-emitting the same stuck plan
+        # ACROSS iterations, not on a single plan that repeats an op signature
+        # (a plate is four identical distance constraints -- legitimate content,
+        # not oscillation). So the fixture is a plan that never applies -- an
+        # extrude of a sketch that does not exist -- re-emitted turn after turn:
+        # the agent is stuck, never converges, and the loop is detected.
         from harnesscad.eval.reliability.loopdetect import LoopDetector
         session = HarnessSession(StubBackend())
-        over = [NewSketch()] * 8      # the same op signature, over and over
+        over = [Extrude(sketch="nope", distance=5.0)]   # never applies; re-emitted
         result = run(session, _RecordingPlanner([over] * 5), "loop me",
                      max_iters=5, loop_detector=LoopDetector())
         self.assertFalse(result.ok)

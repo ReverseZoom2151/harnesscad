@@ -451,13 +451,28 @@ class AgentHarness:
                 "iteration": iteration, "error": str(exc)})
 
     def _detect_loop(self, ops: List[Op]) -> bool:
-        """Feed emitted op signatures to the loop detector; True on oscillation."""
+        """Feed emitted op signatures to the loop detector; True on oscillation.
+
+        The detector's unit is the AGENT'S TURN (one plan per iteration), not the
+        individual op. A single legitimate plan can repeat an op signature -- a
+        plate is four identical distance constraints, a bracket three identical
+        fillets -- and streaming every op of one plan through the sliding window
+        would self-trip on iteration 0, before anything is applied. So each
+        DISTINCT signature in a plan is observed at most once per call: the
+        detector then accumulates repeats ACROSS iterations (the agent re-emitting
+        the same op turn after turn -- the real oscillation), never within a single
+        turn. A single stuck op amid otherwise-varying plans is still caught,
+        because it is observed once in each iteration it recurs in.
+        """
         if self.loop_detector is None:
             return False
         looped = False
+        seen: set = set()
         for op in ops:
-            # Observe every op (keeps the sliding window correct) but remember if
-            # any observation completes a loop.
+            sig = self.loop_detector.signature(op)
+            if sig in seen:
+                continue  # a repeat WITHIN this plan is plan content, not a loop
+            seen.add(sig)
             if self.loop_detector.observe(op):
                 looped = True
         return looped
