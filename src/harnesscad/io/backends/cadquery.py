@@ -41,7 +41,9 @@ from typing import List, Optional
 from harnesscad.core.cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+    AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
+    Primitive, Split, Thicken,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -294,6 +296,39 @@ class CadQueryBackend:
             return self._add_primitive(
                 op.sketch, "rectangle",
                 {"x": op.x, "y": op.y, "w": op.w, "h": op.h})
+        if isinstance(op, AddArc):
+            if op.r <= 0:
+                return _err("bad-value", f"arc radius must be > 0 (got {op.r})")
+            if float(op.start) == float(op.end):
+                return _err("bad-value", "arc start and end angle must differ")
+            return self._add_primitive(
+                op.sketch, "arc",
+                {"cx": op.cx, "cy": op.cy, "r": op.r,
+                 "start": op.start, "end": op.end})
+        if isinstance(op, AddEllipse):
+            if op.rx <= 0 or op.ry <= 0:
+                return _err("bad-value", "ellipse rx and ry must be > 0")
+            return self._add_primitive(
+                op.sketch, "ellipse",
+                {"cx": op.cx, "cy": op.cy, "rx": op.rx, "ry": op.ry,
+                 "rotation": op.rotation})
+        if isinstance(op, AddPolygon):
+            if len(op.points) < 6 or len(op.points) % 2 != 0:
+                return _err("bad-value", "polygon needs >= 3 vertices")
+            return self._add_primitive(op.sketch, "polygon",
+                                       {"points": tuple(op.points)})
+        if isinstance(op, AddSpline):
+            if len(op.points) < 4 or len(op.points) % 2 != 0:
+                return _err("bad-value", "spline needs >= 2 points")
+            return self._add_primitive(op.sketch, "spline",
+                                       {"points": tuple(op.points),
+                                        "closed": bool(op.closed)})
+        if isinstance(op, Primitive):
+            return self._primitive(op)
+        if isinstance(op, Split):
+            return self._split(op)
+        if isinstance(op, Thicken):
+            return self._thicken(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -452,7 +487,17 @@ class CadQueryBackend:
             elif ent["type"] == "circle":
                 wp = wp.moveTo(p["cx"], p["cy"]).circle(p["r"])
                 n_profiles += 1
-            # points/lines do not form closed profiles on their own -> ignored
+            elif ent["type"] == "ellipse":
+                wp = wp.moveTo(p["cx"], p["cy"]).ellipse(
+                    p["rx"], p["ry"], rotation_angle=p.get("rotation", 0.0))
+                n_profiles += 1
+            elif ent["type"] == "polygon":
+                pts = [(p["points"][i], p["points"][i + 1])
+                       for i in range(0, len(p["points"]) - 1, 2)]
+                wp = wp.polyline(pts).close()
+                n_profiles += 1
+            # points/lines/arcs/splines do not form closed profiles on their own
+            # (a mixed line+arc wire is not chained by this profile builder) -> ignored
         return wp if n_profiles else None
 
     def _extrude(self, op: Extrude) -> ApplyResult:
@@ -1083,6 +1128,142 @@ class CadQueryBackend:
         self.features.append({"type": "draft", "id": fid,
                               "faces": list(op.faces), "angle": op.angle})
         self._solids[-1] = drafted
+        return ApplyResult(True, [fid])
+
+    # -- primitives / split / thicken (real geometry) ----------------------
+    def _primitive(self, op: Primitive) -> ApplyResult:
+        """A solid primitive via OCCT's own builders (BRepPrimAPI, exposed as
+        ``cq.Solid.make*``). Placed at the origin; the standalone body's absolute
+        position is immaterial (only its size and volume are measured)."""
+        shape = str(op.shape).lower()
+        if shape in ("box", "wedge") and (op.dx <= 0 or op.dy <= 0 or op.dz <= 0):
+            return _err("bad-value", f"{shape} dx, dy, dz must be > 0")
+        if shape in ("sphere", "torus") and op.r <= 0:
+            return _err("bad-value", f"{shape} radius r must be > 0")
+        if shape == "torus" and op.r2 <= 0:
+            return _err("bad-value", "torus minor radius r2 must be > 0")
+        if shape in ("cylinder", "cone") and (op.r <= 0 or op.h <= 0):
+            return _err("bad-value", f"{shape} r and h must be > 0")
+        if shape not in ("box", "sphere", "cylinder", "cone", "torus", "wedge"):
+            return _err("bad-value",
+                        f"unknown primitive shape '{op.shape}' (box | sphere | "
+                        "cylinder | cone | torus | wedge)")
+        try:
+            cq = _cq()
+            if shape == "box":
+                solid = cq.Workplane("XY").newObject(
+                    [cq.Solid.makeBox(op.dx, op.dy, op.dz)])
+            elif shape == "sphere":
+                solid = cq.Workplane("XY").newObject([cq.Solid.makeSphere(op.r)])
+            elif shape == "cylinder":
+                solid = cq.Workplane("XY").newObject(
+                    [cq.Solid.makeCylinder(op.r, op.h)])
+            elif shape == "cone":
+                solid = cq.Workplane("XY").newObject(
+                    [cq.Solid.makeCone(op.r, op.r2, op.h)])
+            elif shape == "torus":
+                solid = cq.Workplane("XY").newObject(
+                    [cq.Solid.makeTorus(op.r, op.r2)])
+            else:  # wedge: a right-triangular prism (triangle in X-Z, extruded +Y)
+                solid = (cq.Workplane("XZ").polyline(
+                    [(0.0, 0.0), (op.dx, 0.0), (0.0, op.dz)]).close()
+                    .extrude(op.dy))
+            bad = _degenerate(solid, f"primitive {shape}")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"primitive {shape} failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "primitive", "id": fid, "shape": shape})
+        self._solids.append(solid)
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    @staticmethod
+    def _halfspace_box(cq, plane: str, offset: float, positive: bool, size: float):
+        """A large box filling one side of a datum plane at ``offset``."""
+        box = cq.Solid.makeBox(2.0 * size, 2.0 * size, 2.0 * size)
+        near = offset if positive else offset - 2.0 * size
+        if plane == "XY":
+            box = box.translate((-size, -size, near))
+        elif plane == "XZ":
+            box = box.translate((-size, near, -size))
+        else:  # YZ
+            box = box.translate((near, -size, -size))
+        return cq.Workplane("XY").newObject([box])
+
+    def _split(self, op: Split) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "split requires an existing solid")
+        plane = str(op.plane).upper()
+        if plane not in ("XY", "XZ", "YZ"):
+            return _err("bad-value", f"unknown split plane '{op.plane}'")
+        if op.keep not in ("positive", "negative", "both"):
+            return _err("bad-value",
+                        f"unknown split keep '{op.keep}' (positive|negative|both)")
+        try:
+            cq = _cq()
+            target = self._solids[-1]
+            bb = target.val().BoundingBox()
+            size = 2.0 * max(bb.xlen, bb.ylen, bb.zlen) + 100.0
+            pos_cut = self._halfspace_box(cq, plane, float(op.offset), True, size)
+            neg_cut = self._halfspace_box(cq, plane, float(op.offset), False, size)
+            keep_pos = target.cut(neg_cut)   # remove the negative side
+            keep_neg = target.cut(pos_cut)   # remove the positive side
+            primary = keep_pos if op.keep in ("positive", "both") else keep_neg
+            bad = _degenerate(primary, "split")
+            if bad is not None:
+                return bad
+            if op.keep == "both":
+                bad = _degenerate(keep_neg, "split (negative half)")
+                if bad is not None:
+                    return bad
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"split failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "split", "id": fid, "plane": plane,
+                              "keep": op.keep})
+        self._solids[-1] = primary
+        if op.keep == "both":
+            self._solids.append(keep_neg)
+        return ApplyResult(True, [fid])
+
+    def _thicken(self, op: Thicken) -> ApplyResult:
+        """Grow / shrink the whole solid by ``thickness`` (OCCT MakeOffsetShape)."""
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "thicken requires an existing solid")
+        if op.thickness == 0:
+            return _err("bad-value", "thicken thickness must be non-zero")
+        if any(str(f).strip() for f in (op.faces or ())):
+            return _err("unsupported-op",
+                        "this backend offsets the whole outer surface; a per-face "
+                        "thicken (Thicken.faces) is not wired here")
+        try:
+            cq = _cq()
+            target = self._solids[-1]
+            from OCP.BRepOffsetAPI import BRepOffsetAPI_MakeOffsetShape
+            from OCP.BRepOffset import BRepOffset_Mode
+            from OCP.GeomAbs import GeomAbs_JoinType
+            mk = BRepOffsetAPI_MakeOffsetShape()
+            mk.PerformByJoin(target.val().wrapped, float(op.thickness), 1e-3,
+                             BRepOffset_Mode.BRepOffset_Skin, False, False,
+                             GeomAbs_JoinType.GeomAbs_Arc, False)
+            result = cq.Workplane("XY").newObject([cq.Shape.cast(mk.Shape())])
+            bad = _degenerate(result, "thicken")
+            if bad is not None:
+                return bad
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"thicken failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "thicken", "id": fid,
+                              "thickness": op.thickness})
+        self._solids[-1] = result
         return ApplyResult(True, [fid])
 
     def regenerate(self) -> List[Diagnostic]:

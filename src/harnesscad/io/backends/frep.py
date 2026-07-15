@@ -47,7 +47,9 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple
 from harnesscad.core.cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+    AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
+    Primitive, Split, Thicken,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -252,15 +254,79 @@ class _Profile:
         return (lo_u, lo_v, hi_u, hi_v)
 
 
+def _unflatten(points: Sequence[float]) -> List[Tuple[float, float]]:
+    """A flat (x0, y0, x1, y1, ...) tuple as a list of (x, y) pairs."""
+    p = [float(v) for v in points]
+    return [(p[i], p[i + 1]) for i in range(0, len(p) - 1, 2)]
+
+
+def sample_arc(cx: float, cy: float, r: float, start_deg: float,
+               end_deg: float) -> List[Tuple[float, float]]:
+    """A circular arc as an ordered polyline (~11.25-degree chords)."""
+    a0, a1 = math.radians(float(start_deg)), math.radians(float(end_deg))
+    sweep = a1 - a0
+    n = max(2, int(math.ceil(abs(sweep) / (math.pi / 16.0))))
+    return [(cx + r * math.cos(a0 + sweep * i / n),
+             cy + r * math.sin(a0 + sweep * i / n)) for i in range(n + 1)]
+
+
+def ellipse_loop(cx: float, cy: float, rx: float, ry: float,
+                 rot_deg: float, n: int = 64) -> List[Tuple[float, float]]:
+    """A rotated ellipse as a closed CCW polygon of ``n`` vertices."""
+    c, s = math.cos(math.radians(float(rot_deg))), math.sin(math.radians(float(rot_deg)))
+    loop: List[Tuple[float, float]] = []
+    for i in range(n):
+        a = 2.0 * math.pi * i / n
+        ex, ey = rx * math.cos(a), ry * math.sin(a)
+        loop.append((cx + ex * c - ey * s, cy + ex * s + ey * c))
+    return loop
+
+
+def sample_spline(points: Sequence[Tuple[float, float]], closed: bool,
+                  per_segment: int = 12) -> List[Tuple[float, float]]:
+    """A uniform Catmull-Rom spline through ``points`` as an ordered polyline.
+
+    The curve interpolates each control point; ``closed`` wraps the tangents so
+    the last point joins back to the first. Fewer than three control points fall
+    back to the straight polyline they describe.
+    """
+    pts = [(float(x), float(y)) for (x, y) in points]
+    if len(pts) < 3:
+        return list(pts)
+    n = len(pts)
+    out: List[Tuple[float, float]] = []
+    last = n if closed else n - 1
+    for i in range(last):
+        p0 = pts[(i - 1) % n] if closed else pts[max(i - 1, 0)]
+        p1 = pts[i % n]
+        p2 = pts[(i + 1) % n]
+        p3 = pts[(i + 2) % n] if closed else pts[min(i + 2, n - 1)]
+        for j in range(per_segment):
+            t = j / float(per_segment)
+            t2, t3 = t * t, t * t * t
+            out.append((
+                0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t
+                       + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2
+                       + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+                0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t
+                       + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2
+                       + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)))
+    if not closed:
+        out.append(pts[-1])
+    return out
+
+
 def _profile_of(sketch: dict, entities: dict) -> _Profile:
     """Collect a sketch's closed entities into a 2D profile.
 
-    Rectangles and circles are closed on their own.  Three or more lines are
-    taken as a polyline and closed into a polygon (the closing edge implied),
-    matching the usual "sketch a closed loop from segments" idiom.
+    Rectangles, circles, ellipses and closed polygons/splines are closed on their
+    own. Lines, arcs and open splines contribute their ordered boundary points to
+    a single polyline chain, which is closed into a polygon when it has three or
+    more points (the closing edge implied) — the usual "sketch a closed loop from
+    segments" idiom, now with curved segments.
     """
     prof = _Profile()
-    lines: List[Tuple[float, float]] = []
+    chain: List[Tuple[float, float]] = []
     for eid in sketch["entities"]:
         ent = entities[eid]
         p = ent["params"]
@@ -269,14 +335,35 @@ def _profile_of(sketch: dict, entities: dict) -> _Profile:
             prof.rects.append((p["x"], p["y"], p["w"], p["h"]))
         elif kind == "circle":
             prof.circles.append((p["cx"], p["cy"], p["r"]))
+        elif kind == "ellipse":
+            prof.polys.append(ellipse_loop(p["cx"], p["cy"], p["rx"], p["ry"],
+                                           p.get("rotation", 0.0)))
+        elif kind == "polygon":
+            verts = _unflatten(p["points"])
+            if len(verts) >= 3:
+                prof.polys.append(verts)
+        elif kind == "spline":
+            verts = _unflatten(p["points"])
+            if p.get("closed") and len(verts) >= 3:
+                prof.polys.append(sample_spline(verts, True))
+            else:
+                seg = sample_spline(verts, False)
+                for pt in seg:
+                    if not chain or chain[-1] != pt:
+                        chain.append(pt)
+        elif kind == "arc":
+            seg = sample_arc(p["cx"], p["cy"], p["r"], p["start"], p["end"])
+            for pt in seg:
+                if not chain or chain[-1] != pt:
+                    chain.append(pt)
         elif kind == "line":
-            if not lines:
-                lines.append((p["x1"], p["y1"]))
-            lines.append((p["x2"], p["y2"]))
-    if len(lines) >= 4 and lines[0] == lines[-1]:
-        lines = lines[:-1]
-    if len(lines) >= 3:
-        prof.polys.append(lines)
+            if not chain:
+                chain.append((p["x1"], p["y1"]))
+            chain.append((p["x2"], p["y2"]))
+    if len(chain) >= 4 and chain[0] == chain[-1]:
+        chain = chain[:-1]
+    if len(chain) >= 3:
+        prof.polys.append(chain)
     return prof
 
 
@@ -397,6 +484,21 @@ def eval_node(node: Node, p: Sequence[float]) -> float:
         return _combine_prism(d2, dw, 0.0, 0.0)
     if t == "cone":
         return _eval_cone(node, p)
+    if t == "sphere":
+        dx = p[0] - node.d["cx"]
+        dy = p[1] - node.d["cy"]
+        dz = p[2] - node.d["cz"]
+        return math.sqrt(dx * dx + dy * dy + dz * dz) - float(node.d["r"])
+    if t == "torus":
+        # A torus about the +Z axis through (cx, cy, cz): major radius R (ring),
+        # minor radius r (tube).
+        qx = math.hypot(p[0] - node.d["cx"], p[1] - node.d["cy"]) - float(node.d["R"])
+        qz = p[2] - node.d["cz"]
+        return math.hypot(qx, qz) - float(node.d["r"])
+    if t == "wedge":
+        return _eval_wedge(node, p)
+    if t == "offset":
+        return eval_node(node.d["child"], p) - float(node.d["delta"])
     if t == "revolve":
         return _eval_revolve(node, p)
     if t == "bool":
@@ -646,7 +748,8 @@ def _has_shell(node: Node) -> bool:
     would bound the WRONG function and delete blocks the real surface passes
     through.
     """
-    if node.t in ("shell", "blendcut", "blend"):
+    if node.t in ("shell", "blendcut", "blend", "sphere", "torus", "wedge",
+                  "offset"):
         return True
     for key in ("child", "a", "b"):
         kid = node.d.get(key)
@@ -740,6 +843,21 @@ def _eval_cone(node: Node, p: Sequence[float]) -> float:
     inside = min(max(lateral, dw), 0.0)
     outside = math.hypot(max(lateral, 0.0), max(dw, 0.0))
     return inside + outside
+
+
+def _eval_wedge(node: Node, p: Sequence[float]) -> float:
+    """A right-triangular prism: triangle (0,0)-(dx,0)-(0,dz) in the X-Z plane,
+    extruded along Y over [0, dy]. Corner at the origin.
+
+    The field is the intersection (``max``) of the five bounding half-spaces —
+    x>=0, z>=0, the sloped hypotenuse x/dx + z/dz <= 1, and the y slab. This is a
+    conservative (never over-estimating) SDF, exact on the planar faces, which is
+    all the mesher and the interval bound need.
+    """
+    dx, dy, dz = float(node.d["dx"]), float(node.d["dy"]), float(node.d["dz"])
+    x, y, z = float(p[0]), float(p[1]), float(p[2])
+    fh = (x / dx + z / dz - 1.0) / math.hypot(1.0 / dx, 1.0 / dz)
+    return max(-x, -z, fh, _slab(y, 0.0, dy))
 
 
 def _reflect(p: Sequence[float], plane: str) -> Vec3:
@@ -873,6 +991,19 @@ def node_bounds(node: Node) -> Tuple[Vec3, Vec3]:
     t = node.t
     if t in ("extrude", "cyl", "cone", "revolve"):
         return _leaf_bounds(node)
+    if t == "sphere":
+        cx, cy, cz, r = (node.d["cx"], node.d["cy"], node.d["cz"], node.d["r"])
+        return ((cx - r, cy - r, cz - r), (cx + r, cy + r, cz + r))
+    if t == "torus":
+        cx, cy, cz = node.d["cx"], node.d["cy"], node.d["cz"]
+        rr = float(node.d["R"]) + float(node.d["r"])
+        r = float(node.d["r"])
+        return ((cx - rr, cy - rr, cz - r), (cx + rr, cy + rr, cz + r))
+    if t == "wedge":
+        return ((0.0, 0.0, 0.0),
+                (float(node.d["dx"]), float(node.d["dy"]), float(node.d["dz"])))
+    if t == "offset":
+        return _grow(node_bounds(node.d["child"]), float(node.d["delta"]))
     if t == "bool":
         ba = node_bounds(node.d["a"])
         bb = node_bounds(node.d["b"])
@@ -1013,6 +1144,9 @@ def blend_tree(node: Node, kind: str, k: float) -> Node:
     if t == "pattern":
         return Node("pattern", child=blend_tree(node.d["child"], kind, k),
                     transforms=node.d["transforms"])
+    if t == "offset":
+        return Node("offset", child=blend_tree(node.d["child"], kind, k),
+                    delta=node.d["delta"])
     return node  # pragma: no cover
 
 
@@ -1588,6 +1722,39 @@ class FRepBackend:
                 return _err("bad-value", "rectangle w and h must be > 0")
             return self._add_primitive(op.sketch, "rectangle",
                                        {"x": op.x, "y": op.y, "w": op.w, "h": op.h})
+        if isinstance(op, AddArc):
+            if op.r <= 0:
+                return _err("bad-value", f"arc radius must be > 0 (got {op.r})")
+            if float(op.start) == float(op.end):
+                return _err("bad-value", "arc start and end angle must differ")
+            return self._add_primitive(op.sketch, "arc",
+                                       {"cx": op.cx, "cy": op.cy, "r": op.r,
+                                        "start": op.start, "end": op.end})
+        if isinstance(op, AddEllipse):
+            if op.rx <= 0 or op.ry <= 0:
+                return _err("bad-value", "ellipse rx and ry must be > 0")
+            return self._add_primitive(op.sketch, "ellipse",
+                                       {"cx": op.cx, "cy": op.cy, "rx": op.rx,
+                                        "ry": op.ry, "rotation": op.rotation})
+        if isinstance(op, AddPolygon):
+            if len(op.points) < 6 or len(op.points) % 2 != 0:
+                return _err("bad-value",
+                            "polygon needs >= 3 vertices as a flat (x0,y0,...) tuple")
+            return self._add_primitive(op.sketch, "polygon",
+                                       {"points": tuple(op.points)})
+        if isinstance(op, AddSpline):
+            if len(op.points) < 4 or len(op.points) % 2 != 0:
+                return _err("bad-value",
+                            "spline needs >= 2 points as a flat (x0,y0,...) tuple")
+            return self._add_primitive(op.sketch, "spline",
+                                       {"points": tuple(op.points),
+                                        "closed": bool(op.closed)})
+        if isinstance(op, Primitive):
+            return self._primitive(op)
+        if isinstance(op, Split):
+            return self._split(op)
+        if isinstance(op, Thicken):
+            return self._thicken(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -1791,6 +1958,116 @@ class FRepBackend:
         for i in sorted((ia, ib), reverse=True):
             self._bodies.pop(i)
         return self._push_body("boolean", node, kind=op.kind)
+
+    def _primitive(self, op: Primitive) -> ApplyResult:
+        """Build a solid primitive as an F-rep node placed at the origin.
+
+        box/cylinder/cone reuse the extrude/cyl/cone nodes every lowering already
+        speaks; sphere/torus/wedge are native SDF leaves. All six are exact.
+        """
+        shape = str(op.shape).lower()
+        if shape == "box":
+            if op.dx <= 0 or op.dy <= 0 or op.dz <= 0:
+                return _err("bad-value", "box dx, dy, dz must be > 0")
+            prof = _Profile()
+            prof.rects.append((0.0, 0.0, float(op.dx), float(op.dy)))
+            node = Node("extrude", profile=prof, plane="XY",
+                        w0=0.0, w1=float(op.dz), round=0.0, cham=0.0)
+        elif shape == "sphere":
+            if op.r <= 0:
+                return _err("bad-value", "sphere r must be > 0")
+            node = Node("sphere", cx=0.0, cy=0.0, cz=0.0, r=float(op.r))
+        elif shape == "cylinder":
+            if op.r <= 0 or op.h <= 0:
+                return _err("bad-value", "cylinder r and h must be > 0")
+            node = Node("cyl", plane="XY", cu=0.0, cv=0.0, r=float(op.r),
+                        w0=0.0, w1=float(op.h))
+        elif shape == "cone":
+            if op.r <= 0 or op.h <= 0:
+                return _err("bad-value", "cone r and h must be > 0")
+            if op.r2 < 0:
+                return _err("bad-value", "cone top radius r2 must be >= 0")
+            node = Node("cone", plane="XY", cu=0.0, cv=0.0,
+                        r0=float(op.r), r1=float(op.r2), w0=0.0, w1=float(op.h))
+        elif shape == "torus":
+            if op.r <= 0 or op.r2 <= 0:
+                return _err("bad-value", "torus r (major) and r2 (minor) must be > 0")
+            node = Node("torus", cx=0.0, cy=0.0, cz=0.0,
+                        R=float(op.r), r=float(op.r2))
+        elif shape == "wedge":
+            if op.dx <= 0 or op.dy <= 0 or op.dz <= 0:
+                return _err("bad-value", "wedge dx, dy, dz must be > 0")
+            node = Node("wedge", dx=float(op.dx), dy=float(op.dy), dz=float(op.dz))
+        else:
+            return _err("bad-value",
+                        f"unknown primitive shape '{op.shape}' (box | sphere | "
+                        "cylinder | cone | torus | wedge)")
+        return self._push_body("primitive", node, shape=shape)
+
+    def _halfspace_box(self, plane: str, offset: float, positive: bool,
+                       size: float) -> Node:
+        """A large box filling one side of the datum ``plane`` at ``offset``.
+
+        ``positive`` picks the +normal side. Built as an extrude of a big square on
+        the plane, its slab covering the chosen half — cutting it away sections the
+        body against the plane, reusing the boolean path every backend already has.
+        """
+        prof = _Profile()
+        prof.rects.append((-size, -size, 2.0 * size, 2.0 * size))
+        if positive:
+            w0, w1 = offset, offset + 2.0 * size
+        else:
+            w0, w1 = offset - 2.0 * size, offset
+        return Node("extrude", profile=prof, plane=str(plane).upper(),
+                    w0=w0, w1=w1, round=0.0, cham=0.0)
+
+    def _split(self, op: Split) -> ApplyResult:
+        if not self._bodies:
+            return _err("no-solid", "split requires an existing solid")
+        plane = str(op.plane).upper()
+        if plane not in _PLANES:
+            return _err("bad-value", f"unknown split plane '{op.plane}'")
+        if op.keep not in ("positive", "negative", "both"):
+            return _err("bad-value",
+                        f"unknown split keep '{op.keep}' (positive|negative|both)")
+        target = self._bodies[-1]
+        lo, hi = node_bounds(target["node"])
+        size = 2.0 * max(hi[i] - lo[i] for i in range(3)) + 100.0
+        offset = float(op.offset)
+        # cut away the NEGATIVE half to keep the positive side, and vice versa
+        pos_half = self._halfspace_box(plane, offset, True, size)
+        neg_half = self._halfspace_box(plane, offset, False, size)
+        keep_pos = Node("bool", op="cut", a=target["node"], b=neg_half,
+                        blend="hard", k=0.0)
+        keep_neg = Node("bool", op="cut", a=target["node"], b=pos_half,
+                        blend="hard", k=0.0)
+        if op.keep == "positive":
+            target["node"] = keep_pos
+        elif op.keep == "negative":
+            target["node"] = keep_neg
+        else:  # both: the current body becomes the positive half, add the negative
+            target["node"] = keep_pos
+            self._push_body("split", keep_neg, plane=plane, keep="negative")
+        self._record_feature("split", target, plane=plane, keep=op.keep)
+        self.solid_present = True
+        return ApplyResult(True, [self.features[-1]["id"]])
+
+    def _thicken(self, op: Thicken) -> ApplyResult:
+        if not self._bodies:
+            return _err("no-solid", "thicken requires an existing solid")
+        if op.thickness == 0:
+            return _err("bad-value", "thicken thickness must be non-zero")
+        if any(str(f).strip() for f in (op.faces or ())):
+            return _err("unsupported-op",
+                        "the frep backend offsets the whole outer surface of a "
+                        "solid; a per-face thicken (Thicken.faces) needs a B-rep "
+                        "face set this SDF kernel does not carry")
+        target = self._bodies[-1]
+        delta = float(op.thickness)
+        target["node"] = Node("offset", child=target["node"], delta=delta)
+        self._record_feature("thicken", target, thickness=delta)
+        self.solid_present = True
+        return ApplyResult(True, [self.features[-1]["id"]])
 
     def _blend(self, feature: str, kind: str, k: float, edges,
                k2: Optional[float] = None) -> ApplyResult:

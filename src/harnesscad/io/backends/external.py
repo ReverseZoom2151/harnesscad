@@ -39,7 +39,7 @@ import tempfile
 from glob import glob
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.core.cisp.ops import Op
+from harnesscad.core.cisp.ops import Op, Primitive
 from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
 from harnesscad.domain.geometry.parametric import facets
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
@@ -233,6 +233,13 @@ class ExternalToolBackend:
     UNSUPPORTED: Dict[str, str] = {}
     FORMATS: Tuple[str, ...] = ("stl", "stl-ascii", "stl-binary", "glb")
 
+    #: Primitive shapes (``ops.Primitive.shape``) this tool can LOWER, via the
+    #: F-rep node the composed model builds for them. box/cylinder/cone reuse the
+    #: extrude/cyl/cone nodes; sphere needs a native primitive in the lowering. A
+    #: shape not listed here is refused with a typed ``unsupported-op`` at the op
+    #: boundary (so a node the lowering cannot express never reaches the kernel).
+    PRIMITIVE_SHAPES: Tuple[str, ...] = ()
+
     #: Shell join kinds THIS tool's kernel can build (``ops.Shell.kind``).
     #:
     #: The composed FRepBackend is the op-state model, and it refuses what ITS OWN
@@ -300,6 +307,13 @@ class ExternalToolBackend:
             return _err("unsupported-op",
                         "the %s backend does not implement %s: %s"
                         % (self.TOOL, tag, reason), None)
+        if isinstance(op, Primitive) and \
+                str(op.shape).lower() not in self.PRIMITIVE_SHAPES:
+            return _err("unsupported-op",
+                        "the %s backend cannot build a %r primitive: its lowering "
+                        "has no expression for that shape (supported: %s)"
+                        % (self.TOOL, op.shape,
+                           ", ".join(self.PRIMITIVE_SHAPES) or "none"), None)
         result = self._frep.apply(op)
         if result.ok:
             self._mesh_cache = None

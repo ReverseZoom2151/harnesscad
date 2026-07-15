@@ -56,7 +56,9 @@ from typing import List, Optional, Sequence, Tuple
 from harnesscad.core.cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+    AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
+    Primitive, Split, Thicken,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -206,6 +208,28 @@ class Rhino3dmBackend:
             return self._extrude(op)
 
         # -- everything below is a real CAD op rhino3dm cannot perform -------
+        if isinstance(op, AddArc):
+            return _unsupported("add_arc", "openNURBS carries curves but this "
+                                "backend's profile builder closes only rectangle "
+                                "and circle regions")
+        if isinstance(op, AddEllipse):
+            return _unsupported("add_ellipse", "only rectangle and circle profiles "
+                                "are realised into extrudable regions here")
+        if isinstance(op, AddPolygon):
+            return _unsupported("add_polygon", "only rectangle and circle profiles "
+                                "are realised into extrudable regions here")
+        if isinstance(op, AddSpline):
+            return _unsupported("add_spline", "only rectangle and circle profiles "
+                                "are realised into extrudable regions here")
+        if isinstance(op, Primitive):
+            return _unsupported("primitive", "no solid primitive builder is wired "
+                                "through this container backend")
+        if isinstance(op, Split):
+            return _unsupported("split", "a plane split is a boolean cut, which is "
+                                "absent")
+        if isinstance(op, Thicken):
+            return _unsupported("thicken", "no offset-solid / thick-solid operation "
+                                "exists")
         if isinstance(op, Boolean):
             return _unsupported("boolean", "openNURBS has no solid boolean engine")
         if isinstance(op, Fillet):

@@ -329,6 +329,10 @@ def lower(node: Node, segments: int):
             hi - lo, a, b, segments_for(max(a, b), segments)).translate(
             (float(node.d["cu"]), float(node.d["cv"]), lo))
         return _placed(node.d["plane"], body)
+    if t == "sphere":
+        r = float(node.d["r"])
+        return m.Manifold.sphere(r, segments_for(r, segments)).translate(
+            (float(node.d["cx"]), float(node.d["cy"]), float(node.d["cz"])))
     if t == "revolve":
         angle = abs(float(node.d.get("angle", 360.0)))
         angle = 360.0 if angle >= 360.0 else angle
@@ -525,7 +529,14 @@ class ManifoldBackend(ExternalToolBackend):
         "loft": "Manifold has no loft/skinning primitive between profiles (only "
                 "extrude, revolve and warp)",
         "sweep": "Manifold has no sweep-along-a-path primitive",
+        "thicken": "Manifold's only offset is 2D (CrossSection.offset); a 3D "
+                   "offset-solid would need minkowski_sum/difference, which rounds "
+                   "every corner by the rolling ball (a different part), so growing "
+                   "or shrinking a general solid exactly is not expressible",
     }
+    #: box/cylinder/cone map to extrude/cylinder; sphere is Manifold.sphere.
+    #: torus/wedge have no direct Manifold primitive here.
+    PRIMITIVE_SHAPES = ("box", "cylinder", "cone", "sphere")
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb")
 
     #: Manifold's ``CrossSection.offset`` has BOTH joins (Round = arc, Miter =

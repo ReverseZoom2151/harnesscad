@@ -337,6 +337,11 @@ def lower(node: Node, segments: int) -> se.ScadNode:
         return _placed(node.d["plane"], body)
     if t == "cone":
         return _frustum(node, segments)
+    if t == "sphere":
+        r = float(node.d["r"])
+        body = se.sphere(r=r, segments=segments_for(r, segments))
+        return se.translate((float(node.d["cx"]), float(node.d["cy"]),
+                             float(node.d["cz"])))(body)
     if t == "revolve":
         angle = abs(float(node.d.get("angle", 360.0)))
         angle = 360.0 if angle >= 360.0 else angle
@@ -427,7 +432,13 @@ class OpenScadBackend(ExternalToolBackend):
         "loft": "OpenSCAD has no loft; hull() of two profiles is a convex hull, "
                 "not a ruled/lofted surface through them",
         "sweep": "OpenSCAD has no sweep along a path in the core language",
+        "thicken": "OpenSCAD has no 3D offset/erosion (offset() is 2D-only, "
+                   "minkowski() is a dilation with no inverse), so growing or "
+                   "shrinking a solid by a wall thickness is not expressible",
     }
+    #: box/cylinder/cone/sphere are all direct OpenSCAD primitives (cube,
+    #: cylinder, cylinder(r1,r2), sphere); torus/wedge have no core primitive.
+    PRIMITIVE_SHAPES = ("box", "cylinder", "cone", "sphere")
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "scad")
 
     #: ``openscad --version``, memoised per executable path. Part of the cache key.

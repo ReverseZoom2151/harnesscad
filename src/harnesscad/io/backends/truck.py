@@ -248,7 +248,14 @@ class TruckBackend(ExternalToolBackend):
         "sweep": "truck exposes no sweep-along-a-path primitive in this driver",
         "shell": "truck has no hollow / thick-solid operation, so a wall of a "
                  "given thickness cannot be carved without faking it",
+        "thicken": "truck has no offset-solid / thick-solid operation, so growing "
+                   "or shrinking a solid by a wall thickness cannot be built "
+                   "without faking it",
     }
+    #: box lowers to an extruded face, cylinder to a cyl node; cone is a degenerate
+    #: rsweep on this truck (as the countersink hole is), and sphere/torus/wedge
+    #: have no builder in this driver -- all refused rather than faked.
+    PRIMITIVE_SHAPES = ("box", "cylinder")
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "step")
 
     #: truck-shapeops has no 'intersection' (sharp) shell join and truck has no

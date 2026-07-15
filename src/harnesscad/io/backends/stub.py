@@ -13,12 +13,17 @@ from typing import List
 from harnesscad.core.cisp.ops import (
     CONSTRAINT_DOF, PRIMITIVE_DOF,
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
+    AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
+    Primitive, Split, Thicken,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
     canonical_json, edit_oplog,
 )
+
+#: The primitive shapes the semantic stub models (any kernel can build these).
+_PRIMITIVE_SHAPES = ("box", "sphere", "cylinder", "cone", "torus", "wedge")
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 from harnesscad.io.backends.base import ApplyResult
@@ -82,6 +87,30 @@ class StubBackend:
             if op.w <= 0 or op.h <= 0:
                 return _err("bad-value", "rectangle w and h must be > 0")
             return self._add_primitive(op.sketch, "rectangle")
+        if isinstance(op, AddArc):
+            if op.r <= 0:
+                return _err("bad-value", f"arc radius must be > 0 (got {op.r})")
+            if float(op.start) == float(op.end):
+                return _err("bad-value", "arc start and end angle must differ")
+            return self._add_primitive(op.sketch, "arc")
+        if isinstance(op, AddEllipse):
+            if op.rx <= 0 or op.ry <= 0:
+                return _err("bad-value", "ellipse rx and ry must be > 0")
+            return self._add_primitive(op.sketch, "ellipse")
+        if isinstance(op, AddPolygon):
+            if len(op.points) < 6 or len(op.points) % 2 != 0:
+                return _err("bad-value", "polygon needs >= 3 vertices")
+            return self._add_primitive(op.sketch, "polygon")
+        if isinstance(op, AddSpline):
+            if len(op.points) < 4 or len(op.points) % 2 != 0:
+                return _err("bad-value", "spline needs >= 2 points")
+            return self._add_primitive(op.sketch, "spline")
+        if isinstance(op, Primitive):
+            return self._primitive(op)
+        if isinstance(op, Split):
+            return self._split(op)
+        if isinstance(op, Thicken):
+            return self._thicken(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -279,6 +308,42 @@ class StubBackend:
             return _err("bad-ref", f"unknown feature '{feature}'", feature)
         fid = self._new_id("f")
         self.features.append({"type": kind, "id": fid, "count": count})
+        return ApplyResult(True, [fid])
+
+    def _primitive(self, op: Primitive) -> ApplyResult:
+        shape = str(op.shape).lower()
+        if shape not in _PRIMITIVE_SHAPES:
+            return _err("bad-value", f"unknown primitive shape '{op.shape}'")
+        if shape in ("box", "wedge") and (op.dx <= 0 or op.dy <= 0 or op.dz <= 0):
+            return _err("bad-value", f"{shape} dx, dy, dz must be > 0")
+        if shape in ("sphere", "torus") and op.r <= 0:
+            return _err("bad-value", f"{shape} radius r must be > 0")
+        if shape in ("cylinder", "cone") and (op.r <= 0 or op.h <= 0):
+            return _err("bad-value", f"{shape} r and h must be > 0")
+        fid = self._new_id("f")
+        self.features.append({"type": "primitive", "id": fid, "shape": shape})
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _split(self, op: Split) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "split requires an existing solid")
+        if op.keep not in ("positive", "negative", "both"):
+            return _err("bad-value",
+                        f"unknown split keep '{op.keep}' (positive|negative|both)")
+        fid = self._new_id("f")
+        self.features.append({"type": "split", "id": fid, "plane": op.plane,
+                              "keep": op.keep})
+        return ApplyResult(True, [fid])
+
+    def _thicken(self, op: Thicken) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "thicken requires an existing solid")
+        if op.thickness == 0:
+            return _err("bad-value", "thicken thickness must be non-zero")
+        fid = self._new_id("f")
+        self.features.append({"type": "thicken", "id": fid,
+                              "thickness": op.thickness})
         return ApplyResult(True, [fid])
 
     def _constrain(self, op: Constrain) -> ApplyResult:

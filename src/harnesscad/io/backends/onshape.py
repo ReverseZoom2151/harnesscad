@@ -160,6 +160,20 @@ REFUSED_OPS: Dict[str, str] = {
     "mate": "a mate lives in an Assembly element and needs two instance picks",
     "set_param": "editing an Onshape feature is a POST to features/featureid/{fid}; "
                  "wired for creation, not yet for in-place edit replay",
+    "add_arc": "an arc is a BTMSketchCurveSegment whose region must be closed and "
+               "region-queried; only closed rectangle/circle profiles are mapped",
+    "add_ellipse": "an ellipse is a BTMSketchCurve (BTCurveGeometryEllipse) whose "
+                   "region needs a solver-bound region query not built here",
+    "add_polygon": "a free polygon needs its closing loop region-queried; only "
+                   "rectangle/circle profiles are mapped",
+    "add_spline": "a spline is a BTMSketchCurve (interpolated) needing a "
+                  "region query; only rectangle/circle profiles are mapped",
+    "primitive": "a solid primitive is modelled in Onshape as a sketch + extrude "
+                 "(or a FeatureScript primitive) whose region/plane picks this "
+                 "backend will not fabricate coordinate-free",
+    "split": "split needs a face/plane geometry query to name the cutting surface",
+    "thicken": "thicken needs a face/sheet geometry query to name the surfaces to "
+               "offset",
 }
 
 #: Human-readable record of the op->feature mapping, surfaced by

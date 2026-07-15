@@ -534,10 +534,62 @@ def boolean(a, b, op):
     # "Allow self-intersection in operands" -- a mirror/pattern union can hand the
     # solver two copies that touch, so this must be on.
     mod.use_self = True
-    mod.use_hole_tolerant = False  # our operands are watertight; this is only slower
+    # "Better results when there are holes (slots) in the geometry overlapping the
+    # cutting object" (BooleanModifier.use_hole_tolerant). This was FALSE, on the
+    # premise "our operands are watertight". That premise is a category error: the
+    # operands being manifold does NOT make the RESULT manifold. When a hole's
+    # cylindrical wall is TANGENT to a face or edge of the target (a bore whose rim
+    # just kisses a box corner -- Hole(x, diameter, depth) placed so d/2 reaches the
+    # side), the EXACT solver's intersection curve degenerates to a single shared
+    # edge/vertex and it emits a NON-MANIFOLD intermediate -- watertight-looking,
+    # 2-manifold-failing, and (chained into the next boolean, whose manual demands a
+    # manifold input) the reason those holes came back as an unexplained REJ. The
+    # tolerant path resolves exactly that near-degenerate contact. It is slower;
+    # correctness on a tangent cut is worth more than the speed, the same trade this
+    # function already makes choosing EXACT over FLOAT.
+    mod.use_hole_tolerant = True
     apply_modifiers(a)
+    # The boolean RESULT, not just the leaves, must be handed on manifold: a chained
+    # cut (a.cut(b).cut(c)) feeds this intermediate straight back into the solver,
+    # whose guarantee holds only on manifold input. Clean it the same way a leaf is
+    # cleaned in make_object -- weld coincident verts, drop the zero-area slivers a
+    # tangent cut can leave, re-derive outward normals -- and validate().
+    _heal(a)
     bpy.data.objects.remove(b, do_unlink=True)
     return a
+
+
+def _heal(ob):
+    """Weld/dissolve/recalc/validate a boolean result into a manifold mesh.
+
+    The same conservative pipeline make_object runs on every leaf, applied to the
+    intermediate so the next kernel op sees a manifold input the EXACT solver can
+    honour. Every step only REMOVES invalid geometry (coincident verts, zero-area
+    faces) or reorients normals; none moves a real surface, so a clean result is
+    left byte-for-byte unchanged.
+    """
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=WELD_DIST)
+    bmesh.ops.dissolve_degenerate(bm, dist=WELD_DIST, edges=bm.edges[:])
+    # SEAL the boundary the EXACT solver leaves open on a near-degenerate cut. A
+    # BLIND hole whose tool straddles a face boundary (its flat pocket floor cuts
+    # ACROSS the material edge -- Hole(x, y=0, depth<through) on a box) makes EXACT
+    # drop the floor/wall seam: the result comes back with open boundary edges and
+    # scores non-manifold, where cadquery/openscad/frep all build the same part
+    # watertight. The true solid IS closed, so any boundary edge remaining after
+    # the weld is an artefact of that dropped seam; holes_fill re-caps the loops it
+    # bounds. On a clean cut there are NO boundary edges, so this is a no-op -- it
+    # only ever acts where the solver already failed.
+    boundary = [e for e in bm.edges if e.is_boundary]
+    if boundary:
+        bmesh.ops.holes_fill(bm, edges=boundary, sides=0)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
+    me.validate(verbose=False)
+    me.update()
 
 
 def build(node):
@@ -805,7 +857,16 @@ class BlenderBackend(ExternalToolBackend):
     #: Blender honours everything the F-rep tree can express: its booleans are
     #: exact, its bevel is a real fillet/chamfer and its solidify is a real shell.
     #: (draft / loft / sweep are refused upstream by the F-rep op model itself.)
-    UNSUPPORTED: Dict[str, str] = {}
+    #: ``thicken`` is refused: an offset-solid node is not in the lowering, and the
+    #: Solidify modifier thickens a surface rather than offsetting a closed solid.
+    UNSUPPORTED: Dict[str, str] = {
+        "thicken": "the blender lowering has no offset-solid node; Solidify "
+                   "thickens a sheet, not a closed solid, so growing/shrinking a "
+                   "solid by a wall thickness is not expressed here",
+    }
+    #: box/cylinder/cone lower through the extrude/cyl/cone nodes the hole path
+    #: already builds; sphere/torus/wedge have no node in this lowering.
+    PRIMITIVE_SHAPES = ("box", "cylinder", "cone")
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "bpy")
 
     @classmethod

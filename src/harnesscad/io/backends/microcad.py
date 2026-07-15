@@ -20,15 +20,31 @@ surface syntax, and how to drive its CLI.
 
 What was actually observed (2026-07, this machine)
 --------------------------------------------------
-* ``cargo install microcad`` **did not produce a binary here.** microcad v0.5.0
-  fetched and began compiling, but linking failed on the scoop ``rustup-gnu``
-  toolchain (``x86_64-w64-mingw32-gcc`` / ``ld: cannot find -lkernel32`` then
-  ``-lgcc_eh``): a broken self-contained MinGW link environment, not a microcad
-  bug. Two attempts (plain, and with the MinGW lib dirs added to the search path)
-  both failed. So on this machine the CLI is ABSENT, and -- exactly like the
-  OpenSCAD / Blender / FreeCAD backends when their tool is missing -- the
-  constructor raises :class:`~harnesscad.io.backends.base.BackendUnavailable`, the
-  server falls back to the stub WITH A NOTE, and the tests SKIP. Nothing is faked.
+* ``cargo install microcad`` **still does not produce a binary here** (re-attempted
+  2026-07 with cargo/rustc 1.96.0 on the scoop ``rustup-gnu`` toolchain). The
+  MinGW link error the earlier attempts hit is no longer the blocker; the build now
+  fails EARLIER, at a transitive **native C++ dependency**. microcad v0.5.0 pulls a
+  crate whose ``build.rs`` drives CMake (``cmake`` crate 0.1.58), and CMake aborts
+  before compiling anything::
+
+      CMake Error: CMake was unable to find a build program corresponding to
+      "Ninja". CMAKE_MAKE_PROGRAM is not set.
+      CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+      thread 'main' panicked at cmake-0.1.58/src/lib.rs:1132: command did not
+      execute successfully, got: exit code: 1 -- build script failed, must exit now
+      error: failed to compile `microcad v0.5.0`
+
+  i.e. building microcad from crates.io now requires a working C++ toolchain
+  (a CXX compiler) AND the Ninja generator on PATH, neither of which is present /
+  configured on this MinGW-only Rust toolchain. This is an environment gap in the
+  transitive C++ build dependency, not a microcad or a harness bug, and installing
+  CMake + Ninja + a C++ compiler is outside what this task changes. So on this
+  machine the CLI is still ABSENT, and -- exactly like the OpenSCAD / Blender /
+  FreeCAD backends when their tool is missing -- the constructor raises
+  :class:`~harnesscad.io.backends.base.BackendUnavailable`, the server falls back to
+  the stub WITH A NOTE, and the tests SKIP. Nothing is faked. The backend stays
+  import-guarded/stub until a toolchain with CMake + Ninja + a CXX compiler builds
+  the CLI.
 * microcad's real syntax and CLI, read from the docs / the Lego-brick example
   (docs.microcad.xyz, codeberg.org/microcad/microcad), and encoded below:
 
@@ -294,7 +310,14 @@ class MicrocadBackend(ExternalToolBackend):
         "circular_pattern": "microcad's rotation / repeat syntax is not verified "
                             "in the v0.5.0 alpha; a guessed transform would "
                             "misplace the instances",
+        "thicken": "microcad has no verified 3D offset / erosion in the v0.5.0 "
+                   "alpha, so growing or shrinking a solid by a wall thickness "
+                   "cannot be built without changing the part; refused rather "
+                   "than approximated",
     }
+    #: box lowers to an extruded Rect, cylinder to Cylinder -- both verified in the
+    #: alpha. cone/sphere/torus/wedge have no verified primitive, so are refused.
+    PRIMITIVE_SHAPES = ("box", "cylinder")
     #: STL is the only measurable export the alpha CLI writes; everything else in
     #: FORMATS is derived from that mesh by the shared code, plus 'microcad' source.
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "microcad")
