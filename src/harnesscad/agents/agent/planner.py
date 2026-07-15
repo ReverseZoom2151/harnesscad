@@ -40,7 +40,7 @@ from harnesscad.agents.agent.system_prompt import SYSTEM_PROMPT, build_system_pr
 from harnesscad.agents.llm.base import LLM, Message, ToolSpec, system, user
 from harnesscad.agents.llm.structured import ParsedOps, validate_ops
 from harnesscad.eval.verifiers.verify import Severity
-from harnesscad.io.surfaces.mcp.tools import ToolCatalog
+from harnesscad.io.surfaces.mcp.tools import ToolCatalog, ToolDescription
 
 
 # --- THE TOOL SURFACE -------------------------------------------------------
@@ -132,6 +132,78 @@ def build_emit_ops_tool(catalog: Optional[ToolCatalog] = None) -> ToolSpec:
 EMIT_OPS_TOOL = build_emit_ops_tool()
 
 
+# --- AGENTIC RETRIEVAL (blueprint sec.16.7) --------------------------------
+# Retrieval used to be a fixed pre-step: the harness decided, once, to paste a
+# memory block ahead of the brief. That is not agentic -- the MODEL never gets to
+# say "I need the ISO torque table before I can size this bolt". This tool puts
+# that decision in the model's hands: it is offered ONLY when a doc/skill corpus
+# (a retriever) is attached, carries the same 5-component description contract as
+# every other tool, and its result is injected back into context so the model can
+# plan WITH what it pulled. No corpus attached -> the tool is never offered and
+# the loop is byte-for-byte the pre-retrieval one.
+_RETRIEVE_DESCRIPTION = ToolDescription(
+    what="Search the attached document / skill corpus (standards, API docs, "
+         "worked examples) and read back the most relevant passages BEFORE you "
+         "commit to ops.",
+    when="When the brief turns on a fact you should ground rather than guess -- a "
+         "standard torque/tolerance, an API signature, a dimension table, a "
+         "material spec -- or when unsure which feature/op a term maps to. "
+         "Retrieve, read the passages, THEN emit_ops.",
+    when_not="Do not retrieve when the brief is fully specified and needs no "
+             "external fact (a bare 'extrude a 20x10x5 plate'); do not retrieve "
+             "to change the model (only emit_ops mutates); do not re-run the same "
+             "query hoping for different passages -- refine the query terms "
+             "instead.",
+    side_effects="Read-only: retrieval never mutates the model. It appends the "
+                 "retrieved passages to your context for this turn only.",
+    output="A ranked list of passages, each with its source, heading breadcrumb "
+           "and text; use them to inform the op sequence you emit next.")
+
+
+def _retrieve_tool_description() -> str:
+    """The five-component description of the retrieve tool, rendered to text."""
+    return _RETRIEVE_DESCRIPTION.text()
+
+
+def build_retrieve_tool() -> ToolSpec:
+    """The corpus-retrieval tool the model may call to ground itself mid-plan."""
+    return ToolSpec(
+        name="retrieve",
+        description=_retrieve_tool_description(),
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": ("What to search the corpus for -- use the "
+                                    "engineer's terms (standard/part numbers, "
+                                    "symbol names, dimensions) for best recall."),
+                },
+                "k": {
+                    "type": "integer",
+                    "description": "How many passages to read back (default 5).",
+                    "default": 5,
+                },
+                "source": {
+                    "type": "string",
+                    "description": ("Optional: restrict to sources whose name "
+                                    "contains this substring (e.g. a filename)."),
+                },
+                "heading": {
+                    "type": "string",
+                    "description": ("Optional: restrict to passages under a "
+                                    "heading breadcrumb containing this text."),
+                },
+            },
+            "required": ["query"],
+        },
+    )
+
+
+#: Offered to the model ONLY when a retriever is attached to the Planner.
+RETRIEVE_TOOL = build_retrieve_tool()
+
+
 class PlanError(RuntimeError):
     """Raised when the model's response could not be parsed into valid ops."""
 
@@ -196,7 +268,9 @@ class Planner:
                  feedback_tiers: Iterable[str] = MODEL_FACING_TIERS,
                  memory: Any = None,
                  exemplars: int = 3,
-                 max_diagnostics: int = 5) -> None:
+                 max_diagnostics: int = 5,
+                 retriever: Any = None,
+                 max_retrieval_rounds: int = 3) -> None:
         self.llm = llm
         self.use_tool = use_tool
         self.feedback_tiers = tuple(feedback_tiers)
@@ -224,6 +298,17 @@ class Planner:
         # prompt BYTE-FOR-BYTE — that is the OFF arm of the A/B, and it must.
         self.memory = memory
         self.last_recalled: Any = None
+        # AGENTIC RETRIEVAL. ``retriever`` is anything with
+        # ``retrieve(query, k, source=, heading=) -> [hit, ...]`` (a
+        # ``rag.HybridRetriever``). When attached, the model is offered the
+        # ``retrieve`` tool and may DECIDE to pull grounding mid-plan; the results
+        # are injected into context and the model is re-prompted. ``None`` (the
+        # default) offers no such tool -- the loop is the pre-retrieval one,
+        # unchanged. ``max_retrieval_rounds`` bounds how many times the model may
+        # retrieve before it must emit ops, so a model cannot loop on search.
+        self.retriever = retriever
+        self.max_retrieval_rounds = int(max_retrieval_rounds)
+        self.last_retrievals: List[Dict[str, Any]] = []
 
     # --- message assembly ------------------------------------------------
     def build_messages(
@@ -304,9 +389,117 @@ class Planner:
     ) -> ParsedOps:
         """Like `plan`, but returns a ParsedOps (never raises on parse failure)."""
         messages = self.build_messages(brief, state_summary, diagnostics)
-        tools = [EMIT_OPS_TOOL] if self.use_tool else None
+        tools = self._tools_for_call()
         result = self.llm.complete(messages, tools=tools)
+        if self.retriever is not None:
+            result = self._resolve_retrievals(messages, tools, result)
         return validate_ops(result)
+
+    # --- agentic retrieval -----------------------------------------------
+    def _tools_for_call(self) -> Optional[List[ToolSpec]]:
+        """The tool surface for this call: emit_ops always, retrieve if gated on."""
+        if not self.use_tool:
+            return None
+        tools = [EMIT_OPS_TOOL]
+        if self.retriever is not None:
+            tools.append(RETRIEVE_TOOL)
+        return tools
+
+    def _resolve_retrievals(self, messages: List[Message],
+                            tools: Optional[List[ToolSpec]],
+                            result: Any) -> Any:
+        """Service any ``retrieve`` tool calls, re-prompting with the results.
+
+        Loops while the model asks to retrieve (bounded by
+        ``max_retrieval_rounds``): each round runs the retriever, injects the
+        passages into context, and re-completes. As soon as the model stops
+        retrieving -- it emitted ops or plain text -- the result is handed back to
+        ``validate_ops`` unchanged. Retrieval is never fatal: a broken retriever
+        degrades to a note in context, exactly like memory recall.
+        """
+        self.last_retrievals = []
+        rounds = 0
+        while getattr(result, "has_tool_calls", False):
+            retrieve_calls = [tc for tc in result.tool_calls
+                              if tc.name == "retrieve"]
+            if not retrieve_calls:
+                return result  # emit_ops (or other) -> let validate_ops handle it
+            if rounds >= self.max_retrieval_rounds:
+                return result  # budget spent; force the model to commit to ops
+            messages = list(messages)
+            if result.text:
+                messages.append(Message("assistant", result.text))
+            for tc in retrieve_calls:
+                messages.append(user(self._run_retrieve(tc.arguments)))
+            rounds += 1
+            result = self.llm.complete(messages, tools=tools)
+        return result
+
+    def _run_retrieve(self, arguments: Any) -> str:
+        """Execute one retrieve tool call, rendering its passages as a context block."""
+        query, k, source, heading = _parse_retrieve_args(arguments)
+        if not query:
+            return "RETRIEVED CONTEXT: (no query supplied; nothing retrieved)"
+        try:
+            hits = self.retriever.retrieve(query, k, source=source, heading=heading)
+        except TypeError:
+            # A retriever without the optional filter kwargs still works.
+            try:
+                hits = self.retriever.retrieve(query, k)
+            except Exception:  # noqa: BLE001 - retrieval must never fail the run
+                hits = []
+        except Exception:  # noqa: BLE001 - retrieval must never fail the run
+            hits = []
+        self.last_retrievals.append({"query": query, "k": k, "n": len(hits)})
+        return _render_retrieval_block(query, hits)
+
+
+def _parse_retrieve_args(arguments: Any):
+    """Coerce raw retrieve tool-call arguments (JSON string or dict) into fields.
+
+    Returns ``(query, k, source, heading)`` with defensive defaults; a malformed
+    arguments blob yields an empty query rather than raising.
+    """
+    data: Dict[str, Any] = {}
+    if isinstance(arguments, str):
+        try:
+            data = json.loads(arguments) if arguments.strip() else {}
+        except json.JSONDecodeError:
+            data = {}
+    elif isinstance(arguments, dict):
+        data = arguments
+    query = str(data.get("query") or "").strip()
+    try:
+        k = int(data.get("k") or 5)
+    except (TypeError, ValueError):
+        k = 5
+    if k <= 0:
+        k = 5
+    source = data.get("source") or None
+    heading = data.get("heading") or None
+    return query, k, source, heading
+
+
+def _render_retrieval_block(query: str, hits: Iterable[Any]) -> str:
+    """Format retrieved hits into the context block the model reads next turn."""
+    lines = [f"RETRIEVED CONTEXT for query {query!r} "
+             "(read-only grounding; use it, then emit_ops):"]
+    hits = list(hits)
+    if not hits:
+        lines.append("  (no matching passages in the corpus)")
+        return "\n".join(lines)
+    for i, h in enumerate(hits, 1):
+        source = getattr(h, "source", "") or ""
+        crumb = " > ".join(getattr(h, "heading_path", []) or [])
+        text = getattr(h, "text", None)
+        if text is None:
+            text = str(h)
+        header = f"[{i}] {source}"
+        if crumb:
+            header += f" -- {crumb}"
+        lines.append(header)
+        lines.append(str(text).strip())
+    return "\n".join(lines)
 
 
 #: The formatter now lives in `agent.feedback` -- ONE renderer for every loop and
