@@ -573,6 +573,10 @@ DYNAMIC_DISPATCHERS: Dict[str, Tuple[str, ...]] = {
     "harnesscad.io.adapters.registry": ("harnesscad.io.adapters",
                                         "harnesscad.io.formats"),
     "harnesscad.io.surfaces.registry": ("harnesscad.io.surfaces",),
+    # The coverage-matrix census discovers every backend by importlib to read its
+    # declared op-support surface; without this its whole column of backends would
+    # be misreported as orphans.
+    "harnesscad.eval.gates.coverage_matrix": ("harnesscad.io.backends",),
 }
 
 #: Modules that are legitimately imported by nothing because they ARE the entry
@@ -585,6 +589,9 @@ ROOTS: Tuple[str, ...] = (
     "harnesscad.eval.gates.liveness_floor",       # python -m ... (CI gate)
     "harnesscad.eval.gates.heldout_isolation",    # python -m ... (CI gate)
     "harnesscad.eval.gates.warning_channel",      # python -m ... (CI gate)
+    "harnesscad.eval.gates.orphan_provenance",    # python -m ... (PDD CI gate)
+    "harnesscad.eval.gates.mutation_score",       # python -m ... (PDD CI gate)
+    "harnesscad.eval.gates.coverage_matrix",      # python -m ... (PDD CI gate)
     "harnesscad.eval.bench.harness.pressure_correlation",  # python -m ...
     # The runnable faces for the metric/preference modules the audit found
     # orphaned. Each is a `python -m harnesscad.eval.entry.<name>` entry point.
