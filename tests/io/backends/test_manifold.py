@@ -32,7 +32,10 @@ from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
 from harnesscad.domain.geometry.parametric import facets
 from harnesscad.io.backends.base import BackendUnavailable, GeometryBackend
 from harnesscad.io.backends.external import DEFAULT_SEGMENTS
-from harnesscad.io.backends.manifold import ManifoldBackend, ManifoldError
+from harnesscad.io.backends.manifold import (
+    ManifoldBackend, ManifoldError, convex_hull, hull_of_points, level_set,
+    lower, split_by_plane, trim_by_plane,
+)
 from harnesscad.io.surfaces.server import BACKENDS, CISPServer
 
 HAVE_MANIFOLD = ManifoldBackend.available()
@@ -202,6 +205,31 @@ class ManifoldRefusalTest(unittest.TestCase):
         self.assertAlmostEqual(measure["volume"], 48000.0 - 54.0 * 34.0 * 17.0,
                                delta=1e-3)
 
+    def test_refused_fillet_taints_the_measurement(self):
+        # Manifold has no B-rep edges, so fillet is refused. The measurement used
+        # to still read the un-filleted block (9000 for a 50x30x6), a silent wrong
+        # part. A refused op means the requested part was never built -> REFUSE.
+        from harnesscad.core.cisp.ops import Fillet
+        backend = ManifoldBackend()
+        run_ops(backend, BOX_OPS)
+        self.assertAlmostEqual(backend.query("measure")["volume"], BOX_VOLUME,
+                               delta=STL_FLOAT32_TOLERANCE)
+        r = backend.apply(Fillet(("|Z",), 3.0))              # refused
+        self.assertFalse(r.ok)
+        self.assertIn("unsupported-op", [d.code for d in r.diagnostics])
+        for q in ("measure", "metrics"):
+            self.assertIsNone(backend.query(q)["volume"], q)  # NOT 48000
+            self.assertIsNone(backend.query(q)["bbox"], q)
+
+    def test_supported_shell_does_not_taint_the_measurement(self):
+        # shell of a prism IS supported: it must keep measuring, never trip the
+        # refusal taint that only an unsupported op sets.
+        backend = ManifoldBackend()
+        run_ops(backend, BOX_OPS + [Shell((">Z",), 3.0, "arc")])
+        self.assertIsNotNone(backend.query("measure")["volume"])
+        self.assertAlmostEqual(backend.query("measure")["volume"],
+                               48000.0 - 54.0 * 34.0 * 17.0, delta=1e-3)
+
 
 @unittest.skipUnless(HAVE_MANIFOLD, REASON)
 class ManifoldFieldLivenessTest(unittest.TestCase):
@@ -275,6 +303,71 @@ class ManifoldAgreesWithCadQueryTest(unittest.TestCase):
                 self.assertLess(rel, 0.01,
                                 "%s: manifold %s vs cadquery(exact) %s (%.3f%%)"
                                 % (name, mm["volume"], cq["volume"], rel * 100))
+
+
+@unittest.skipUnless(HAVE_MANIFOLD, REASON)
+class ManifoldExactCapabilitiesTest(unittest.TestCase):
+    """The exact ancillary Manifold powers the first pass never surfaced: convex
+    hull, half-space split/trim, and the level_set SDF road. hull/split/trim are
+    exact (no tolerance beyond float32); level_set is a mesh of the SAME F-rep SDF
+    the FRep backend samples, so it CROSS-CHECKS against FRep and the analytic."""
+
+    def _box_solid(self):
+        backend = ManifoldBackend()
+        run_ops(backend, BOX_OPS)
+        return lower(backend.root(), backend.segments)
+
+    def test_convex_hull_of_a_convex_box_is_the_box(self):
+        solid = self._box_solid()
+        self.assertAlmostEqual(convex_hull(solid).volume(), BOX_VOLUME, delta=1e-6)
+
+    def test_hull_of_points_is_the_exact_polytope(self):
+        # Corner-of-a-cube plus the far corner: a pyramid of volume 500.
+        pts = [[0.0, 0.0, 0.0], [10.0, 0.0, 0.0], [0.0, 10.0, 0.0],
+               [0.0, 0.0, 10.0], [10.0, 10.0, 10.0]]
+        self.assertAlmostEqual(hull_of_points(pts).volume(), 500.0, delta=1e-6)
+
+    def test_trim_by_plane_keeps_exactly_the_half(self):
+        # The box spans x in [0, 60]; trim at x = 30 with +X normal -> half volume.
+        half = trim_by_plane(self._box_solid(), (1.0, 0.0, 0.0), 30.0)
+        self.assertAlmostEqual(half.volume(), BOX_VOLUME / 2.0, delta=1e-4)
+
+    def test_split_by_plane_partitions_the_whole_volume(self):
+        keep, drop = split_by_plane(self._box_solid(), (1.0, 0.0, 0.0), 25.0)
+        self.assertAlmostEqual(keep.volume() + drop.volume(), BOX_VOLUME, delta=1e-4)
+        self.assertAlmostEqual(keep.volume(), 35.0 * 40.0 * 20.0, delta=1e-4)
+
+    def test_level_set_of_a_box_agrees_with_frep_and_the_analytic(self):
+        backend = ManifoldBackend()
+        run_ops(backend, BOX_OPS)
+        node = backend.root()
+        frep_vol = backend._frep.query("measure")["volume"]
+        solid = level_set(node, 64)
+        rel_analytic = abs(solid.volume() - BOX_VOLUME) / BOX_VOLUME
+        rel_frep = abs(solid.volume() - frep_vol) / frep_vol
+        # A marched SDF under-fills the sharp box slightly; both cross-checks agree
+        # to well within the level_set grid budget.
+        self.assertLess(rel_analytic, 0.01, "level_set vs analytic %.3f%%"
+                        % (rel_analytic * 100))
+        self.assertLess(rel_frep, 0.01, "level_set vs frep %.3f%%"
+                        % (rel_frep * 100))
+
+    def test_level_set_converges_as_segments_rise(self):
+        backend = ManifoldBackend()
+        run_ops(backend, [NewSketch("XY"), AddCircle("sk1", 0.0, 0.0, 10.0),
+                          Extrude("sk1", 20.0)])
+        node = backend.root()
+        analytic = math.pi * 10.0 * 10.0 * 20.0
+        coarse = abs(level_set(node, 24).volume() - analytic)
+        fine = abs(level_set(node, 96).volume() - analytic)
+        self.assertLess(fine, coarse, "level_set did not converge: %.1f -> %.1f"
+                        % (coarse, fine))
+
+    def test_level_set_refuses_a_degenerate_node(self):
+        backend = ManifoldBackend()
+        run_ops(backend, BOX_OPS)
+        with self.assertRaises(ManifoldError):
+            level_set(backend.root(), 0, edge_length=-1.0)
 
 
 if __name__ == "__main__":  # pragma: no cover

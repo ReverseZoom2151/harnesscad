@@ -61,6 +61,18 @@ The op -> Manifold mapping
   bounding box. Shipping that as an exact shell would be the bug, not the feature,
   so it is refused rather than faked.
 * **Approximated.** Nothing.
+* **Exact ancillary capabilities (exposed, tested, no CISP op yet).** Manifold's
+  convex ``hull`` (:func:`convex_hull` / :func:`hull_of_points`), its exact
+  half-space ``split_by_plane`` / ``trim_by_plane`` (:func:`split_by_plane` /
+  :func:`trim_by_plane`), and ``level_set`` (:func:`level_set`) -- a SECOND road
+  from the same F-rep SDF the FRep backend samples, meshed by Manifold's Marching
+  Tetrahedra so the two cross-check by construction. These are real Manifold
+  powers the first pass never surfaced; they are library-level (no CISP op drives
+  them today) and none approximate -- hull/split/trim are exact, and ``level_set``
+  converges monotonically on the analytic (and FRep) volume as ``segments`` rise.
+  ``minkowski_sum`` / ``minkowski_difference`` are deliberately NOT exposed: they
+  round every corner by the rolling ball, an approximation that would reintroduce
+  the silent-wrong-part bug the refusals exist to prevent.
 
 Tessellation is pinned and comparable
 -------------------------------------
@@ -91,7 +103,8 @@ fails merely because the wheel is absent.
 from __future__ import annotations
 
 import hashlib
-from typing import Dict, List, Optional, Sequence
+import math
+from typing import Callable, Dict, List, Optional, Sequence
 
 from harnesscad.core.cisp.ops import Shell
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
@@ -101,12 +114,13 @@ from harnesscad.io.backends.external import (
     segments_for, slab, to_world,
 )
 from harnesscad.io.backends.frep import (
-    SHELL_FACES, Node, countersink_depth, node_bounds, resolve_faces,
+    SHELL_FACES, Node, countersink_depth, eval_node, node_bounds, resolve_faces,
 )
 from harnesscad.io.formats import stl as stl_fmt
 
 __all__ = ["ManifoldBackend", "ManifoldError", "lower", "render",
-           "countersink_depth"]
+           "countersink_depth", "convex_hull", "hull_of_points",
+           "split_by_plane", "trim_by_plane", "level_set"]
 
 #: Clearance beyond a face so an opened shell cap is cleanly removed (matches the
 #: OpenSCAD backend, so the two kernels open a cap identically).
@@ -366,6 +380,104 @@ def manifold_to_stl(solid, tool: bytes = b"harnesscad-manifold") -> bytes:
 
 
 # --------------------------------------------------------------------------
+# EXACT ancillary capabilities Manifold has that the mesh-boolean lowering does
+# not (yet) reach through an F-rep node. They are exposed and directly tested so
+# the backend's Manifold surface is COMPLETE, not merely sufficient for the
+# current CISP op set. None of them approximate: hull / split / trim are exact
+# mesh operations, and none can silently drop a field -- they take explicit
+# geometry in and return explicit geometry out. (They have no CISP op today, so
+# they are library-level, not driven through ``apply``; adding the op is a
+# separate, cross-backend change -- see the report.)
+# --------------------------------------------------------------------------
+def convex_hull(solid):
+    """The exact convex hull of a Manifold solid (``Manifold.hull``).
+
+    Exact: the hull of a convex solid (a cube, a cylinder's faceted prism) is
+    that solid unchanged, so ``convex_hull(cube) == cube`` to the bit. Unlike
+    ``minkowski_sum`` this rounds nothing and adds no radius -- it is the tightest
+    enclosing polytope of the existing vertices.
+    """
+    return solid.hull()
+
+
+def hull_of_points(points):
+    """The exact convex hull of a point cloud (``Manifold.hull_points``).
+
+    ``points`` is an ``(N, 3)`` array-like of world points. Fewer than four points
+    (or all-coplanar) yield an empty Manifold -- the kernel's own contract, passed
+    through unchanged rather than masked.
+    """
+    m = _manifold()
+    return m.Manifold.hull_points(points)
+
+
+def split_by_plane(solid, normal: Sequence[float], offset: float):
+    """Cut ``solid`` with the half-space ``normal . x = offset``; EXACT.
+
+    Returns ``(keep, drop)`` -- the piece on the ``normal`` side of the plane and
+    the piece behind it -- as a single exact boolean split (cheaper than an
+    intersect plus a difference). A cutting-plane op maps straight onto this.
+    """
+    return solid.split_by_plane(list(normal), float(offset))
+
+
+def trim_by_plane(solid, normal: Sequence[float], offset: float):
+    """Keep only the ``normal`` side of the plane ``normal . x = offset``; EXACT.
+
+    The one-sided form of :func:`split_by_plane` (``Manifold.trim_by_plane``): a
+    box in ``x in [0, 10]`` trimmed at ``x = 5`` with ``+X`` normal is exactly the
+    half box (volume 500), the outer bounding box never grows.
+    """
+    return solid.trim_by_plane(list(normal), float(offset))
+
+
+def level_set(node: Node, segments: int, *, margin: Optional[float] = None,
+              edge_length: Optional[float] = None, level: float = 0.0):
+    """Build a solid from the F-rep SDF of ``node`` via ``Manifold.level_set``.
+
+    This is a SECOND, INDEPENDENT road from the same implicit function the FRep
+    backend samples to a solid: Manifold marches the SDF (body-centred-cubic
+    Marching Tetrahedra) to its own guaranteed-manifold mesh, where the FRep
+    backend integrates that SDF on a grid. The two therefore CROSS-CHECK each
+    other -- a meshing bug in one shows up as a volume disagreement with the other
+    -- while remaining an SDF path that is genuinely distinct from Manifold's own
+    exact mesh-boolean lowering (:func:`lower`). It is exposed for that oracle
+    value, not wired as the default lowering: the boolean path is the stronger,
+    more independent voice and stays the backend's primary road.
+
+    ``eval_node`` returns NEGATIVE inside; ``Manifold.level_set`` wants POSITIVE
+    inside, so the field is negated. ``edge_length`` defaults to the bounding-box
+    diagonal over ``segments`` (finer ``segments`` -> finer surface, converging
+    monotonically on the analytic volume). ``margin`` pads the sampling box so the
+    surface is never clipped by the grid's edge.
+    """
+    m = _manifold()
+    lo, hi = node_bounds(node)
+    ext = [float(hi[i]) - float(lo[i]) for i in range(3)]
+    diag = math.sqrt(sum(e * e for e in ext))
+    if diag <= 0.0:
+        raise ManifoldError(
+            "manifold backend: level_set of a degenerate (zero-extent) node")
+    if margin is None:
+        margin = 0.05 * diag + 1.0e-6
+    if edge_length is None:
+        edge_length = diag / max(1, int(segments))
+    if edge_length <= 0.0:
+        raise ManifoldError("manifold backend: level_set edge_length must be > 0")
+    bounds = [float(lo[0]) - margin, float(lo[1]) - margin, float(lo[2]) - margin,
+              float(hi[0]) + margin, float(hi[1]) + margin, float(hi[2]) + margin]
+
+    field: Callable[[float, float, float], float] = (
+        lambda x, y, z: -eval_node(node, (x, y, z)))
+    solid = m.Manifold.level_set(field, bounds, float(edge_length), float(level))
+    if solid.is_empty():
+        raise ManifoldError(
+            "manifold backend: level_set produced no geometry (the SDF never "
+            "changed sign inside the sampling box)")
+    return solid
+
+
+# --------------------------------------------------------------------------
 # program text (for an honest content-addressed cache key + inspection)
 # --------------------------------------------------------------------------
 def _describe(node: Node) -> str:
@@ -425,6 +537,19 @@ class ManifoldBackend(ExternalToolBackend):
     #: ``manifold3d.__version__``, memoised. Part of the cache key.
     _VERSIONS: Dict[str, str] = {}
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        # Set when an op is REFUSED as ``unsupported-op``. The requested part was
+        # never built, so from that point the measurement must refuse (volume/bbox
+        # None) rather than read the un-filleted / un-chamfered last-good geometry
+        # -- the silent-wrong-part failure. (shell of a prism IS supported and
+        # does not taint.)
+        self._tainted = False
+
+    def reset(self) -> None:
+        super().reset()
+        self._tainted = False
+
     @classmethod
     def locate(cls) -> str:
         """Prove ``manifold3d`` is importable; return its version as the sentinel
@@ -454,9 +579,20 @@ class ManifoldBackend(ExternalToolBackend):
     def apply(self, op):
         if isinstance(op, Shell):
             err = self._check_shell(op)
-            if err is not None:
-                return err
-        return super().apply(op)
+            result = err if err is not None else super().apply(op)
+        else:
+            result = super().apply(op)
+        if not result.ok and any(getattr(d, "code", None) == "unsupported-op"
+                                 for d in result.diagnostics):
+            self._tainted = True
+        return result
+
+    def query(self, q: str) -> dict:
+        if q in ("measure", "metrics") and self._tainted:
+            # An unsupported op was refused: nothing honest to measure. REFUSE
+            # rather than leak the un-filleted last-good volume as a wrong number.
+            return {"volume": None, "bbox": None}
+        return super().query(q)
 
     @staticmethod
     def _refuse(code: str, msg: str) -> ApplyResult:
