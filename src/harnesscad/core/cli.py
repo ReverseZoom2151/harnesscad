@@ -543,6 +543,13 @@ def cmd_search(args: argparse.Namespace) -> int:
     return exploration_registry.run_cli(args)
 
 
+def cmd_assembly(args: argparse.Namespace) -> int:
+    # Imported here so the assembly tree is only touched by `assembly`.
+    from harnesscad.domain.assembly import registry as assembly_registry
+
+    return assembly_registry.run_cli(args)
+
+
 def cmd_generate(args: argparse.Namespace) -> int:
     # Imported here so the generation tree is only touched by `generate`.
     from harnesscad.agents.generation import registry as generation_registry
@@ -621,6 +628,95 @@ def cmd_pressure(args: argparse.Namespace) -> int:
     from harnesscad.eval.pressure import cli as pressure_cli
 
     return pressure_cli.run(args)
+
+
+def _brief_from(brief: str) -> str:
+    """The brief text: the contents of `brief` when it names a readable file,
+    else the literal string. A part brief is short prose, so a bare string is
+    the common case; a path is accepted so a longer brief can live in a file."""
+    try:
+        if os.path.isfile(brief):
+            with open(brief, "r", encoding="utf-8") as fh:
+                return fh.read()
+    except OSError:
+        pass
+    return brief
+
+
+def _print_verdict(verdict) -> None:
+    """Print a PddVerdict as text: the verdict line, every reason that pushed it
+    below PASS, any [NEEDS CLARIFICATION] markers, and the honest residual that
+    the synthesis doc requires on every report (a PASS is measured, not proven
+    to match intent)."""
+    print(f"verdict:  {verdict.verdict}")
+    print(f"part:     {verdict.part_id or '?'}")
+    print(f"digest:   {verdict.contract_digest}")
+    if verdict.failures:
+        print("failures:")
+        for f in verdict.failures:
+            print(f"  - {f}")
+    reasons = [r for r in verdict.reasons if r not in verdict.failures]
+    if reasons:
+        print("reasons:")
+        for r in reasons:
+            print(f"  - {r}")
+    if verdict.clarifications:
+        print(f"[NEEDS CLARIFICATION]: {', '.join(verdict.clarifications)}")
+    print()
+    print(f"honest residual: {verdict.honest_residual}")
+
+
+def cmd_pdd(args: argparse.Namespace) -> int:
+    # Imported here so `apply`/`demo` never pay for the PDD package, and so the
+    # CLI does not hard-depend on it: the pipeline's siblings are optional and
+    # its import must not break the rest of the CLI.
+    from harnesscad.agents.pdd.pipeline import PASS, run_pdd
+
+    try:
+        ops = _ops_from(args.ops)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    measurement = None
+    if args.measurement:
+        try:
+            with open(args.measurement, "r", encoding="utf-8") as fh:
+                measurement = json.load(fh)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"error: could not load measurement from {args.measurement!r}: "
+                  f"{exc}", file=sys.stderr)
+            return 2
+        if not isinstance(measurement, dict):
+            print(f"error: {args.measurement!r} must contain a JSON object of "
+                  f"contract-keyed measurements", file=sys.stderr)
+            return 2
+
+    # The Implement phase: apply the CISP op program through a session on the
+    # chosen backend and hand the built session to the pipeline, which re-measures
+    # it through io/gate.py. The pipeline hard-depends on no kernel; this executor
+    # supplies one so the CLI can run a real part end to end.
+    def executor(op_list):
+        server = CISPServer(backend=args.backend)
+        server.applyOps([dict(op) for op in op_list])
+        return server.session
+
+    verdict = run_pdd(
+        _brief_from(args.brief),
+        ops,
+        executor,
+        measurement=measurement,
+        part_id=args.part_id,
+    )
+
+    if args.json:
+        print(json.dumps(verdict.as_dict(), indent=2, sort_keys=True, default=str))
+    else:
+        _print_verdict(verdict)
+
+    # Exit 0 only for a full PASS (certified). UNCERTIFIED and FAIL are both
+    # not-certified, so a script/CI gate can key on the exit code.
+    return 0 if verdict.verdict == PASS else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -800,6 +896,14 @@ def build_parser() -> argparse.ArgumentParser:
     _editing_registry.add_arguments(p_edit)
     p_edit.set_defaults(func=cmd_edit)
 
+    p_assembly = sub.add_parser(
+        "assembly",
+        help="assembly checks over placed parts (AABB interference + fix vectors)")
+    from harnesscad.domain.assembly import registry as _assembly_registry
+
+    _assembly_registry.add_arguments(p_assembly)
+    p_assembly.set_defaults(func=cmd_assembly)
+
     p_search = sub.add_parser(
         "search",
         help="design-space search over a session (--list/--rivals/--strategy)")
@@ -916,6 +1020,31 @@ def build_parser() -> argparse.ArgumentParser:
 
     _registry.add_arguments(p_caps)
     p_caps.set_defaults(func=cmd_capabilities)
+
+    p_pdd = sub.add_parser(
+        "pdd",
+        help="Parts-Driven Development: brief -> MGC -> CISP -> artifact -> a "
+             "single measured PASS/FAIL/UNCERTIFIED verdict")
+    p_pdd.add_argument(
+        "brief",
+        help="the part brief: a natural-language string, or a path to a file "
+             "holding one")
+    p_pdd.add_argument(
+        "--ops", required=True,
+        help="path to a JSON array of CISP ops -- the plan the model built "
+             "(the pipeline never generates it)")
+    p_pdd.add_argument("--backend", default="stub", choices=BACKEND_CHOICES,
+                       help="geometry backend used to build the part (default: stub)")
+    p_pdd.add_argument(
+        "--measurement", default=None,
+        help="path to a JSON object of contract-keyed measurements the MGC is "
+             "checked against (e.g. volume_mm3, bbox_mm, genus); when omitted a "
+             "best-effort mapping is adapted from the output gate's measurement")
+    p_pdd.add_argument("--part-id", default=None, dest="part_id",
+                       help="id to stamp on a contract that has none")
+    p_pdd.add_argument("--json", action="store_true",
+                       help="emit the verdict as JSON")
+    p_pdd.set_defaults(func=cmd_pdd)
 
     return parser
 
