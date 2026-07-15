@@ -19,3 +19,7 @@ dist/
 # model-output caches from the memory A/B (obsolete lineup; not committed)
 .memory_ab_cache/
 .memory_ab_corpus_cache/
+
+# obsolete pressure-v2 raw shards from the deleted model lineup (not a result)
+assets/pressure_v2/obsolete_deleted_lineup/*.json
+

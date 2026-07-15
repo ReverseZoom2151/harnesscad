@@ -17,12 +17,26 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 from harnesscad.eval.pressure.briefs import Brief, briefs_for
 from harnesscad.eval.pressure.cache import CompletionCache
 from harnesscad.eval.pressure.loops import (
-    BLIND, DEFAULT_MAX_ATTEMPTS, HARNESS, LOOPS, run_brief,
+    ALL_LOOPS, BLIND, DEFAULT_MAX_ATTEMPTS, HARNESS, LOOPS, SAMPLING_TEMPERATURE,
+    SELECTION_LOOPS, run_brief, run_sampling,
 )
 from harnesscad.eval.pressure.model import CachedClient, Client, OllamaClient
 
 DEFAULT_SEED = 20260713
 DEFAULT_CACHE = ".pressure_cache"
+
+#: THE FRONTIER LINEUP. v2 runs on these four tags and NOTHING ELSE. The old
+#: six-model set that a previous agent ran the v2 code against (qwen2.5-coder and
+#: friends) has been DELETED from the machine; its partial results in
+#: assets/pressure_v2/obsolete_deleted_lineup/ are obsolete and must never be
+#: turned into a published number. The run is parameterised by `models` -- pass
+#: `--model` to override -- but the default is this and only this.
+DEFAULT_MODELS: List[str] = [
+    "qwen3.6:27b",
+    "qwen3.6:35b",
+    "ornith:9b",
+    "ornith:35b",
+]
 
 
 def _cell_id(model: str, brief: str, loop: str) -> str:
@@ -75,11 +89,23 @@ def run(models: Sequence[str],
     done = 0
     t0 = time.perf_counter()
 
+    iterative = [l for l in loops if l not in SELECTION_LOOPS]
+    selection = [l for l in loops if l in SELECTION_LOOPS]
+
+    def flush() -> Dict[str, Any]:
+        payload = {
+            "meta": _meta(models, briefs, loops, seed, temperature,
+                          max_attempts, cache),
+            "results": results,
+        }
+        save_results(out, payload)
+        return payload
+
     for model in models:
         inner = factory(model)
         client: Client = CachedClient(inner, cache, seed=seed, temperature=temperature)
         for brief in briefs:
-            for loop in loops:
+            for loop in iterative:
                 done += 1
                 cid = _cell_id(model, brief.id, loop)
                 if cid in existing:
@@ -90,20 +116,34 @@ def run(models: Sequence[str],
                                 max_attempts=max_attempts)
                 results.append(res.to_dict())
                 existing[cid] = res.to_dict()
-                say(f"    -> solved={res.solved} attempts={res.attempts_used} "
-                    f"invalid={res.invalid_ops} missed={res.fleet_missed} "
-                    f"{res.seconds:.1f}s")
-                payload = {
-                    "meta": _meta(models, briefs, loops, seed, temperature,
-                                  max_attempts, cache),
-                    "results": results,
-                }
-                save_results(out, payload)
+                say(f"    -> solved={res.solved} shape={res.solved_shape} "
+                    f"calls={res.model_calls} invalid={res.invalid_ops} "
+                    f"missed={res.fleet_missed} {res.seconds:.1f}s")
+                flush()
 
-    payload = {
-        "meta": _meta(models, briefs, loops, seed, temperature, max_attempts, cache),
-        "results": results,
-    }
+            # The selection arms SHARE their N draws, so they are run together
+            # and cost, between them, exactly what one of them costs.
+            if selection:
+                done += len(selection)
+                missing = [l for l in selection
+                           if _cell_id(model, brief.id, l) not in existing]
+                if not missing:
+                    say(f"[{done}/{total}] {model}|{brief.id}|selection "
+                        f"(cached cells, skipped)")
+                    continue
+                say(f"[{done}/{total}] {model}|{brief.id}|{'+'.join(missing)} "
+                    f"(N={max_attempts} draws, T={SAMPLING_TEMPERATURE}) ...")
+                arms = run_sampling(client, brief, seed=seed, n=max_attempts,
+                                    temperature=SAMPLING_TEMPERATURE)
+                for loop in missing:
+                    res = arms[loop]
+                    results.append(res.to_dict())
+                    existing[_cell_id(model, brief.id, loop)] = res.to_dict()
+                    say(f"    -> {loop}: solved={res.solved} "
+                        f"shape={res.solved_shape} calls={res.model_calls}")
+                flush()
+
+    payload = flush()
     payload["meta"]["wall_seconds"] = time.perf_counter() - t0
     save_results(out, payload)
     return payload
@@ -111,8 +151,10 @@ def run(models: Sequence[str],
 
 def _meta(models, briefs, loops, seed, temperature, max_attempts, cache) -> dict:
     return {
+        "version": 2,
         "seed": seed,
         "temperature": temperature,
+        "sampling_temperature": SAMPLING_TEMPERATURE,
         "max_attempts": max_attempts,
         "backend": "frep",
         "models": list(models),

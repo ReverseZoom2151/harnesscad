@@ -9,7 +9,11 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
-from harnesscad.eval.pressure.loops import BLIND, HARNESS, LOOPS
+from harnesscad.eval.pressure import shape as shape_mod
+from harnesscad.eval.pressure import stats
+from harnesscad.eval.pressure.loops import (
+    ALL_LOOPS, BLIND, HARNESS, LOOPS, ORACLE_BON, SELF_CONSISTENCY,
+)
 
 
 def _mean(xs: Sequence[float]) -> Optional[float]:
@@ -40,6 +44,9 @@ def aggregate(results: Sequence[dict]) -> Dict[str, Any]:
         })
         c["n"] += 1
         c["solved"] += int(r["solved"])
+        c["solved_shape"] = c.get("solved_shape", 0) + int(r.get("solved_shape") or 0)
+        c["model_calls"] = c.get("model_calls", 0) + int(
+            r.get("model_calls") or r["attempts_used"])
         c["attempts"].append(r["attempts_used"])
         c["total_attempts"] += r["attempts_used"]
         if r["attempts_to_solve"] is not None:
@@ -57,6 +64,12 @@ def aggregate(results: Sequence[dict]) -> Dict[str, Any]:
 
     for c in cells.values():
         c["solve_rate"] = c["solved"] / c["n"] if c["n"] else 0.0
+        c["shape_rate"] = c["solved_shape"] / c["n"] if c["n"] else 0.0
+        c["mean_model_calls"] = c["model_calls"] / c["n"] if c["n"] else 0.0
+        c["solves_per_call"] = (c["solved"] / c["model_calls"]
+                                if c["model_calls"] else 0.0)
+        w = stats.wilson(c["solved"], c["n"])
+        c["wilson_lo"], c["wilson_hi"] = w.lo, w.hi
         c["mean_attempts"] = _mean(c["attempts"])
         c["mean_attempts_to_solve"] = _mean(c["attempts_to_solve"])
         c["invalid_op_rate"] = (c["invalid_ops"] / c["total_attempts"]
@@ -218,6 +231,221 @@ def fleet_holes(results: Sequence[dict]) -> str:
         lines.append(f"    fleet said:        nothing actionable")
     lines.append("-" * 96)
     return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
+# v2: intervals, paired tests, pass@k / pass^k, and the selector's own scorecard
+# --------------------------------------------------------------------------- #
+def _pool(results: Sequence[dict], loop: str) -> Tuple[int, int, int, int]:
+    """(solved, solved_shape, n, model_calls) pooled over every cell of an arm."""
+    rows = [r for r in results if r["loop"] == loop]
+    return (sum(int(r["solved"]) for r in rows),
+            sum(int(r.get("solved_shape") or 0) for r in rows),
+            len(rows),
+            sum(int(r.get("model_calls") or r["attempts_used"]) for r in rows))
+
+
+def arms_present(results: Sequence[dict]) -> List[str]:
+    seen = {r["loop"] for r in results}
+    return [l for l in ALL_LOOPS if l in seen]
+
+
+def arm_table(results: Sequence[dict]) -> str:
+    """Every arm, pooled, with a Wilson 95% interval and its compute."""
+    lines = ["POOLED, WITH INTERVALS  (Wilson score, 95%)", "-" * 100]
+    lines.append(f"{'arm':<18} {'solved':>9} {'solve%':>8} {'95% CI':>18} "
+                 f"{'shape%':>8} {'calls':>7} {'calls/cell':>11} {'solves/call':>12}")
+    lines.append("-" * 100)
+    for loop in arms_present(results):
+        s, sh, n, calls = _pool(results, loop)
+        if not n:
+            continue
+        ci = stats.wilson(s, n)
+        lines.append(
+            f"{loop:<18} {f'{s}/{n}':>9} {100.0 * s / n:7.1f}% "
+            f"{f'[{100 * ci.lo:.1f}, {100 * ci.hi:.1f}]':>18} "
+            f"{100.0 * sh / n:7.1f}% {calls:>7} {calls / n:11.2f} "
+            f"{s / calls if calls else 0.0:12.3f}")
+    lines.append("-" * 100)
+    lines.append("solve%  = ENVELOPE verdict: bbox + volume + SDF probes + op "
+                 "assertions + the OUTPUT GATE")
+    lines.append("shape%  = the above AND volumetric IoU >= "
+                 + format(shape_mod.IOU_SOLVED, ".2f")
+                 + " against the brief's reference solution")
+    lines.append("calls   = TOTAL model calls the arm spent. The arms are matched "
+                 "on the CEILING, not the mean.")
+    return "\n".join(lines)
+
+
+def _paired(results: Sequence[dict], a: str, b: str,
+            key: str = "solved") -> Tuple[List[bool], List[bool], List[str]]:
+    ba = {(r["model"], r["brief"]): r for r in results if r["loop"] == a}
+    bb = {(r["model"], r["brief"]): r for r in results if r["loop"] == b}
+    cells = sorted(set(ba) & set(bb))
+    return ([bool(ba[c].get(key)) for c in cells],
+            [bool(bb[c].get(key)) for c in cells],
+            [f"{c[0]}|{c[1]}" for c in cells])
+
+
+def matched_tests(results: Sequence[dict], key: str = "solved") -> str:
+    """McNemar, exact, on every matched pair of arms.
+
+    This is the correct test here and v1 ran none. The design is MATCHED -- the
+    same six models attempt the same twelve briefs under every arm, at the same
+    seed -- so an unpaired comparison of two proportions throws away exactly the
+    information that makes the comparison sharp.
+    """
+    arms = arms_present(results)
+    lines = [f"MATCHED COMPARISONS -- exact McNemar on '{key}'", "-" * 96]
+    lines.append(f"{'A':<18} {'B':<18} {'A only':>7} {'B only':>7} "
+                 f"{'discordant':>11} {'exact p':>10}  {'verdict':<20}")
+    lines.append("-" * 96)
+    for i, a in enumerate(arms):
+        for b in arms[i + 1:]:
+            xa, xb, _ = _paired(results, a, b, key)
+            if not xa:
+                continue
+            m = stats.mcnemar(xa, xb)
+            if m.discordant == 0:
+                verdict = "identical cells"
+            elif m.p_value < 0.05:
+                verdict = ("%s WINS (p<0.05)" % (a if m.b > m.c else b))
+            else:
+                verdict = "not significant"
+            lines.append(
+                f"{a:<18} {b:<18} {m.b:>7} {m.c:>7} {m.discordant:>11} "
+                f"{m.p_value:10.4f}  {verdict:<20}")
+    lines.append("-" * 96)
+    lines.append("'A only' = cells A solved and B did not. Exact binomial "
+                 "(sign) test, NOT chi-squared:")
+    lines.append("the discordant counts here are single digits and the "
+                 "chi-squared approximation is a large-sample story.")
+    return "\n".join(lines)
+
+
+def pass_k_table(results: Sequence[dict]) -> str:
+    """pass@k and pass^k, from the N INDEPENDENT draws the selection arms made.
+
+    These are the only independent draws in the experiment. The iterative arms
+    condition attempt 2 on attempt 1, so a "pass@3" computed over them would be a
+    different quantity wearing a famous name, and it is not computed here.
+    """
+    rows = [r for r in results
+            if r["loop"] == ORACLE_BON and (r.get("selection") or {}).get("n")]
+    if not rows:
+        return "pass@k / pass^k: no independent-draw arm in this run"
+    by_model: Dict[str, List[Tuple[int, int]]] = {}
+    for r in rows:
+        sel = r["selection"]
+        by_model.setdefault(r["model"], []).append(
+            (int(sel["n"]), int(sel.get("n_correct") or 0)))
+    n_draws = max(n for counts in by_model.values() for n, _ in counts)
+
+    lines = [f"pass@k AND pass^k  (N={n_draws} independent draws per cell, "
+             f"macro-averaged over briefs)", "-" * 92]
+    head = f"{'model':<22}" + "".join(f"{'pass@%d' % k:>10}" for k in range(1, n_draws + 1))
+    head += "".join(f"{'pass^%d' % k:>10}" for k in range(2, n_draws + 1))
+    lines.append(head)
+    lines.append("-" * 92)
+    allc: List[Tuple[int, int]] = []
+    for model in sorted(by_model):
+        counts = by_model[model]
+        allc.extend(counts)
+        row = f"{model:<22}"
+        for k in range(1, n_draws + 1):
+            vals = [stats.pass_at_k(n, c, k) for n, c in counts if n >= k]
+            row += f"{100 * sum(vals) / len(vals):9.1f}%" if vals else f"{'-':>10}"
+        for k in range(2, n_draws + 1):
+            vals = [stats.pass_hat_k(n, c, k) for n, c in counts if n >= k]
+            row += f"{100 * sum(vals) / len(vals):9.1f}%" if vals else f"{'-':>10}"
+        lines.append(row)
+    lines.append("-" * 92)
+    row = f"{'POOLED':<22}"
+    for k in range(1, n_draws + 1):
+        vals = [stats.pass_at_k(n, c, k) for n, c in allc if n >= k]
+        row += f"{100 * sum(vals) / len(vals):9.1f}%" if vals else f"{'-':>10}"
+    for k in range(2, n_draws + 1):
+        vals = [stats.pass_hat_k(n, c, k) for n, c in allc if n >= k]
+        row += f"{100 * sum(vals) / len(vals):9.1f}%" if vals else f"{'-':>10}"
+    lines.append(row)
+    lines.append("-" * 92)
+    lines.append("pass@k = did ANY of k draws work.   A DEMO metric.")
+    lines.append("pass^k = did ALL of k draws work.   The metric a harness that "
+                 "hands a part to a CNC machine needs.")
+    lines.append("Unbiased estimators (HumanEval); pass@k imported from "
+                 "eval/bench/sequence/pass_at_k.py.")
+    return "\n".join(lines)
+
+
+def selector_scorecard(results: Sequence[dict]) -> str:
+    """Did the selectors pick a correct candidate when one was available?
+
+    A selector can only be judged against what it had to choose from. If none of
+    the N draws was correct, no selector wins the cell. This isolates the
+    selector's own skill from the sampler's.
+    """
+    lines = ["SELECTOR SKILL -- decided cells only "
+             "(at least one correct draw AND at least one wrong draw)", "-" * 88]
+    lines.append(f"{'arm':<18} {'decidable':>10} {'picked right':>13} "
+                 f"{'selector acc':>13} {'oracle ceiling':>15}")
+    lines.append("-" * 88)
+    for loop in (ORACLE_BON, SELF_CONSISTENCY):
+        rows = [r for r in results if r["loop"] == loop and r.get("selection")]
+        if not rows:
+            continue
+        decidable = [r for r in rows
+                     if 0 < int(r["selection"].get("n_correct") or 0)
+                     < int(r["selection"]["n"])]
+        right = sum(1 for r in decidable if r["solved"])
+        ceiling = sum(1 for r in rows
+                      if int(r["selection"].get("n_correct") or 0) > 0)
+        acc = (f"{100.0 * right / len(decidable):12.1f}%" if decidable else f"{'-':>13}")
+        lines.append(
+            f"{loop:<18} {len(decidable):>10} {right:>13} {acc} "
+            f"{f'{ceiling}/{len(rows)}':>15}")
+    lines.append("-" * 88)
+    lines.append("oracle ceiling = cells where a PERFECT selector would have won "
+                 "(some draw was correct).")
+    lines.append("An arm cannot exceed its ceiling. The gap between the arm and "
+                 "its ceiling is the selector's fault;")
+    lines.append("the gap between the ceiling and 100% is the sampler's.")
+    return "\n".join(lines)
+
+
+def render_v2(payload: dict) -> str:
+    results = payload["results"]
+    meta = payload.get("meta", {})
+    out = [
+        "=" * 100,
+        "HARNESSCAD PRESSURE TEST v2 -- typed diagnostics vs blind resampling vs "
+        "ORACLE BEST-OF-N",
+        "=" * 100,
+        f"seed:        {meta.get('seed')}",
+        f"temperature: {meta.get('temperature')} (iterative arms) / "
+        f"{meta.get('sampling_temperature')} (selection arms -- Best-of-N cannot "
+        f"exist at T=0)",
+        f"backend:     {meta.get('backend')}",
+        f"budget:      {meta.get('max_attempts')} model calls per cell (ceiling)",
+        f"briefs:      {meta.get('n_briefs')}",
+        f"models:      {', '.join(meta.get('models', []))}",
+        "",
+        arm_table(results),
+        "",
+        matched_tests(results, "solved"),
+        "",
+        matched_tests(results, "solved_shape"),
+        "",
+        pass_k_table(results),
+        "",
+        selector_scorecard(results),
+        "",
+        render_table(results),
+        "",
+        per_brief(results),
+        "",
+        fleet_holes(results),
+    ]
+    return "\n".join(out)
 
 
 def render_all(payload: dict) -> str:

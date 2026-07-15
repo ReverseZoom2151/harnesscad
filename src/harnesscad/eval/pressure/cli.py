@@ -1,7 +1,8 @@
 """`harnesscad pressure` — run the A/B, or print the report from a results file.
 
-    harnesscad pressure --model qwen2.5-coder:3b --loop both --briefs all \
-        --out results.json
+    harnesscad pressure --loop all --briefs all --out results.json
+        (defaults to the four frontier tags: qwen3.6:27b, qwen3.6:35b,
+         ornith:9b, ornith:35b -- pass --model to override)
     harnesscad pressure --report results.json
     harnesscad pressure --list-briefs
 """
@@ -16,18 +17,24 @@ from typing import List, Optional
 from harnesscad.eval.pressure import report as report_mod
 from harnesscad.eval.pressure import runner as runner_mod
 from harnesscad.eval.pressure.briefs import BRIEFS, CATEGORIES, briefs_for
-from harnesscad.eval.pressure.loops import BLIND, HARNESS, LOOPS
+from harnesscad.eval.pressure.loops import (
+    ALL_LOOPS, BLIND, HARNESS, LOOPS, ORACLE_BON, SELF_CONSISTENCY,
+)
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument(
         "--model", action="append", default=None, metavar="NAME",
-        help="ollama model to test; repeat to test several "
-             "(default: qwen2.5-coder:1.5b and qwen2.5-coder:3b)")
+        help="ollama model to test; repeat to test several (default: the four "
+             "frontier tags -- %s)" % ", ".join(runner_mod.DEFAULT_MODELS))
     parser.add_argument(
-        "--loop", default="both", choices=["blind", "harness", "both"],
-        help="'blind' = raw kernel errors, 'harness' = typed diagnostics, "
-             "'both' = the A/B (default)")
+        "--loop", action="append", default=None,
+        choices=list(ALL_LOOPS) + ["both", "all"],
+        help="'blind' = raw kernel errors, 'harness' = SOUND typed diagnostics, "
+             "'oracle_bon' = Best-of-N selected by the differential oracle + the "
+             "output gate, 'self_consistency' = majority vote over the SAME N "
+             "draws (free), 'both' = blind+harness (the v1 A/B), 'all' = every "
+             "arm. Repeatable. Default: both")
     parser.add_argument(
         "--briefs", default="all",
         help="'all', 'traps', 'notraps', a category (%s), or a CSV of brief ids"
@@ -77,7 +84,7 @@ def _cmd_report(path: str, as_json: bool) -> int:
                        report_mod.aggregate(payload["results"])["cells"].items()}},
             sort_keys=True, indent=2, default=str))
         return 0
-    print(report_mod.render_all(payload))
+    print(report_mod.render_v2(payload))
     return 0
 
 
@@ -87,8 +94,13 @@ def run(args: argparse.Namespace) -> int:
     if getattr(args, "report", None):
         return _cmd_report(args.report, bool(getattr(args, "json", False)))
 
-    models: List[str] = args.model or ["qwen2.5-coder:1.5b", "qwen2.5-coder:3b"]
-    loops = list(LOOPS) if args.loop == "both" else [args.loop]
+    models: List[str] = args.model or list(runner_mod.DEFAULT_MODELS)
+    loops: List[str] = []
+    for sel in (args.loop or ["both"]):
+        for l in (LOOPS if sel == "both" else
+                  ALL_LOOPS if sel == "all" else (sel,)):
+            if l not in loops:
+                loops.append(l)
     try:
         briefs = briefs_for(args.briefs)
     except KeyError as exc:
@@ -110,7 +122,7 @@ def run(args: argparse.Namespace) -> int:
         resume=not args.no_resume,
     )
     print()
-    print(report_mod.render_all(payload))
+    print(report_mod.render_v2(payload))
     print()
     print(f"wrote: {args.out}")
     return 0

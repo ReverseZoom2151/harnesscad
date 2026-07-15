@@ -23,13 +23,20 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from harnesscad.eval.pressure import shape as shape_mod
 from harnesscad.eval.pressure.briefs import Brief, Expect, OpSpec
-from harnesscad.eval.pressure.prompts import is_actionable
+from harnesscad.eval.pressure.prompts import is_actionable, model_facing
 
-# Diagnostics that fire on every model regardless of what it emits (see
-# prompts.UNACTIONABLE_CODES) are excluded from "the fleet caught something",
-# otherwise every single attempt would score a catch and the number would mean
-# nothing.
+# THE BLOCKING axis, and ONLY the blocking axis. `fleet_caught` asks "did the
+# fleet claim something was wrong", which is a question about SEVERITY. What the
+# MODEL is told is a question about SOUNDNESS and is answered by
+# `prompts.model_facing` -- see the block comment there. v1 used this constant
+# for both, which is how a rule with unmeasured precision ended up issuing
+# instructions to a 14b that follows them perfectly.
+#
+# Diagnostics that fire on every part regardless of what the model emits (see
+# prompts.UNACTIONABLE_CODES) are excluded, or every attempt would score a catch
+# and the number would mean nothing.
 BLOCKING_SEVERITIES = ("error", "warning")
 
 
@@ -37,14 +44,20 @@ BLOCKING_SEVERITIES = ("error", "warning")
 class Grade:
     """The verdict on one op stream."""
 
-    solved: bool = False                       # geometry matches the brief
+    solved: bool = False                       # ENVELOPE verdict (+ the gate)
     built: bool = False                        # a valid solid exists at all
     reasons: List[str] = field(default_factory=list)   # why it failed
     measure: Dict[str, Any] = field(default_factory=dict)
     diagnostics: List[dict] = field(default_factory=list)
     fleet_actionable: List[dict] = field(default_factory=list)
+    fleet_model_facing: List[dict] = field(default_factory=list)
     apply_ok: bool = False
     applied: int = 0
+    # -- v2 --------------------------------------------------------------- #
+    gate_ok: bool = False                      # io/gate.py accepted the artifact
+    gate_failures: List[dict] = field(default_factory=list)
+    shape: Dict[str, Any] = field(default_factory=dict)   # IoU vs the reference
+    solved_shape: bool = False                 # ENVELOPE *and* SHAPE agree
 
     @property
     def fleet_caught(self) -> bool:
@@ -180,20 +193,40 @@ def _check_geometry(backend, expect: Expect) -> Tuple[List[str], Dict[str, Any]]
 # --------------------------------------------------------------------------- #
 # the referee
 # --------------------------------------------------------------------------- #
-def grade(brief: Brief, ops: Sequence[dict]) -> Grade:
+def grade(brief: Brief, ops: Sequence[dict], *, shape: bool = True) -> Grade:
     """Rebuild `ops` from scratch and score them against the brief's ground truth.
 
     Always runs at ``verify_level="full"`` regardless of which arm produced the
-    ops, so both arms are measured by exactly the same instrument.
+    ops, so every arm is measured by exactly the same instrument.
+
+    v2 adds two things v1 did not have, and it reports them SEPARATELY rather
+    than folding them into one number:
+
+    THE GATE. v1's ``grade()`` constructed a raw ``CISPServer`` and never routed
+    through ``io/gate.py`` -- the one component in the repository that refuses a
+    dilated shell, an open surface, a cut that added volume, an extrude of the
+    wrong height. An op stream that produced a wrong-sized part could therefore
+    be scored ``solved=True`` by the very experiment that existed to catch it.
+    The gate now runs on every graded attempt and a refusal is a loss.
+
+    THE SHAPE. bbox + volume + sparse SDF probes are all ENVELOPE families and
+    are many-to-one by construction: a hole in the wrong place scores perfectly.
+    ``shape.score`` computes volumetric IoU against the brief's own hand-written
+    ``reference`` op stream (which every brief already carried, and which v1 used
+    only to prove the corpus was solvable). ``solved`` remains the v1-comparable
+    ENVELOPE verdict; ``solved_shape`` is the stricter conjunction. BOTH are
+    reported. Neither silently replaces the other.
     """
-    from harnesscad.io.surfaces.server import CISPServer
+    from harnesscad.io import gate
+
+    from harnesscad.eval.pressure.session import frep_server
 
     g = Grade()
     if not ops:
         g.reasons.append("no operations were produced")
         return g
 
-    server = CISPServer(backend="frep", verify_level="full")
+    server = frep_server("full")          # PINNED mesher -- see session.py
     try:
         result = server.applyOps([dict(o) for o in ops])
     except Exception as exc:
@@ -204,6 +237,7 @@ def grade(brief: Brief, ops: Sequence[dict]) -> Grade:
     g.applied = int(result.get("applied") or 0)
     g.diagnostics = list(result.get("diagnostics") or [])
     g.fleet_actionable = [d for d in g.diagnostics if is_actionable(d)]
+    g.fleet_model_facing = model_facing(g.diagnostics)
 
     if not g.apply_ok:
         g.reasons.append(
@@ -215,7 +249,35 @@ def grade(brief: Brief, ops: Sequence[dict]) -> Grade:
     g.reasons.extend(geom_reasons)
     g.reasons.extend(_check_ops(ops, brief.expect.ops))
 
-    g.solved = g.apply_ok and not g.reasons
+    # -- the output gate ---------------------------------------------------- #
+    bounds = None
+    try:
+        report = gate.check(server.backend, source=server)
+        g.gate_ok = bool(report.ok)
+        g.gate_failures = [f.to_dict() for f in report.failures]
+        # The gate has already tessellated this solid -- the single most
+        # expensive operation here -- so take its bounding box rather than
+        # meshing the same part a second time for the shape metric.
+        lo = report.measurement.get("bbox_min")
+        hi = report.measurement.get("bbox_max")
+        if lo and hi and report.measurement.get("triangle_count"):
+            bounds = (tuple(float(c) for c in lo), tuple(float(c) for c in hi))
+    except Exception as exc:                              # pragma: no cover
+        g.gate_ok = False
+        g.gate_failures = [{"check": "gate-error", "family": "measured",
+                            "detail": f"{type(exc).__name__}: {exc}"}]
+    if not g.gate_ok:
+        for f in g.gate_failures:
+            g.reasons.append("the output gate REFUSED this artifact "
+                             f"[{f['check']}]: {f['detail']}")
+
+    g.solved = g.apply_ok and g.gate_ok and not g.reasons
+
+    # -- the shape metric --------------------------------------------------- #
+    if shape:
+        s = shape_mod.score(brief, server.backend, candidate_bounds=bounds)
+        g.shape = s.to_dict()
+        g.solved_shape = bool(g.solved and s.matched)
     return g
 
 
@@ -245,7 +307,10 @@ class BriefResult:
     category: str
     trap: bool
     seed: int
-    solved: bool
+    solved: bool                         # ENVELOPE verdict (+ gate)
+    solved_shape: bool                   # ENVELOPE and SHAPE (IoU vs reference)
+    shape_iou: Optional[float]
+    model_calls: int                     # THE COMPUTE. Compare arms on this.
     attempts_used: int
     attempts_to_solve: Optional[int]     # 1-based; None when never solved
     invalid_ops: int                     # attempts whose output would not parse
@@ -255,6 +320,8 @@ class BriefResult:
     final_diagnostics: List[dict]
     seconds: float
     records: List[dict]
+    #: Only the selection arms (oracle-BoN / self-consistency) fill this in.
+    selection: Optional[dict] = None
 
     def to_dict(self) -> dict:
         return asdict(self)

@@ -410,26 +410,48 @@ BRIEFS: Tuple[Brief, ...] = (
     ),
 
     # -- tier 5: shells ----------------------------------------------------- #
-    # NOTE the F-rep shell is a two-sided wall (|f| - t/2), so a shelled box
-    # straddles the original boundary: it grows OUTWARD by t/2 as well as
-    # hollowing inward. The `inside` probes therefore sit ON the original surface
-    # (which is the centre of the wall the backend builds) and the `outside`
-    # probes sit at the centroid (which must become a cavity). This encodes what
-    # this backend genuinely produces for a CORRECT plan; the outward dilation is
-    # reported as a BACKEND BUG in the write-up, and is not scored against the
-    # model, which has no op with which to avoid it.
+    # ####################################################################### #
+    # v1 CORPUS BUG, DISCLOSED AND FIXED HERE. DO NOT QUIETLY REPAIR THIS.
+    #
+    # v1's shell briefs probed their "inside" point EXACTLY ON the outer face:
+    # `shell_box_3mm` probed (0, 20, 10) on a rectangle whose x starts at 0. The
+    # signed distance there is 0, not negative. Those probes could ONLY be
+    # satisfied by a part whose material had been pushed OUTWARD past x = 0 --
+    # which is precisely what the broken two-sided F-rep shell (|f| - t/2) did.
+    # v1's comment says so out loud and treats it as a property of the backend
+    # rather than as a corpus bug:
+    #
+    #     "The `inside` probes therefore sit ON the original surface (which is
+    #      the centre of the wall the backend builds)"
+    #
+    # THE BENCHMARK ENCODED THE BUG AS THE CORRECT ANSWER. Every shell solve in
+    # v1 is a part with wrong outside dimensions. With the backend now fixed to
+    # shell inward, the probe at x=0 fails for EVERY answer -- including each
+    # brief's own hand-written reference solution, which is how this was found:
+    # `grade(brief, brief.reference)` returns solved=False for shell_box_3mm and
+    # trap_shell_too_thick against the fixed backend.
+    #
+    # The fix is to put the probe where the wall actually is: at the MIDDLE of
+    # the wall the brief asked for. That has a consequence worth stating, because
+    # it is a strengthening of the grader and not merely a repair: the probe now
+    # also pins the wall THICKNESS from below (a part shelled at 0.5 mm no longer
+    # has material at the 1.5 mm mark), which is a thing v1's OpSpec range let
+    # through. A brief that says "3 mm wall" now means it.
+    # ####################################################################### #
     Brief(
         id="shell_box_3mm", category="shell", difficulty=2,
         text=("A hollow box. Start from a solid block 60 mm by 40 mm by 20 mm "
               "and shell it out to leave a 3 mm wall."),
         expect=Expect(
             volume=(8000.0, 45000.0),
-            inside=((0.0, 20.0, 10.0),),           # the wall must be there
+            inside=((1.5, 20.0, 10.0),),           # MID-WALL (brief asks t=3)
             outside=((30.0, 20.0, 10.0),),         # the cavity must exist
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 19.9)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 60, 40), _ext("sk1", 20),
                    {"op": "shell", "faces": [], "thickness": 3}),
+        note="v2: inside probe moved from (0,20,10) -- ON the outer face -- to "
+             "the middle of the 3 mm wall. See the block comment above.",
     ),
     Brief(
         id="shell_tray_2mm", category="shell", difficulty=2,
@@ -437,12 +459,13 @@ BRIEFS: Tuple[Brief, ...] = (
               "it out with a 2.5 mm wall thickness."),
         expect=Expect(
             volume=(8000.0, 70000.0),
-            inside=((0.0, 30.0, 12.0),),
+            inside=((1.25, 30.0, 12.0),),          # MID-WALL (brief asks t=2.5)
             outside=((40.0, 30.0, 12.0),),
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 24.9)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 80, 60), _ext("sk1", 25),
                    {"op": "shell", "faces": [], "thickness": 2.5}),
+        note="v2: inside probe moved from (0,30,12) to the middle of the wall.",
     ),
     Brief(
         id="shell_deep_4mm", category="shell", difficulty=2,
@@ -450,12 +473,13 @@ BRIEFS: Tuple[Brief, ...] = (
               "shelled to a 4 mm wall."),
         expect=Expect(
             volume=(6000.0, 45000.0),
-            inside=((0.0, 20.0, 15.0),),
+            inside=((2.0, 20.0, 15.0),),           # MID-WALL (brief asks t=4)
             outside=((20.0, 20.0, 15.0),),
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 29.9)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 40, 40), _ext("sk1", 30),
                    {"op": "shell", "faces": [], "thickness": 4}),
+        note="v2: inside probe moved from (0,20,15) to the middle of the wall.",
     ),
 
     # -- tier 6: fillets and chamfers --------------------------------------- #
@@ -508,15 +532,20 @@ BRIEFS: Tuple[Brief, ...] = (
               "hollowed out with a 9 mm wall."),
         expect=Expect(
             volume=(1000.0, 16000.0),
-            inside=((0.0, 20.0, 2.5),),
+            inside=((0.75, 20.0, 2.5),),           # MID-WALL of the 1.5 mm wall
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 4.99)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 60, 40), _ext("sk1", 5),
                    {"op": "shell", "faces": [], "thickness": 1.5}),
-        note=("9 mm of wall in 5 mm of stock. The precheck names it exactly "
-              "('the wall consumes the whole solid'); the core verifiers do not "
-              "notice, and the F-rep backend silently INFLATES the part to "
-              "49x39x14. This is the brief the claim was written for."),
+        note=("9 mm of wall in 5 mm of stock. The kernel preflight names it "
+              "exactly, and that rule (preflight-THICKNESS_TOO_LARGE) is one of "
+              "only two PROVEN rules in the fleet: 2t >= the smallest extent "
+              "means the inward offsets of two opposite faces cross, so the "
+              "cavity is empty by construction. This is the brief the claim was "
+              "written for. "
+              "v2: the inside probe moved from (0,20,2.5) -- ON the outer face, "
+              "reachable only by the DILATING shell v1 shipped -- to the middle "
+              "of the wall a feasible answer leaves."),
     ),
     Brief(
         id="trap_shell_too_thin", category="trap_shell", difficulty=4, trap=True,
@@ -527,8 +556,16 @@ BRIEFS: Tuple[Brief, ...] = (
             ops=(OpSpec("shell", count_max=1, params={"thickness": (0.5, 19.9)}),),
         ),
         reference=(_sk(), _rect("sk1", 0, 0, 80, 50), _ext("sk1", 20),
-                   {"op": "shell", "faces": [], "thickness": 1.5}),
-        note="0.2 mm is below the 0.5 mm minimum manufacturable wall",
+                   {"op": "shell", "faces": [], "thickness": 2.0}),
+        note=("0.2 mm is below the 0.5 mm minimum manufacturable wall. "
+              "v2: the reference WITNESS moved from t=1.5 to t=2.0. Not because "
+              "1.5 is a wrong answer -- it is a perfectly good one -- but because "
+              "the F-rep backend's new wall-resolution guard refuses a wall "
+              "spanning under 2 grid cells, and on an 80 mm part at resolution 96 "
+              "the cell is 0.833 mm, so 1.5 mm spans 1.8 cells and is refused. "
+              "The witness exists to PROVE the brief is solvable; a witness the "
+              "kernel will not build proves nothing. The brief, the grader and "
+              "the accepted thickness range (0.5-19.9) are all unchanged."),
     ),
     Brief(
         id="trap_fillet_too_big", category="trap_fillet", difficulty=4, trap=True,

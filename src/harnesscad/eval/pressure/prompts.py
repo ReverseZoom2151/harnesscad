@@ -20,7 +20,9 @@ full-fleet one, which is precisely the difference the harness is selling.
 
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
+
+from harnesscad.eval.verifiers import soundness
 
 # --------------------------------------------------------------------------- #
 # WHICH DIAGNOSTICS COUNT -- read this before trusting any number in the report
@@ -71,7 +73,19 @@ FEASIBILITY_WARNING_PREFIX = "preflight-"
 
 
 def is_actionable(diag: dict) -> bool:
-    """True when a correction loop should be told about this diagnostic."""
+    """Did the FLEET claim something is wrong? An ACCOUNTING/BLOCKING filter.
+
+    THIS IS NOT THE MODEL-FACING FILTER, and it must never be used as one again.
+    It selects on SEVERITY (plus a denylist of codes that fire on every part),
+    which answers "should this block the build" -- the one question severity
+    actually answers. It does NOT answer "may this instruct the model", which is
+    a question about TRUTH, and that is :func:`model_facing`'s job.
+
+    It survives because `metrics.fleet_caught` / `fleet_missed` need to count what
+    the fleet SAID, independently of what the model was TOLD -- and keeping those
+    two numbers separate is how the cost of a false instruction becomes visible
+    at all.
+    """
     code = str(diag.get("code", ""))
     if code in UNACTIONABLE_CODES:
         return False
@@ -83,6 +97,65 @@ def is_actionable(diag: dict) -> bool:
     if severity == "warning" and code.startswith(FEASIBILITY_WARNING_PREFIX):
         return True
     return False
+
+
+# --------------------------------------------------------------------------- #
+# THE v2 FIX: SOUNDNESS TIERING (the whole reason v1's harness arm lost)
+# --------------------------------------------------------------------------- #
+# v1's typed channel filtered on `is_actionable` alone -- i.e. on SEVERITY. It
+# never asked whether the rule that fired was TRUE. `eval/verifiers/soundness.py`
+# was written afterwards, in direct response to the -8.3, and it answers exactly
+# that question: PROVEN (a theorem), MEASURED (an observed fact), or HEURISTIC (a
+# guess). Only PROVEN and MEASURED are allowed to instruct a model, because a
+# typed diagnostic is an INSTRUCTION and an instruction gets obeyed -- including
+# when it is wrong. Every one of v1's eight net losses was a regression caused by
+# obeying a HEURISTIC rule that happened to be false.
+#
+# v1 could not prove that fix, because `format_typed` never imported `soundness`.
+# The harness had repaired its bug and, as wired, COULD NOT DEMONSTRATE IT. That
+# is the single most important plumbing change in v2, and it is disclosed as a
+# change to the SYSTEM UNDER TEST, not to the experiment: the v2 harness arm is a
+# DIFFERENT arm from v1's, and the two numbers are not interchangeable.
+#
+# The two filters compose, and they are not the same filter:
+#   is_actionable  -- "is this diagnostic about feasibility at all, or is it a
+#                     style lint that fires on every correct part?"  (NOISE)
+#   soundness      -- "can this rule be trusted to be RIGHT?"        (TRUTH)
+# SEVERITY AND SOUNDNESS ARE ORTHOGONAL AXES, AND v1 CONFLATED THEM.
+#
+#   severity  -- how bad is this IF TRUE?     -> may it BLOCK the build
+#   soundness -- how likely is it to BE TRUE? -> may it INSTRUCT the model
+#
+# Those are different powers with different risks. A false BLOCK costs a retry.
+# A false INSTRUCTION destroys a correct answer. v1's typed channel was selected
+# by severity alone -- and `is_actionable`, below, is a severity filter with a
+# denylist bolted on. Selecting the model's instructions with it is not an
+# implementation of the precision policy; it is a BYPASS of it. The red team
+# measured what that bypass cost: the fleet was handing a false instruction on
+# 69% of provably-correct parts, almost all of it through the WARNING channel,
+# which reaches the model identically to ERROR.
+#
+# So the model-facing channel is now `soundness.model_facing` and NOTHING ELSE.
+# It requires BOTH conditions -- a trusted TIER (PROVEN or MEASURED) and a
+# severity that claims something is actually wrong (ERROR or WARNING). A MEASURED
+# INFO is a true statement with nothing to act on ("assembly-skipped", "40 is not
+# on the ISO series", "the sketch is unpinned"), and putting a true statement
+# with nothing to act on into a retry prompt can only invite an edit to a part
+# that was already right.
+def model_facing(diagnostics: Sequence[dict]) -> List[dict]:
+    """The diagnostics allowed into the model's retry prompt. THE gate.
+
+    Delegates, wholly, to :func:`harnesscad.eval.verifiers.soundness.model_facing`
+    -- the policy lives with the tier table, not in the experiment, or the
+    experiment would be measuring its own copy of the rules instead of the ones
+    the harness ships.
+
+    ``soundness.tier_of`` FAILS CLOSED: an unrecognised code is HEURISTIC, never
+    trusted. Nothing is silenced -- every diagnostic is still produced, still
+    returned in the ApplyOpsResult, still graded, still written to the results
+    file. It is narrowed in the ONE channel where being wrong destroys work.
+    """
+    return list(soundness.model_facing(diagnostics or []))
 
 
 SYSTEM_PROMPT = """\
@@ -187,15 +260,18 @@ def format_blind(result: dict) -> Optional[str]:
 
 
 def format_typed(result: dict) -> Optional[str]:
-    """The HARNESS channel: the fleet's typed diagnostics, verbatim.
+    """The HARNESS channel: the fleet's SOUND typed diagnostics, verbatim.
 
-    Every actionable diagnostic is rendered as
-    ``[severity] code: message (at where)`` -- a stable name, a location, and a
-    sentence that says what is wrong in the units of the brief. The op stream is
-    handed back too, so 'op[3]' is resolvable. Returning ``None`` means the fleet
-    found nothing to act on.
+    Every diagnostic that is both actionable and sound (PROVEN or MEASURED -- see
+    :func:`model_facing`) is rendered as ``[severity] code: message (at where)``
+    -- a stable name, a location, and a sentence that says what is wrong in the
+    units of the brief. Returning ``None`` means the fleet found nothing it can
+    stand behind, and the arm stops.
+
+    v1 filtered on severity alone and handed the model every HEURISTIC guess the
+    fleet made. That is the arm that lost by 8.3 points.
     """
-    blocking = [d for d in (result.get("diagnostics") or []) if is_actionable(d)]
+    blocking = model_facing(result.get("diagnostics") or [])
     if not blocking:
         return None
     lines = []

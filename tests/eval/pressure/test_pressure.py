@@ -149,15 +149,30 @@ class TestFeedback(unittest.TestCase):
         self.assertIn("Traceback", fb)
 
     def test_typed_carries_the_code_and_the_location(self):
+        # v2: the code and the location still come through -- but only for a rule
+        # that is PROVEN or MEASURED. This one (preflight-THICKNESS_TOO_LARGE) is
+        # a theorem about offset surfaces.
         result = {"ok": True, "diagnostics": [
-            {"severity": "error", "code": "infeasible-plan",
+            {"severity": "warning", "code": "preflight-THICKNESS_TOO_LARGE",
              "message": "shell thickness 9 mm >= available stock 5 mm; the wall "
                         "consumes the whole solid.", "where": "op[3]"},
         ]}
         fb = prompts.format_typed(result)
-        self.assertIn("infeasible-plan", fb)
+        self.assertIn("preflight-THICKNESS_TOO_LARGE", fb)
         self.assertIn("op[3]", fb)
         self.assertIn("consumes the whole solid", fb)
+
+    def test_typed_drops_precheck_because_precheck_is_a_HEURISTIC(self):
+        # THE v1 BUG, IN ONE TEST. `infeasible-plan` is the code precheck emits
+        # for a dozen unrelated reasons, some provable and some guessed, and the
+        # guessed ones caused every one of v1's eight regressions. v1 handed this
+        # straight to the model. v2 does not.
+        result = {"ok": True, "diagnostics": [
+            {"severity": "error", "code": "infeasible-plan",
+             "message": "hole diameter 30 mm >= plate/stock wall 8 mm",
+             "where": "op[3]"},
+        ]}
+        self.assertIsNone(prompts.format_typed(result))
 
     def test_typed_ignores_diagnostics_no_model_can_act_on(self):
         result = {"ok": True, "diagnostics": [
@@ -170,15 +185,29 @@ class TestFeedback(unittest.TestCase):
         ]}
         self.assertIsNone(prompts.format_typed(result))
 
-    def test_typed_keeps_preflight_warnings_because_they_mean_infeasible(self):
+    def test_typed_drops_the_unsound_fillet_ceiling(self):
+        # v1 kept every "preflight-" warning on the grounds that a preflight
+        # warning means "the kernel will not build this". That reasoning was
+        # right about THICKNESS_TOO_LARGE (a theorem) and wrong about
+        # RADIUS_TOO_LARGE, which fires on a 50x30x6 plate filleted at r=3.1 --
+        # valid, watertight, correctly bounded. Soundness tiering separates them
+        # BY CODE, which is exactly what the severity filter could not do.
         result = {"ok": True, "diagnostics": [
             {"severity": "warning", "code": "preflight-RADIUS_TOO_LARGE",
              "message": "Fillet radius 8 exceeds half the smallest extent (6).",
              "where": "op[3]:fillet"},
         ]}
+        self.assertIsNone(prompts.format_typed(result))
+
+    def test_typed_keeps_the_shell_theorem(self):
+        result = {"ok": True, "diagnostics": [
+            {"severity": "warning", "code": "preflight-THICKNESS_TOO_LARGE",
+             "message": "Shell thickness 9 leaves no cavity (smallest extent 5).",
+             "where": "op[3]:shell"},
+        ]}
         fb = prompts.format_typed(result)
         self.assertIsNotNone(fb)
-        self.assertIn("RADIUS_TOO_LARGE", fb)
+        self.assertIn("THICKNESS_TOO_LARGE", fb)
 
     def test_the_two_arms_differ_only_in_the_formatter(self):
         self.assertEqual(VERIFY_LEVEL[BLIND], "core")
@@ -238,10 +267,11 @@ class TestLoops(unittest.TestCase):
         self.assertEqual(harness.attempts_used, 2)
         self.assertTrue(harness.solved, harness.final_reasons)
         self.assertGreaterEqual(harness.fleet_caught, 1)
-        # The diagnostic the model was shown named the mistake:
+        # The diagnostic the model was shown named the mistake -- and in v2 it is
+        # the PROVEN one that names it, not precheck's catch-all.
         fb = harness.records[0]["feedback"]
-        self.assertIn("infeasible-plan", fb)
-        self.assertIn("consumes the whole solid", fb)
+        self.assertIn("preflight-THICKNESS_TOO_LARGE", fb)
+        self.assertIn("no cavity", fb)
 
     def test_a_regression_after_a_correct_attempt_is_scored_honestly(self):
         """If an arm has a correct plan and then breaks it, the FINAL plan is what
@@ -339,7 +369,11 @@ class _RoutedClient:
         self.calls += 1
         last = messages[-1]["content"]
         first = messages[1]["content"]
-        told_it_is_infeasible = "infeasible-plan" in last
+        # v2: the typed channel no longer carries precheck's `infeasible-plan`
+        # (a HEURISTIC catch-all). The shell trap is now named by the one PROVEN
+        # rule in the fleet, so that is what a model would actually be told.
+        told_it_is_infeasible = ("THICKNESS_TOO_LARGE" in last
+                                 or "infeasible-plan" in last)
         if "hollowed out" in first:                     # the trap brief
             t = 1.5 if told_it_is_infeasible else 9
             return json.dumps(PLATE + [{"op": "shell", "faces": [], "thickness": t}])
@@ -427,9 +461,10 @@ class TestMainCliStillWorks(unittest.TestCase):
 
         args = build_parser().parse_args(
             ["pressure", "--model", "qwen2.5-coder:3b", "--loop", "both",
+             "--loop", "oracle_bon",
              "--briefs", "all", "--out", "results.json"])
         self.assertEqual(args.model, ["qwen2.5-coder:3b"])
-        self.assertEqual(args.loop, "both")
+        self.assertEqual(args.loop, ["both", "oracle_bon"])
 
 
 if __name__ == "__main__":

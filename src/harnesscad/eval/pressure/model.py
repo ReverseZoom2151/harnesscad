@@ -36,11 +36,21 @@ DEFAULT_API_BASE = "http://localhost:11434"
 
 
 class Client(Protocol):
-    """Everything the loop needs from a model."""
+    """Everything the loop needs from a model.
+
+    ``seed`` and ``temperature`` are per-call OVERRIDES, and they exist for
+    exactly one reason: Best-of-N cannot be run at temperature 0. Greedy decoding
+    is a function of the prompt, so N samples of one prompt are N copies of one
+    sample (verified against ollama: qwen2.5-coder:3b at T=0 returns byte-
+    identical text for three different seeds). The iterative arms pass neither
+    override and are therefore unchanged from v1, byte for byte.
+    """
 
     name: str
 
-    def complete(self, messages: List[Dict[str, str]], attempt: int) -> str:
+    def complete(self, messages: List[Dict[str, str]], attempt: int,
+                 seed: Optional[int] = None,
+                 temperature: Optional[float] = None) -> str:
         """Return the raw assistant text for this message list."""
         ...
 
@@ -62,15 +72,18 @@ class OllamaClient:
         self.max_tokens = int(max_tokens)
         self.timeout = float(timeout)
 
-    def complete(self, messages: List[Dict[str, str]], attempt: int) -> str:
+    def complete(self, messages: List[Dict[str, str]], attempt: int,
+                 seed: Optional[int] = None,
+                 temperature: Optional[float] = None) -> str:
         import litellm  # lazy: the package imports fine without it
 
         litellm.suppress_debug_info = True
         resp = litellm.completion(
             model=f"ollama/{self.model}",
             messages=messages,
-            temperature=self.temperature,
-            seed=self.seed,
+            temperature=(self.temperature if temperature is None
+                         else float(temperature)),
+            seed=(self.seed if seed is None else int(seed)),
             api_base=self.api_base,
             max_tokens=self.max_tokens,
             timeout=self.timeout,
@@ -92,16 +105,29 @@ class CachedClient:
         self.seed = int(seed)
         self.temperature = float(temperature)
 
-    def complete(self, messages: List[Dict[str, str]], attempt: int) -> str:
-        key = cache_key(self.name, self.seed, self.temperature, attempt, messages)
+    def complete(self, messages: List[Dict[str, str]], attempt: int,
+                 seed: Optional[int] = None,
+                 temperature: Optional[float] = None) -> str:
+        s = self.seed if seed is None else int(seed)
+        t = self.temperature if temperature is None else float(temperature)
+        # The key carries the seed and the temperature, so a T=0.8 draw at seed
+        # 20260714 can never be served from the T=0.0 cell's cache entry.
+        key = cache_key(self.name, s, t, attempt, messages)
         hit = self.cache.get(key)
         if hit is not None:
             return hit["text"]
-        text = self.inner.complete(messages, attempt)
+        # Only forward the overrides when they are actually set, so a Client that
+        # implements the plain two-argument protocol still works untouched -- and
+        # so the iterative arms reach the model through the exact call v1 made.
+        if seed is None and temperature is None:
+            text = self.inner.complete(messages, attempt)
+        else:
+            text = self.inner.complete(messages, attempt, seed=seed,
+                                       temperature=temperature)
         self.cache.put(key, {
             "model": self.name,
-            "seed": self.seed,
-            "temperature": self.temperature,
+            "seed": s,
+            "temperature": t,
             "attempt": attempt,
             "messages": messages,
             "text": text,
@@ -121,9 +147,13 @@ class ScriptedClient:
         self.name = name
         self._responses = list(responses)
         self.calls: List[Tuple[int, List[Dict[str, str]]]] = []
+        self.draws: List[Tuple[Optional[int], Optional[float]]] = []
 
-    def complete(self, messages: List[Dict[str, str]], attempt: int) -> str:
+    def complete(self, messages: List[Dict[str, str]], attempt: int,
+                 seed: Optional[int] = None,
+                 temperature: Optional[float] = None) -> str:
         self.calls.append((attempt, [dict(m) for m in messages]))
+        self.draws.append((seed, temperature))
         if not self._responses:
             return "[]"
         r = self._responses.pop(0)
