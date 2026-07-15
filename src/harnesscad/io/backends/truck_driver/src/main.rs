@@ -60,7 +60,7 @@ struct FaceJson {
 }
 
 #[derive(Deserialize)]
-#[serde(tag = "type", rename_all = "lowercase")]
+#[serde(tag = "type", rename_all = "snake_case")]
 enum NodeJson {
     Extrude {
         faces: Vec<FaceJson>,
@@ -76,6 +76,19 @@ enum NodeJson {
         op: String,
         a: Box<NodeJson>,
         b: Box<NodeJson>,
+    },
+    /// A body replicated by a list of rigid (and, for mirror, reflecting) 3x4
+    /// row-major matrices, then combined. Overlapping copies are merged with a
+    /// real `truck-shapeops` boolean; provably-disjoint copies become distinct
+    /// boundary shells of ONE multi-shell `Solid` -- which is how truck honours a
+    /// pattern or mirror of disjoint bodies WITHOUT a boolean (`truck-shapeops`
+    /// cannot union disjoint solids; a multi-shell solid needs no union). This one
+    /// node serves `linear_pattern`, `circular_pattern` and `mirror`.
+    TransformUnion {
+        child: Box<NodeJson>,
+        /// each entry is a 3x4 row-major affine: [r00 r01 r02 tx  r10 r11 r12 ty
+        /// r20 r21 r22 tz]; a negative linear determinant is a reflection.
+        matrices: Vec<[f64; 12]>,
     },
 }
 
@@ -117,16 +130,102 @@ fn normalize(v: [f64; 3]) -> Vector3 {
     }
 }
 
-fn union_all(mut solids: Vec<Solid>, tol: f64) -> Result<Solid, String> {
+/// The axis-aligned bound of a solid, from its topological vertices.
+fn solid_aabb(s: &Solid) -> ([f64; 3], [f64; 3]) {
+    let mut lo = [f64::INFINITY; 3];
+    let mut hi = [f64::NEG_INFINITY; 3];
+    for v in s.vertex_iter() {
+        let p = v.point();
+        for k in 0..3 {
+            lo[k] = lo[k].min(p[k]);
+            hi[k] = hi[k].max(p[k]);
+        }
+    }
+    (lo, hi)
+}
+
+/// Do two solids' bounds overlap (share interior) within `tol`? A gap wider than
+/// `tol` on any axis proves they are disjoint.
+fn aabb_overlap(a: &Solid, b: &Solid, tol: f64) -> bool {
+    let (alo, ahi) = solid_aabb(a);
+    let (blo, bhi) = solid_aabb(b);
+    for k in 0..3 {
+        if ahi[k] < blo[k] - tol || bhi[k] < alo[k] - tol {
+            return false;
+        }
+    }
+    true
+}
+
+/// Combine solids into one, HONESTLY: overlapping bodies are merged with a real
+/// `truck-shapeops` union; provably-disjoint bodies become separate connected
+/// boundary shells of a single multi-shell `Solid` (no boolean, exact). A pair
+/// whose bounds overlap but whose boolean union `truck-shapeops` cannot resolve
+/// is a genuine kernel failure and is surfaced as an error -- never faked.
+fn combine_solids(solids: Vec<Solid>, tol: f64) -> Result<Solid, String> {
     if solids.is_empty() {
         return Err("no solids produced".into());
     }
-    let mut acc = solids.remove(0);
+    let mut comps: Vec<Solid> = Vec::new();
     for s in solids {
-        acc = truck_shapeops::or(&acc, &s, tol)
-            .ok_or_else(|| "truck-shapeops union (or) returned None".to_string())?;
+        let mut merged = false;
+        // Try a real boolean union with an existing component first: if the
+        // bodies actually intersect, shapeops resolves it and we keep one shell.
+        for i in 0..comps.len() {
+            if let Some(u) = truck_shapeops::or(&comps[i], &s, tol) {
+                comps[i] = u;
+                merged = true;
+                break;
+            }
+        }
+        if merged {
+            continue;
+        }
+        // No union resolved. Either s is disjoint from every component (correct,
+        // keep it as its own shell) or it overlaps one and shapeops failed
+        // (a real failure -- do not fake it).
+        for c in &comps {
+            if aabb_overlap(c, &s, tol) {
+                return Err("truck-shapeops could not resolve a union of two \
+                            overlapping bodies (the boolean returned None)"
+                    .to_string());
+            }
+        }
+        comps.push(s);
     }
-    Ok(acc)
+    if comps.len() == 1 {
+        return Ok(comps.pop().unwrap());
+    }
+    // A multi-shell solid: every disjoint body contributes its connected,
+    // closed boundary shells. truck's own tessellation and divergence-theorem
+    // volume sum correctly across them.
+    let shells: Vec<Shell> = comps
+        .into_iter()
+        .flat_map(|c| c.into_boundaries())
+        .collect();
+    Solid::try_new(shells).map_err(|e| format!("combined multi-shell solid invalid: {e:?}"))
+}
+
+/// Backwards-compatible name: the extrude/revolve paths union the face solids.
+fn union_all(solids: Vec<Solid>, tol: f64) -> Result<Solid, String> {
+    combine_solids(solids, tol)
+}
+
+/// A cgmath `Matrix4` (column-major) from a row-major 3x4 affine.
+fn matrix4_from_rowmajor(m: &[f64; 12]) -> Matrix4 {
+    Matrix4::new(
+        m[0], m[4], m[8], 0.0, // column 0
+        m[1], m[5], m[9], 0.0, // column 1
+        m[2], m[6], m[10], 0.0, // column 2
+        m[3], m[7], m[11], 1.0, // column 3
+    )
+}
+
+/// Determinant of the 3x3 linear part of a row-major 3x4 affine. Negative => a
+/// reflection (orientation-reversing), which must be un-inverted after mapping.
+fn linear_det(m: &[f64; 12]) -> f64 {
+    m[0] * (m[5] * m[10] - m[6] * m[9]) - m[1] * (m[4] * m[10] - m[6] * m[8])
+        + m[2] * (m[4] * m[9] - m[5] * m[8])
 }
 
 fn build_solid(node: &NodeJson, bool_tol: f64) -> Result<Solid, String> {
@@ -175,11 +274,37 @@ fn build_solid(node: &NodeJson, bool_tol: f64) -> Result<Solid, String> {
                 other => Err(format!("unknown boolean op {other:?}")),
             }
         }
+        NodeJson::TransformUnion { child, matrices } => {
+            if matrices.is_empty() {
+                return Err("transform_union has no instances".into());
+            }
+            let base = build_solid(child, bool_tol)?;
+            let mut instances = Vec::with_capacity(matrices.len());
+            for m in matrices {
+                let mat = matrix4_from_rowmajor(m);
+                let mut inst = builder::transformed(&base, mat);
+                // A reflection (det < 0) reverses face orientation; flip it back
+                // so the copy's normals point outward like the original's.
+                if linear_det(m) < 0.0 {
+                    inst.not();
+                }
+                instances.push(inst);
+            }
+            combine_solids(instances, bool_tol)
+        }
     }
 }
 
-fn has_boolean(node: &NodeJson) -> bool {
-    matches!(node, NodeJson::Boolean { .. })
+/// A model contains geometry `truck-stepio` 0.3 cannot serialise: the output of a
+/// boolean, OR a transform-union (which may itself have merged via a boolean, and
+/// whose multi-shell result stepio does not round-trip). STEP is offered only for
+/// pure extrude/revolve models.
+fn blocks_step(node: &NodeJson) -> bool {
+    match node {
+        NodeJson::Boolean { .. } => true,
+        NodeJson::TransformUnion { .. } => true,
+        _ => false,
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -349,7 +474,7 @@ fn run() -> Result<(), String> {
     std::fs::write(out_dir.join("model.stl"), &metrics.stl).map_err(|e| format!("write stl: {e}"))?;
 
     // STEP only for pure-modeling solids (truck-stepio can't serialise boolean output)
-    let step_ok = if has_boolean(&job.node) {
+    let step_ok = if blocks_step(&job.node) {
         false
     } else {
         let step = step_string(&solid);

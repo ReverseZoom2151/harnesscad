@@ -26,8 +26,8 @@ import math
 import unittest
 
 from harnesscad.core.cisp.ops import (
-    AddCircle, AddRectangle, Boolean, Chamfer, Draft, Extrude, Fillet, Hole,
-    Loft, Mirror, NewSketch, Revolve, Shell, Sweep,
+    AddCircle, AddRectangle, Boolean, Chamfer, CircularPattern, Draft, Extrude,
+    Fillet, Hole, LinearPattern, Loft, Mirror, NewSketch, Revolve, Shell, Sweep,
 )
 from harnesscad.core.loop import HarnessSession
 from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
@@ -79,6 +79,28 @@ REVOLVE_OPS = [
     Revolve("sk1", (0.0, 0.0, 0.0, 0.0, 1.0, 0.0), 360.0),
 ]
 REVOLVE_VOLUME = 2.0 * math.pi * 25.0 * (10.0 * 10.0)  # Pappus: 2*pi*R_c*Area
+
+# A 3x linear pattern of a 10x10x5 block, 20 apart along X: three DISJOINT bodies.
+# truck-shapeops cannot union disjoint solids, so the driver assembles them as a
+# single multi-shell Solid instead -- exact, no boolean. Volume = 3 * 500 = 1500.
+LINPAT_OPS = [
+    NewSketch("XY"), AddRectangle("sk1", 0.0, 0.0, 10.0, 10.0), Extrude("sk1", 5.0),
+    LinearPattern("f1", (1.0, 0.0, 0.0), 3, 20.0),
+]
+LINPAT_VOLUME = 3 * 10.0 * 10.0 * 5.0
+# A 4x circular pattern about Z of a block offset to r=20..30: four disjoint bodies.
+CIRCPAT_OPS = [
+    NewSketch("XY"), AddRectangle("sk1", 20.0, -5.0, 10.0, 10.0), Extrude("sk1", 5.0),
+    CircularPattern("f1", (0.0, 0.0, 0.0, 0.0, 0.0, 1.0), 4, 360.0),
+]
+CIRCPAT_VOLUME = 4 * 10.0 * 10.0 * 5.0
+# A mirror across YZ of a block at x in [10,30]: the reflection lands at x in
+# [-30,-10], disjoint from the original -> a two-shell Solid. Volume = 2 * 4000.
+MIRROR_OPS = [
+    NewSketch("XY"), AddRectangle("sk1", 10.0, 0.0, 20.0, 20.0), Extrude("sk1", 10.0),
+    Mirror("f1", "YZ"),
+]
+MIRROR_VOLUME = 2 * 20.0 * 20.0 * 10.0
 
 #: Curved solids are faceted by truck's own tessellation, so a small relative
 #: error is expected (and is what the differential oracle tolerates for a B-rep
@@ -187,6 +209,42 @@ class TruckBackendTest(unittest.TestCase):
         self.assertAlmostEqual(volume, REVOLVE_VOLUME,
                                delta=REVOLVE_VOLUME * CURVED_REL_TOLERANCE)
 
+    def test_linear_pattern_builds_disjoint_bodies_as_a_multi_shell_solid(self):
+        # Three disjoint blocks: truck-shapeops cannot union them, so the driver
+        # builds a single Solid with three boundary shells. Volume is EXACT (all
+        # faces planar) and the mesh is three closed boxes.
+        backend = TruckBackend()
+        run_ops(backend, LINPAT_OPS)
+        measure = backend.query("measure")
+        self.assertAlmostEqual(measure["volume"], LINPAT_VOLUME,
+                               delta=STL_FLOAT32_TOLERANCE)
+        self.assertEqual([round(v, 4) for v in measure["bbox"]], [50.0, 10.0, 5.0])
+        brep = backend.query("brep")
+        self.assertTrue(brep["ok"])
+        self.assertEqual(brep["n_faces"], 18)   # 3 boxes x 6 faces
+
+    def test_circular_pattern_builds_disjoint_bodies(self):
+        backend = TruckBackend()
+        run_ops(backend, CIRCPAT_OPS)
+        volume = backend.query("measure")["volume"]
+        self.assertAlmostEqual(volume, CIRCPAT_VOLUME, delta=STL_FLOAT32_TOLERANCE)
+
+    def test_mirror_reflects_a_body_across_a_datum_plane(self):
+        # The reflection has a negative-determinant matrix; the driver un-inverts
+        # the copy so the combined two-shell solid is watertight with outward
+        # normals (not an inside-out reflection).
+        backend = TruckBackend()
+        run_ops(backend, MIRROR_OPS)
+        measure = backend.query("measure")
+        self.assertAlmostEqual(measure["volume"], MIRROR_VOLUME,
+                               delta=STL_FLOAT32_TOLERANCE)
+        self.assertEqual([round(v, 4) for v in measure["bbox"]], [60.0, 20.0, 10.0])
+        verts, faces = backend.mesh()
+        he = HalfedgeMesh(verts, faces)
+        ok, issues = he.is_2manifold()
+        self.assertTrue(ok, "mirrored solid not 2-manifold: %s" % issues)
+        self.assertTrue(he.is_closed())
+
     def test_regenerate_reports_no_diagnostics_on_a_valid_solid(self):
         backend = TruckBackend()
         run_ops(backend, HOLE_OPS)
@@ -257,13 +315,42 @@ class TruckRefusalTest(unittest.TestCase):
         self.assertIn("unsupported-op", self._refusal_codes(BOX_OPS + [Loft((), False, ())]))
         self.assertIn("unsupported-op", self._refusal_codes(BOX_OPS + [Sweep("sk1", "sk2")]))
 
-    def test_mirror_is_refused(self):
-        self.assertIn("unsupported-op", self._refusal_codes(BOX_OPS + [Mirror("f1", "YZ")]))
-
     def test_countersink_hole_is_refused(self):
         codes = self._refusal_codes(
             BOX_OPS + [Hole(">Z", 30.0, 20.0, 6.0, None, True, "countersink", None, None, 12.0)])
         self.assertIn("unsupported-op", codes)
+
+    def test_refused_op_taints_the_measurement_not_the_last_good_solid(self):
+        # truck emits a typed unsupported-op at apply(), but the measurement used
+        # to still read the LAST-GOOD (un-shelled) geometry: a shelled box came
+        # back as 48000, the un-shelled stock, a silent wrong part. A refused op
+        # means the requested part was never built, so measure must REFUSE.
+        backend = TruckBackend()
+        run_ops(backend, BOX_OPS)
+        self.assertAlmostEqual(backend.query("measure")["volume"], BOX_VOLUME,
+                               delta=STL_FLOAT32_TOLERANCE)
+        r = backend.apply(Shell((">Z",), 3.0, "arc"))       # refused
+        self.assertFalse(r.ok)
+        self.assertIn("unsupported-op", [d.code for d in r.diagnostics])
+        for q in ("measure", "metrics"):
+            self.assertIsNone(backend.query(q)["volume"], q)   # NOT 48000
+            self.assertIsNone(backend.query(q)["bbox"], q)
+
+    def test_fillet_refuses_measurement(self):
+        backend = TruckBackend()
+        run_ops(backend, BOX_OPS)
+        self.assertFalse(backend.apply(Fillet(("|Z",), 3.0)).ok)
+        self.assertIsNone(backend.query("measure")["volume"])
+
+    def test_reset_clears_the_refusal_taint(self):
+        backend = TruckBackend()
+        run_ops(backend, BOX_OPS)
+        self.assertFalse(backend.apply(Shell((">Z",), 3.0, "arc")).ok)
+        self.assertIsNone(backend.query("measure")["volume"])
+        backend.reset()
+        run_ops(backend, BOX_OPS)
+        self.assertAlmostEqual(backend.query("measure")["volume"], BOX_VOLUME,
+                               delta=STL_FLOAT32_TOLERANCE)
 
 
 @unittest.skipUnless(HAVE_TRUCK, REASON)
@@ -299,6 +386,11 @@ class TruckAgreesWithOcctTest(unittest.TestCase):
         "cylinder": (CYL_OPS, CYL_VOLUME, CYL_VOLUME * CURVED_REL_TOLERANCE),
         "through_hole": (HOLE_OPS, HOLE_VOLUME, HOLE_VOLUME * CURVED_REL_TOLERANCE),
         "revolve_tube": (REVOLVE_OPS, REVOLVE_VOLUME, REVOLVE_VOLUME * CURVED_REL_TOLERANCE),
+        # newly-added ops: all-planar, so the independent kernels must agree to
+        # (near) machine precision, not just within the tessellation budget.
+        "linear_pattern": (LINPAT_OPS, LINPAT_VOLUME, STL_FLOAT32_TOLERANCE),
+        "circular_pattern": (CIRCPAT_OPS, CIRCPAT_VOLUME, STL_FLOAT32_TOLERANCE),
+        "mirror": (MIRROR_OPS, MIRROR_VOLUME, STL_FLOAT32_TOLERANCE),
     }
 
     def _volume(self, backend_cls, ops):

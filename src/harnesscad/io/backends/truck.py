@@ -43,6 +43,19 @@ What truck CAN do, honestly
   ``A AND complement(B)`` via ``Solid::not``). A 10-cube with a 4x4 slot cut
   through it is exactly 1000 - 160 = 840.
 * **hole** (simple / counterbore) -- lowered to a boolean cut of cylinders.
+* **linear_pattern** / **circular_pattern** -- the child feature replicated by
+  the F-rep tree's own rigid transforms (``builder::transformed``). Where the
+  copies OVERLAP they are merged with a real ``truck-shapeops`` union; where they
+  are DISJOINT -- the usual case for a pattern -- each becomes a separate
+  connected boundary shell of ONE multi-shell ``Solid``. That needs no boolean at
+  all: ``truck-shapeops`` genuinely cannot union disjoint solids (its
+  intersection walk returns ``None``), but ``Solid::try_new`` accepts several
+  disjoint closed shells, and truck's own divergence-theorem volume and its
+  tessellation sum correctly across them. A 3x 10x10x5 block pattern is therefore
+  exactly 1500, agreeing with OCCT to the bit.
+* **mirror** -- the child plus its reflection across a datum plane: the same
+  transform-union with a reflecting (negative-determinant) matrix, un-inverted so
+  the copy's normals stay outward. Disjoint halves become a multi-shell solid.
 
 What truck CANNOT do here, and is REFUSED (never faked)
 -------------------------------------------------------
@@ -50,12 +63,17 @@ Refused at the op boundary with a typed ``unsupported-op`` (nothing mutates):
 
 * ``fillet`` / ``chamfer`` -- truck has no edge-blend / setback builder;
 * ``draft`` -- no face-taper operation;
-* ``loft`` / ``sweep`` -- no skinning / sweep-along-path primitive exposed;
+* ``loft`` / ``sweep`` -- the shared F-rep op-state model itself does not build a
+  loft/sweep node (it refuses them at ``apply``), so there is no tree for truck to
+  lower; truck-modeling DOES expose ``try_wire_homotopy`` (a skinning shell) and a
+  path can be swept with chained ``tsweep``/``rsweep``, but wiring those needs a
+  loft/sweep node in the kernel-neutral model, which is out of this backend's
+  scope to add;
 * ``shell`` -- truck has no hollow/thick-solid operation;
-* ``linear_pattern`` / ``circular_pattern`` / ``mirror`` -- these need a robust
-  union of (typically disjoint) bodies, and ``truck-shapeops`` 0.4 is
-  experimental and unreliable for disjoint unions, so honouring them would be
-  faking a result the kernel cannot stand behind;
+* a ``linear_pattern`` / ``circular_pattern`` / ``mirror`` whose copies OVERLAP in
+  a way ``truck-shapeops`` 0.4 cannot resolve fails at build time and is surfaced
+  as a ``kernel-error`` (which taints the measurement -- volume ``None``), never a
+  fabricated union;
 * ``hole(kind='countersink')`` -- introduces a cone/frustum revolved to its own
   axis, which is a degenerate ``rsweep`` (the profile touches the axis) on this
   truck version, so it is refused rather than approximated.
@@ -183,6 +201,32 @@ def _loop_to_world(plane: str, loop2d, w: float) -> List[List[float]]:
     return [list(to_world(plane, float(u), float(v), w)) for (u, v) in loop2d]
 
 
+#: The identity affine, row-major 3x4 (r00 r01 r02 tx  r10 r11 r12 ty  r20 r21 r22 tz).
+_IDENTITY_3X4: List[float] = [1.0, 0.0, 0.0, 0.0,
+                              0.0, 1.0, 0.0, 0.0,
+                              0.0, 0.0, 1.0, 0.0]
+
+
+def _reflect_3x4(plane: str) -> List[float]:
+    """The reflection across a named datum plane, as a row-major 3x4 affine.
+
+    A mirror negates the coordinate along the plane's normal: XY flips z, XZ flips
+    y, YZ flips x. The determinant of the 3x3 part is -1, which the Rust driver
+    detects and undoes on the copy's face orientation so its normals stay outward.
+    """
+    pl = str(plane).upper()
+    sx, sy, sz = 1.0, 1.0, 1.0
+    if pl == "XY":
+        sz = -1.0
+    elif pl == "YZ":
+        sx = -1.0
+    else:  # XZ
+        sy = -1.0
+    return [sx, 0.0, 0.0, 0.0,
+            0.0, sy, 0.0, 0.0,
+            0.0, 0.0, sz, 0.0]
+
+
 # --------------------------------------------------------------------------
 # the backend
 # --------------------------------------------------------------------------
@@ -204,15 +248,6 @@ class TruckBackend(ExternalToolBackend):
         "sweep": "truck exposes no sweep-along-a-path primitive in this driver",
         "shell": "truck has no hollow / thick-solid operation, so a wall of a "
                  "given thickness cannot be carved without faking it",
-        "linear_pattern": "a linear pattern is a union of (usually disjoint) "
-                           "bodies, and truck-shapeops 0.4 is unreliable for "
-                           "disjoint unions, so it is refused rather than faked",
-        "circular_pattern": "a circular pattern is a union of (usually disjoint) "
-                            "bodies, and truck-shapeops 0.4 is unreliable for "
-                            "disjoint unions, so it is refused rather than faked",
-        "mirror": "a mirror is a union of a body and its reflection, and "
-                  "truck-shapeops 0.4 is unreliable for such unions, so it is "
-                  "refused rather than faked",
     }
     FORMATS = ("stl", "stl-ascii", "stl-binary", "glb", "step")
 
@@ -228,6 +263,15 @@ class TruckBackend(ExternalToolBackend):
         super().__init__(*args, **kwargs)
         self.tess_tol = float(kwargs.get("tess_tol", TESS_TOL))
         self.bool_tol = float(kwargs.get("bool_tol", BOOL_TOL))
+        # Set when an op is REFUSED as ``unsupported-op``. The requested part was
+        # never built, so from that point the measurement must refuse (volume/bbox
+        # None) rather than read the LAST-GOOD (un-shelled / un-filleted / partly
+        # patterned) geometry -- the silent-wrong-part failure.
+        self._tainted = False
+
+    def reset(self) -> None:
+        super().reset()
+        self._tainted = False
 
     # -- discovery ---------------------------------------------------------
     @classmethod
@@ -285,13 +329,18 @@ class TruckBackend(ExternalToolBackend):
         cone revolved to its own axis (a degenerate rsweep on this truck)."""
         if isinstance(op, Hole) and str(getattr(op, "kind", "")).lower() == "countersink":
             from harnesscad.eval.verifiers.verify import Diagnostic, Severity
-            return ApplyResult(False, [], [Diagnostic(
+            result = ApplyResult(False, [], [Diagnostic(
                 Severity.ERROR, "unsupported-op",
                 "the truck backend does not implement a countersink hole: its "
                 "conical mouth is a frustum revolved to its own axis, a "
                 "degenerate rsweep on truck 0.6 -- refused rather than "
                 "approximated", None)])
-        return super().apply(op)
+        else:
+            result = super().apply(op)
+        if not result.ok and any(getattr(d, "code", None) == "unsupported-op"
+                                 for d in result.diagnostics):
+            self._tainted = True
+        return result
 
     # -- lowering: F-rep tree -> truck driver JSON job ---------------------
     def _lower(self, node: Node) -> dict:
@@ -326,6 +375,22 @@ class TruckBackend(ExternalToolBackend):
         if t == "bool":
             return {"type": "boolean", "op": str(node.d["op"]),
                     "a": self._lower(node.d["a"]), "b": self._lower(node.d["b"])}
+        if t == "pattern":
+            # linear_pattern / circular_pattern: the child replicated by the F-rep
+            # tree's own rigid 3x4 transforms. The driver builds each instance with
+            # ``builder::transformed`` and combines them -- a real shapeops union
+            # where they overlap, a multi-shell solid where they are disjoint.
+            return {"type": "transform_union",
+                    "child": self._lower(node.d["child"]),
+                    "matrices": [[float(x) for x in tr] for tr in node.d["transforms"]]}
+        if t == "mirror":
+            # A mirror is the child plus its reflection across a datum plane: a
+            # two-instance transform-union whose second matrix is a reflection
+            # (negative determinant), which the driver un-inverts to keep outward
+            # normals. Union where they overlap; multi-shell where disjoint.
+            return {"type": "transform_union",
+                    "child": self._lower(node.d["child"]),
+                    "matrices": [_IDENTITY_3X4, _reflect_3x4(node.d["plane"])]}
         if t == "cone":
             raise TruckError(
                 "truck backend: a cone/frustum node reached lowering; it is only "
@@ -427,6 +492,10 @@ class TruckBackend(ExternalToolBackend):
         return sidecar or {}
 
     def query(self, q: str) -> dict:
+        if q in ("measure", "metrics") and self._tainted:
+            # An unsupported op was refused: nothing honest to measure. REFUSE
+            # rather than leak the last-good geometry as a plausible wrong number.
+            return {"volume": None, "bbox": None}
         if q == "brep":
             return self.brep_metrics()
         return super().query(q)
