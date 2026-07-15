@@ -60,6 +60,7 @@ __all__ = [
     "realize_parameters",
     "rebuild",
     "freeze",
+    "roof",
     "RIVAL_FAMILIES",
     "discover",
     "routed_modules",
@@ -566,6 +567,42 @@ def freeze(solution: Dict[str, Any], intangible_regions: Sequence[Any] = (),
     return constraints, violations, projected
 
 
+def roof(footprint: Sequence[Sequence[float]], wall_height: float,
+         pitch_deg: float,
+         generated_points: Optional[Sequence[Sequence[float]]] = None,
+         generated_openings: Optional[Sequence[Sequence[float]]] = None,
+         required_openings: Optional[Sequence[Sequence[float]]] = None,
+         opening_tol: float = 1e-6):
+    """A gable roof over a FIXED footprint, plus ShellMaker structural metrics.
+
+    The ridge runs along the footprint's longer axis and the eaves sit exactly on
+    its bounding box -- the immutable footprint is respected, never grown. When
+    ``generated_points`` / openings are supplied, the footprint-violation and
+    opening-preservation metrics are returned. Geometry-only: returns roof data
+    and scores, not CISP.
+    """
+    from harnesscad.domain.procedural.exterior_completion import (
+        footprint_violation, generate_gable_roof, opening_preservation,
+    )
+
+    fp = [tuple(float(v) for v in p) for p in footprint]
+    r = generate_gable_roof(fp, float(wall_height), float(pitch_deg))
+    out: Dict[str, Any] = {
+        "ridge": [list(r.ridge[0]), list(r.ridge[1])],
+        "eaves": [list(e) for e in r.eaves],
+        "height": r.height,
+    }
+    if generated_points is not None:
+        out["footprint_violation"] = footprint_violation(
+            [tuple(float(v) for v in p) for p in generated_points], fp)
+    if required_openings is not None:
+        out["opening_preservation"] = opening_preservation(
+            [tuple(float(v) for v in p) for p in (generated_openings or [])],
+            [tuple(float(v) for v in p) for p in required_openings],
+            float(opening_tol))
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Rivals
 # --------------------------------------------------------------------------- #
@@ -606,6 +643,7 @@ def routed_modules() -> Tuple[str, ...]:
         _PKG + "key_params",
         _PKG + "incremental_rebuild",
         _PKG + "constraint_freeze",
+        _PKG + "exterior_completion",
     })
     return tuple(sorted(d for d in direct if _available(d)))
 
@@ -629,6 +667,8 @@ def discover() -> List[dict]:
          "re-evaluate only the nodes a parameter edit dirtied"),
         ("freeze", _PKG + "constraint_freeze",
          "freeze marked regions as constraints and project a candidate onto them"),
+        ("roof", _PKG + "exterior_completion",
+         "parametric gable roof over a fixed footprint + ShellMaker structural metrics"),
     ):
         rows.append({"route": "geometry", "name": name, "family": "",
                      "module": module, "doc": doc, "present": _available(module)})
