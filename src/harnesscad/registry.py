@@ -77,6 +77,7 @@ SCHEMA_VERSION = 1
 # package (the directory under a layer) -> tags every module in it inherits.
 PACKAGE_TAGS: Dict[str, Tuple[str, ...]] = {
     "geometry": ("geometry",),
+    "assembly": ("assembly",),
     "numeric": ("numeric",),
     "procedural": ("procedural",),
     "reconstruction": ("reconstruction",),
@@ -212,6 +213,10 @@ KEYWORD_TAGS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("texture", ("material",)),
     ("assembl", ("assembly",)),
     ("mate", ("assembly",)),
+    ("interfere", ("assembly",)),
+    ("clearance", ("assembly",)),
+    ("objective", ("optimization", "benchmark")),
+    ("hypervolume", ("benchmark",)),
     ("simulat", ("simulation",)),
     ("fem", ("simulation",)),
     ("stress", ("simulation",)),
@@ -551,6 +556,7 @@ DYNAMIC_DISPATCHERS: Dict[str, Tuple[str, ...]] = {
     "harnesscad.agents.generation.registry": ("harnesscad.agents.generation",),
     "harnesscad.core.registry": ("harnesscad.core",),
     "harnesscad.data.pipeline": ("harnesscad.data",),
+    "harnesscad.domain.assembly.registry": ("harnesscad.domain.assembly",),
     "harnesscad.domain.editing.registry": ("harnesscad.domain.editing",),
     "harnesscad.domain.fabrication.registry": ("harnesscad.domain.fabrication",),
     "harnesscad.domain.library.registry": ("harnesscad.domain.library",),
@@ -577,7 +583,17 @@ ROOTS: Tuple[str, ...] = (
     "harnesscad.core.cli",                        # [project.scripts] harnesscad
     "harnesscad.eval.gates.precision_floor",      # python -m ... (CI gate)
     "harnesscad.eval.gates.liveness_floor",       # python -m ... (CI gate)
+    "harnesscad.eval.gates.heldout_isolation",    # python -m ... (CI gate)
+    "harnesscad.eval.gates.warning_channel",      # python -m ... (CI gate)
     "harnesscad.eval.bench.harness.pressure_correlation",  # python -m ...
+    # The runnable faces for the metric/preference modules the audit found
+    # orphaned. Each is a `python -m harnesscad.eval.entry.<name>` entry point.
+    "harnesscad.eval.entry.judge_calibration",
+    "harnesscad.eval.entry.judge_human_agreement",
+    "harnesscad.eval.entry.metric_correlation",
+    "harnesscad.eval.entry.pass_at_k",
+    "harnesscad.eval.entry.ablation_matrix",
+    "harnesscad.eval.entry.dpo_pairs",
 )
 
 

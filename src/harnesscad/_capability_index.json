@@ -926,6 +926,44 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.cua.atlas_policy",
+      "imports": [
+        "harnesscad.io.cua.coordinate",
+        "harnesscad.io.cua.coordinate.Denormalizer",
+        "harnesscad.io.cua.coordinate.ScreenInfo"
+      ],
+      "layer": "agents",
+      "name": "atlas_policy",
+      "package": "cua",
+      "summary": "atlas_policy \u2014 atlas's Gemini computer-use PROMPT POLICY (the half not in coordinate).",
+      "symbols": [
+        "ComputerUsePolicy",
+        "render_policy"
+      ],
+      "tags": [
+        "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.best_of_n_trajectory",
+      "imports": [],
+      "layer": "agents",
+      "name": "best_of_n_trajectory",
+      "package": "cua",
+      "summary": "best_of_n_trajectory \u2014 Agent-S's Behavior-Best-of-N, as a deterministic selector.",
+      "symbols": [
+        "BehaviorBestOfN",
+        "Selection",
+        "TrajectoryCandidate",
+        "TrajectoryVerdict",
+        "behavior_score",
+        "oracle_score"
+      ],
+      "tags": [
+        "agent"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.cua.briefs",
       "imports": [],
       "layer": "agents",
@@ -940,6 +978,97 @@
       ],
       "tags": [
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.capabilities",
+      "imports": [],
+      "layer": "agents",
+      "name": "capabilities",
+      "package": "cua",
+      "summary": "capabilities \u2014 the model-agnostic CUA loop, as a deterministic capability router.",
+      "symbols": [
+        "Action",
+        "Capability",
+        "CapabilityRouter",
+        "Objective",
+        "Route",
+        "RouteError",
+        "can_serve",
+        "route"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.cua.console_agent",
+      "imports": [
+        "harnesscad.agents.cua.console_iterate",
+        "harnesscad.agents.cua.console_iterate.ConsoleChannel",
+        "harnesscad.agents.cua.console_iterate.ConsoleController",
+        "harnesscad.agents.cua.console_iterate.DEFAULT_DONE_MARKERS",
+        "harnesscad.agents.cua.console_iterate.DEFAULT_ERROR_MARKERS",
+        "harnesscad.agents.cua.console_iterate.DEFAULT_PROMPT_MARKERS",
+        "harnesscad.agents.cua.console_iterate.Step",
+        "harnesscad.agents.cua.console_iterate.Transcript"
+      ],
+      "layer": "agents",
+      "name": "console_agent",
+      "package": "cua",
+      "summary": "console_agent \u2014 the Tier-0 text-verified GUI agent, WIRED to a real console.",
+      "symbols": [
+        "CallableConsoleChannel",
+        "ConsoleAgent",
+        "build_blender_console_agent",
+        "build_freecad_console_agent",
+        "call_console_eval",
+        "callable_console_eval",
+        "capture_wrapped"
+      ],
+      "tags": [
+        "agent",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.console_iterate",
+      "imports": [],
+      "layer": "agents",
+      "name": "console_iterate",
+      "package": "cua",
+      "summary": "console_iterate \u2014 a deterministic controller for driving an app's Python console.",
+      "symbols": [
+        "Adjudication",
+        "ConsoleChannel",
+        "ConsoleController",
+        "Step",
+        "StepResult",
+        "Transcript",
+        "Verdict",
+        "adjudicate",
+        "focus_failure"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.cua.experience",
+      "imports": [
+        "harnesscad.agents.memory.store",
+        "harnesscad.agents.memory.store.Similarity",
+        "harnesscad.agents.memory.store.TokenOverlapSimilarity"
+      ],
+      "layer": "agents",
+      "name": "experience",
+      "package": "cua",
+      "summary": "experience \u2014 Agent-S's narrative/episodic knowledge, as a deterministic store.",
+      "symbols": [
+        "DialogFeatureMemory",
+        "DialogRecipe",
+        "ExperienceStore",
+        "NarrativeEntry",
+        "summarize_trajectory"
+      ],
+      "tags": [
+        "agent"
       ]
     },
     {
@@ -1038,6 +1167,61 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.cua.process_state",
+      "imports": [],
+      "layer": "agents",
+      "name": "process_state",
+      "package": "cua",
+      "summary": "process_state \u2014 agent state, tools, and long-running processes as a state model.",
+      "symbols": [
+        "AgentRuntime",
+        "AgentState",
+        "LongRunningProcess",
+        "ProcessStatus",
+        "StateError",
+        "Tool"
+      ],
+      "tags": [
+        "agent"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.prompts",
+      "imports": [],
+      "layer": "agents",
+      "name": "prompts",
+      "package": "cua",
+      "summary": "prompts \u2014 the observation-prompt schema and the verbatim templates worth keeping.",
+      "symbols": [
+        "Observation",
+        "ObservationError",
+        "parse_observation",
+        "parse_termination",
+        "predicted_outcome",
+        "prediction_held",
+        "render_observation_prompt"
+      ],
+      "tags": [
+        "llm",
+        "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.roles",
+      "imports": [],
+      "layer": "agents",
+      "name": "roles",
+      "package": "cua",
+      "summary": "roles \u2014 the three-model split: vision-narrate, text-act, and separate grounding.",
+      "symbols": [
+        "Role",
+        "RoleAssignment",
+        "RoleError",
+        "validate"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.agents.cua.run",
       "imports": [
         "harnesscad.agents.cua.briefs",
@@ -1067,6 +1251,110 @@
       ],
       "tags": [
         "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.step_reward_cua",
+      "imports": [
+        "harnesscad.agents.cua.verified_trajectory",
+        "harnesscad.agents.cua.verified_trajectory.TrajectoryStep",
+        "harnesscad.agents.cua.verified_trajectory.VERIFIED",
+        "harnesscad.agents.cua.verified_trajectory.VerifiedTrajectory",
+        "harnesscad.agents.selftrain.divergence",
+        "harnesscad.agents.selftrain.divergence.DivergenceReport",
+        "harnesscad.agents.selftrain.divergence.analyse",
+        "harnesscad.agents.selftrain.divergence.step_rewards",
+        "harnesscad.agents.selftrain.trajectory",
+        "harnesscad.agents.selftrain.trajectory.StepReward"
+      ],
+      "layer": "agents",
+      "name": "step_reward_cua",
+      "package": "cua",
+      "summary": "step_reward_cua \u2014 EXACT per-step reward for a GUI trajectory. Credit assignment,",
+      "symbols": [
+        "TrajectoryReward",
+        "first_divergence_from_trajectory",
+        "score_op_stream",
+        "step_rewards_from_trajectory"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.trajectory_compiler",
+      "imports": [
+        "harnesscad.agents.cua.grade",
+        "harnesscad.agents.cua.grade.grade_ops",
+        "harnesscad.agents.cua.grade.scripted_measure",
+        "harnesscad.agents.cua.verified_trajectory",
+        "harnesscad.agents.cua.verified_trajectory.OracleVerdict",
+        "harnesscad.agents.cua.verified_trajectory.StepLabeller",
+        "harnesscad.agents.cua.verified_trajectory.TrajectoryStep",
+        "harnesscad.agents.cua.verified_trajectory.VerifiedTrajectory",
+        "harnesscad.agents.cua.verified_trajectory.label_trajectory",
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.io.backends.freecad",
+        "harnesscad.io.backends.freecad.FreeCADBackend"
+      ],
+      "layer": "agents",
+      "name": "trajectory_compiler",
+      "package": "cua",
+      "summary": "trajectory_compiler \u2014 COMPILE expert GUI trajectories at p=1.0, don't FILTER them.",
+      "symbols": [
+        "ExpertTrajectoryCompiler",
+        "action_for_op",
+        "compile_expert_trajectory",
+        "gate_final_verdict",
+        "oracle_step_labeller",
+        "symbolic_observation",
+        "trusted_prefix_labeller"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.cua.turix",
+      "imports": [],
+      "layer": "agents",
+      "name": "turix",
+      "package": "cua",
+      "summary": "turix \u2014 TuriX's step-verification, skill-file (SOP) schema, and Brain rules.",
+      "symbols": [
+        "SOP",
+        "SOPStep",
+        "SkillLibrary",
+        "StepEval",
+        "evaluate_step",
+        "is_settled",
+        "require_explicit",
+        "settle_index"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "spec",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.cua.verified_trajectory",
+      "imports": [],
+      "layer": "agents",
+      "name": "verified_trajectory",
+      "package": "cua",
+      "summary": "verified_trajectory \u2014 Fara-7B's GUI-trajectory pipeline, with a FREE exact oracle.",
+      "symbols": [
+        "CUAVerifierBench",
+        "OracleVerdict",
+        "TrajectoryStep",
+        "VerifiedTrajectory",
+        "VerifierExample",
+        "label_trajectory"
+      ],
+      "tags": [
+        "verify"
       ]
     },
     {
@@ -3040,11 +3328,15 @@
       "package": "cisp",
       "summary": "CISP op set (v0) \u2014 the typed, agent-facing CAD operations.",
       "symbols": [
+        "AddArc",
         "AddCircle",
+        "AddEllipse",
         "AddInstance",
         "AddLine",
         "AddPoint",
+        "AddPolygon",
         "AddRectangle",
+        "AddSpline",
         "Boolean",
         "Chamfer",
         "CircularPattern",
@@ -3059,10 +3351,13 @@
         "Mirror",
         "NewSketch",
         "Op",
+        "Primitive",
         "Revolve",
         "SetParam",
         "Shell",
+        "Split",
         "Sweep",
+        "Thicken",
         "canonical_json",
         "edit_oplog",
         "parse_op"
@@ -8511,8 +8806,34 @@
       ]
     },
     {
-      "dotted": "harnesscad.domain.geometry.assembly.mates",
+      "dotted": "harnesscad.domain.geometry.assembly.joint_taxonomy",
       "imports": [],
+      "layer": "domain",
+      "name": "joint_taxonomy",
+      "package": "geometry",
+      "summary": "The single authoritative joint / mate taxonomy for the assembly stack.",
+      "symbols": [
+        "UnknownJointKindError",
+        "dof_removed_or_none",
+        "freedom_or_none",
+        "is_known_joint_kind",
+        "joint_dof_removed",
+        "joint_freedom",
+        "normalize_kind"
+      ],
+      "tags": [
+        "assembly",
+        "geometry",
+        "kinematics"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.assembly.mates",
+      "imports": [
+        "harnesscad.domain.geometry.assembly.joint_taxonomy",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.UnknownJointKindError",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.joint_dof_removed"
+      ],
       "layer": "domain",
       "name": "mates",
       "package": "geometry",
@@ -8538,6 +8859,12 @@
     {
       "dotted": "harnesscad.domain.geometry.assembly.mobility",
       "imports": [
+        "harnesscad.domain.geometry.assembly.joint_taxonomy",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.JOINT_DOF_REMOVED",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.SPATIAL_DOF",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.UnknownJointKindError",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.is_known_joint_kind",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.joint_freedom",
         "harnesscad.domain.geometry.assembly.mates",
         "harnesscad.domain.geometry.assembly.mates.CONTACT_MATES",
         "harnesscad.domain.geometry.assembly.mates.MATE_DOF_REMOVED",
@@ -19672,6 +19999,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.design_brief",
+      "imports": [],
+      "layer": "domain",
+      "name": "design_brief",
+      "package": "spec",
+      "summary": "Natural-language CAD brief IR with deterministic default resolution.",
+      "symbols": [
+        "CADBrief",
+        "CompletenessReport",
+        "FieldProvenance",
+        "clearance_for",
+        "completeness",
+        "parse_brief",
+        "resolve_defaults"
+      ],
+      "tags": [
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.dialogue_state",
       "imports": [
         "harnesscad.domain.spec.case_frame",
@@ -20341,6 +20688,26 @@
       "tags": [
         "assembly",
         "material",
+        "standards"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.standards.evidence_bundle",
+      "imports": [],
+      "layer": "domain",
+      "name": "evidence_bundle",
+      "package": "standards",
+      "summary": "Provenance evidence bundle for a design spec's standards data (Anvilate).",
+      "symbols": [
+        "ComponentRecord",
+        "EvidenceBundle",
+        "MaterialRecord",
+        "SourceRecord",
+        "collect_provenance",
+        "default_components_db",
+        "default_materials_db"
+      ],
+      "tags": [
         "standards"
       ]
     },
@@ -25410,6 +25777,31 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.corpus.measurement",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus",
+        "harnesscad.eval.corpus.grade",
+        "harnesscad.eval.corpus.grade.Score",
+        "harnesscad.eval.corpus.grade.grade",
+        "harnesscad.eval.corpus.shape",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief"
+      ],
+      "layer": "eval",
+      "name": "measurement",
+      "package": "corpus",
+      "summary": "THE FULL MEASUREMENT VECTOR. Closing the many-to-one hole where it can be closed.",
+      "symbols": [
+        "MeasurementVector",
+        "compare_ops",
+        "from_score",
+        "measure"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.corpus.run",
       "imports": [
         "harnesscad.eval.corpus",
@@ -25419,6 +25811,7 @@
         "harnesscad.eval.corpus.grade.Score",
         "harnesscad.eval.corpus.grade.grade",
         "harnesscad.eval.corpus.grade.grade_reference",
+        "harnesscad.eval.corpus.measurement",
         "harnesscad.eval.corpus.spec",
         "harnesscad.eval.corpus.spec.Brief",
         "harnesscad.eval.corpus.spec.Source",
@@ -25542,6 +25935,137 @@
       ],
       "tags": [
         "drawings"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry._common",
+      "imports": [],
+      "layer": "eval",
+      "name": "_common",
+      "package": "entry",
+      "summary": "Shared plumbing for the eval entry-point wrappers.",
+      "symbols": [
+        "build_main",
+        "emit",
+        "read_json"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.ablation_matrix",
+      "imports": [
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main",
+        "harnesscad.governance.research",
+        "harnesscad.governance.research.ablation_matrix"
+      ],
+      "layer": "eval",
+      "name": "ablation_matrix",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.ablation_matrix``",
+      "symbols": [
+        "compute"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.dpo_pairs",
+      "imports": [
+        "harnesscad.data.dataengine.preference",
+        "harnesscad.data.dataengine.preference.dpo_pairs",
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main"
+      ],
+      "layer": "eval",
+      "name": "dpo_pairs",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.dpo_pairs``",
+      "symbols": [
+        "compute"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.judge_calibration",
+      "imports": [
+        "harnesscad.eval.bench.judges",
+        "harnesscad.eval.bench.judges.judge_calibration",
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main"
+      ],
+      "layer": "eval",
+      "name": "judge_calibration",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.judge_calibration``",
+      "symbols": [
+        "compute"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.judge_human_agreement",
+      "imports": [
+        "harnesscad.eval.bench.judges",
+        "harnesscad.eval.bench.judges.judge_human_agreement",
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main"
+      ],
+      "layer": "eval",
+      "name": "judge_human_agreement",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.judge_human_agreement``",
+      "symbols": [
+        "compute"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.metric_correlation",
+      "imports": [
+        "harnesscad.eval.bench.harness",
+        "harnesscad.eval.bench.harness.metric_correlation",
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main"
+      ],
+      "layer": "eval",
+      "name": "metric_correlation",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.metric_correlation``",
+      "symbols": [
+        "compute"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.entry.pass_at_k",
+      "imports": [
+        "harnesscad.eval.bench.sequence",
+        "harnesscad.eval.bench.sequence.pass_at_k",
+        "harnesscad.eval.entry._common",
+        "harnesscad.eval.entry._common.build_main"
+      ],
+      "layer": "eval",
+      "name": "pass_at_k",
+      "package": "entry",
+      "summary": "``python -m harnesscad.eval.entry.pass_at_k``",
+      "symbols": [
+        "compute",
+        "pass_hat_k"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -25742,6 +26266,26 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.gates.heldout_isolation",
+      "imports": [],
+      "layer": "eval",
+      "name": "heldout_isolation",
+      "package": "gates",
+      "summary": "THE HELD-OUT ISOLATION GATE. A private test set stops being private the moment",
+      "symbols": [
+        "GateReport",
+        "Leak",
+        "Split",
+        "add_arguments",
+        "check",
+        "format_text",
+        "main",
+        "run",
+        "scan"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.gates.judge_gate",
       "imports": [
         "harnesscad.eval.bench.judges.judge_calibration",
@@ -25826,6 +26370,47 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.gates.warning_channel",
+      "imports": [
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.redteam",
+        "harnesscad.eval.redteam.attacks",
+        "harnesscad.eval.redteam.attacks.generate",
+        "harnesscad.eval.redteam.oracle",
+        "harnesscad.eval.selftest.fleet_audit",
+        "harnesscad.eval.selftest.fleet_audit.Case",
+        "harnesscad.eval.selftest.fleet_audit.KNOWN_GOOD",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.plan_opdag",
+        "harnesscad.eval.selftest.probe.resolve",
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.registry",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Severity"
+      ],
+      "layer": "eval",
+      "name": "warning_channel",
+      "package": "gates",
+      "summary": "THE WARNING-CHANNEL GATE. A verifier that warns on the majority of provably-",
+      "symbols": [
+        "GateReport",
+        "Violation",
+        "WarnScore",
+        "WarningReport",
+        "add_arguments",
+        "check",
+        "format_text",
+        "main",
+        "measure",
+        "provably_correct_corpus",
+        "run"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.grounding.cadspot",
       "imports": [
         "harnesscad.eval.grounding",
@@ -25858,6 +26443,27 @@
       "tags": [
         "benchmark"
       ]
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.catalogue",
+      "imports": [],
+      "layer": "eval",
+      "name": "catalogue",
+      "package": "grounding",
+      "summary": "catalogue \u2014 the computer-use field map, as a structured reference module.",
+      "symbols": [
+        "Benchmark",
+        "Dataset",
+        "GroundingModel",
+        "SafetyPaper",
+        "bbox_grounders",
+        "benchmarks_for",
+        "cad_gap",
+        "counts",
+        "find_benchmark",
+        "find_grounding_model"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.grounding.corpus",
@@ -25894,6 +26500,50 @@
         "write_corpus"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.som",
+      "imports": [],
+      "layer": "eval",
+      "name": "som",
+      "package": "grounding",
+      "summary": "som \u2014 the Set-of-Marks element list: a screenshot as a NUMBERED click table.",
+      "symbols": [
+        "BBox",
+        "Mark",
+        "SetOfMarks"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.grounding.trajectory_corpus",
+      "imports": [
+        "harnesscad.agents.cua.step_reward_cua",
+        "harnesscad.agents.cua.step_reward_cua.TrajectoryReward",
+        "harnesscad.agents.cua.trajectory_compiler",
+        "harnesscad.agents.cua.trajectory_compiler.ExpertTrajectoryCompiler",
+        "harnesscad.agents.cua.verified_trajectory",
+        "harnesscad.agents.cua.verified_trajectory.VERIFIED",
+        "harnesscad.agents.cua.verified_trajectory.VerifiedTrajectory",
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.corpus"
+      ],
+      "layer": "eval",
+      "name": "trajectory_corpus",
+      "package": "grounding",
+      "summary": "trajectory_corpus \u2014 the grounding corpus pattern, extended to whole TRAJECTORIES.",
+      "symbols": [
+        "TrajectoryCorpusGenerator",
+        "TrajectoryCorpusStats",
+        "compile_corpus",
+        "generate",
+        "main",
+        "read_trajectories",
+        "write_trajectory_corpus"
+      ],
+      "tags": [
+        "features"
+      ]
     },
     {
       "dotted": "harnesscad.eval.hardcorpus.ambiguous",
@@ -26278,6 +26928,57 @@
         "features",
         "sketch"
       ]
+    },
+    {
+      "dotted": "harnesscad.eval.leaderboard.cadspot_board",
+      "imports": [
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.cadspot"
+      ],
+      "layer": "eval",
+      "name": "cadspot_board",
+      "package": "leaderboard",
+      "summary": "CADSpot leaderboard -- a scoreboard over the CAD GUI-grounding benchmark.",
+      "symbols": [
+        "Board",
+        "Entry",
+        "RankRow",
+        "from_predictors",
+        "from_reports",
+        "load_entries",
+        "main",
+        "overall_ranking",
+        "region_ranking",
+        "render",
+        "viewport_ranking"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.leaderboard.hardcorpus_board",
+      "imports": [
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.discriminative",
+        "harnesscad.eval.hardcorpus.score"
+      ],
+      "layer": "eval",
+      "name": "hardcorpus_board",
+      "package": "leaderboard",
+      "summary": "Hard-corpus leaderboard -- the discriminative table, made rankable.",
+      "symbols": [
+        "Board",
+        "Standing",
+        "from_reports",
+        "from_solvers",
+        "load_standings",
+        "main",
+        "near_miss_proof",
+        "ranking",
+        "render"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.memory.ab",
@@ -29235,6 +29936,10 @@
     {
       "dotted": "harnesscad.eval.verifiers.assembly",
       "imports": [
+        "harnesscad.domain.geometry.assembly.joint_taxonomy",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.JOINT_DOF_REMOVED",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.SPATIAL_DOF",
+        "harnesscad.domain.geometry.assembly.joint_taxonomy.dof_removed_or_none",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
@@ -30721,11 +31426,15 @@
       "dotted": "harnesscad.io.backends.build123d",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.Chamfer",
         "harnesscad.core.cisp.ops.CircularPattern",
@@ -30740,10 +31449,13 @@
         "harnesscad.core.cisp.ops.Mirror",
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.core.constraints",
@@ -30777,11 +31489,15 @@
       "dotted": "harnesscad.io.backends.cadquery",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
         "harnesscad.core.cisp.ops.Chamfer",
@@ -30798,10 +31514,13 @@
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.PRIMITIVE_DOF",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.core.constraints",
@@ -30837,6 +31556,7 @@
       "imports": [
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.domain.geometry.mesh.halfedge",
         "harnesscad.domain.geometry.mesh.halfedge.HalfedgeMesh",
         "harnesscad.domain.geometry.parametric",
@@ -30945,11 +31665,15 @@
       "dotted": "harnesscad.io.backends.frep",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
         "harnesscad.core.cisp.ops.Chamfer",
@@ -30966,10 +31690,13 @@
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.PRIMITIVE_DOF",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.domain.geometry.mesh.halfedge",
@@ -31023,6 +31750,7 @@
         "check_stepped_hole",
         "countersink_depth",
         "edge_entities",
+        "ellipse_loop",
         "eval_node",
         "face_entities",
         "grid_extent",
@@ -31032,7 +31760,9 @@
         "resolve_edges",
         "resolve_faces",
         "rigid_transform",
+        "sample_arc",
         "sample_grid",
+        "sample_spline",
         "solve_constraint",
         "tessellate",
         "weld"
@@ -31092,6 +31822,7 @@
         "harnesscad.io.backends.frep.Node",
         "harnesscad.io.backends.frep.SHELL_FACES",
         "harnesscad.io.backends.frep.countersink_depth",
+        "harnesscad.io.backends.frep.eval_node",
         "harnesscad.io.backends.frep.node_bounds",
         "harnesscad.io.backends.frep.resolve_faces",
         "harnesscad.io.formats",
@@ -31104,9 +31835,14 @@
       "symbols": [
         "ManifoldBackend",
         "ManifoldError",
+        "convex_hull",
+        "hull_of_points",
+        "level_set",
         "lower",
         "manifold_to_stl",
-        "render"
+        "render",
+        "split_by_plane",
+        "trim_by_plane"
       ],
       "tags": [
         "csg",
@@ -31336,11 +32072,15 @@
       "dotted": "harnesscad.io.backends.rhino3dm",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
         "harnesscad.core.cisp.ops.Chamfer",
@@ -31357,10 +32097,13 @@
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.PRIMITIVE_DOF",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.eval.verifiers.verify",
@@ -31389,11 +32132,15 @@
       "dotted": "harnesscad.io.backends.stub",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
         "harnesscad.core.cisp.ops.Chamfer",
@@ -31410,10 +32157,13 @@
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.PRIMITIVE_DOF",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.edit_oplog",
         "harnesscad.eval.verifiers.assembly",
@@ -31501,6 +32251,25 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.cua.action_stream",
+      "imports": [],
+      "layer": "io",
+      "name": "action_stream",
+      "package": "cua",
+      "summary": "action_stream \u2014 ShowUI's interleaved action format and grounding-pair format.",
+      "symbols": [
+        "Action",
+        "ActionFormatError",
+        "GroundingSample",
+        "click",
+        "from_pixel_click",
+        "input_text",
+        "load_grounding",
+        "save_grounding"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.io.cua.bindings_freecad",
       "imports": [],
       "layer": "io",
@@ -31516,6 +32285,98 @@
         "check_guards",
         "match_recipes",
         "recipe_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.bindings_fusion",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op"
+      ],
+      "layer": "io",
+      "name": "bindings_fusion",
+      "package": "cua",
+      "summary": "bindings_fusion - the CISP-op -> Fusion 360 toolbar-control table, as DATA.",
+      "symbols": [
+        "GuiField",
+        "GuiRecipe",
+        "ToolbarControl",
+        "value_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.bindings_inventor",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op"
+      ],
+      "layer": "io",
+      "name": "bindings_inventor",
+      "package": "cua",
+      "summary": "bindings_inventor - the CISP-op -> Autodesk Inventor ribbon-control table, DATA.",
+      "symbols": [
+        "GuiField",
+        "GuiRecipe",
+        "RibbonControl",
+        "value_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.bindings_solidworks",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op"
+      ],
+      "layer": "io",
+      "name": "bindings_solidworks",
+      "package": "cua",
+      "summary": "bindings_solidworks - the CISP-op -> SolidWorks-ribbon-control table, as DATA.",
+      "symbols": [
+        "GuiField",
+        "GuiRecipe",
+        "RibbonControl",
+        "value_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.coordinate",
+      "imports": [],
+      "layer": "io",
+      "name": "coordinate",
+      "package": "cua",
+      "summary": "coordinate \u2014 DPI mapping, 0-999 denormalisation, and action normalisation.",
+      "symbols": [
+        "CoordinateError",
+        "CoordinateMapper",
+        "Denormalizer",
+        "NormalizedAction",
+        "ScreenInfo",
+        "extract_safety_decision",
+        "normalize_function_call"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.coords",
+      "imports": [],
+      "layer": "io",
+      "name": "coords",
+      "package": "cua",
+      "summary": "coords \u2014 decode a model's coordinate output, and refuse to guess its space.",
+      "symbols": [
+        "CoordError",
+        "CoordSpace",
+        "Downscale",
+        "denormalize",
+        "detect_nonuniform_scale",
+        "geometric_mean_error",
+        "midpoint",
+        "parse_numbers",
+        "parse_point"
       ],
       "tags": []
     },
@@ -31547,6 +32408,82 @@
         "FreeCADGuiEnvironment",
         "available",
         "find_gui_executable"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.environment_fusion",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.Capabilities",
+        "harnesscad.core.environment.CapabilityError",
+        "harnesscad.core.environment.Observation",
+        "harnesscad.core.environment.StepResult",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.bindings_fusion",
+        "harnesscad.io.cua.guardrails",
+        "harnesscad.io.cua.uia"
+      ],
+      "layer": "io",
+      "name": "environment_fusion",
+      "package": "cua",
+      "summary": "environment_fusion - a live Autodesk Fusion 360 GUI as an Environment, with",
+      "symbols": [
+        "BoundingBox",
+        "FusionGuiEnvironment",
+        "FusionOracle",
+        "FusionUnavailable",
+        "MassProperties",
+        "RibbonActuator",
+        "UiaRibbonActuator",
+        "api_available",
+        "available"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.environment_inventor",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.Capabilities",
+        "harnesscad.core.environment.CapabilityError",
+        "harnesscad.core.environment.Observation",
+        "harnesscad.core.environment.StepResult",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.bindings_inventor",
+        "harnesscad.io.cua.guardrails",
+        "harnesscad.io.cua.uia"
+      ],
+      "layer": "io",
+      "name": "environment_inventor",
+      "package": "cua",
+      "summary": "environment_inventor - a live Autodesk Inventor GUI as an Environment, with the",
+      "symbols": [
+        "BoundingBox",
+        "InventorGuiEnvironment",
+        "InventorOracle",
+        "InventorUnavailable",
+        "MassProperties",
+        "RibbonActuator",
+        "UiaRibbonActuator",
+        "available",
+        "com_available"
       ],
       "tags": []
     },
@@ -31586,6 +32523,44 @@
         "PlaywrightActuator",
         "available",
         "value_for"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.environment_solidworks",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.environment",
+        "harnesscad.core.environment.Capabilities",
+        "harnesscad.core.environment.CapabilityError",
+        "harnesscad.core.environment.Observation",
+        "harnesscad.core.environment.StepResult",
+        "harnesscad.core.environment.coerce_ops",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.bindings_solidworks",
+        "harnesscad.io.cua.guardrails",
+        "harnesscad.io.cua.uia"
+      ],
+      "layer": "io",
+      "name": "environment_solidworks",
+      "package": "cua",
+      "summary": "environment_solidworks - a live SolidWorks GUI as an Environment, with the COM",
+      "symbols": [
+        "BoundingBox",
+        "MassProperties",
+        "RibbonActuator",
+        "SolidWorksGuiEnvironment",
+        "SolidWorksOracle",
+        "SolidWorksUnavailable",
+        "UiaRibbonActuator",
+        "available",
+        "com_available"
       ],
       "tags": []
     },
@@ -31634,6 +32609,26 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.cua.hazards",
+      "imports": [],
+      "layer": "io",
+      "name": "hazards",
+      "package": "cua",
+      "summary": "hazards \u2014 the Windows UIA known-hazards checklist, as checkable DATA.",
+      "symbols": [
+        "Hazard",
+        "HazardKind",
+        "audit_driver",
+        "audit_plan",
+        "by_kind",
+        "checklist",
+        "is_hazard_safe_plan"
+      ],
+      "tags": [
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.cua.picks",
       "imports": [
         "harnesscad.domain.geometry.topology",
@@ -31656,6 +32651,32 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.cua.primitives",
+      "imports": [],
+      "layer": "io",
+      "name": "primitives",
+      "package": "cua",
+      "summary": "primitives \u2014 the OS-control action-primitive SPEC + a deterministic template match.",
+      "symbols": [
+        "Action",
+        "KeyAction",
+        "Match",
+        "Modifier",
+        "MouseButton",
+        "PrimitiveKind",
+        "best_match",
+        "chord_sequence",
+        "click_sequence",
+        "drag_sequence",
+        "hex_to_rgb",
+        "locate_icon",
+        "match_template",
+        "rgb_to_hex",
+        "validate"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.io.cua.quantity",
       "imports": [],
       "layer": "io",
@@ -31674,6 +32695,45 @@
         "write_quantity"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.region_group",
+      "imports": [],
+      "layer": "io",
+      "name": "region_group",
+      "package": "cua",
+      "summary": "region_group \u2014 a deterministic screen-region grouper for the opaque viewport.",
+      "symbols": [
+        "Region",
+        "RegionMap",
+        "UnionFind",
+        "build_regions",
+        "largest_regions",
+        "patch_distance",
+        "patchify"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.reset",
+      "imports": [],
+      "layer": "io",
+      "name": "reset",
+      "package": "cua",
+      "summary": "reset \u2014 the environment-state reset checklist and the state-leak detector.",
+      "symbols": [
+        "DirtyEnvironment",
+        "Leak",
+        "ResetStep",
+        "SessionState",
+        "StateLeakDetector",
+        "checklist_keys",
+        "clean_baseline",
+        "requires_fresh_process"
+      ],
+      "tags": [
+        "verify"
+      ]
     },
     {
       "dotted": "harnesscad.io.cua.uia",
@@ -31735,6 +32795,46 @@
       ],
       "tags": [
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.cua.windowing",
+      "imports": [
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.frames"
+      ],
+      "layer": "io",
+      "name": "windowing",
+      "package": "cua",
+      "summary": "windowing \u2014 focus/raise discipline, self-occlusion, and monitor targeting.",
+      "symbols": [
+        "FocusDiscipline",
+        "OcclusionRegistry",
+        "Overlay",
+        "WindowState",
+        "frame_for_window",
+        "monitor_for_rect",
+        "raise_plan",
+        "rects_overlap"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.wire",
+      "imports": [],
+      "layer": "io",
+      "name": "wire",
+      "package": "cua",
+      "summary": "wire \u2014 the Computer/Agent JSON wire-envelope + reflective handler dispatch.",
+      "symbols": [
+        "Dispatcher",
+        "Request",
+        "Response",
+        "WireError",
+        "command_params"
+      ],
+      "tags": [
+        "agent"
       ]
     },
     {
@@ -32134,6 +33234,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.formats.off",
+      "imports": [],
+      "layer": "io",
+      "name": "off",
+      "package": "formats",
+      "summary": "OFF (Object File Format) reader and writer.",
+      "symbols": [
+        "OffError",
+        "dumps_off",
+        "parse_off",
+        "serialize_off",
+        "write_off"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.formats.onshape_json",
       "imports": [],
       "layer": "io",
@@ -32164,6 +33283,22 @@
         "parsing",
         "sketch",
         "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.parasolid_acis",
+      "imports": [],
+      "layer": "io",
+      "name": "parasolid_acis",
+      "package": "formats",
+      "summary": "Parasolid (X_T / X_B) and ACIS (SAT / SAB) -- DECLINED, licensed kernels only.",
+      "symbols": [
+        "LicensedKernelRequired",
+        "requires_licensed_kernel"
+      ],
+      "tags": [
+        "format",
+        "io"
       ]
     },
     {
@@ -32201,12 +33336,17 @@
         "harnesscad.io.formats.glb",
         "harnesscad.io.formats.kcl",
         "harnesscad.io.formats.obj",
+        "harnesscad.io.formats.off",
         "harnesscad.io.formats.ply",
         "harnesscad.io.formats.step",
+        "harnesscad.io.formats.step_ap242",
         "harnesscad.io.formats.stl",
         "harnesscad.io.formats.svg",
         "harnesscad.io.formats.threedm",
         "harnesscad.io.formats.threemf",
+        "harnesscad.io.formats.threemf_extensions",
+        "harnesscad.io.formats.usd",
+        "harnesscad.io.formats.vrml",
         "harnesscad.io.formats.xcsg",
         "harnesscad.io.gate",
         "harnesscad.io.render",
@@ -32271,6 +33411,34 @@
         "format",
         "io",
         "parsing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.step_ap242",
+      "imports": [
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.step",
+        "harnesscad.io.formats.step.StepFile",
+        "harnesscad.io.formats.step.Typed"
+      ],
+      "layer": "io",
+      "name": "step_ap242",
+      "package": "formats",
+      "summary": "STEP AP242 header/schema writer over the existing part-21 substrate.",
+      "symbols": [
+        "Ap242Error",
+        "ap242_header",
+        "is_ap242",
+        "parse_ap242",
+        "pmi_gaps",
+        "serialize_ap242",
+        "to_ap242",
+        "write_ap242"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "spec"
       ]
     },
     {
@@ -32527,6 +33695,77 @@
       "tags": [
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.threemf_extensions",
+      "imports": [
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.threemf"
+      ],
+      "layer": "io",
+      "name": "threemf_extensions",
+      "package": "formats",
+      "summary": "3MF extension parts: materials-and-colour, and beam-lattice.",
+      "symbols": [
+        "ThreeMFExtensionError",
+        "dumps_beamlattice_model",
+        "dumps_material_model",
+        "loads_beamlattice_model",
+        "loads_material_model",
+        "read_3mf_beamlattice",
+        "read_3mf_materials",
+        "write_3mf_beamlattice",
+        "write_3mf_materials"
+      ],
+      "tags": [
+        "assembly",
+        "format",
+        "io",
+        "material"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.usd",
+      "imports": [],
+      "layer": "io",
+      "name": "usd",
+      "package": "formats",
+      "summary": "USD / USDZ (Pixar Universal Scene Description) mesh reader and writer.",
+      "symbols": [
+        "UsdError",
+        "dumps_usda",
+        "parse_usda",
+        "read_usdz",
+        "serialize_usda",
+        "serialize_usdz",
+        "write_usda",
+        "write_usdz"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "meshing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.vrml",
+      "imports": [],
+      "layer": "io",
+      "name": "vrml",
+      "package": "formats",
+      "summary": "VRML97 / WRL mesh reader and writer.",
+      "symbols": [
+        "VrmlError",
+        "dumps_wrl",
+        "parse_wrl",
+        "serialize_wrl",
+        "write_wrl"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "meshing"
       ]
     },
     {
