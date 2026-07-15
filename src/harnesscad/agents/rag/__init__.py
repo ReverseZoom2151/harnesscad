@@ -25,7 +25,21 @@ from harnesscad.agents.rag.index import (
     Index,
     tokenize,
 )
-from harnesscad.agents.rag.retriever import HybridRetriever, Retrieved, build_from_docs
+from harnesscad.agents.rag.retriever import (
+    HybridRetriever,
+    Retrieved,
+    SimilarityBM25Index,
+    SimilarityEmbedder,
+    build_from_docs,
+)
+from harnesscad.agents.rag.retrieval_eval import (
+    EvalCase,
+    RetrievalReport,
+    evaluate,
+    mrr,
+    recall_at_k,
+    reciprocal_rank,
+)
 
 __all__ = [
     "Chunk",
@@ -39,5 +53,13 @@ __all__ = [
     "tokenize",
     "HybridRetriever",
     "Retrieved",
+    "SimilarityBM25Index",
+    "SimilarityEmbedder",
     "build_from_docs",
+    "EvalCase",
+    "RetrievalReport",
+    "evaluate",
+    "recall_at_k",
+    "reciprocal_rank",
+    "mrr",
 ]
