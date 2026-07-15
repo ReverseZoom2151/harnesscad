@@ -145,6 +145,11 @@ class Rhino3dmBackend:
         self._solid: Optional[dict] = None   # {kind, volume, bbox, verts, faces}
         self._oplog: list = []
         self._n = {"sk": 0, "e": 0, "f": 0}
+        # Set when an op is REFUSED as ``unsupported-op``. The requested part was
+        # never built, so from that point the measurement must refuse (volume/bbox
+        # None) rather than report the pre-op (un-bored / un-cut / un-revolved)
+        # solid as if it were the finished part -- the silent-wrong-part failure.
+        self._tainted = False
 
     def _new_id(self, kind: str) -> str:
         self._n[kind] += 1
@@ -157,6 +162,9 @@ class Rhino3dmBackend:
         result = self._dispatch(op)
         if result.ok:
             self._oplog.append(op)
+        elif any(getattr(d, "code", None) == "unsupported-op"
+                 for d in result.diagnostics):
+            self._tainted = True
         return result
 
     def _add_primitive(self, sketch: str, kind: str, geom: dict) -> ApplyResult:
@@ -433,6 +441,11 @@ class Rhino3dmBackend:
         return {}
 
     def _metrics(self) -> dict:
+        if self._tainted:
+            # An unsupported op was refused: the requested part was never built,
+            # so there is nothing honest to measure. REFUSE (volume/bbox None)
+            # rather than leak the pre-op volume as a plausible wrong number.
+            return {"volume": None, "bbox": None}
         if self._solid is None:
             return {"volume": 0.0, "bbox": [0.0, 0.0, 0.0]}
         verts, tris = self.mesh()

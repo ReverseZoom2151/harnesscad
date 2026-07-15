@@ -112,13 +112,46 @@ class Rhino3dmBackendRefusalTest(unittest.TestCase):
             self.assertIn("unsupported-op", codes,
                           f"{type(op).__name__} refused with {codes}")
 
-    def test_refusal_does_not_change_measurement(self) -> None:
+    def test_refused_op_taints_the_measurement(self) -> None:
+        # Before the refusal the box measures honestly.
         b = self._built()
-        before = b.query("metrics")
-        b.apply(Shell((), 2.0))          # refused
-        after = b.query("metrics")
-        # A refused op leaves the solid EXACTLY as it was -- no fake number.
-        self.assertEqual(before, after)
+        self.assertAlmostEqual(b.query("metrics")["volume"], 10 * 10 * 5, places=6)
+        # A refused unsupported op means the requested part was NEVER built, so the
+        # measurement must REFUSE (volume/bbox None) -- it must NOT keep reporting
+        # the pre-op solid as if it were the finished part (the silent-wrong-part
+        # failure the oracle exists to catch).
+        r = b.apply(Shell((), 2.0))              # refused: rhino3dm cannot shell
+        self.assertFalse(r.ok)
+        for q in ("metrics", "measure"):
+            self.assertIsNone(b.query(q)["volume"], q)
+            self.assertIsNone(b.query(q)["bbox"], q)
+
+    def test_hole_refuses_measurement_not_the_unbored_volume(self) -> None:
+        # The WORST case: a plate with a hole must NOT come back as the un-bored
+        # plate volume (24000 for a 60x40x10 plate). rhino3dm has no boolean, so
+        # the hole is refused and the whole measurement is refused with it.
+        b = _box_backend(60, 40, 10)
+        self.assertAlmostEqual(b.query("metrics")["volume"], 24000.0, places=6)
+        r = b.apply(Hole(">Z", 30.0, 20.0, 10.0, None, True, "simple"))
+        self.assertFalse(r.ok)
+        self.assertIn("unsupported-op", [d.code for d in r.diagnostics])
+        self.assertIsNone(b.query("metrics")["volume"])   # NOT 24000
+        self.assertIsNone(b.query("measure")["volume"])
+
+    def test_revolve_refuses_measurement_not_zero(self) -> None:
+        # A revolve used to leak 0.0 (no solid). It must refuse, not report zero.
+        b = _box_backend(10, 10, 5)
+        r = b.apply(Revolve("sk1"))
+        self.assertFalse(r.ok)
+        self.assertIsNone(b.query("measure")["volume"])
+
+    def test_supported_op_still_measures_after_a_taint_free_stream(self) -> None:
+        # A stream with NO refused op measures normally -- the taint is not a
+        # blanket off-switch, only a refused unsupported op trips it.
+        b = _box_backend(12, 8, 4)
+        self.assertAlmostEqual(b.query("measure")["volume"], 12 * 8 * 4, places=6)
+        self.assertEqual([round(c, 6) for c in b.query("measure")["bbox"]],
+                         [12.0, 8.0, 4.0])
 
     def test_second_extrude_refused_no_boolean(self) -> None:
         b = self._built()
