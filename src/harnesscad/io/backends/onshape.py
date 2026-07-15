@@ -174,6 +174,11 @@ REFUSED_OPS: Dict[str, str] = {
     "split": "split needs a face/plane geometry query to name the cutting surface",
     "thicken": "thicken needs a face/sheet geometry query to name the surfaces to "
                "offset",
+    "hull": "a convex hull needs the body queries for the bodies it encloses; "
+            "this backend maps only the coordinate-free sketch+extrude+boolean "
+            "subset",
+    "minkowski": "a Minkowski sum / offset-solid has no query-free feature "
+                 "mapping here; this backend maps only sketch+extrude+boolean",
 }
 
 #: Human-readable record of the op->feature mapping, surfaced by

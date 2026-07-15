@@ -43,11 +43,11 @@ from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
-    Primitive, Split, Thicken,
+    Primitive, Split, Thicken, Hull, Minkowski,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog,
 )
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
@@ -329,6 +329,17 @@ class CadQueryBackend:
             return self._split(op)
         if isinstance(op, Thicken):
             return self._thicken(op)
+        if isinstance(op, Hull):
+            return _err("unsupported-op",
+                        "the cadquery backend cannot build a convex hull: OCCT has "
+                        "no convex-hull operation exposed through CadQuery. A hull "
+                        "is built by the openscad or manifold backend")
+        if isinstance(op, Minkowski):
+            return _err("unsupported-op",
+                        "the cadquery backend cannot build a Minkowski sum: OCCT "
+                        "has no 3D Minkowski / ball-dilation operation exposed "
+                        "through CadQuery. A ball dilation is built by the frep "
+                        "SDF kernel or by OpenSCAD's minkowski()")
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -422,6 +433,9 @@ class CadQueryBackend:
         for ref in (op.a, op.b):
             if ref and ref not in refs:
                 return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        bad = check_mate_ports(op)
+        if bad is not None:
+            return _err(*bad)
         self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
         return ApplyResult(True, [])
 

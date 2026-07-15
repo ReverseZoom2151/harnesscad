@@ -58,7 +58,7 @@ from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
-    Primitive, Split, Thicken,
+    Primitive, Split, Thicken, Hull, Minkowski,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -230,6 +230,12 @@ class Rhino3dmBackend:
         if isinstance(op, Thicken):
             return _unsupported("thicken", "no offset-solid / thick-solid operation "
                                 "exists")
+        if isinstance(op, Hull):
+            return _unsupported("hull", "no convex-hull operation exists in this "
+                                "container library")
+        if isinstance(op, Minkowski):
+            return _unsupported("minkowski", "no Minkowski-sum / offset operation "
+                                "exists in this container library")
         if isinstance(op, Boolean):
             return _unsupported("boolean", "openNURBS has no solid boolean engine")
         if isinstance(op, Fillet):

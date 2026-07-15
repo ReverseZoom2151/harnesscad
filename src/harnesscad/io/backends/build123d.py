@@ -56,11 +56,11 @@ from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
-    Primitive, Split, Thicken,
+    Primitive, Split, Thicken, Hull, Minkowski,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog,
 )
 from harnesscad.core.constraints import ConstraintGraph
 from harnesscad.domain.geometry.topology.selector_dsl import Entity, SelectorError
@@ -331,6 +331,17 @@ class Build123dBackend:
             return self._split(op)
         if isinstance(op, Thicken):
             return self._thicken(op)
+        if isinstance(op, Hull):
+            return _err("unsupported-op",
+                        "the build123d backend cannot build a convex hull: OCCT "
+                        "has no convex-hull operation exposed through build123d. A "
+                        "hull is built by the openscad or manifold backend")
+        if isinstance(op, Minkowski):
+            return _err("unsupported-op",
+                        "the build123d backend cannot build a Minkowski sum: OCCT "
+                        "has no 3D Minkowski / ball-dilation operation exposed "
+                        "through build123d. A ball dilation is built by the frep "
+                        "SDF kernel or by OpenSCAD's minkowski()")
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -424,6 +435,9 @@ class Build123dBackend:
         for ref in (op.a, op.b):
             if ref and ref not in refs:
                 return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        bad = check_mate_ports(op)
+        if bad is not None:
+            return _err(*bad)
         self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
         return ApplyResult(True, [])
 
