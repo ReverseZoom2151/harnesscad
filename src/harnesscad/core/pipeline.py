@@ -110,6 +110,17 @@ def _make_backend(backend: str):
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",
                     f"cadquery backend unavailable ({exc}); fell back to stub")
+    if backend == "onshape":
+        try:
+            # The OnshapeBackend actuates Onshape geometry over its signed REST
+            # API. It needs ONSHAPE_ACCESS_KEY / ONSHAPE_SECRET_KEY in the
+            # environment (read there only, never entered/printed); absent them
+            # its constructor raises BackendUnavailable and we fall back to stub.
+            from harnesscad.io.backends.onshape import OnshapeBackend  # type: ignore
+            return OnshapeBackend(), "onshape", None
+        except Exception as exc:  # pragma: no cover - depends on live credentials
+            return (StubBackend(), "stub",
+                    f"onshape backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
 
 
