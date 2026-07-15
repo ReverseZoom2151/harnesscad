@@ -4,22 +4,20 @@ The window is a hard budget, not a suggestion:
 
     C >= S(system) + M(memory/RAG) + T(tools) + H(history) + R(reserved)
 
-Everything here is stdlib-only. Token counting is *pluggable*: the `TokenCounter`
-protocol is a single `count(text) -> int` method. The default `HeuristicCounter`
-is deliberately better than the naive 4-char rule (CAD emits code/JSON, which the
-4-char rule mis-estimates by 20-40%): it counts word runs, digit runs, and
-individual punctuation marks as separate tokens, which tracks real BPE token
-counts far more closely on structured text. To get exact counts, drop in a
+The default path is stdlib-only. Token counting is *pluggable*: the
+`TokenCounter` protocol is a single `count(text) -> int` method. By default the
+manager uses `context.tokenizer.default_counter()`, which prefers a REAL BPE
+tokenizer when one is importable (tiktoken, then transformers -- both optional,
+never a hard dependency) and otherwise falls back to `BPEApproxCounter`, a
+stdlib, deterministic byte-pair approximation calibrated for JSON + code. That
+fallback replaces the old raw-`HeuristicCounter` default, which was 20-40% off
+on CISP JSON op streams (it counted every brace/quote/colon as its own token,
+whereas real BPE merges adjacent punctuation). `HeuristicCounter` is kept as the
+last-resort baseline and for comparison. To force an exact count, drop in a
 tokenizer-backed counter, e.g.::
 
-    import tiktoken
-    class TiktokenCounter:
-        def __init__(self, model="gpt-4o"):
-            self._enc = tiktoken.encoding_for_model(model)
-        def count(self, text: str) -> int:
-            return len(self._enc.encode(text))
-
-    cm = ContextManager(budget=128_000, counter=TiktokenCounter())
+    from harnesscad.agents.context.tokenizer import TiktokenCounter
+    cm = ContextManager(budget=128_000, counter=TiktokenCounter(model="gpt-4o"))
 
 Nothing else in this module changes — the counter is the only swap point.
 
@@ -72,6 +70,19 @@ class HeuristicCounter:
         if not text:
             return 0
         return len(_TOKEN_RE.findall(text))
+
+
+def _default_counter() -> TokenCounter:
+    """The manager's default counter. Lazy import breaks the tokenizer<->manager
+    cycle and keeps a `tokenizer` import failure from ever bricking the manager:
+    the raw `HeuristicCounter` remains the ultimate fallback.
+    """
+    try:
+        from harnesscad.agents.context.tokenizer import default_counter
+
+        return default_counter()
+    except Exception:
+        return HeuristicCounter()
 
 
 # --- budget report ---------------------------------------------------------
@@ -170,8 +181,10 @@ class ContextManager:
 
     `budget` is C (total tokens the window admits). `reserved` is the default R
     (space held back for the model's completion) applied when a call doesn't
-    override it. `counter` is any `TokenCounter`; the default heuristic counter
-    is stdlib-only.
+    override it. `counter` is any `TokenCounter`; when none is passed the manager
+    calls `context.tokenizer.default_counter()`, which uses a real BPE tokenizer
+    if one is importable and otherwise a calibrated stdlib approximation. Pass a
+    model-specific counter to pin the tokenizer.
     """
 
     def __init__(
@@ -183,7 +196,7 @@ class ContextManager:
         if budget <= 0:
             raise ValueError("budget (C) must be positive")
         self.budget = budget
-        self.counter = counter if counter is not None else HeuristicCounter()
+        self.counter = counter if counter is not None else _default_counter()
         self.default_reserved = reserved
 
     # --- counting helpers -------------------------------------------------

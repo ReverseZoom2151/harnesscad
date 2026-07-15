@@ -26,6 +26,12 @@ from harnesscad.agents.context.manager import (
     TokenCounter,
     AssembledContext,
 )
+from harnesscad.agents.context.tokenizer import (
+    BPEApproxCounter,
+    HFTokenizerCounter,
+    TiktokenCounter,
+    default_counter,
+)
 from harnesscad.agents.context.staging import StagingArea
 
 __all__ = [
@@ -35,5 +41,9 @@ __all__ = [
     "HeuristicCounter",
     "TokenCounter",
     "AssembledContext",
+    "BPEApproxCounter",
+    "HFTokenizerCounter",
+    "TiktokenCounter",
+    "default_counter",
     "StagingArea",
 ]
