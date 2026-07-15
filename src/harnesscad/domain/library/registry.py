@@ -38,12 +38,15 @@ __all__ = [
     "find_part",
     "instantiate",
     "family",
+    "gears",
     "standards",
     "ingest_rules",
     "rule_conflicts",
     "thread",
     "heatsert",
     "aci",
+    "carbon",
+    "provenance",
     "normalize_names",
     "name_semantics",
     "induce_concepts",
@@ -154,6 +157,42 @@ def family(part: str, axes: Dict[str, Sequence[Any]], unit: str = "mm"):
 
 
 # --------------------------------------------------------------------------- #
+# Gear trains (ISO-preferred modules, involute geometry, meshing)
+# --------------------------------------------------------------------------- #
+def gears(module: float, teeth: int, mate_teeth: Optional[int] = None,
+          helix_angle: float = 0.0, pressure_angle: float = 20.0,
+          snap: bool = False) -> dict:
+    """Involute-gear geometry from module + tooth count, optional mesh check.
+
+    With ``snap`` the raw module is first snapped to the nearest ISO-preferred
+    value (CAD-GPT's series). When ``mate_teeth`` is given, the pair is checked
+    for meshing and the gear ratio + centre distance are returned -- gears with a
+    module or helix mismatch report WHY they cannot mesh rather than pretend to.
+    """
+    from harnesscad.domain.library.gear_train import (
+        gear_geometry, mesh_pair, snap_module,
+    )
+
+    m = snap_module(float(module)) if snap else float(module)
+    g = gear_geometry(m, int(teeth), helix_angle=float(helix_angle),
+                      pressure_angle=float(pressure_angle))
+    out = {
+        "module": g.module, "teeth": g.teeth, "helix_angle": g.helix_angle,
+        "pitch_diameter": g.pitch_diameter, "outside_diameter": g.outside_diameter,
+        "root_diameter": g.root_diameter, "base_diameter": g.base_diameter,
+        "snapped_module": m if snap else None,
+    }
+    if mate_teeth is not None:
+        mate = gear_geometry(m, int(mate_teeth), helix_angle=float(helix_angle),
+                             pressure_angle=float(pressure_angle))
+        mesh = mesh_pair(g, mate)
+        out["mesh"] = {"meshes": bool(mesh.meshes), "gear_ratio": mesh.gear_ratio,
+                       "center_distance": mesh.center_distance,
+                       "reasons": list(mesh.reasons)}
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Standards knowledge base
 # --------------------------------------------------------------------------- #
 def standards():
@@ -249,6 +288,38 @@ def aci(value: Any) -> dict:
         index = name_to_aci(str(value))
     return {"index": index, "name": aci_to_name(index),
             "rgb": aci_to_rgb(index), "special": bool(is_special(index))}
+
+
+# --------------------------------------------------------------------------- #
+# Standards accounting: embodied carbon + cited provenance
+# --------------------------------------------------------------------------- #
+def carbon(uses: Sequence[Dict[str, Any]], top_n: Optional[int] = None,
+           table: Optional[Dict[str, float]] = None) -> dict:
+    """Embodied-carbon (CO2e) accounting over a bill of materials.
+
+    ``uses`` is a sequence of ``{"material", "mass_kg"}`` mappings. Unknown
+    materials raise rather than being silently tallied as zero. Optionally
+    returns the top-``top_n`` worst offenders. Routes through the standards
+    accounting front door (:mod:`harnesscad.domain.standards.accounting`).
+    """
+    from harnesscad.domain.standards import accounting
+
+    out = {"total_co2e_kg": accounting.carbon_total(uses, table=table)}
+    if top_n is not None:
+        out["top"] = accounting.carbon_top(uses, n=int(top_n), table=table)
+    return out
+
+
+def provenance(spec: Dict[str, Any]) -> dict:
+    """Roll a design spec's standards data into a review-ready provenance bundle.
+
+    Returns the cited records, a deterministic digest (identical specs -> identical
+    digest), the citation gate, and any references the databases could not vouch
+    for. Front door: :mod:`harnesscad.domain.standards.accounting`.
+    """
+    from harnesscad.domain.standards import accounting
+
+    return accounting.provenance(spec)
 
 
 # --------------------------------------------------------------------------- #
@@ -357,6 +428,8 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "a catalogue part -> range-validated CISP ops"),
     ("parts", "family", _LIB + "family",
      "a validated parameter sweep of one part -> a family manifest"),
+    ("parts", "gears", _LIB + "gear_train",
+     "ISO-preferred gear modules, involute geometry, and mesh/ratio checks"),
     ("names", "normalize_names", _LIB + "name_normalizer",
      "strip the CAD tool's default names, dedupe, key"),
     ("names", "name_semantics", _LIB + "partname_ppmi",
@@ -381,6 +454,12 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "heat-set insert bore schedule, depth/volume, wall fit"),
     ("standards", "aci", _STD + "aci_color",
      "AutoCAD Color Index: name <-> index <-> RGB, nearest legal index"),
+    ("standards", "carbon", _STD + "accounting",
+     "the standards-accounting front door (embodied carbon + cited provenance)"),
+    ("standards", "carbon", _STD + "embodied_carbon",
+     "embodied-carbon (CO2e) accounting over a bill of materials; worst offenders"),
+    ("standards", "provenance", _STD + "evidence_bundle",
+     "the cited-provenance bundle over a design spec (records, digest, gate)"),
 )
 
 
