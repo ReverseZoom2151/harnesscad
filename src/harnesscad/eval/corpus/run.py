@@ -42,6 +42,7 @@ from typing import Dict, List, Optional, Sequence
 
 from harnesscad.eval.corpus import consensus as consensus_mod
 from harnesscad.eval.corpus import dev as dev_split
+from harnesscad.eval.corpus import measurement as measurement_mod
 from harnesscad.eval.corpus.grade import Score, grade_reference
 from harnesscad.eval.corpus.spec import Brief, Source
 from harnesscad.eval.selftest import properties
@@ -58,6 +59,10 @@ class CorpusReport:
     property_violations: List[dict] = field(default_factory=list)
     property_checks: int = 0
     scores: List[Score] = field(default_factory=list)
+    #: The FULL MEASUREMENT VECTOR per brief (envelope residuals + IoU + probes),
+    #: from ``eval.corpus.measurement``. Reported alongside the envelope scores; it
+    #: is the many-to-one closer the audit (gap #5) asked the grader to call.
+    vectors: List[dict] = field(default_factory=list)
     corroboration: List[dict] = field(default_factory=list)
     engines: List[str] = field(default_factory=list)
     by_source: Dict[str, int] = field(default_factory=dict)
@@ -104,6 +109,7 @@ class CorpusReport:
                 "reference_shape_pass": (None if self.gated
                                          else self.reference_shape_pass),
                 "scores": [] if self.gated else [s.to_dict() for s in self.scores],
+                "measurement_vectors": [] if self.gated else self.vectors,
                 "engines": self.engines,
                 "corroboration": self.corroboration}
 
@@ -142,8 +148,12 @@ def run(briefs: Optional[Sequence[Brief]] = None,
     # 2. the reference self-test.
     from harnesscad.eval.corpus.grade import grade
     for b in the_briefs:
-        r.scores.append(grade(b, list(b.reference), backend=backend,
-                              with_shape=with_shape))
+        s = grade(b, list(b.reference), backend=backend, with_shape=with_shape)
+        r.scores.append(s)
+        if with_shape:
+            # The FULL measurement vector, composed from the score already computed
+            # (no rebuild). This is the corpus grader calling the many-to-one closer.
+            r.vectors.append(measurement_mod.from_score(b, s).to_dict())
 
     # 3. corroboration.
     if corroborate:
