@@ -30,6 +30,21 @@ freecad = []
 cua = ["uiautomation>=2.0; sys_platform == 'win32'"]
 # Provider-agnostic LLM layer (LiteLLM) + structured op output (Instructor).
 llm = ["litellm>=1.0", "instructor>=1.0"]
+# Self-training the CAD planner: QLoRA SFT (RFT) + KTO/DPO on the oracle-certified
+# corpora in assets/selftrain/. Heavy, GPU-only, and DELIBERATELY isolated behind
+# this extra -- the core spine and its test suite run with none of it installed, and
+# every module in agents/selftrain/train/ import-guards these so the suite SKIPs
+# cleanly on a CPU-only machine. bitsandbytes>=0.48 is required for CUDA >= 12.6 /
+# 13.x (older wheels ship no matching GPU binary and silently fall back to CPU).
+train = [
+    "torch>=2.3",
+    "transformers>=4.45",
+    "peft>=0.12",
+    "trl>=0.11",
+    "bitsandbytes>=0.48; sys_platform != 'darwin'",
+    "datasets>=2.20",
+    "accelerate>=0.34",
+]
 # Real 2D sketch constraint solver (SolveSpace). Optional: the ConstraintGraph
 # DOF analysis in constraints.py is stdlib-only; this extra adds the concrete
 # geometric solve via constraints.SolveSpaceSketch.
