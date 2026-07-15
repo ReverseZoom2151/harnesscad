@@ -51,11 +51,13 @@ from harnesscad.io import gate
 from harnesscad.domain.programs.ast.typed_csg import Node
 from harnesscad.io.formats import amf as amf_codec
 from harnesscad.io.formats import dxf as dxf_codec
+from harnesscad.io.formats import kcl as kcl_codec
 from harnesscad.io.formats import glb as glb_codec
 from harnesscad.io.formats import obj as obj_codec
 from harnesscad.io.formats import ply as ply_codec
 from harnesscad.io.formats import step as step_codec
 from harnesscad.io.formats import stl as stl_codec
+from harnesscad.io.formats import threedm as threedm_codec
 from harnesscad.io.formats import threemf as threemf_codec
 from harnesscad.io.formats import svg as svg_codec
 from harnesscad.io.formats import xcsg as xcsg_codec
@@ -356,6 +358,19 @@ def _write_3mf(obj: Any, path: str, color: Any = None, **_: Any) -> None:
                             name=mesh.name)
 
 
+def _read_3dm(path: str, **_: Any) -> Mesh:
+    verts, tris, unit = threedm_codec.read_3dm(path)
+    return Mesh.from_vertices_faces(verts, tris, name=os.path.basename(path),
+                                    unit=unit)
+
+
+def _write_3dm(obj: Any, path: str, **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in threedm_codec.UNITS else "millimeter"
+    threedm_codec.write_3dm(path, verts, faces, unit=unit, name=mesh.name)
+
+
 def _read_step(path: str, **_: Any) -> step_codec.StepFile:
     with open(path, "r", encoding="utf-8") as fh:
         return step_codec.parse(fh.read())
@@ -373,6 +388,19 @@ def _read_xcsg(path: str, **_: Any) -> Node:
 
 def _write_xcsg(obj: Any, path: str, **kwargs: Any) -> None:
     xcsg_codec.write_xcsg(path, _csg_node(obj), **kwargs)
+
+
+def _write_kcl(obj: Any, path: str, **kwargs: Any) -> None:
+    """KCL is write-only: lower a CISP op stream / backend / session to a .kcl program.
+
+    Unlike the mesh codecs, KCL does not take neutral geometry -- a triangle soup
+    is not a code-CAD program. It takes something carrying a CISP op log (a
+    ZooBackend, any GeometryBackend, a HarnessSession) or a raw list of ops, and
+    emits the deterministic program. Reading a .kcl back into geometry means
+    executing it on Zoo's engine, which is not an offline operation, so there is
+    no reader -- exactly like SVG.
+    """
+    kcl_codec.write_kcl(obj, path, **kwargs)
 
 
 def _write_png(obj: Any, path: str, **kwargs: Any) -> None:
@@ -500,6 +528,17 @@ _ADAPTERS: Dict[str, _Adapter] = {
              "unit-bearing, optional #RRGGBB(AA) object colour. Fixed ZIP "
              "timestamps so the bytes are reproducible.",
     ),
+    "harnesscad.io.formats.threedm": _Adapter(
+        extensions=(".3dm",), mime="model/vnd.opennurbs+3dm", kind="mesh",
+        read_symbols=("read_3dm",), write_symbols=("write_3dm", "serialize_3dm"),
+        reader=_read_3dm, writer=_write_3dm, lossless=True,
+        note="Rhino openNURBS .3dm via the standalone rhino3dm wheel. Indexed, "
+             "unit-bearing (the model unit is stored in File3dm.Settings."
+             "ModelUnitSystem and read back). A container codec: it moves a mesh "
+             "in and out, it does not run the openNURBS kernel. Requires the "
+             "optional rhino3dm dependency; without it read/write raise a clean "
+             "ThreeDmError. Geometry+unit round-trip, not byte-reproducible.",
+    ),
     "harnesscad.io.formats.step": _Adapter(
         extensions=(".step", ".stp"), mime="model/step", kind="brep",
         read_symbols=("parse",), write_symbols=("serialize",),
@@ -530,6 +569,15 @@ _ADAPTERS: Dict[str, _Adapter] = {
              "geometry. Pixels cannot be decoded back into a model, so there is no "
              "reader. Options pass through to io.render.render(): view=, shading=, "
              "edges=, ssaa=, width=, height=, projection=.",
+    ),
+    "harnesscad.io.formats.kcl": _Adapter(
+        extensions=(".kcl",), mime="text/x-kcl", kind="program",
+        read_symbols=(), write_symbols=("write_kcl", "serialize_kcl"),
+        reader=None, writer=_write_kcl, lossless=False,
+        note="WRITE-ONLY: lowers a CISP op stream (a backend/session/op-list, NOT "
+             "a mesh) to a Zoo KittyCAD-Language .kcl program. Deterministic and "
+             "offline. Reading a .kcl back into geometry means executing it on "
+             "Zoo's engine, which is not offline, so there is no reader.",
     ),
     "harnesscad.io.formats.dxf": _Adapter(
         extensions=(".dxf",), mime="image/vnd.dxf", kind="drawing",

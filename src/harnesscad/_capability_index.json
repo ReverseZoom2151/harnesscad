@@ -2136,6 +2136,30 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.rag.aql_query",
+      "imports": [],
+      "layer": "agents",
+      "name": "aql_query",
+      "package": "rag",
+      "summary": "AQL -- a restricted, deterministic query notation for retrieval-as-query.",
+      "symbols": [
+        "Column",
+        "FindQuery",
+        "JoinQuery",
+        "ParseError",
+        "SaveCommand",
+        "SchemaCommand",
+        "Source",
+        "delegation_report",
+        "parse",
+        "parse_program"
+      ],
+      "tags": [
+        "benchmark",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.rag.chunk",
       "imports": [],
       "layer": "agents",
@@ -2584,12 +2608,93 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.selftrain.train.dpo",
+      "imports": [
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.data",
+        "harnesscad.agents.selftrain.train.require",
+        "harnesscad.agents.selftrain.train.sft",
+        "harnesscad.agents.selftrain.train.sft.BASE_MODEL",
+        "harnesscad.agents.selftrain.train.sft.SEED",
+        "harnesscad.agents.selftrain.train.sft._lora_config",
+        "harnesscad.agents.selftrain.train.sft.load_base",
+        "harnesscad.agents.selftrain.train.sft.seed_everything"
+      ],
+      "layer": "agents",
+      "name": "dpo",
+      "package": "selftrain",
+      "summary": "STAGE 3 -- DPO (Robust). Pairwise preference optimisation, run only if KTO stalls.",
+      "symbols": [
+        "DPOResult",
+        "main",
+        "train_dpo"
+      ],
+      "tags": [
+        "optimization"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.evaluate",
+      "imports": [
+        "harnesscad.agents.selftrain",
+        "harnesscad.agents.selftrain.ledger",
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.data",
+        "harnesscad.agents.selftrain.train.generate",
+        "harnesscad.agents.selftrain.train.generate.strip_think",
+        "harnesscad.agents.selftrain.train.require",
+        "harnesscad.agents.selftrain.train.sft",
+        "harnesscad.eval.pressure",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.metrics",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.prompts"
+      ],
+      "layer": "agents",
+      "name": "evaluate",
+      "package": "selftrain",
+      "summary": "THE POINT: fine-tune vs base vs Oracle-Best-of-N, on briefs we did not train on.",
+      "symbols": [
+        "ArmResult",
+        "HFGenerator",
+        "best_of_n_solver",
+        "compare",
+        "grade_solver",
+        "mcnemar_exact",
+        "ollama_solver",
+        "wilson"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.experiment",
+      "imports": [
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.evaluate",
+        "harnesscad.agents.selftrain.train.require",
+        "harnesscad.agents.selftrain.train.sft",
+        "harnesscad.agents.selftrain.train.sft.BASE_MODEL"
+      ],
+      "layer": "agents",
+      "name": "experiment",
+      "package": "selftrain",
+      "summary": "Run the whole comparison and write the report. One base model, three arms.",
+      "symbols": [
+        "main",
+        "run_experiment"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.agents.selftrain.train.generate",
       "imports": [
         "harnesscad.agents.selftrain",
         "harnesscad.agents.selftrain.ledger",
         "harnesscad.eval.pressure",
         "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.metrics",
         "harnesscad.eval.pressure.model",
         "harnesscad.eval.pressure.prompts"
       ],
@@ -2608,6 +2713,59 @@
       "tags": [
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.grounding",
+      "imports": [
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.require",
+        "harnesscad.eval.grounding",
+        "harnesscad.eval.grounding.cadspot"
+      ],
+      "layer": "agents",
+      "name": "grounding",
+      "package": "selftrain",
+      "summary": "Grounding-LoRA: a QLoRA VLM fine-tune to click the CAD viewport, and the honest",
+      "symbols": [
+        "GroundingDataStats",
+        "GroundingResult",
+        "LoRAGroundingPredictor",
+        "build_examples",
+        "dataset_stats",
+        "format_answer",
+        "main",
+        "make_predictor",
+        "parse_answer",
+        "random_seed",
+        "train_grounding_lora"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.selftrain.train.kto",
+      "imports": [
+        "harnesscad.agents.selftrain.train",
+        "harnesscad.agents.selftrain.train.data",
+        "harnesscad.agents.selftrain.train.require",
+        "harnesscad.agents.selftrain.train.sft",
+        "harnesscad.agents.selftrain.train.sft.BASE_MODEL",
+        "harnesscad.agents.selftrain.train.sft.SEED",
+        "harnesscad.agents.selftrain.train.sft._lora_config",
+        "harnesscad.agents.selftrain.train.sft.load_base",
+        "harnesscad.agents.selftrain.train.sft.seed_everything"
+      ],
+      "layer": "agents",
+      "name": "kto",
+      "package": "selftrain",
+      "summary": "STAGE 2 -- KTO. Unpaired binary preference optimisation on oracle labels.",
+      "symbols": [
+        "KTOResult",
+        "main",
+        "train_kto"
+      ],
+      "tags": [
+        "optimization"
       ]
     },
     {
@@ -3129,6 +3287,8 @@
         "harnesscad.eval.reliability.strategies.best_of_n.best_of_n",
         "harnesscad.io.backends.cadquery",
         "harnesscad.io.backends.cadquery.CadQueryBackend",
+        "harnesscad.io.backends.onshape",
+        "harnesscad.io.backends.onshape.OnshapeBackend",
         "harnesscad.io.backends.stub",
         "harnesscad.io.backends.stub.StubBackend"
       ],
@@ -5919,6 +6079,21 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.domain.assembly.interference",
+      "imports": [],
+      "layer": "domain",
+      "name": "interference",
+      "package": "assembly",
+      "summary": "AABB interference detection with a minimum-clearance fix-vector suggestion.",
+      "symbols": [
+        "AABB",
+        "Clip",
+        "InterferenceResult",
+        "check_interference"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.domain.drawings.annotation_mapping",
       "imports": [
         "harnesscad.domain.drawings.annotation_parser",
@@ -7843,6 +8018,31 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.assembly.mates",
+      "imports": [],
+      "layer": "domain",
+      "name": "mates",
+      "package": "geometry",
+      "summary": "Port- and mate-based assembly interfaces with deterministic closed-form transforms.",
+      "symbols": [
+        "Mate",
+        "Port",
+        "compose",
+        "flip_x_frame",
+        "invert_frame",
+        "mate_is_valid",
+        "mate_transform",
+        "port_frame",
+        "ports_compatible",
+        "transform_point",
+        "twist_z_frame"
+      ],
+      "tags": [
+        "assembly",
+        "geometry"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.assembly.patterns",
       "imports": [],
       "layer": "domain",
@@ -8766,6 +8966,31 @@
       "tags": [
         "geometry",
         "meshing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.mesh.intersection_repair",
+      "imports": [
+        "harnesscad.domain.geometry.mesh.bvh",
+        "harnesscad.domain.geometry.mesh.bvh.AABB",
+        "harnesscad.domain.geometry.mesh.bvh.BVH",
+        "harnesscad.domain.geometry.mesh.bvh.boxes_of_triangles",
+        "harnesscad.domain.geometry.mesh.triangle_intersect",
+        "harnesscad.domain.geometry.mesh.triangle_intersect.triangles_intersect"
+      ],
+      "layer": "domain",
+      "name": "intersection_repair",
+      "package": "geometry",
+      "summary": "Deterministic self-intersection detection and repair for triangle meshes.",
+      "symbols": [
+        "RepairResult",
+        "find_self_intersections",
+        "repair_self_intersections"
+      ],
+      "tags": [
+        "geometry",
+        "meshing",
+        "repair"
       ]
     },
     {
@@ -9874,6 +10099,31 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.sdf.rounded_csg",
+      "imports": [],
+      "layer": "domain",
+      "name": "rounded_csg",
+      "package": "geometry",
+      "summary": "Circular-arc rounded Boolean CSG, ported from ImplicitCAD's ``MathUtil``.",
+      "symbols": [
+        "rmax",
+        "rmaximum",
+        "rmin",
+        "rminimum",
+        "rounded_complement",
+        "rounded_difference",
+        "rounded_intersection",
+        "rounded_union"
+      ],
+      "tags": [
+        "csg",
+        "curves",
+        "geometry",
+        "implicit",
+        "sdf"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.sdf.spiral",
       "imports": [],
       "layer": "domain",
@@ -9888,6 +10138,45 @@
       "tags": [
         "curves",
         "geometry",
+        "sdf"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.sdf.sweep",
+      "imports": [],
+      "layer": "domain",
+      "name": "sweep",
+      "package": "geometry",
+      "summary": "Twisted / scaled linear extrusion of a 2D field, from ImplicitCAD ``ExtrudeM``.",
+      "symbols": [
+        "linear_extrude",
+        "taper_extrude",
+        "twist_extrude"
+      ],
+      "tags": [
+        "features",
+        "geometry",
+        "implicit",
+        "sdf"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.sdf.symmetry",
+      "imports": [],
+      "layer": "domain",
+      "name": "symmetry",
+      "package": "geometry",
+      "summary": "Arbitrary-hyperplane mirror and geometric-mean scale, from ImplicitCAD.",
+      "symbols": [
+        "geometric_mean_scale",
+        "mirror",
+        "reflect_point",
+        "scale_geometric"
+      ],
+      "tags": [
+        "benchmark",
+        "geometry",
+        "implicit",
         "sdf"
       ]
     },
@@ -9984,7 +10273,10 @@
         "harnesscad.domain.geometry.sdf.developability",
         "harnesscad.domain.geometry.sdf.developable_detect",
         "harnesscad.domain.geometry.sdf.extra_shapes",
+        "harnesscad.domain.geometry.sdf.rounded_csg",
         "harnesscad.domain.geometry.sdf.spiral",
+        "harnesscad.domain.geometry.sdf.sweep",
+        "harnesscad.domain.geometry.sdf.symmetry",
         "harnesscad.domain.geometry.sdf.tpms",
         "harnesscad.domain.geometry.sketch",
         "harnesscad.domain.geometry.sketch.constraints",
@@ -10446,6 +10738,22 @@
         "benchmark",
         "geometry",
         "sketch"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.topology.coedge_walks",
+      "imports": [],
+      "layer": "domain",
+      "name": "coedge_walks",
+      "package": "geometry",
+      "summary": "Coedge topology and topological walks (BRepNet's B-Rep message-passing kernel).",
+      "symbols": [
+        "CoedgeTopology"
+      ],
+      "tags": [
+        "brep",
+        "geometry",
+        "topology"
       ]
     },
     {
@@ -18390,6 +18698,24 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.kcl_grammar",
+      "imports": [],
+      "layer": "domain",
+      "name": "kcl_grammar",
+      "package": "spec",
+      "summary": "Deterministic KCL (Zoo/KittyCAD modeling language) tokeniser and grammar tables.",
+      "symbols": [
+        "Token",
+        "keyword_or_word",
+        "lex",
+        "lex_significant"
+      ],
+      "tags": [
+        "parsing",
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.parse_states",
       "imports": [],
       "layer": "domain",
@@ -18552,6 +18878,23 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.scad_parameters",
+      "imports": [],
+      "layer": "domain",
+      "name": "scad_parameters",
+      "package": "spec",
+      "summary": "Extract editable parameters from OpenSCAD source (Customizer annotation vocab).",
+      "symbols": [
+        "Parameter",
+        "ParameterOption",
+        "parse_parameters"
+      ],
+      "tags": [
+        "parametric",
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.spec_coverage",
       "imports": [
         "harnesscad.agents.context.spec_components",
@@ -18670,6 +19013,26 @@
         "parsing",
         "spec",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.spec.zoo_catalog",
+      "imports": [],
+      "layer": "domain",
+      "name": "zoo_catalog",
+      "package": "spec",
+      "summary": "Deterministic catalogue of Zoo/KittyCAD's KCL stdlib, engine ops and file formats.",
+      "symbols": [
+        "can_convert",
+        "conversions_from",
+        "conversions_to",
+        "import_format_for_extension",
+        "is_engine_op",
+        "std_function_names",
+        "std_modules"
+      ],
+      "tags": [
+        "spec"
       ]
     },
     {
@@ -22361,6 +22724,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.retrieval.text_to_cad_retrieval",
+      "imports": [],
+      "layer": "eval",
+      "name": "text_to_cad_retrieval",
+      "package": "bench",
+      "summary": "Text-to-CAD retrieval benchmark protocol: Recall@K, Median Rank, Rsum.",
+      "symbols": [
+        "median_rank",
+        "rank_of",
+        "recall_at_k",
+        "retrieval_report",
+        "rsum"
+      ],
+      "tags": [
+        "benchmark",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.retrieval.tiered_retrieval_metrics",
       "imports": [
         "harnesscad.eval.bench.retrieval.ranked_retrieval_metrics",
@@ -23907,6 +24289,83 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.hardcorpus.ambiguous",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op"
+      ],
+      "layer": "eval",
+      "name": "ambiguous",
+      "package": "hardcorpus",
+      "summary": "UNDERSPECIFICATION: the brief with a hole in it, where the answer is a QUESTION.",
+      "symbols": [
+        "AmbiguousBrief",
+        "Clarify",
+        "ScoreReport",
+        "Verdict",
+        "classify",
+        "score"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.constraints",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.standards",
+        "harnesscad.eval.corpus.standards.CLEARANCE_ISO273",
+        "harnesscad.eval.corpus.standards.nominal_diameter",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.occt"
+      ],
+      "layer": "eval",
+      "name": "constraints",
+      "package": "hardcorpus",
+      "summary": "CONSTRAINT SATISFACTION -- where IoU is not weak but DEFINITIONALLY inapplicable.",
+      "symbols": [
+        "Constraint",
+        "ConstraintBrief",
+        "ConstraintResult",
+        "GradeReport",
+        "LoadCase",
+        "bending_constraint",
+        "bolt_bore_constraint",
+        "envelope_constraint",
+        "grade",
+        "mass_constraint"
+      ],
+      "tags": [
+        "constraints"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.dev",
+      "imports": [
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.ambiguous",
+        "harnesscad.eval.hardcorpus.constraints",
+        "harnesscad.eval.hardcorpus.discriminative",
+        "harnesscad.eval.hardcorpus.generate"
+      ],
+      "layer": "eval",
+      "name": "dev",
+      "package": "hardcorpus",
+      "summary": "The DEV split: the part of the hard corpus you may read, debug and tune on.",
+      "symbols": [
+        "counts",
+        "ids"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.hardcorpus.discriminative",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -23963,8 +24422,7 @@
         "harnesscad.eval.corpus.spec.Source",
         "harnesscad.eval.corpus.spec.Vec3",
         "harnesscad.eval.selftest.golden",
-        "harnesscad.eval.selftest.golden.chamfered_box_volume",
-        "harnesscad.eval.selftest.golden.rounded_box_volume"
+        "harnesscad.eval.selftest.golden.chamfered_box_volume"
       ],
       "layer": "eval",
       "name": "generate",
@@ -23983,6 +24441,25 @@
         "shell_open",
         "sweep_bar",
         "tooth_ring"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.heldout",
+      "imports": [
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.discriminative",
+        "harnesscad.eval.hardcorpus.generate"
+      ],
+      "layer": "eval",
+      "name": "heldout",
+      "package": "hardcorpus",
+      "summary": "THE HELD-OUT SPLIT OF THE HARD CORPUS. DO NOT IMPORT THIS MODULE.",
+      "symbols": [
+        "ids"
       ],
       "tags": []
     },
@@ -24050,6 +24527,61 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.hardcorpus.report",
+      "imports": [
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.ambiguous",
+        "harnesscad.eval.hardcorpus.constraints",
+        "harnesscad.eval.hardcorpus.dev",
+        "harnesscad.eval.hardcorpus.discriminative",
+        "harnesscad.eval.hardcorpus.generate",
+        "harnesscad.eval.hardcorpus.oracle"
+      ],
+      "layer": "eval",
+      "name": "report",
+      "package": "hardcorpus",
+      "summary": "The whole corpus in one page: the census, the headline table, and the caveats.",
+      "symbols": [
+        "ambiguous_report",
+        "census",
+        "constraint_report",
+        "decontamination_limits",
+        "discriminative_table",
+        "main",
+        "self_test"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.score",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Split",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.discriminative",
+        "harnesscad.eval.hardcorpus.heldout",
+        "harnesscad.eval.hardcorpus.oracle",
+        "harnesscad.eval.hardcorpus.weak"
+      ],
+      "layer": "eval",
+      "name": "score",
+      "package": "hardcorpus",
+      "summary": "The ONLY module allowed to import the hard corpus's held-out split.",
+      "symbols": [
+        "HeldOutReport",
+        "NearMissAudit",
+        "near_miss_audit",
+        "reference_score",
+        "score",
+        "size"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.hardcorpus.weak",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -24071,6 +24603,74 @@
         "score_weak"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.judge.best_of_n",
+      "imports": [],
+      "layer": "eval",
+      "name": "best_of_n",
+      "package": "judge",
+      "summary": "Best-of-N aggregation and the invalidity ratio, mined from cadrille.",
+      "symbols": [
+        "Candidate",
+        "RunReport",
+        "SampleResult",
+        "aggregate_run",
+        "normalize_to_unit_box",
+        "select_best"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.judge.betti",
+      "imports": [],
+      "layer": "eval",
+      "name": "betti",
+      "package": "judge",
+      "summary": "Betti numbers of a tessellated boundary, computed from a triangle mesh.",
+      "symbols": [
+        "betti_from_mesh",
+        "euler_characteristic",
+        "surface_components"
+      ],
+      "tags": [
+        "meshing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.judge.cad_score",
+      "imports": [],
+      "layer": "eval",
+      "name": "cad_score",
+      "package": "judge",
+      "summary": "CAD Score: the CADGenBench composite metric, as pure deterministic math.",
+      "symbols": [
+        "CadScoreBreakdown",
+        "cad_score",
+        "renormalize_edit_shape",
+        "shape_similarity",
+        "topology_match"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.judge.compiler_review",
+      "imports": [],
+      "layer": "eval",
+      "name": "compiler_review",
+      "package": "judge",
+      "summary": "Compiler-as-a-review: a deterministic structural grader for sketch-extrude",
+      "symbols": [
+        "ReviewResult",
+        "feedback_message",
+        "review_sequence"
+      ],
+      "tags": [
+        "features",
+        "sketch"
+      ]
     },
     {
       "dotted": "harnesscad.eval.memory.ab",
@@ -28674,6 +29274,51 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.backends.manifold",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.ccw",
+        "harnesscad.io.backends.external.plane_axes",
+        "harnesscad.io.backends.external.plane_normal",
+        "harnesscad.io.backends.external.profile_loops",
+        "harnesscad.io.backends.external.segments_for",
+        "harnesscad.io.backends.external.slab",
+        "harnesscad.io.backends.external.to_world",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.Node",
+        "harnesscad.io.backends.frep.SHELL_FACES",
+        "harnesscad.io.backends.frep.countersink_depth",
+        "harnesscad.io.backends.frep.node_bounds",
+        "harnesscad.io.backends.frep.resolve_faces",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.stl"
+      ],
+      "layer": "io",
+      "name": "manifold",
+      "package": "backends",
+      "summary": "ManifoldBackend \u2014 CISP ops driven through the Manifold mesh-boolean kernel.",
+      "symbols": [
+        "ManifoldBackend",
+        "ManifoldError",
+        "lower",
+        "manifold_to_stl",
+        "render"
+      ],
+      "tags": [
+        "csg",
+        "meshing"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.backends.occt_catalog",
       "imports": [
         "harnesscad.io.formats.cpp_header",
@@ -28695,6 +29340,65 @@
         "build_catalog_from_headers",
         "module_of",
         "parse_ocp_config"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.onshape",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddInstance",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Draft",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Mirror",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.cua.environment_onshape",
+        "harnesscad.io.cua.environment_onshape.ACCESS_ENV",
+        "harnesscad.io.cua.environment_onshape.BoundingBox",
+        "harnesscad.io.cua.environment_onshape.DocumentRef",
+        "harnesscad.io.cua.environment_onshape.MassProperties",
+        "harnesscad.io.cua.environment_onshape.OnshapeApiError",
+        "harnesscad.io.cua.environment_onshape.OnshapeCredentials",
+        "harnesscad.io.cua.environment_onshape.OnshapeOracle",
+        "harnesscad.io.cua.environment_onshape.SECRET_ENV"
+      ],
+      "layer": "io",
+      "name": "onshape",
+      "package": "backends",
+      "summary": "OnshapeBackend -- a scriptable GeometryBackend that drives Onshape's geometry",
+      "symbols": [
+        "OnshapeBackend",
+        "OnshapeClient",
+        "OnshapeFeatureClient",
+        "build_boolean_feature",
+        "build_extrude_feature",
+        "build_sketch_feature"
       ],
       "tags": []
     },
@@ -28801,6 +29505,59 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.backends.rhino3dm",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddInstance",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Draft",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Mirror",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.PRIMITIVE_DOF",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.obj",
+        "harnesscad.io.formats.stl",
+        "harnesscad.io.formats.threedm"
+      ],
+      "layer": "io",
+      "name": "rhino3dm",
+      "package": "backends",
+      "summary": "Rhino3dmBackend -- an openNURBS geometry backend that REFUSES what it cannot do.",
+      "symbols": [
+        "Rhino3dmBackend"
+      ],
+      "tags": [
+        "curves"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.backends.stub",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -28845,6 +29602,36 @@
       "summary": "StubBackend \u2014 a dependency-free backend that models the op semantics well",
       "symbols": [
         "StubBackend"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.zoo",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.canonical_json",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.io",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.stub",
+        "harnesscad.io.backends.stub.StubBackend",
+        "harnesscad.io.formats",
+        "harnesscad.io.formats.kcl",
+        "harnesscad.io.gate"
+      ],
+      "layer": "io",
+      "name": "zoo",
+      "package": "backends",
+      "summary": "ZooBackend -- CISP ops driven through Zoo (KittyCAD): KCL + the engine API.",
+      "symbols": [
+        "ComparatorPlan",
+        "ZooBackend",
+        "ZooTextToCadComparator",
+        "token_present"
       ],
       "tags": []
     },
@@ -28978,6 +29765,28 @@
         "is_denied",
         "normalize_name",
         "rect_contains"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.cua.picks",
+      "imports": [
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.io.cua",
+        "harnesscad.io.cua.viewport"
+      ],
+      "layer": "io",
+      "name": "picks",
+      "package": "cua",
+      "summary": "picks \u2014 turn a CISP selector into CONCRETE entities, then COMPUTED clicks.",
+      "symbols": [
+        "SelectionOutcome",
+        "entities_from_topology",
+        "pick_entities",
+        "pick_op_edges",
+        "resolve",
+        "resolve_op_edges"
       ],
       "tags": []
     },
@@ -29270,6 +30079,51 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.formats.kcl",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddInstance",
+        "harnesscad.core.cisp.ops.AddLine",
+        "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.Boolean",
+        "harnesscad.core.cisp.ops.Chamfer",
+        "harnesscad.core.cisp.ops.CircularPattern",
+        "harnesscad.core.cisp.ops.Constrain",
+        "harnesscad.core.cisp.ops.Draft",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.LinearPattern",
+        "harnesscad.core.cisp.ops.Loft",
+        "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Mirror",
+        "harnesscad.core.cisp.ops.NewSketch",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.SetParam",
+        "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Sweep"
+      ],
+      "layer": "io",
+      "name": "kcl",
+      "package": "formats",
+      "summary": "KCL codec -- lower a CISP op stream to a Zoo (KittyCAD) ``.kcl`` program.",
+      "symbols": [
+        "KclEmitError",
+        "KclError",
+        "emit_kcl",
+        "ops_of",
+        "serialize_kcl",
+        "write_kcl"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.formats.mesh_order_checks",
       "imports": [],
       "layer": "io",
@@ -29433,11 +30287,13 @@
         "harnesscad.io.formats.amf",
         "harnesscad.io.formats.dxf",
         "harnesscad.io.formats.glb",
+        "harnesscad.io.formats.kcl",
         "harnesscad.io.formats.obj",
         "harnesscad.io.formats.ply",
         "harnesscad.io.formats.step",
         "harnesscad.io.formats.stl",
         "harnesscad.io.formats.svg",
+        "harnesscad.io.formats.threedm",
         "harnesscad.io.formats.threemf",
         "harnesscad.io.formats.xcsg",
         "harnesscad.io.gate",
@@ -29555,6 +30411,38 @@
         "HeaderError",
         "StepHeader",
         "parse_header"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.step_reserialize",
+      "imports": [
+        "harnesscad.io.formats.step",
+        "harnesscad.io.formats.step.Entity",
+        "harnesscad.io.formats.step.Real",
+        "harnesscad.io.formats.step.Ref",
+        "harnesscad.io.formats.step.StepFile",
+        "harnesscad.io.formats.step.Typed",
+        "harnesscad.io.formats.step.entity_refs",
+        "harnesscad.io.formats.step.serialize_entity",
+        "harnesscad.io.formats.step_graph",
+        "harnesscad.io.formats.step_graph.ROOT_TYPES"
+      ],
+      "layer": "io",
+      "name": "step_reserialize",
+      "package": "formats",
+      "summary": "DFS-based STEP reserialization with locality preservation and CoT annotations.",
+      "symbols": [
+        "BranchStats",
+        "annotated_text",
+        "branch_annotations",
+        "dfs_order",
+        "normalize_reals",
+        "renumber",
+        "reserialize"
       ],
       "tags": [
         "format",
@@ -29686,6 +30574,26 @@
         "drawings",
         "format",
         "graph",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.threedm",
+      "imports": [],
+      "layer": "io",
+      "name": "threedm",
+      "package": "formats",
+      "summary": "Rhino ``.3dm`` (openNURBS / File3dm) reader and writer.",
+      "symbols": [
+        "ThreeDmError",
+        "measure_3dm",
+        "read_3dm",
+        "serialize_3dm",
+        "write_3dm"
+      ],
+      "tags": [
+        "curves",
+        "format",
         "io"
       ]
     },
@@ -31042,8 +31950,12 @@
         "harnesscad.io.backends.freecad.FreeCADBackend",
         "harnesscad.io.backends.frep",
         "harnesscad.io.backends.frep.FRepBackend",
+        "harnesscad.io.backends.manifold",
+        "harnesscad.io.backends.manifold.ManifoldBackend",
         "harnesscad.io.backends.openscad",
         "harnesscad.io.backends.openscad.OpenScadBackend",
+        "harnesscad.io.backends.rhino3dm",
+        "harnesscad.io.backends.rhino3dm.Rhino3dmBackend",
         "harnesscad.io.backends.stub",
         "harnesscad.io.backends.stub.StubBackend"
       ],
