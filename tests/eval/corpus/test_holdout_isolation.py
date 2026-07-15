@@ -32,10 +32,28 @@ _ALLOWED = {
     pathlib.Path(__file__).resolve(),
 }
 
-#: Every syntactic way of actually IMPORTING it -- an import statement, a relative
-#: import, or a dynamic one through importlib / __import__. Prose that merely names
-#: the module (this package's own docstrings explain the discipline at length) is
-#: not a leak, and a check that flagged it would be turned off within the week.
+#: The corpus package directory. A RELATIVE import (``from . import heldout``)
+#: names ``heldout`` in the importing file's OWN package, so it is only a leak of
+#: THIS held-out split when the file lives here. The same text in
+#: ``tests/eval/hardcorpus/`` refers to the hardcorpus split, not this one.
+_CORPUS_PKG = (_SRC / "eval" / "corpus").resolve()
+
+#: The ABSOLUTE, corpus-qualified ways of importing the held-out split. These name
+#: ``harnesscad.eval.corpus.heldout`` explicitly, so they are a leak from anywhere
+#: and are checked in every file.
+_IMPORTS_ABS = re.compile(
+    r"""(?mx)
+      ^\s*from\s+harnesscad\.eval\.corpus\.heldout\s+import\b
+    | ^\s*import\s+harnesscad\.eval\.corpus\.heldout\b
+    | ^\s*from\s+harnesscad\.eval\.corpus\s+import\s+(?:[^\n]*[,(]\s*)?heldout\b
+    | (?:importlib\.import_module|__import__)\s*\(\s*["'][^"']*\bcorpus\.heldout
+    """)
+
+#: The full check -- absolute forms plus the RELATIVE forms. The relative forms are
+#: package-agnostic, so they are only applied to files inside the corpus package
+#: (see ``_offenders``); this regex, matching either, is what the leak self-test
+#: below asserts against. Prose that merely names the module is not a leak, and a
+#: check that flagged it would be turned off within the week.
 _IMPORTS = re.compile(
     r"""(?mx)
       ^\s*from\s+harnesscad\.eval\.corpus\.heldout\s+import\b
@@ -43,7 +61,7 @@ _IMPORTS = re.compile(
     | ^\s*from\s+harnesscad\.eval\.corpus\s+import\s+(?:[^\n]*[,(]\s*)?heldout\b
     | ^\s*from\s+\.\s*import\s+(?:[^\n]*[,(]\s*)?heldout\b
     | ^\s*from\s+\.heldout\s+import\b
-    | (?:importlib\.import_module|__import__)\s*\(\s*["'][^"']*corpus\.heldout
+    | (?:importlib\.import_module|__import__)\s*\(\s*["'][^"']*\bcorpus\.heldout
     """)
 
 
@@ -52,10 +70,18 @@ class TestHeldOutIsolation(unittest.TestCase):
     def _offenders(self, root: pathlib.Path):
         bad = []
         for path in sorted(root.rglob("*.py")):
-            if path.resolve() in _ALLOWED or "__pycache__" in path.parts:
+            resolved = path.resolve()
+            if resolved in _ALLOWED or "__pycache__" in path.parts:
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")
-            if _IMPORTS.search(text):
+            # A relative ``from . import heldout`` only leaks THIS split when the
+            # file is in the corpus package; elsewhere it names another package's
+            # heldout (the hardcorpus isolation test carries such a string as a
+            # fixture). So the full check runs inside the package, the absolute-only
+            # check everywhere else.
+            in_corpus_pkg = _CORPUS_PKG in resolved.parents
+            pattern = _IMPORTS if in_corpus_pkg else _IMPORTS_ABS
+            if pattern.search(text):
                 bad.append(str(path.relative_to(_ROOT)))
         return bad
 
