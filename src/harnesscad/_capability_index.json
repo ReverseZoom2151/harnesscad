@@ -569,6 +569,28 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.agents.procad_protocol",
+      "imports": [],
+      "layer": "agents",
+      "name": "procad_protocol",
+      "package": "agents",
+      "summary": "Pro-CAD two-agent protocol scaffold -- the deterministic message/critique loop.",
+      "symbols": [
+        "Critique",
+        "Message",
+        "Proposal",
+        "Role",
+        "TwoAgentProtocol",
+        "TwoAgentResult",
+        "Verdict",
+        "default_designer",
+        "default_reviewer"
+      ],
+      "tags": [
+        "agent"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.agents.roles",
       "imports": [
         "harnesscad.agents.agent.planner",
@@ -2228,6 +2250,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.memory.utility_retrieval",
+      "imports": [],
+      "layer": "agents",
+      "name": "utility_retrieval",
+      "package": "memory",
+      "summary": "Dynamic utility retrieval over a dual-track memory (Memory-Augmented RL Agent).",
+      "symbols": [
+        "DualTrackMemory",
+        "MemoryEntry",
+        "jaccard_similarity",
+        "retrieval_score"
+      ],
+      "tags": [
+        "agent",
+        "benchmark",
+        "memory",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.rag.api_knowledge",
       "imports": [],
       "layer": "agents",
@@ -3295,6 +3337,27 @@
       "tags": [
         "agent",
         "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.core.lm_solver",
+      "imports": [],
+      "layer": "core",
+      "name": "lm_solver",
+      "package": "",
+      "summary": "Levenberg-Marquardt 2D constraint solver, ported from ezpz (Rust).",
+      "symbols": [
+        "FreedomReport",
+        "LMConfig",
+        "LMResult",
+        "SolveStatus",
+        "System2D",
+        "matrix_rank",
+        "solve_residuals"
+      ],
+      "tags": [
+        "constraints",
+        "solver"
       ]
     },
     {
@@ -4421,6 +4484,20 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.data.dataengine.domain_mixing",
+      "imports": [],
+      "layer": "data",
+      "name": "domain_mixing",
+      "package": "dataengine",
+      "summary": "Curriculum domain-mixing schedule (Khoche et al., 2026, \"BlendCLIP: Bridging",
+      "symbols": [
+        "batch_composition",
+        "real_fraction",
+        "schedule_table"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.data.dataengine.edits.directional_annotations",
       "imports": [],
       "layer": "data",
@@ -4523,6 +4600,21 @@
         "group_by_prefix",
         "pair_group",
         "pair_variants"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.data.dataengine.edits.quantitative_instructions",
+      "imports": [],
+      "layer": "data",
+      "name": "quantitative_instructions",
+      "package": "dataengine",
+      "summary": "Quantitative edit-instruction parsing and progressive refinement (PR-CAD).",
+      "symbols": [
+        "EditInstruction",
+        "RefinementSession",
+        "apply_instruction",
+        "parse_instruction"
       ],
       "tags": []
     },
@@ -4748,6 +4840,20 @@
         "geometry_semantics_term",
         "phi",
         "unified_reward"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.data.dataengine.reward.group_relative_advantage",
+      "imports": [],
+      "layer": "data",
+      "name": "group_relative_advantage",
+      "package": "dataengine",
+      "summary": "GRPO group-relative advantage and CAD reward composition (Guan et al., 2026,",
+      "symbols": [
+        "cad_reward",
+        "geometric_reward",
+        "group_relative_advantage"
       ],
       "tags": []
     },
@@ -5964,6 +6070,24 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.data.datagen.sequence_packing",
+      "imports": [],
+      "layer": "data",
+      "name": "sequence_packing",
+      "package": "datagen",
+      "summary": "Deterministic token-sequence packing for fixed-context training data.",
+      "symbols": [
+        "append_separator",
+        "arrays_to_sequences",
+        "chunk_and_finalize",
+        "enforce_min_unique",
+        "eot_split",
+        "pack_sequences",
+        "split_list"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.data.datagen.sequence_permutation",
       "imports": [
         "harnesscad.data.datagen.replace_extrude_augment",
@@ -6225,6 +6349,30 @@
         "check_interference"
       ],
       "tags": [
+        "assembly"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.assembly.placement_gates",
+      "imports": [],
+      "layer": "domain",
+      "name": "placement_gates",
+      "package": "assembly",
+      "summary": "Bounding-box assembly-placement gates (adjacency + floating-part).",
+      "symbols": [
+        "AdjacencyResult",
+        "AdjacencyRule",
+        "AdjacencyViolation",
+        "FloatingPart",
+        "FloatingResult",
+        "Part",
+        "adjacency_check",
+        "bbox_distance",
+        "center_distance",
+        "floating_check"
+      ],
+      "tags": [
+        "acceleration",
         "assembly"
       ]
     },
@@ -9209,6 +9357,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.mesh.hierarchical_sampler",
+      "imports": [],
+      "layer": "domain",
+      "name": "hierarchical_sampler",
+      "package": "geometry",
+      "summary": "METRO-style hierarchical mesh coarsening / upsampling and template positional encoding.",
+      "symbols": [
+        "MeshHierarchy",
+        "apply_operator",
+        "coarsen",
+        "sinusoidal_positional_encoding",
+        "template_positional_encoding",
+        "upsample_matrix"
+      ],
+      "tags": [
+        "curves",
+        "geometry",
+        "meshing"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.mesh.integer_geometry",
       "imports": [],
       "layer": "domain",
@@ -9429,6 +9598,24 @@
       "tags": [
         "geometry",
         "meshing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.model_diff",
+      "imports": [],
+      "layer": "domain",
+      "name": "model_diff",
+      "package": "geometry",
+      "summary": "Three-way geometric diff of two solid models (the diff-viewer algorithm).",
+      "symbols": [
+        "ModelDiff",
+        "VoxelSolid",
+        "model_diff",
+        "voxelize_boxes"
+      ],
+      "tags": [
+        "benchmark",
+        "geometry"
       ]
     },
     {
@@ -9944,6 +10131,25 @@
         "geometry",
         "meshing",
         "parametric"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.pointcloud.patch_tokeniser",
+      "imports": [],
+      "layer": "domain",
+      "name": "patch_tokeniser",
+      "package": "geometry",
+      "summary": "Deterministic PointBERT point-cloud patch tokeniser (FPS + kNN grouping).",
+      "symbols": [
+        "Patches",
+        "farthest_point_sampling",
+        "group_patches",
+        "knn_indices",
+        "square_distance"
+      ],
+      "tags": [
+        "geometry",
+        "pointcloud"
       ]
     },
     {
@@ -11413,6 +11619,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.transforms.canonical_point_order",
+      "imports": [],
+      "layer": "domain",
+      "name": "canonical_point_order",
+      "package": "geometry",
+      "summary": "CanonicalVAE canonical point ordering (template-matched nearest-neighbour order).",
+      "symbols": [
+        "bijective_assignment",
+        "canonical_distance",
+        "canonical_order",
+        "fibonacci_sphere",
+        "grid_template",
+        "nearest_template_index",
+        "reorder"
+      ],
+      "tags": [
+        "geometry"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.transforms.dataset_normalize",
       "imports": [],
       "layer": "domain",
@@ -11735,6 +11961,29 @@
       "tags": [
         "geometry",
         "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.views.sar_viewing_projection",
+      "imports": [],
+      "layer": "domain",
+      "name": "sar_viewing_projection",
+      "package": "geometry",
+      "summary": "Azimuth/depression viewing projection and GECM derivation (GeoDiff-SAR II).",
+      "symbols": [
+        "GECM",
+        "build_gecm",
+        "camera_basis",
+        "dbscan",
+        "pose_skeleton",
+        "principal_axis_2d",
+        "project_points",
+        "scattering_centers",
+        "viewing_direction"
+      ],
+      "tags": [
+        "drawings",
+        "geometry"
       ]
     },
     {
@@ -13751,6 +14000,28 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.programs.ast.csg_vocabulary",
+      "imports": [],
+      "layer": "domain",
+      "name": "csg_vocabulary",
+      "package": "programs",
+      "summary": "Cross-family CSG vocabulary superset -- RapCAD / AngelCAD / OpenJSCAD / replicad.",
+      "symbols": [
+        "CsgOp",
+        "canonicalise",
+        "convex_hull_2d",
+        "coverage",
+        "families_supporting",
+        "minkowski_sum_2d",
+        "parse_call",
+        "polygon_area",
+        "spelling"
+      ],
+      "tags": [
+        "csg"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.programs.ast.openecad",
       "imports": [],
       "layer": "domain",
@@ -13975,6 +14246,23 @@
         "drawings",
         "verify"
       ]
+    },
+    {
+      "dotted": "harnesscad.domain.programs.cad_ir",
+      "imports": [],
+      "layer": "domain",
+      "name": "cad_ir",
+      "package": "programs",
+      "summary": "CAD intermediate representation (CAD-IR) -- dependency resolution and skill",
+      "symbols": [
+        "CadIRError",
+        "Operation",
+        "Skill",
+        "instantiate_skill",
+        "topological_order",
+        "validate_program"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.domain.programs.emit.module_cse",
@@ -14310,6 +14598,22 @@
         "format",
         "io",
         "llm"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.programs.featurescript_ops",
+      "imports": [],
+      "layer": "domain",
+      "name": "featurescript_ops",
+      "package": "programs",
+      "summary": "FeatureScript extended operation set and query-reference validation (Pyatov et",
+      "symbols": [
+        "FeatureScriptError",
+        "op_names",
+        "validate_program"
+      ],
+      "tags": [
+        "verify"
       ]
     },
     {
@@ -14992,6 +15296,62 @@
       "tags": [
         "spec",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.brep.a2z_scan_labeling",
+      "imports": [],
+      "layer": "domain",
+      "name": "a2z_scan_labeling",
+      "package": "reconstruction",
+      "summary": "A2Z scan-annotation primitives (Jena et al., 2026, \"A2Z-10M+: Geometric Deep",
+      "symbols": [
+        "classify_tiny_loops",
+        "skill_amplitude",
+        "soft_label_membership",
+        "sph_poly6_weight"
+      ],
+      "tags": [
+        "benchmark",
+        "brep",
+        "pointcloud",
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.brep.brep_clip_tokens",
+      "imports": [],
+      "layer": "domain",
+      "name": "brep_clip_tokens",
+      "package": "reconstruction",
+      "summary": "BRep dual-vocabulary tokenisation and pooled descriptor (Usama et al., 2026,",
+      "symbols": [
+        "brep_descriptor",
+        "descriptor_similarity",
+        "edge_token",
+        "face_token"
+      ],
+      "tags": [
+        "brep",
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.brep.brepler_linearise",
+      "imports": [],
+      "layer": "domain",
+      "name": "brepler_linearise",
+      "package": "reconstruction",
+      "summary": "Brepler B-rep face-sequence linearisation (area-descending BFS from a corner seed).",
+      "symbols": [
+        "adjacency_from_edges",
+        "area_descending_bfs",
+        "corner_seed",
+        "linearise_faces"
+      ],
+      "tags": [
+        "brep",
+        "reconstruction"
       ]
     },
     {
@@ -16421,6 +16781,28 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.reconstruction.recognize.part_slot_assignment",
+      "imports": [],
+      "layer": "domain",
+      "name": "part_slot_assignment",
+      "package": "reconstruction",
+      "summary": "PartCrafter deterministic part-slot assignment and part-overlap validity.",
+      "symbols": [
+        "PartBBox",
+        "assign_slots",
+        "canonical_part_order",
+        "iou_summary",
+        "is_valid_decomposition",
+        "pairwise_iou",
+        "part_bbox",
+        "voxel_iou",
+        "voxel_set"
+      ],
+      "tags": [
+        "reconstruction"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.reconstruction.recognize.partseg_episodes",
       "imports": [],
       "layer": "domain",
@@ -16785,6 +17167,29 @@
       ],
       "tags": [
         "benchmark",
+        "graph",
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.scene.decomposition_graph",
+      "imports": [],
+      "layer": "domain",
+      "name": "decomposition_graph",
+      "package": "reconstruction",
+      "summary": "Hierarchical geometry-aware decomposition graph (Learning Hierarchical Graph).",
+      "symbols": [
+        "Constraint",
+        "DecompositionGraph",
+        "Node",
+        "geometric_constraint_satisfaction",
+        "hierarchy_accuracy",
+        "node_accuracy",
+        "parse",
+        "serialize"
+      ],
+      "tags": [
+        "curves",
         "graph",
         "reconstruction"
       ]
@@ -17186,6 +17591,30 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.reconstruction.sequences.guidecad_prompt_template",
+      "imports": [],
+      "layer": "domain",
+      "name": "guidecad_prompt_template",
+      "package": "reconstruction",
+      "summary": "Construction-sequence -> natural-language prompt templating (GuideCAD).",
+      "symbols": [
+        "Arc",
+        "Circle",
+        "Command",
+        "EOS",
+        "Extrusion",
+        "Line",
+        "SOL",
+        "command_line",
+        "command_lines",
+        "render_prompt"
+      ],
+      "tags": [
+        "llm",
+        "reconstruction"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.reconstruction.sequences.gym_env",
       "imports": [
         "harnesscad.domain.reconstruction.tokens.rlcad_commands",
@@ -17208,6 +17637,28 @@
         "normal_consistency"
       ],
       "tags": [
+        "reconstruction"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.sequences.hierarchical_cad_tree",
+      "imports": [],
+      "layer": "domain",
+      "name": "hierarchical_cad_tree",
+      "package": "reconstruction",
+      "summary": "Hierarchical disentanglement of a JSON CAD construction tree (HierCAD).",
+      "symbols": [
+        "ConstructionTree",
+        "FaceNode",
+        "PartNode",
+        "build_tree",
+        "object_level_trajectory",
+        "part_level_topology",
+        "primitive_type",
+        "structure_preserving_perturbation"
+      ],
+      "tags": [
+        "curves",
         "reconstruction"
       ]
     },
@@ -17757,6 +18208,34 @@
         "curves",
         "reconstruction",
         "sketch"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.reconstruction.tokens.autobrep_serialize",
+      "imports": [],
+      "layer": "domain",
+      "name": "autobrep_serialize",
+      "package": "reconstruction",
+      "summary": "AutoBrep B-rep tokenisation vocabulary and hierarchical serialisation format.",
+      "symbols": [
+        "AutoBrepVocabulary",
+        "BrepSequence",
+        "Edge",
+        "Face",
+        "Level",
+        "MMTokenIndex",
+        "TokenKind",
+        "classify_token",
+        "dequantize_coord",
+        "parse",
+        "quantize_coord",
+        "serialize",
+        "validate_tokens"
+      ],
+      "tags": [
+        "brep",
+        "curves",
+        "reconstruction"
       ]
     },
     {
@@ -18774,6 +19253,30 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.cadmium_sequence",
+      "imports": [],
+      "layer": "domain",
+      "name": "cadmium_sequence",
+      "package": "spec",
+      "summary": "CADmium CAD-sequence representation -- parser, normaliser, tokenizer, metric.",
+      "symbols": [
+        "CadSequence",
+        "CadmiumError",
+        "Operation",
+        "SequenceScore",
+        "detokenize",
+        "normalise",
+        "parse",
+        "score",
+        "tokenize"
+      ],
+      "tags": [
+        "benchmark",
+        "parsing",
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.case_frame",
       "imports": [],
       "layer": "domain",
@@ -19160,6 +19663,24 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.nurbs_json_validator",
+      "imports": [],
+      "layer": "domain",
+      "name": "nurbs_json_validator",
+      "package": "spec",
+      "summary": "Validator for NURBGen's structured NURBS-surface JSON representation (NURBGen).",
+      "symbols": [
+        "is_valid_face",
+        "validate_face",
+        "validate_model"
+      ],
+      "tags": [
+        "curves",
+        "spec",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.parse_states",
       "imports": [],
       "layer": "domain",
@@ -19293,6 +19814,21 @@
         "unadapted",
         "validate_part21",
         "verifiers"
+      ],
+      "tags": [
+        "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.spec.representation_completeness",
+      "imports": [],
+      "layer": "domain",
+      "name": "representation_completeness",
+      "package": "spec",
+      "summary": "CAD data-representation completeness taxonomy (Fan et al., 2026, \"AI+CAD Data",
+      "symbols": [
+        "compare_representations",
+        "score_representation"
       ],
       "tags": [
         "spec"
@@ -19480,6 +20016,24 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.zoo_cli_catalog",
+      "imports": [],
+      "layer": "domain",
+      "name": "zoo_cli_catalog",
+      "package": "spec",
+      "summary": "Catalogue of the Zoo/KittyCAD command-line tool's command surface.",
+      "symbols": [
+        "command_path_exists",
+        "geometry_query_commands",
+        "is_geometry_query",
+        "subcommands",
+        "top_level_commands"
+      ],
+      "tags": [
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.standards.aci_color",
       "imports": [],
       "layer": "domain",
@@ -19514,6 +20068,26 @@
         "detect_conflicts"
       ],
       "tags": [
+        "standards"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.standards.embodied_carbon",
+      "imports": [],
+      "layer": "domain",
+      "name": "embodied_carbon",
+      "package": "standards",
+      "summary": "Embodied-carbon (CO2e) material accounting for generated designs (Insights).",
+      "symbols": [
+        "MaterialUse",
+        "aggregate",
+        "carbon_intensity",
+        "embodied_carbon",
+        "top_contributors"
+      ],
+      "tags": [
+        "assembly",
+        "material",
         "standards"
       ]
     },
@@ -19935,6 +20509,36 @@
         "render",
         "sketch",
         "vision"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.bikebench_metrics",
+      "imports": [],
+      "layer": "eval",
+      "name": "bikebench_metrics",
+      "package": "bench",
+      "summary": "BikeBench task taxonomy + population diversity/novelty metrics.",
+      "symbols": [
+        "Requirement",
+        "apply_standardiser",
+        "average_constraint_violation",
+        "average_novelty",
+        "conditional_names",
+        "constraint_names",
+        "constraint_violation_rate",
+        "dpp_diversity",
+        "evaluators",
+        "mean_constraint_violation_magnitude",
+        "mean_objective",
+        "min_objective",
+        "mmd_rbf",
+        "objective_names",
+        "rbf_gamma_median",
+        "requirements_for",
+        "standardiser"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -20460,6 +21064,28 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.edit.edit_taxonomy",
+      "imports": [],
+      "layer": "eval",
+      "name": "edit_taxonomy",
+      "package": "bench",
+      "summary": "neuralCAD-Edit edit-operation taxonomy and benchmark task structure (eval module).",
+      "symbols": [
+        "EditBenchmark",
+        "EditOperation",
+        "EditTask",
+        "aggregate_rating",
+        "chamfer_similarity",
+        "classify_instruction",
+        "edit_effectiveness",
+        "score_edit",
+        "voxel_iou_similarity"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.generative.brep_set_metrics",
       "imports": [],
       "layer": "eval",
@@ -20726,6 +21352,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.geometry.cd_tolerance_recall",
+      "imports": [],
+      "layer": "eval",
+      "name": "cd_tolerance_recall",
+      "package": "bench",
+      "summary": "Chamfer-Distance Tolerance-Recall curve and AUC-TR (IterCAD).",
+      "symbols": [
+        "Attempt",
+        "auc_tr",
+        "cd_tolerance_recall_curve",
+        "recall_at_tolerance"
+      ],
+      "tags": [
+        "curves",
+        "features",
+        "format",
+        "io",
+        "tolerancing"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.geometry.chamfer",
       "imports": [],
       "layer": "eval",
@@ -20833,6 +21480,25 @@
       ],
       "tags": [
         "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.geometry.constraint_editability",
+      "imports": [],
+      "layer": "eval",
+      "name": "constraint_editability",
+      "package": "bench",
+      "summary": "Constraint-Aware Editability Benchmark metrics (HistCAD).",
+      "symbols": [
+        "EditInstance",
+        "conditional_pcsr",
+        "edit_reachability",
+        "evaluate",
+        "overall_editable_success"
+      ],
+      "tags": [
+        "benchmark",
+        "constraints"
       ]
     },
     {
@@ -20994,6 +21660,23 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.geometry.edit_taxonomy",
+      "imports": [],
+      "layer": "eval",
+      "name": "edit_taxonomy",
+      "package": "bench",
+      "summary": "CAD edit-operation taxonomy and multimodal-request metrics (neuralCAD-Edit).",
+      "symbols": [
+        "classify_sequence",
+        "edit_operation_fscore",
+        "modality_information_rate",
+        "normalise_operation"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.geometry.factorization_fidelity",
       "imports": [
         "harnesscad.domain.reconstruction.sequences.factorization",
@@ -21040,6 +21723,22 @@
         "benchmark",
         "llm",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.geometry.identity_preservation",
+      "imports": [],
+      "layer": "eval",
+      "name": "identity_preservation",
+      "package": "bench",
+      "summary": "Edit identity-preservation and locality metrics (Liu et al., 2026, \"B-repLer:",
+      "symbols": [
+        "edit_locality",
+        "edit_report",
+        "identity_preservation"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -22109,6 +22808,24 @@
         "features",
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.protocols.constrained_multiobjective",
+      "imports": [],
+      "layer": "eval",
+      "name": "constrained_multiobjective",
+      "package": "bench",
+      "summary": "Constrained multi-objective engineering-design evaluation protocol",
+      "symbols": [
+        "aggregate_objectives",
+        "constraint_satisfaction",
+        "design_feasible",
+        "evaluate_population"
+      ],
+      "tags": [
+        "benchmark",
+        "optimization"
       ]
     },
     {
@@ -23276,6 +23993,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.retrieval.two_stage_cascade",
+      "imports": [],
+      "layer": "eval",
+      "name": "two_stage_cascade",
+      "package": "bench",
+      "summary": "Two-stage open-set retrieval cascade (OSCAR).",
+      "symbols": [
+        "DatabaseModel",
+        "cosine_similarity",
+        "retrieve",
+        "stage1_text_filter",
+        "stage2_visual_refine"
+      ],
+      "tags": [
+        "benchmark",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.sequence.autoencoder_accuracy",
       "imports": [
         "harnesscad.domain.reconstruction.tokens.deepcad_vector_layout",
@@ -24125,6 +24861,22 @@
         "evaluate",
         "per_class_scores",
         "point_wise_eval"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.vision.quantity_alignment",
+      "imports": [],
+      "layer": "eval",
+      "name": "quantity_alignment",
+      "package": "bench",
+      "summary": "Quantity-alignment metrics for zero-shot object counting (Zhang et al., 2026,",
+      "symbols": [
+        "counting_errors",
+        "multi_level_alignment",
+        "quantity_bin"
       ],
       "tags": [
         "benchmark"
@@ -26303,6 +27055,25 @@
         "quality",
         "simulation",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.quality.physics.load_case_validity",
+      "imports": [],
+      "layer": "eval",
+      "name": "load_case_validity",
+      "package": "quality",
+      "summary": "Functional-validity scoring for load-bearing CAD designs (Physics-in-the-Loop).",
+      "symbols": [
+        "LoadCase",
+        "design_objective",
+        "functional_validity",
+        "in_safety_band"
+      ],
+      "tags": [
+        "mechanical",
+        "quality",
+        "simulation"
       ]
     },
     {
@@ -30272,6 +31043,43 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.backends.truck",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult",
+        "harnesscad.io.backends.base.BackendUnavailable",
+        "harnesscad.io.backends.external",
+        "harnesscad.io.backends.external.ExternalToolBackend",
+        "harnesscad.io.backends.external.cache_dir",
+        "harnesscad.io.backends.external.ccw",
+        "harnesscad.io.backends.external.circle_loop",
+        "harnesscad.io.backends.external.plane_normal",
+        "harnesscad.io.backends.external.profile_loops",
+        "harnesscad.io.backends.external.program_digest",
+        "harnesscad.io.backends.external.signed_area",
+        "harnesscad.io.backends.external.slab",
+        "harnesscad.io.backends.external.to_world",
+        "harnesscad.io.backends.frep",
+        "harnesscad.io.backends.frep.Node"
+      ],
+      "layer": "io",
+      "name": "truck",
+      "package": "backends",
+      "summary": "TruckBackend \u2014 CISP ops driven through the ``truck`` B-rep NURBS kernel.",
+      "symbols": [
+        "TruckBackend",
+        "TruckError"
+      ],
+      "tags": [
+        "curves"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.backends.zoo",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -30613,6 +31421,28 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.formats.conversion_matrix",
+      "imports": [],
+      "layer": "io",
+      "name": "conversion_matrix",
+      "package": "formats",
+      "summary": "Format-conversion MATRIX -- which format converts to which, and by what path.",
+      "symbols": [
+        "ConversionError",
+        "FormatEntry",
+        "can_convert",
+        "conversion_matrix",
+        "conversion_path",
+        "convert",
+        "direct_targets",
+        "kind_can_lower"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.formats.cpp_header",
       "imports": [],
       "layer": "io",
@@ -30787,6 +31617,31 @@
       "tags": [
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.ldraw",
+      "imports": [],
+      "layer": "io",
+      "name": "ldraw",
+      "package": "formats",
+      "summary": "LDraw brick-assembly parser, validator and buildability metrics (Prompt-to-Parts).",
+      "symbols": [
+        "PartLine",
+        "drawing_accuracy",
+        "instructional_coherence",
+        "parse_line",
+        "parse_model",
+        "structural_validity"
+      ],
+      "tags": [
+        "assembly",
+        "benchmark",
+        "format",
+        "io",
+        "llm",
+        "parsing",
+        "verify"
       ]
     },
     {
@@ -32626,7 +33481,9 @@
         "harnesscad.io.backends.rhino3dm",
         "harnesscad.io.backends.rhino3dm.Rhino3dmBackend",
         "harnesscad.io.backends.stub",
-        "harnesscad.io.backends.stub.StubBackend"
+        "harnesscad.io.backends.stub.StubBackend",
+        "harnesscad.io.backends.truck",
+        "harnesscad.io.backends.truck.TruckBackend"
       ],
       "layer": "io",
       "name": "server",
