@@ -75,19 +75,19 @@ __all__ = [
 #: Every backend the harness can drive, in the order a report should list them.
 BACKENDS: Tuple[str, ...] = (
     "stub", "frep", "cadquery", "build123d", "freecad", "openscad", "blender",
-    "manifold", "rhino3dm", "microcad")
+    "manifold", "rhino3dm", "microcad", "truck")
 
 #: The ones that answer ``query('measure')`` with real geometry. ``stub`` does
 #: not: it is a bookkeeping backend and cannot take part in a geometric oracle.
 GEOMETRIC_BACKENDS: Tuple[str, ...] = (
-    "frep", "cadquery", "build123d", "freecad", "openscad", "blender", "manifold",
-    "rhino3dm", "microcad")
+    "frep", "cadquery", "build123d", "freecad", "truck", "openscad", "blender",
+    "manifold", "rhino3dm", "microcad")
 
 #: Preference order when a consensus has to be named: an exact B-rep kernel first.
 #: build123d and cadquery are both OCCT B-rep, so they rank alongside freecad.
 #: microcad is a meshed CSG language (like openscad), so it ranks with the meshers.
 EXACTNESS_ORDER: Tuple[str, ...] = (
-    "cadquery", "build123d", "freecad", "openscad", "blender", "manifold",
+    "cadquery", "build123d", "freecad", "truck", "openscad", "blender", "manifold",
     "microcad", "rhino3dm", "frep")
 
 
@@ -173,6 +173,12 @@ TOLERANCES: Dict[str, Tolerance] = {
     # are exact for these primitives, so it is an exact voice on the ops it
     # supports -- and it REFUSES everything else rather than guess.
     "rhino3dm": Tolerance(1e-9, 1e-6, 0.0, 0.0, 0, "brep"),
+    # truck: a from-scratch Rust B-rep NURBS kernel (NOT OCCT). It is exact on
+    # planar solids (a box is 48000 to the bit), but volume/bbox are read back
+    # from truck's OWN tessellation of its NURBS surfaces, so a curved solid of
+    # revolution carries a small, tolerance-bounded facet error -- the mesh
+    # regime, not the machine-precision regime of the OCCT B-reps.
+    "truck": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "brep"),
     # No geometry at all.
     "stub": Tolerance(math.inf, math.inf, 0.0, 0.0, 0, "none"),
 }

@@ -44,7 +44,7 @@ FLEET_TIERS = (LINT, PHYSICS, DOMAIN)
 #: crashing. `cadquery` and `freecad` are the two real B-rep kernels (exact
 #: volumes, STEP in and out); the rest are meshes or fields.
 BACKENDS = ("stub", "cadquery", "build123d", "frep", "blender", "openscad",
-            "freecad", "manifold", "rhino3dm", "microcad")
+            "freecad", "manifold", "rhino3dm", "microcad", "truck")
 
 
 def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
@@ -129,6 +129,19 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         except BackendUnavailable as exc:
             return (StubBackend(), "stub",
                     f"microcad backend unavailable ({exc}); fell back to stub")
+    if name == "truck":
+        # The truck B-rep NURBS kernel (Rust): a genuinely INDEPENDENT B-rep
+        # lineage -- NOT OCCT, unlike cadquery/freecad/build123d, which all share
+        # it. As the only non-OCCT B-rep voice it is the strongest addition to the
+        # differential oracle. Shells out to a compiled Rust driver; absent unless
+        # `cargo build --release` produced the binary.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.truck import TruckBackend
+        try:
+            return TruckBackend(), "truck", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"truck backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
 
 

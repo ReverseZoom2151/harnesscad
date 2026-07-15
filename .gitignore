@@ -23,3 +23,6 @@ dist/
 # obsolete pressure-v2 raw shards from the deleted model lineup (not a result)
 assets/pressure_v2/obsolete_deleted_lineup/*.json
 
+
+# Rust build artifacts for the truck driver (source kept, target ignored)
+src/harnesscad/io/backends/truck_driver/target/
