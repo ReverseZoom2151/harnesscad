@@ -29,7 +29,9 @@ inside a provider call.
 
 from __future__ import annotations
 
+import logging
 import os
+import tempfile
 from typing import Any, Dict, List, Optional
 
 from harnesscad.agents.agent.planner import Planner
@@ -59,6 +61,13 @@ _API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "OPENAI_API_KEY")
 #: the counter is still a heuristic (see audit gap #8), so the budget it guards
 #: is stated smaller than any model we route to.
 CONTEXT_BUDGET_TOKENS = 100_000
+
+#: Env var pointing at the persistent memory store, so a shipping run gets
+#: session continuity without any edit to the CLI (it just sets/exports this).
+#: An explicit ``memory_path=`` argument to ``build`` wins over it.
+MEMORY_PATH_ENV = "HARNESSCAD_MEMORY"
+
+_LOG = logging.getLogger(__name__)
 
 
 class BuildError(RuntimeError):
@@ -124,11 +133,41 @@ def _make_backend(backend: str):
     return StubBackend(), "stub", None
 
 
+def _route(llm: LLM) -> LLM:
+    """Wrap a DEFAULT-constructed LLM in ``routing.RoutingLLM`` so retry/fallback
+    and the cost/usage tally (blueprint sec.11/13) are on the shipping path.
+
+    It is transparent: every task class maps to the same underlying client, so
+    the same model answers every request and the call interface is unchanged; the
+    router adds the classify -> sequential-fallback -> cost-tally spine around it.
+    Only ever applied to the client this module builds (`_LazyLiteLLM`, which
+    honours the full ``complete(messages, tools, response_schema, **opts)``
+    signature the router dispatches with). An injected caller `llm` is handed
+    through untouched — its narrower signature is the caller's contract, not ours.
+
+    Never fatal: if routing cannot be constructed the raw client is returned and
+    the reason is logged, so the build degrades to the pre-routing path.
+    """
+    try:
+        from harnesscad.core.routing import RoutingLLM, TaskClass
+        return RoutingLLM({
+            TaskClass.CHEAP: llm,
+            TaskClass.STANDARD: llm,
+            TaskClass.HARD: llm,
+        })
+    except Exception as exc:  # noqa: BLE001 - routing is an enhancement, never a gate
+        _LOG.warning("routing unavailable; using the raw LLM (%s)", exc)
+        return llm
+
+
 def _resolve_llm(llm: Optional[LLM], model: Optional[str]) -> LLM:
     """Pick the LLM to plan with: the injected one, or a lazy LiteLLM client.
 
     Raises `BuildError` if no `llm` is given and no provider API key is set —
     failing fast with a clear message instead of deep inside a provider call.
+
+    Returns the bare client; the routing wrap is applied by `build` (only to the
+    client we construct ourselves), so this helper's contract is unchanged.
     """
     if llm is not None:
         return llm
@@ -139,6 +178,58 @@ def _resolve_llm(llm: Optional[LLM], model: Optional[str]) -> LLM:
             + " in the environment, or pass an `llm=` implementing llm.base.LLM."
         )
     return _LazyLiteLLM(model or DEFAULT_MODEL)
+
+
+def _default_memory_path() -> str:
+    """A persistent store path under the same temp-scratch convention the external
+    backends use (`io/backends/external.cache_dir`): repo-scoped, off the source
+    tree, writable without ceremony."""
+    return os.path.join(tempfile.gettempdir(), "harnesscad-memory", "store.json")
+
+
+def _resolve_memory_path(memory_path: Optional[str]) -> str:
+    """Explicit argument wins, then the env var, then the temp-scratch default."""
+    if memory_path:
+        return memory_path
+    return os.environ.get(MEMORY_PATH_ENV) or _default_memory_path()
+
+
+def _build_memory(memory_path: Optional[str]):
+    """Construct a persistent ``HarnessMemory`` for the shipping agent.
+
+    Returns ``(memory, path, note)``. On ANY failure returns ``(None, None, why)``
+    so the caller degrades to the historical cold path (no memory) with a logged
+    reason and never crashes the build. A store file that exists is loaded so a
+    prior session's oracle-verified parts and lessons are recalled; a missing or
+    unreadable file starts a fresh in-memory store that is saved at the end.
+    """
+    try:
+        from harnesscad.agents.memory.harness_memory import HarnessMemory
+    except Exception as exc:  # noqa: BLE001 - memory is optional grounding, not a gate
+        return None, None, f"memory module unavailable ({exc})"
+    path = _resolve_memory_path(memory_path)
+    try:
+        if path and os.path.exists(path):
+            return HarnessMemory.load(path), path, None
+        return HarnessMemory(), path, None
+    except Exception as exc:  # noqa: BLE001 - a corrupt store must not break the build
+        try:
+            return HarnessMemory(), path, f"could not load {path!r}, started cold ({exc})"
+        except Exception as exc2:  # noqa: BLE001
+            return None, None, f"memory construction failed ({exc2})"
+
+
+def _save_memory(memory: Any, path: Optional[str]) -> None:
+    """Persist the store so the next session continues from it. Never fatal."""
+    if memory is None or not path:
+        return
+    try:
+        parent = os.path.dirname(path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        memory.save(path)
+    except Exception as exc:  # noqa: BLE001 - persistence failure never breaks a build
+        _LOG.warning("memory not persisted to %s (%s)", path, exc)
 
 
 def _export_step(backend, ok: bool) -> Optional[str]:
@@ -179,6 +270,8 @@ def build(
     tracer: Optional[Tracer] = None,
     strategy: str = "refine",
     n: int = 4,
+    use_memory: bool = True,
+    memory_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Build a part from a natural-language `brief`.
 
@@ -211,6 +304,14 @@ def build(
         Max plan -> apply -> replan correction iterations.
     tracer:
         Optional `trace.Tracer` for structured loop events.
+    use_memory:
+        Ground the default agent in a persistent `HarnessMemory` (ON by default):
+        the planner recalls prior oracle-verified parts/skills/lessons into the
+        prompt and the harness writes new ones through the oracle gate. Set False
+        to reproduce the historical cold-start path (no recall, no write).
+    memory_path:
+        Where to load/save the persistent store. Defaults to `$HARNESSCAD_MEMORY`
+        or a temp-scratch file. Ignored when `use_memory` is False.
 
     Raises
     ------
@@ -221,6 +322,13 @@ def build(
         raise BuildError(
             f"unknown strategy {strategy!r}; expected one of {STRATEGIES!r}")
     resolved_llm = _resolve_llm(llm, model)
+    # ROUTING ON THE DEFAULT PATH. When we built the client ourselves, wrap it in
+    # `routing.RoutingLLM` (classify -> sequential fallback -> cost/usage tally)
+    # instead of handing the raw `_LazyLiteLLM` straight through. An injected
+    # caller `llm` is left exactly as given -- its call signature is the caller's
+    # contract, not ours -- so no existing caller's behaviour changes.
+    if llm is None:
+        resolved_llm = _route(resolved_llm)
 
     if strategy == "best-of-n":
         return _build_best_of_n(brief, llm=resolved_llm, backend=backend,
@@ -228,7 +336,24 @@ def build(
 
     backend_instance, backend_name, backend_note = _make_backend(backend)
     session = HarnessSession(backend_instance, tracer=tracer)
-    planner = Planner(resolved_llm)
+
+    # MEMORY, ON BY DEFAULT. The shipping agent used to start COLD: a bare
+    # `Planner(llm)` and a memoryless harness, so it forgot every part it ever
+    # built. It now shares ONE persistent `HarnessMemory` between the planner
+    # (which RECALLS oracle-verified exemplars/skills/lessons into the prompt)
+    # and the harness (which WRITES new ones through the oracle gate) -- the
+    # read-act-reflect-write loop. Both seams already existed; this wires them.
+    # Construction is fully defensive: a failure degrades to the old cold path
+    # (memory=None reproduces the prior behaviour byte-for-byte) with a logged
+    # reason, never a crashed build.
+    memory = None
+    resolved_memory_path: Optional[str] = None
+    if use_memory:
+        memory, resolved_memory_path, memory_note = _build_memory(memory_path)
+        if memory_note:
+            _LOG.info("memory: %s", memory_note)
+
+    planner = Planner(resolved_llm, memory=memory)
 
     # THE ONE LOOP, fully configured. `executor=None` means the harness mints its
     # own SessionToolExecutor: guardrail hard gate -> human-approval tier ->
@@ -242,8 +367,13 @@ def build(
         loop_detector=LoopDetector(),
         tracer=tracer,
         max_iterations=max_iters,
+        memory=memory,
     )
     run_result = harness.run(brief)
+
+    # Persist the (now possibly enriched) store so the NEXT session continues
+    # from this one. Best-effort: a save failure never touches the result.
+    _save_memory(memory, resolved_memory_path)
 
     diagnostics: List[dict] = list(run_result.diagnostics)
     step = _export_step(backend_instance, run_result.ok)
