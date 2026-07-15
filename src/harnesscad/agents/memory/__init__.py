@@ -14,6 +14,12 @@ from harnesscad.agents.memory.store import (
     Similarity,
     TokenOverlapSimilarity,
 )
+from harnesscad.agents.memory.similarity import (
+    BM25Similarity,
+    EmbeddingSimilarity,
+    default_similarity,
+    make_similarity,
+)
 from harnesscad.agents.memory.skills import (
     Skill,
     SkillLibrary,
@@ -40,6 +46,10 @@ __all__ = [
     "MemoryStore",
     "Similarity",
     "TokenOverlapSimilarity",
+    "BM25Similarity",
+    "EmbeddingSimilarity",
+    "default_similarity",
+    "make_similarity",
     "Skill",
     "SkillLibrary",
     "build_default_library",

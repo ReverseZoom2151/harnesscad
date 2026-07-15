@@ -52,6 +52,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
+import harnesscad.agents.memory.persistence as persistence
 from harnesscad.agents.memory.decay import Salience, decay_sweep, reinforce, retention
 from harnesscad.agents.memory.error_notebook import ErrorNotebook, ErrorNotebookEntry
 from harnesscad.agents.memory.skills import Skill, SkillLibrary
@@ -543,8 +544,10 @@ class HarnessMemory:
         }
 
     def save(self, path: str) -> None:
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(self.to_dict(), fh, indent=2, sort_keys=True)
+        """Persist the composed memory deterministically and atomically, so a
+        session can be restored byte-for-byte in the next run (see
+        ``persistence.py``)."""
+        persistence.dump_json(self.to_dict(), path)
 
     @classmethod
     def from_dict(cls, d: dict, *, skills: Optional[SkillLibrary] = None,
@@ -566,8 +569,8 @@ class HarnessMemory:
     @classmethod
     def load(cls, path: str, *, skills: Optional[SkillLibrary] = None,
              similarity: Optional[Similarity] = None) -> "HarnessMemory":
-        with open(path, "r", encoding="utf-8") as fh:
-            return cls.from_dict(json.load(fh), skills=skills, similarity=similarity)
+        return cls.from_dict(persistence.load_json(path), skills=skills,
+                             similarity=similarity)
 
 
 # --------------------------------------------------------------------------- #
