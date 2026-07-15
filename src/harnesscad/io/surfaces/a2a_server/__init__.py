@@ -17,7 +17,20 @@ Layout:
 from __future__ import annotations
 
 from harnesscad.io.surfaces.a2a_server.app import make_server, serve
+from harnesscad.io.surfaces.a2a_server.auth import (
+    AuthError,
+    Authenticator,
+    Principal,
+)
 from harnesscad.io.surfaces.a2a_server.card import build_agent_card
 from harnesscad.io.surfaces.a2a_server.handler import A2AHandler
 
-__all__ = ["A2AHandler", "build_agent_card", "make_server", "serve"]
+__all__ = [
+    "A2AHandler",
+    "AuthError",
+    "Authenticator",
+    "Principal",
+    "build_agent_card",
+    "make_server",
+    "serve",
+]

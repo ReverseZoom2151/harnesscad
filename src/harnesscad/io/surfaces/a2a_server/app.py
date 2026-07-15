@@ -21,6 +21,7 @@ from typing import Any, Callable, Optional
 
 from harnesscad.agents.a2a.messages import AgentCard
 from harnesscad.io.surfaces.a2a_server import wire
+from harnesscad.io.surfaces.a2a_server.auth import AuthError, Authenticator
 from harnesscad.io.surfaces.a2a_server.card import build_agent_card
 from harnesscad.io.surfaces.a2a_server.handler import A2AHandler
 
@@ -28,8 +29,19 @@ AGENT_CARD_PATH = "/.well-known/agent-card.json"
 _STREAMING_METHODS = ("message/stream", "tasks/resubscribe")
 
 
-def make_request_handler(handler: A2AHandler, card: AgentCard):
-    """Build a ``BaseHTTPRequestHandler`` subclass bound to a handler + card."""
+def make_request_handler(
+    handler: A2AHandler,
+    card: AgentCard,
+    authenticator: Optional[Authenticator] = None,
+):
+    """Build a ``BaseHTTPRequestHandler`` subclass bound to a handler + card.
+
+    ``authenticator`` gates every JSON-RPC POST (see ``_authenticate``); when
+    omitted a no-op (auth-disabled) ``Authenticator`` is used so local dev keeps
+    working. The Agent Card GET stays public — it is the discovery document that
+    tells a client how to authenticate.
+    """
+    auth = authenticator if authenticator is not None else Authenticator()
 
     class _A2ARequestHandler(BaseHTTPRequestHandler):
         server_version = "HarnessCAD-A2A/0.3.0"
@@ -42,6 +54,9 @@ def make_request_handler(handler: A2AHandler, card: AgentCard):
                 self._send_json(404, {"error": "not found"})
 
         def do_POST(self) -> None:  # noqa: N802 - stdlib naming
+            # Authenticate EVERY RPC before parsing/dispatching anything.
+            if not self._authenticate():
+                return
             length = int(self.headers.get("Content-Length") or 0)
             body = self.rfile.read(length) if length else b""
             try:
@@ -63,6 +78,26 @@ def make_request_handler(handler: A2AHandler, card: AgentCard):
                 self._stream(request)
             else:
                 self._send_json(200, handler.dispatch(request))
+
+        # -- authentication ------------------------------------------------
+        def _authenticate(self) -> bool:
+            """Verify the request; on failure send 401/403 and return False."""
+            try:
+                auth.authenticate(self.headers)
+                return True
+            except AuthError as exc:
+                self._send_auth_error(exc)
+                return False
+
+        def _send_auth_error(self, exc: AuthError) -> None:
+            payload = json.dumps({"error": exc.message}).encode("utf-8")
+            self.send_response(exc.status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            if exc.www_authenticate:
+                self.send_header("WWW-Authenticate", exc.www_authenticate)
+            self.end_headers()
+            self.wfile.write(payload)
 
         # -- responses -----------------------------------------------------
         def _stream(self, request: dict) -> None:
@@ -94,13 +129,21 @@ def make_server(
     host: str = "127.0.0.1",
     port: int = 9100,
     card: Optional[AgentCard] = None,
+    authenticator: Optional[Authenticator] = None,
 ) -> ThreadingHTTPServer:
-    """Build (but do not start) a ThreadingHTTPServer serving the A2A endpoint."""
+    """Build (but do not start) a ThreadingHTTPServer serving the A2A endpoint.
+
+    ``authenticator`` defaults to ``Authenticator.from_env()`` so production can
+    require auth (``HARNESSCAD_A2A_AUTH=1`` + a secret) while local dev, with the
+    env unset, stays open. The resolved authenticator also shapes the Agent
+    Card's ``security`` block.
+    """
+    auth = authenticator if authenticator is not None else Authenticator.from_env()
     handler = A2AHandler(harness_factory)
     resolved_card = card if card is not None else build_agent_card(
-        url=f"http://{host}:{port}/"
+        url=f"http://{host}:{port}/", authenticator=auth
     )
-    request_handler = make_request_handler(handler, resolved_card)
+    request_handler = make_request_handler(handler, resolved_card, auth)
     return ThreadingHTTPServer((host, port), request_handler)
 
 
@@ -109,9 +152,10 @@ def serve(
     host: str = "127.0.0.1",
     port: int = 9100,
     card: Optional[AgentCard] = None,
+    authenticator: Optional[Authenticator] = None,
 ) -> None:
     """Build the server and run it forever (blocks)."""
-    httpd = make_server(harness_factory, host, port, card)
+    httpd = make_server(harness_factory, host, port, card, authenticator)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:  # pragma: no cover - interactive
