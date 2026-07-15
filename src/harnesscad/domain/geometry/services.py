@@ -58,6 +58,7 @@ from harnesscad.domain.geometry.assembly import box_contact
 from harnesscad.domain.geometry.assembly import explode_offsets
 from harnesscad.domain.geometry.assembly import exploded_view
 from harnesscad.domain.geometry.assembly import instancing
+from harnesscad.domain.geometry.assembly import mobility
 from harnesscad.domain.geometry.assembly import placement
 from harnesscad.domain.geometry.assembly import quadtree
 from harnesscad.domain.geometry.assembly import scene_validity
@@ -91,7 +92,9 @@ from harnesscad.domain.geometry.kinematics import joint_motion
 # -- geometry: mesh ----------------------------------------------------------
 from harnesscad.domain.geometry.mesh import bvh
 from harnesscad.domain.geometry.mesh import colorize as mesh_colorize
+from harnesscad.domain.geometry.mesh import hierarchical_sampler
 from harnesscad.domain.geometry.mesh import integer_geometry
+from harnesscad.domain.geometry.mesh import intersection_repair
 from harnesscad.domain.geometry.mesh import sampling as mesh_sampling
 from harnesscad.domain.geometry.mesh import segmentation as mesh_segmentation
 from harnesscad.domain.geometry.mesh import smoothing as mesh_smoothing
@@ -127,11 +130,14 @@ from harnesscad.domain.geometry.sdf import tpms
 # -- geometry: sketch --------------------------------------------------------
 from harnesscad.domain.geometry.sketch import constraints as sketch_constraints
 from harnesscad.domain.geometry.sketch import construction_validity
+from harnesscad.domain.geometry.sketch import flat_sketch
 from harnesscad.domain.geometry.sketch import loop_validity
 from harnesscad.domain.geometry.sketch import primitive_fit
+from harnesscad.domain.geometry.sketch import section_properties
 from harnesscad.domain.geometry.sketch import symmetry as sketch_symmetry
 
 # -- geometry: topology ------------------------------------------------------
+from harnesscad.domain.geometry.topology import coedge_walks
 from harnesscad.domain.geometry.topology import edge_convexity
 from harnesscad.domain.geometry.topology import entity_selector
 from harnesscad.domain.geometry.topology import explorer as topo_explorer
@@ -144,6 +150,7 @@ from harnesscad.domain.geometry.topology import synthetic_brep
 from harnesscad.domain.geometry.topology import topological_naming
 
 # -- geometry: transforms ----------------------------------------------------
+from harnesscad.domain.geometry.transforms import canonical_point_order
 from harnesscad.domain.geometry.transforms import dataset_normalize
 from harnesscad.domain.geometry.transforms import grid_normalize
 from harnesscad.domain.geometry.transforms import orientation
@@ -155,8 +162,14 @@ from harnesscad.domain.geometry.transforms import ransac_pose
 from harnesscad.domain.geometry.views import camera
 from harnesscad.domain.geometry.views import camera_rig
 from harnesscad.domain.geometry.views import edge_detection
+from harnesscad.domain.geometry.views import gaussian_splat
+from harnesscad.domain.geometry.views import local_attention
+from harnesscad.domain.geometry.views import patch_stitch
 from harnesscad.domain.geometry.views import plane_detection
+from harnesscad.domain.geometry.views import sar_viewing_projection
+from harnesscad.domain.geometry.views import splat_compositing
 from harnesscad.domain.geometry.views import spoke_points
+from harnesscad.domain.geometry.views import triplane_encoding
 from harnesscad.domain.geometry.views import wireframe_field
 
 # -- geometry: volumes -------------------------------------------------------
@@ -169,6 +182,10 @@ from harnesscad.domain.geometry.volumes import sparse_subdivision
 from harnesscad.domain.geometry.volumes import split_signal
 from harnesscad.domain.geometry.volumes import triplane_grid
 from harnesscad.domain.geometry.volumes import tsdf
+
+# -- geometry: model diff / pointcloud ---------------------------------------
+from harnesscad.domain.geometry import model_diff as model_diff_mod
+from harnesscad.domain.geometry.pointcloud import patch_tokeniser
 
 # -- numeric -----------------------------------------------------------------
 from harnesscad.domain.numeric import assembly_dof
@@ -732,6 +749,132 @@ _TABLE: Tuple[Tuple[str, str, Callable[..., Any], Tuple[str, ...], str], ...] = 
     ("drawing.spec.build", _W + "manufacturing_spec", manufacturing_spec.build_spec,
      ("drawings", "spec"),
      "Assemble a unified manufacturing specification from a drawing."),
+
+    # ---- assembly: mechanism mobility (AADvark / ASSEMCAD / ArtiCAD) -------
+    ("assembly.mobility.kutzbach", _G + "assembly.mobility", mobility.kutzbach_mobility,
+     ("assembly", "kinematics", "verify"),
+     "Kutzbach-Gruebler mobility (DOF) of a mechanism from links + joint kinds."),
+    ("assembly.mobility.tree_dof", _G + "assembly.mobility", mobility.tree_dof,
+     ("assembly", "kinematics"),
+     "Total DOF of a kinematic tree: the sum of its per-joint freedoms."),
+    ("assembly.kinematic_tree.validate", _G + "assembly.mobility",
+     mobility.validate_kinematic_tree, ("assembly", "kinematics", "verify"),
+     "Validate an articulated assembly as a rooted, acyclic kinematic tree."),
+    ("assembly.connectivity", _G + "assembly.mobility", mobility.assembly_connectivity,
+     ("assembly", "verify"), "BFS connectivity of an assembly graph from its root."),
+    ("assembly.clash.classify", _G + "assembly.mobility", mobility.classify_clash,
+     ("assembly", "verify"),
+     "Mate-aware clash classification: clear / expected (contact mate) / clash."),
+
+    # ---- mesh: self-intersection detection & repair -----------------------
+    ("mesh.self_intersections", _G + "mesh.intersection_repair",
+     intersection_repair.find_self_intersections, ("meshing", "verify"),
+     "Every self-intersecting triangle pair of a mesh (BVH broad + exact narrow phase)."),
+    ("mesh.repair.self_intersections", _G + "mesh.intersection_repair",
+     intersection_repair.repair_self_intersections, ("meshing", "verify"),
+     "Push apart self-intersecting triangles until the mesh is intersection-free."),
+
+    # ---- mesh: METRO hierarchical resolution transfer ---------------------
+    ("mesh.hierarchy.coarsen", _G + "mesh.hierarchical_sampler", hierarchical_sampler.coarsen,
+     ("meshing",), "Cluster a mesh to N coarse vertices with down/up transfer operators."),
+    ("mesh.hierarchy.apply", _G + "mesh.hierarchical_sampler",
+     hierarchical_sampler.apply_operator, ("meshing",),
+     "Apply a sparse hierarchy operator to per-vertex feature vectors."),
+    ("mesh.positional.template", _G + "mesh.hierarchical_sampler",
+     hierarchical_sampler.template_positional_encoding, ("meshing",),
+     "METRO template positional encoding: each vertex's canonical template coordinate."),
+    ("mesh.positional.sinusoidal", _G + "mesh.hierarchical_sampler",
+     hierarchical_sampler.sinusoidal_positional_encoding, ("meshing",),
+     "Frequency (sin/cos, 2**k) positional embedding of vertex coordinates."),
+
+    # ---- model diff (Zoo diff-viewer) -------------------------------------
+    ("model.diff", _G + "model_diff", model_diff_mod.model_diff,
+     ("assembly", "verify", "voxel"),
+     "Three-way solid diff: unchanged / additions / deletions over occupancy cells."),
+    ("model.voxelize_boxes", _G + "model_diff", model_diff_mod.voxelize_boxes,
+     ("voxel",), "Rasterise axis-aligned boxes into a shared-lattice VoxelSolid."),
+
+    # ---- pointcloud: PointBERT patch tokeniser ----------------------------
+    ("pointcloud.fps", _G + "pointcloud.patch_tokeniser",
+     patch_tokeniser.farthest_point_sampling, ("pointcloud",),
+     "Farthest-point sampling: evenly spread patch centres over a point cloud."),
+    ("pointcloud.knn", _G + "pointcloud.patch_tokeniser", patch_tokeniser.knn_indices,
+     ("pointcloud",), "k-nearest-neighbour grouping of points about each centre."),
+    ("pointcloud.patches", _G + "pointcloud.patch_tokeniser", patch_tokeniser.group_patches,
+     ("pointcloud",), "PointBERT patch tokeniser: FPS centres + kNN grouping + centring."),
+
+    # ---- sketch: HistCAD flat sketch + section properties -----------------
+    ("sketch.flatten", _G + "sketch.flat_sketch", flat_sketch.flatten_faces,
+     ("sketch",), "HistCAD flat-sketch: symmetric difference of face boundaries."),
+    ("sketch.recover_loops", _G + "sketch.flat_sketch", flat_sketch.recover_loops,
+     ("sketch",), "Reassemble closed loops from a flat sub-primitive set."),
+    ("sketch.merge_collinear", _G + "sketch.flat_sketch", flat_sketch.merge_collinear,
+     ("sketch",), "Merge consecutive collinear line fragments in an ordered loop."),
+    ("sketch.section.area", _G + "sketch.section_properties",
+     section_properties.polygon_area, ("sketch",),
+     "Unsigned area of a closed polygonal section (shoelace)."),
+    ("sketch.section.centroid", _G + "sketch.section_properties",
+     section_properties.centroid, ("sketch",), "Area centroid of a polygonal section."),
+    ("sketch.section.moments", _G + "sketch.section_properties",
+     section_properties.area_moments, ("sketch",),
+     "Second moments of area (Ixx, Iyy, Ixy) of a section about its centroid."),
+    ("sketch.section.properties", _G + "sketch.section_properties",
+     section_properties.section_properties, ("sketch",),
+     "Full MASSPROP section report (area/centroid/moments/moduli) with holes."),
+
+    # ---- topology: BRepNet coedge walks -----------------------------------
+    ("topology.coedge_topology", _G + "topology.coedge_walks", coedge_walks.CoedgeTopology,
+     ("topology", "brep"),
+     "Coedge topology (n/p/m/f/e walks + WL fingerprints) from face boundary loops."),
+
+    # ---- transforms: CanonicalVAE canonical point order -------------------
+    ("transform.canonical_order", _G + "transforms.canonical_point_order",
+     canonical_point_order.canonical_order, ("transform", "pointcloud"),
+     "Canonical point ordering by nearest-template-slot match (CanonicalVAE)."),
+    ("transform.canonical_distance", _G + "transforms.canonical_point_order",
+     canonical_point_order.canonical_distance, ("transform", "pointcloud", "benchmark"),
+     "Template-aligned mean point distance: an order-invariant shape difference."),
+    ("transform.fibonacci_sphere", _G + "transforms.canonical_point_order",
+     canonical_point_order.fibonacci_sphere, ("transform", "pointcloud"),
+     "Deterministic near-uniform sphere lattice (the shared unfolding template)."),
+
+    # ---- views: 3D Gaussian splatting forward math ------------------------
+    ("view.gaussian.covariance", _G + "views.gaussian_splat",
+     gaussian_splat.covariance_from_scale_rotation, ("render",),
+     "World covariance Sigma = R S S^T R^T of a 3D Gaussian (3DGS Eq. 6)."),
+    ("view.gaussian.project", _G + "views.gaussian_splat", gaussian_splat.project_gaussian,
+     ("render",), "Project a 3D Gaussian to a 2D marginal through a linear 2x3 map."),
+    ("view.gaussian.footprint", _G + "views.gaussian_splat", gaussian_splat.footprint_bbox,
+     ("render",), "Axis-aligned splat bounding box of a projected 2D Gaussian."),
+    ("view.splat.tile_bins", _G + "views.splat_compositing", splat_compositing.tile_bins,
+     ("render",), "Tiles a splat footprint overlaps (3DGS rasteriser binning/culling)."),
+    ("view.splat.composite", _G + "views.splat_compositing",
+     splat_compositing.composite_front_to_back, ("render",),
+     "Front-to-back alpha compositing (the volumetric 'over' operator)."),
+
+    # ---- views: LAS-Diffusion view-aware local attention ------------------
+    ("view.local_attention.mask", _G + "views.local_attention",
+     local_attention.attention_mask, ("render", "vision"),
+     "View-aware voxel->patch attention mask (LAS-Diffusion Eq. 4)."),
+    ("view.local_attention.patch_centers", _G + "views.local_attention",
+     local_attention.patch_centers, ("render", "vision"),
+     "Pixel centre of every ViT patch of a tokenised image."),
+    ("view.patch.stitch", _G + "views.patch_stitch", patch_stitch.stitch,
+     ("render", "vision"),
+     "Stitch a region's patch features from one grid onto another (feature manipulation)."),
+
+    # ---- views: GeoDiff-SAR viewing projection ----------------------------
+    ("view.sar.project", _G + "views.sar_viewing_projection",
+     sar_viewing_projection.project_points, ("render",),
+     "Orthographic image-plane projection under an (azimuth, depression) SAR view."),
+    ("view.sar.gecm", _G + "views.sar_viewing_projection",
+     sar_viewing_projection.build_gecm, ("render",),
+     "Render a Geometric-Electromagnetic Conditioning Map from a 3D model."),
+
+    # ---- views: TAR3D triplane positional encoding ------------------------
+    ("view.triplane.encoding", _G + "views.triplane_encoding",
+     triplane_encoding.tripe_encoding, ("render",),
+     "TriPE triplane positional encoding (RoPE fusion of 2D + 1D positions)."),
 )
 
 
