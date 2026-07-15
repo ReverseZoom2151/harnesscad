@@ -34,6 +34,7 @@ import zlib
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from harnesscad.eval.gallery import parts as catalogue
+from harnesscad.eval.gallery import provenance
 from harnesscad.eval.gallery.parts import COMPARE_BACKENDS, COMPARE_PART, Part
 from harnesscad.io import drawing as drawing_route
 from harnesscad.io import gate
@@ -438,6 +439,18 @@ def render_part(part: Part, out_dir: str, backend: Optional[str] = None,
         "qc": metrics,
         "gate": verdict,
     }
+
+    # WHO MADE THIS PART? Tag the manifest row with its provenance tier so a
+    # reader never mistakes a hand-authored op stream (Tier B) or a
+    # services-bypass mesh for model-generated evidence. A catalogued part is
+    # Tier B (ops) or protocol-bypass (mesh); classify() raises ValueError only
+    # for a kind it cannot place, which is left untagged rather than fabricated.
+    try:
+        tier = provenance.classify(part)
+        row["provenance"] = tier
+        row["provenance_caption"] = provenance.caption_for(tier)
+    except ValueError:
+        pass
 
     if part.drawing:
         svg_path = os.path.join(out_dir, base + "-drawing.svg")
