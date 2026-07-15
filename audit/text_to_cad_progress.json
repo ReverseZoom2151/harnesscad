@@ -1,943 +1,1115 @@
 {
-  "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
-  "manifest": "_manifest.md",
-  "total_papers": 186,
-  "reviewed_count": 186,
-  "next_manifest_index": 187,
-  "implementation_status": "186/186 COMPLETE -- entire text-to-CAD + spatial-intelligence corpus reviewed and all deterministic ideas implemented",
-  "reviewed": [
-    {
-      "index": 1,
-      "paper": "3D-GPT Procedural 3D Modeling with Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 2,
-      "paper": "A Geometric Foundation Model for Crystalline Material Discovery.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 3,
-      "paper": "A Set-based Approach for Feature Extraction of 3D CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 4,
-      "paper": "A Solver-Aided Hierarchical Language for LLM-Driven CAD Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 5,
-      "paper": "A2Z-10M+ Geometric Deep Learning with A-to-Z BRep Annotations for AI-Assisted CAD Modeling and Reverse Engineering.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 6,
-      "paper": "Advancements in Computer-Aided Design Automation using Large-Scale Procedural Content Generation from the Video Game Industry.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 7,
-      "paper": "Aligning Constraint Generation with Design Intent in Parametric CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 8,
-      "paper": "Alignist - CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 9,
-      "paper": "Applications of Artificial Intelligence in Computer-Aided Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 10,
-      "paper": "Artificial Intelligence-Based Design of Assemblies in the FreeCAD Software.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 11,
-      "paper": "Atlas3D - Physically Constrained Self-Supporting Text-to-3D for Simulation and Fabrication.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 12,
-      "paper": "Automated CAD Modeling Sequence Generation from Text Descriptions via Transformer-Based Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 13,
-      "paper": "Automatic 3D CAD Models Reconstruction from 2D Orthographic Drawings.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 14,
-      "paper": "B-repLer - Language-guided Editing of CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 15,
-      "paper": "BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 16,
-      "paper": "BRep Boundary and Junction Detection for CAD Reverse Engineering.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 17,
-      "paper": "BrepGen - A B-rep Generative Diffusion Model with Structured Latent Geometry.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 18,
-      "paper": "Bringing Attention to CAD - Boundary Representation Learning via Transformer.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 19,
-      "paper": "CAD - Memory Efficient Convolutional Adapter.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 20,
-      "paper": "CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 21,
-      "paper": "CAD Shape Grammar- Procedural Generation for Massive CAD Model.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 22,
-      "paper": "CAD(Block) - Photorealistic 3D Generation via Adversarial Distillation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 23,
-      "paper": "CAD-Assistant - Tool-Augmented VLLMs as Generic CAD Task Solvers.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 24,
-      "paper": "CAD-Coder - An Open-Source Vision-Language Model for Computer-Aided Design Code Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 25,
-      "paper": "CAD-Coder - Text-Guided CAD Files Code Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 26,
-      "paper": "CAD-Coder - Text-to-CAD Generation with Chain-of-Thought and Geometric Reward.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 27,
-      "paper": "CAD-Editor - A Locate-then-Infill Framework with Automated Training Data Synthesis for Text-Based CAD Editing.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 28,
-      "paper": "CAD-Editor - Text-Based CAD Editing Through Adapting Large Language Models with Synthetic Data.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 29,
-      "paper": "CAD-GPT - Synthesising CAD Construction Sequence with Spatial Reasoning-Enhanced Multimodal LLMs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 30,
-      "paper": "CAD-Judge - Toward Efficient Morphological Grading and Verification for Text-to-CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 31,
-      "paper": "CAD-Llama - Leveraging Large Language Models for Computer-Aided Design Parametric 3D Model Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 32,
-      "paper": "CAD-LLM - Large Language Model for CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 33,
-      "paper": "CAD-MLLM - Unifying Multimodality-Conditioned CAD Generation With MLLM.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 34,
-      "paper": "CAD-Prompted Generative Models - A Pathway to Feasible and Novel Engineering Designs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 35,
-      "paper": "CAD-Prompted Generative Models - A Pathway To Feasible And Novel Engineering.md",
-      "status": "duplicate_of_34"
-    },
-    {
-      "index": 36,
-      "paper": "CAD-Prompted SAM3 - Geometry-Conditioned Instance Segmentation for Industrial Objects.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 37,
-      "paper": "CAD-Recode - Reverse Engineering CAD Code from Point Clouds.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 38,
-      "paper": "CAD-Tokenizer - Towards Text-based CAD Prototyping via Modality-Specific Tokenization.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 39,
-      "paper": "CAD-VAE - Leveraging Correlation-Aware Latents for Comprehensive Fair Disentanglement.md",
-      "status": "unrelated_acronym"
-    },
-    {
-      "index": 40,
-      "paper": "CAD-VLM - Bridging Language and Vision in the Generation of Parametric CAD Sketches.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 41,
-      "paper": "CADDesigner - Conceptual Design of CAD Models Based on General-Purpose Agent.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 42,
-      "paper": "CADDreamer - CAD Object Generation from Single-view Images.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 43,
-      "paper": "CADEvolve - Creating Realistic CAD via Program Evolution.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 44,
-      "paper": "CADgpt - Harnessing Natural Language Processing for 3D Modelling to Enhance Computer-Aided Design Workflows.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 45,
-      "paper": "CADKnitter - Compositional CAD Generation from Text and Geometry Guidance.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 46,
-      "paper": "CADmium - Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 47,
-      "paper": "CADMorph - Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 48,
-      "paper": "CADParser - A Learning Approach of Sequence Modeling for B-Rep CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 49,
-      "paper": "CADReasoner - Iterative Program Editing for CAD Reverse Engineering.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 50,
-      "paper": "CADReview - Automatically Reviewing CAD Programs with Error Detection and Correction.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 51,
-      "paper": "cadrille - Multi-modal CAD Reconstruction with Reinforcement Learning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 52,
-      "paper": "CADSmith - Multi-Agent CAD Generation with Programmatic Geometric Validation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 53,
-      "paper": "CADTalk - An Algorithm and Benchmark for Semantic Commenting of CAD Programs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 54,
-      "paper": "CadVLM - Bridging Language and Vision in the.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 55,
-      "paper": "CAM, CAD Point Cloud Part Segmentation via Few-Shot Learning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 56,
-      "paper": "ChatCAD+ - Towards a Universal and Reliable Interactive CAD using LLMs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 57,
-      "paper": "Clarify Before You Draw - Proactive Agents for Robust Text-to-CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 58,
-      "paper": "CME-CAD - Heterogeneous Collaborative Multi-Expert Reinforcement Learning for CAD Code Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 59,
-      "paper": "CMT - A Cascade MAR with Topology Predictor for Multimodal Conditional CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 60,
-      "paper": "Comparing Fabrication Workflows in CAD to Support Design Reasoning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 61,
-      "paper": "Consistent Flow Distillation for Text-to-3D Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 62,
-      "paper": "Context-Aware Mapping of 2D Drawing Annotations to 3D CAD Features Using LLM-Assisted Reasoning for Manufacturing Automation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 63,
-      "paper": "ContrastCAD - Contrastive Learning-Based Representation Learning for Computer-Aided Design Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 64,
-      "paper": "CraftsMan - High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 65,
-      "paper": "CReFT-CAD - Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 66,
-      "paper": "DAVINCI - A Single-Stage Architecture for Constrained CAD Sketch Inference.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 67,
-      "paper": "DeepCAD - A Deep Generative Network for Computer-Aided Design Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 68,
-      "paper": "Design-Specification Tiling for ICL-based CAD Code Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 69,
-      "paper": "Diffusion-CAD - Controllable Diffusion Model for Generating CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 70,
-      "paper": "Don't Mesh with Me - Generating Constructive Solid Geometry Instead of Meshes by Fine-Tuning a Code-Generation LLM.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 71,
-      "paper": "Draw It Like Euclid - Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 72,
-      "paper": "DreamCAD - Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 73,
-      "paper": "E3D-Bench - A Benchmark for End-to-End 3D Geometric Foundation Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 74,
-      "paper": "EnzymeCAGE - A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 75,
-      "paper": "Error Notebook-Guided, Training-Free Part Retrieval in 3D CAD Assemblies via Vision-Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 76,
-      "paper": "Evaluating Deep Clustering Algorithms on Non-Categorical 3D CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 77,
-      "paper": "EvoCAD - Evolutionary CAD Code Generation with Vision Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 78,
-      "paper": "Exploring the Usability and Future Development of AI-Generated 3D Models in CAD Workflows and the Metaverse Based on 3D Model Standards.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 79,
-      "paper": "Facilitating the Parametric Definition of Geometric Properties in Programming-Based CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 80,
-      "paper": "Fine-Tuning 3D Foundation Models for Geometric Object Retrieval.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 81,
-      "paper": "FlatCAD - Fast Curvature Regularization of Neural SDFs for CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 82,
-      "paper": "FlexCAD - Unified and Versatile Control-Lable CAD Generation with Fine-Tuned Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 83,
-      "paper": "FlexCAD - Unified and Versatile Controllable CAD Generation with Fine-tuned Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 84,
-      "paper": "From 2D CAD Drawings to 3D Parametric Models - A Vision-Language Approach.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 85,
-      "paper": "From Concept to Manufacturing - Evaluating Vision-Language Models for Engineering Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 86,
-      "paper": "From Idea to CAD - A Language Model-Driven Multi-Agent System for Collaborative Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 87,
-      "paper": "From Intent to Execution - Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 88,
-      "paper": "Future Prospects of Computer-Aided Design (CAD).md",
-      "status": "reviewed"
-    },
-    {
-      "index": 89,
-      "paper": "GaussianCAD - Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 90,
-      "paper": "GenCAD - Image-Conditioned Computer-Aided Design Generation with Transformer-Based Contrastive Representation and Diffusion Priors.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 91,
-      "paper": "GenCAD-3D - CAD Program Generation using Multimodal Latent Space Alignment and Synthetic Dataset Balancing.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 92,
-      "paper": "GenCAD-Self-Repairing - Feasibility Enhancement for 3D CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 93,
-      "paper": "Generating CAD Code with Vision-Language Models for 3D Designs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 94,
-      "paper": "Generating Physically Stable and Buildable Brick Structures from Text.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 95,
-      "paper": "Generating Physically Stable and Buildable LEGO Designs from Text.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 96,
-      "paper": "Generative AI and CAD Automation for Diverse and Novel Mechanical Component Designs Under Data Constraints.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 97,
-      "paper": "Generative AI for CAD Automation - Leveraging Large Language Models for 3D Modelling.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 98,
-      "paper": "Generative AI meets 3D - A Survey on Text-to-3D in AIGC Era.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 99,
-      "paper": "GeoCAD - Local Geometry-Controllable CAD Generation with Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 100,
-      "paper": "GeoFusion-CAD - Structure-Aware Diffusion with Geometric State Space for Parametric 3D Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 101,
-      "paper": "Geometric Deep Learning for Computer-Aided Design - A Survey.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 102,
-      "paper": "Geometry of Spatial World Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 103,
-      "paper": "GIFT - Bootstrapping Image-to-CAD Program Synthesis via Geometric Feedback.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 104,
-      "paper": "GraphBrep - Learning B-Rep in Graph Structure for Efficient CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 105,
-      "paper": "Hierarchical Neural Coding for Controllable CAD Model Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 106,
-      "paper": "HistCAD - Geometrically Constrained Parametric History-based CAD Dataset.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 107,
-      "paper": "How Can Large Language Models Help Humans in Design and Manufacturing.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 108,
-      "paper": "Image2CADSeq - Computer-Aided Design Sequence and Knowledge Inference from Product Images.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 109,
-      "paper": "Img2CAD - Conditioned 3D CAD Model Generation from Single Image with Structured Visual Geometry.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 110,
-      "paper": "Img2CAD - Reverse Engineering 3D CAD Models from Images through VLM-Assisted Conditional Factorization.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 111,
-      "paper": "Integrating Computer Vision and CAD for Precise Dimension Extraction and 3D Solid Model Regeneration for Enhanced Quality Assurance.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 112,
-      "paper": "Integrating Deep Learning into CAD, CAE System - Generative Design and Evaluation of 3D Conceptual Wheel.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 113,
-      "paper": "Intelligent CAD 2.0.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 114,
-      "paper": "Interactive Procedural Computer-Aided Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 115,
-      "paper": "Introducing Bidirectional Programming in Constructive Solid Geometry-Based CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 116,
-      "paper": "Joint Neural SDF Reconstruction and Semantic Segmentation for CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 117,
-      "paper": "Large Language and Text-to-3D Models for Engineering Design Optimisation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 118,
-      "paper": "Large Language Models for Computer-Aided Design - A Survey.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 119,
-      "paper": "Learning From Design Procedure To Generate CAD Programs for Data Augmentation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 120,
-      "paper": "Lessons on Datasets and Paradigms in Machine Learning for Symbolic Computation - A Case Study on CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 121,
-      "paper": "Leveraging Vision-Language Models for Manufacturing Feature Recognition in CAD Designs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 122,
-      "paper": "Leveraging Vision-Language Models for Manufacturing Feature.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 123,
-      "paper": "LION - Latent Point Diffusion Models for 3D Shape Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 124,
-      "paper": "LLaMA-Mesh - Unifying 3D Mesh Generation with Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 125,
-      "paper": "Locally Attentional SDF Diffusion for Controllable 3D Shape Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 126,
-      "paper": "Magic3DSketch - Create Colorful 3D Models From Sketch-Based 3D Modeling Guided by Text and Language-Image Pre-Training.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 127,
-      "paper": "Make-A-Shape - A Ten-Million-scale 3D Shape Model.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 128,
-      "paper": "Mamba-CAD - State Space Model For 3D Computer-Aided Design Generative Modeling.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 129,
-      "paper": "MamTiff-CAD - Multi-Scale Latent Diffusion with Mamba+ for Complex Parametric Sequence.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 130,
-      "paper": "MeshDiffusion - Score-Based Generative 3D Mesh Modeling.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 131,
-      "paper": "Meshtron - High-Fidelity, Artist-Like 3D Mesh Generation At Scale.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 132,
-      "paper": "mrCAD - Multimodal Refinement of Computer-Aided Designs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 133,
-      "paper": "MUSE - Benchmarking Manufacturable, Functional, and Assemblable Text-to-CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 134,
-      "paper": "Neural Surrogate-Driven Modelling, Optimisation, and Generation of Engineering Designs - A Concise Review.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 135,
-      "paper": "NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 136,
-      "paper": "NURBGen - High-Fidelity Text-to-CAD Generation through LLM-Driven NURBS Modeling.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 137,
-      "paper": "OctFusion - Octree-based Diffusion Models for 3D Shape Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 138,
-      "paper": "OpenECAD - An Efficient Visual Language Model for Editable 3D-CAD Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 139,
-      "paper": "OSCAR - Open-Set CAD Retrieval from a Language Prompt and a Single Image.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 140,
-      "paper": "Parametric + Direct CAD integration.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 141,
-      "paper": "Parametric Primitive Analysis of CAD Sketches with Vision Transformer.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 142,
-      "paper": "PHT-CAD - Efficient CAD Parametric Primitive Analysis with Progressive Hierarchical Tuning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 143,
-      "paper": "PICASSO - A Feed-Forward Framework for Parametric Inference of CAD Sketches via Rendering Self-Supervision.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 144,
-      "paper": "PLLM - Pseudo-Labeling Large Language Models for CAD Program Synthesis.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 145,
-      "paper": "Pointer-CAD - Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 146,
-      "paper": "PS-CAD - Local Geometry Guidance via Prompting and Selection for CAD Reconstruction.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 147,
-      "paper": "Query2CAD - Generating CAD Models Using Natural Language Queries.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 148,
-      "paper": "QueryCAD - Grounded Question Answering for CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 149,
-      "paper": "RAG-6DPose - Retrieval-Augmented 6D Pose Estimation via Leveraging CAD as Knowledge Base.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 150,
-      "paper": "ReCAD - Reinforcement Learning Enhanced Parametric CAD Model Generation with Vision-Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 151,
-      "paper": "Regularized Diffusion Modeling for CAD Representation Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 152,
-      "paper": "Reinforcement Learning for Block Decomposition of CAD Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 153,
-      "paper": "Revisiting CAD Model Generation by Learning Raster Sketch.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 154,
-      "paper": "RLCAD - Reinforcement Learning Training Gym for Revolution Involved CAD Command Sequence Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 155,
-      "paper": "Scaling Instructable Agents Across Many Simulated Worlds.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 156,
-      "paper": "Seek-CAD - A Self-refined Generative Modeling for 3D Parametric CAD Using Local Inference via DeepSeek.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 157,
-      "paper": "Self-Supervised Graph Neural Network for Mechanical CAD Retrieval.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 158,
-      "paper": "Self-Supervised Representation Learning for CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 159,
-      "paper": "Semantic Enrichment of CAD-Based Industrial Environments via Scene Graphs for Simulation and Reasoning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 160,
-      "paper": "SHAPE-IT - Exploring Text-to-Shape-Display for Generative Shape-Changing Behaviors with LLMs.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 161,
-      "paper": "ShapeGraMM - On the Fly Procedural Generation of Massive Models for Real-Time Visualisation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 162,
-      "paper": "Sketch2CAD - 3D CAD Model Reconstruction from 2D Sketch using Visual Transformer.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 163,
-      "paper": "Sketch2Prototype - Rapid Conceptual Design Exploration and Prototyping with Generative AI.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 164,
-      "paper": "SketchDNN - Joint Continuous-Discrete Diffusion for CAD Sketch Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 165,
-      "paper": "SketchGraphs - Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 166,
-      "paper": "SldprtNet - A Large-Scale Multimodal Dataset for CAD Generation in Language-Driven 3D Design.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 167,
-      "paper": "STEP-LLM - Generating CAD STEP Models from Natural Language with Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 168,
-      "paper": "TAR3D - Creating High-Quality 3D Assets via Next-Part Prediction.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 169,
-      "paper": "Text-to-CAD Evaluation with CADTESTS.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 170,
-      "paper": "Text-to-CAD Generation Through Infusing Visual Feedback in Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 171,
-      "paper": "Text-to-CadQuery - A New Paradigm for CAD Generation with Scalable Large Model Capabilities.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 172,
-      "paper": "Text2CAD - Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 173,
-      "paper": "Text2CAD - Generating Sequential CAD Models from Beginner-to-Expert Level Text Prompts.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 174,
-      "paper": "Text2CAD - Text to 3D CAD Generation via Technical Drawings.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 175,
-      "paper": "Text2CAD-Bench - A Benchmark for LLM-based Text-to-Parametric CAD Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 176,
-      "paper": "The Geometry of Categorical and Hierarchical Concepts in Large Language Models.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 177,
-      "paper": "TOOLCAD - Exploring Tool-Using Large Language Models in Text-to-CAD Generation with Reinforcement Learning.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 178,
-      "paper": "Topology-Aware Latent Diffusion for 3D Shape Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 179,
-      "paper": "Toward AI-driven Multimodal Interfaces for Industrial CAD Modeling.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 180,
-      "paper": "Towards a Natural Language Interface for CAD.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 181,
-      "paper": "Towards High-Fidelity CAD Generation via LLM-Driven Program Generation and Text-Based B-Rep Primitive Grounding.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 182,
-      "paper": "Training a Foundation Model for Materials on a Budget.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 183,
-      "paper": "Turbo3D - Ultra-fast Text-to-3D Generation.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 184,
-      "paper": "VoxHammer - Training-Free Precise and Coherent 3D Editing in Native 3D Space.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 185,
-      "paper": "VQ-CAD - Computer-Aided Design Model Generation with Vector Quantized Diffusion.md",
-      "status": "reviewed"
-    },
-    {
-      "index": 186,
-      "paper": "WorldCraft - Photo-Realistic 3D World Creation and Customization via LLM Agents.md",
-      "status": "reviewed"
-    }
+ "corpus": "resources/Text-to-CAD + Spatial Intelligence/extracted-md",
+ "manifest": "_manifest.md",
+ "total_papers": 186,
+ "reviewed_count": 186,
+ "next_manifest_index": 187,
+ "implementation_status": "186/186 COMPLETE -- entire text-to-CAD + spatial-intelligence corpus reviewed and all deterministic ideas implemented",
+ "reviewed": [
+  {
+   "index": 1,
+   "paper": "3D-GPT Procedural 3D Modeling with Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 2,
+   "paper": "A Geometric Foundation Model for Crystalline Material Discovery.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 3,
+   "paper": "A Set-based Approach for Feature Extraction of 3D CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 4,
+   "paper": "A Solver-Aided Hierarchical Language for LLM-Driven CAD Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 5,
+   "paper": "A2Z-10M+ Geometric Deep Learning with A-to-Z BRep Annotations for AI-Assisted CAD Modeling and Reverse Engineering.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 6,
+   "paper": "Advancements in Computer-Aided Design Automation using Large-Scale Procedural Content Generation from the Video Game Industry.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 7,
+   "paper": "Aligning Constraint Generation with Design Intent in Parametric CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 8,
+   "paper": "Alignist - CAD-Informed Orientation Distribution Estimation by Fusing Shape and Correspondences.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 9,
+   "paper": "Applications of Artificial Intelligence in Computer-Aided Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 10,
+   "paper": "Artificial Intelligence-Based Design of Assemblies in the FreeCAD Software.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 11,
+   "paper": "Atlas3D - Physically Constrained Self-Supporting Text-to-3D for Simulation and Fabrication.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 12,
+   "paper": "Automated CAD Modeling Sequence Generation from Text Descriptions via Transformer-Based Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 13,
+   "paper": "Automatic 3D CAD Models Reconstruction from 2D Orthographic Drawings.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 14,
+   "paper": "B-repLer - Language-guided Editing of CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 15,
+   "paper": "BlenderLLM - Training Large Language Models for Computer-Aided Design with Self-improvement.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 16,
+   "paper": "BRep Boundary and Junction Detection for CAD Reverse Engineering.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 17,
+   "paper": "BrepGen - A B-rep Generative Diffusion Model with Structured Latent Geometry.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 18,
+   "paper": "Bringing Attention to CAD - Boundary Representation Learning via Transformer.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 19,
+   "paper": "CAD - Memory Efficient Convolutional Adapter.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 20,
+   "paper": "CAD 100K - A Comprehensive Multi-Task Dataset for Car Related Visual Anomaly Detection.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 21,
+   "paper": "CAD Shape Grammar- Procedural Generation for Massive CAD Model.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 22,
+   "paper": "CAD(Block) - Photorealistic 3D Generation via Adversarial Distillation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 23,
+   "paper": "CAD-Assistant - Tool-Augmented VLLMs as Generic CAD Task Solvers.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 24,
+   "paper": "CAD-Coder - An Open-Source Vision-Language Model for Computer-Aided Design Code Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 25,
+   "paper": "CAD-Coder - Text-Guided CAD Files Code Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 26,
+   "paper": "CAD-Coder - Text-to-CAD Generation with Chain-of-Thought and Geometric Reward.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 27,
+   "paper": "CAD-Editor - A Locate-then-Infill Framework with Automated Training Data Synthesis for Text-Based CAD Editing.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 28,
+   "paper": "CAD-Editor - Text-Based CAD Editing Through Adapting Large Language Models with Synthetic Data.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 29,
+   "paper": "CAD-GPT - Synthesising CAD Construction Sequence with Spatial Reasoning-Enhanced Multimodal LLMs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 30,
+   "paper": "CAD-Judge - Toward Efficient Morphological Grading and Verification for Text-to-CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 31,
+   "paper": "CAD-Llama - Leveraging Large Language Models for Computer-Aided Design Parametric 3D Model Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 32,
+   "paper": "CAD-LLM - Large Language Model for CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 33,
+   "paper": "CAD-MLLM - Unifying Multimodality-Conditioned CAD Generation With MLLM.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 34,
+   "paper": "CAD-Prompted Generative Models - A Pathway to Feasible and Novel Engineering Designs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 35,
+   "paper": "CAD-Prompted Generative Models - A Pathway To Feasible And Novel Engineering.md",
+   "status": "duplicate_of_34"
+  },
+  {
+   "index": 36,
+   "paper": "CAD-Prompted SAM3 - Geometry-Conditioned Instance Segmentation for Industrial Objects.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 37,
+   "paper": "CAD-Recode - Reverse Engineering CAD Code from Point Clouds.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 38,
+   "paper": "CAD-Tokenizer - Towards Text-based CAD Prototyping via Modality-Specific Tokenization.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 39,
+   "paper": "CAD-VAE - Leveraging Correlation-Aware Latents for Comprehensive Fair Disentanglement.md",
+   "status": "unrelated_acronym"
+  },
+  {
+   "index": 40,
+   "paper": "CAD-VLM - Bridging Language and Vision in the Generation of Parametric CAD Sketches.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 41,
+   "paper": "CADDesigner - Conceptual Design of CAD Models Based on General-Purpose Agent.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 42,
+   "paper": "CADDreamer - CAD Object Generation from Single-view Images.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 43,
+   "paper": "CADEvolve - Creating Realistic CAD via Program Evolution.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 44,
+   "paper": "CADgpt - Harnessing Natural Language Processing for 3D Modelling to Enhance Computer-Aided Design Workflows.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 45,
+   "paper": "CADKnitter - Compositional CAD Generation from Text and Geometry Guidance.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 46,
+   "paper": "CADmium - Fine-Tuning Code Language Models for Text-Driven Sequential CAD Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 47,
+   "paper": "CADMorph - Geometry-Driven Parametric CAD Editing via a Plan-Generate-Verify Loop.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 48,
+   "paper": "CADParser - A Learning Approach of Sequence Modeling for B-Rep CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 49,
+   "paper": "CADReasoner - Iterative Program Editing for CAD Reverse Engineering.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 50,
+   "paper": "CADReview - Automatically Reviewing CAD Programs with Error Detection and Correction.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 51,
+   "paper": "cadrille - Multi-modal CAD Reconstruction with Reinforcement Learning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 52,
+   "paper": "CADSmith - Multi-Agent CAD Generation with Programmatic Geometric Validation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 53,
+   "paper": "CADTalk - An Algorithm and Benchmark for Semantic Commenting of CAD Programs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 54,
+   "paper": "CadVLM - Bridging Language and Vision in the.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 55,
+   "paper": "CAM, CAD Point Cloud Part Segmentation via Few-Shot Learning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 56,
+   "paper": "ChatCAD+ - Towards a Universal and Reliable Interactive CAD using LLMs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 57,
+   "paper": "Clarify Before You Draw - Proactive Agents for Robust Text-to-CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 58,
+   "paper": "CME-CAD - Heterogeneous Collaborative Multi-Expert Reinforcement Learning for CAD Code Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 59,
+   "paper": "CMT - A Cascade MAR with Topology Predictor for Multimodal Conditional CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 60,
+   "paper": "Comparing Fabrication Workflows in CAD to Support Design Reasoning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 61,
+   "paper": "Consistent Flow Distillation for Text-to-3D Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 62,
+   "paper": "Context-Aware Mapping of 2D Drawing Annotations to 3D CAD Features Using LLM-Assisted Reasoning for Manufacturing Automation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 63,
+   "paper": "ContrastCAD - Contrastive Learning-Based Representation Learning for Computer-Aided Design Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 64,
+   "paper": "CraftsMan - High-fidelity Mesh Generation with 3D Native Generation and Interactive Geometry Refiner.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 65,
+   "paper": "CReFT-CAD - Boosting Orthographic Projection Reasoning for CAD via Reinforcement Fine-Tuning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 66,
+   "paper": "DAVINCI - A Single-Stage Architecture for Constrained CAD Sketch Inference.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 67,
+   "paper": "DeepCAD - A Deep Generative Network for Computer-Aided Design Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 68,
+   "paper": "Design-Specification Tiling for ICL-based CAD Code Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 69,
+   "paper": "Diffusion-CAD - Controllable Diffusion Model for Generating CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 70,
+   "paper": "Don't Mesh with Me - Generating Constructive Solid Geometry Instead of Meshes by Fine-Tuning a Code-Generation LLM.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 71,
+   "paper": "Draw It Like Euclid - Teaching Transformer Models to Generate CAD Profiles Using Ruler and Compass Construction Steps.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 72,
+   "paper": "DreamCAD - Scaling Multi-modal CAD Generation using Differentiable Parametric Surfaces.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 73,
+   "paper": "E3D-Bench - A Benchmark for End-to-End 3D Geometric Foundation Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 74,
+   "paper": "EnzymeCAGE - A Geometric Foundation Model for Enzyme Retrieval with Evolutionary Insights.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 75,
+   "paper": "Error Notebook-Guided, Training-Free Part Retrieval in 3D CAD Assemblies via Vision-Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 76,
+   "paper": "Evaluating Deep Clustering Algorithms on Non-Categorical 3D CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 77,
+   "paper": "EvoCAD - Evolutionary CAD Code Generation with Vision Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 78,
+   "paper": "Exploring the Usability and Future Development of AI-Generated 3D Models in CAD Workflows and the Metaverse Based on 3D Model Standards.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 79,
+   "paper": "Facilitating the Parametric Definition of Geometric Properties in Programming-Based CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 80,
+   "paper": "Fine-Tuning 3D Foundation Models for Geometric Object Retrieval.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 81,
+   "paper": "FlatCAD - Fast Curvature Regularization of Neural SDFs for CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 82,
+   "paper": "FlexCAD - Unified and Versatile Control-Lable CAD Generation with Fine-Tuned Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 83,
+   "paper": "FlexCAD - Unified and Versatile Controllable CAD Generation with Fine-tuned Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 84,
+   "paper": "From 2D CAD Drawings to 3D Parametric Models - A Vision-Language Approach.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 85,
+   "paper": "From Concept to Manufacturing - Evaluating Vision-Language Models for Engineering Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 86,
+   "paper": "From Idea to CAD - A Language Model-Driven Multi-Agent System for Collaborative Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 87,
+   "paper": "From Intent to Execution - Multimodal Chain-of-Thought Reinforcement Learning for Precise CAD Code Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 88,
+   "paper": "Future Prospects of Computer-Aided Design (CAD).md",
+   "status": "reviewed"
+  },
+  {
+   "index": 89,
+   "paper": "GaussianCAD - Robust Self-Supervised CAD Reconstruction from Three Orthographic Views Using 3D Gaussian Splatting.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 90,
+   "paper": "GenCAD - Image-Conditioned Computer-Aided Design Generation with Transformer-Based Contrastive Representation and Diffusion Priors.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 91,
+   "paper": "GenCAD-3D - CAD Program Generation using Multimodal Latent Space Alignment and Synthetic Dataset Balancing.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 92,
+   "paper": "GenCAD-Self-Repairing - Feasibility Enhancement for 3D CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 93,
+   "paper": "Generating CAD Code with Vision-Language Models for 3D Designs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 94,
+   "paper": "Generating Physically Stable and Buildable Brick Structures from Text.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 95,
+   "paper": "Generating Physically Stable and Buildable LEGO Designs from Text.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 96,
+   "paper": "Generative AI and CAD Automation for Diverse and Novel Mechanical Component Designs Under Data Constraints.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 97,
+   "paper": "Generative AI for CAD Automation - Leveraging Large Language Models for 3D Modelling.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 98,
+   "paper": "Generative AI meets 3D - A Survey on Text-to-3D in AIGC Era.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 99,
+   "paper": "GeoCAD - Local Geometry-Controllable CAD Generation with Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 100,
+   "paper": "GeoFusion-CAD - Structure-Aware Diffusion with Geometric State Space for Parametric 3D Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 101,
+   "paper": "Geometric Deep Learning for Computer-Aided Design - A Survey.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 102,
+   "paper": "Geometry of Spatial World Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 103,
+   "paper": "GIFT - Bootstrapping Image-to-CAD Program Synthesis via Geometric Feedback.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 104,
+   "paper": "GraphBrep - Learning B-Rep in Graph Structure for Efficient CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 105,
+   "paper": "Hierarchical Neural Coding for Controllable CAD Model Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 106,
+   "paper": "HistCAD - Geometrically Constrained Parametric History-based CAD Dataset.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 107,
+   "paper": "How Can Large Language Models Help Humans in Design and Manufacturing.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 108,
+   "paper": "Image2CADSeq - Computer-Aided Design Sequence and Knowledge Inference from Product Images.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 109,
+   "paper": "Img2CAD - Conditioned 3D CAD Model Generation from Single Image with Structured Visual Geometry.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 110,
+   "paper": "Img2CAD - Reverse Engineering 3D CAD Models from Images through VLM-Assisted Conditional Factorization.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 111,
+   "paper": "Integrating Computer Vision and CAD for Precise Dimension Extraction and 3D Solid Model Regeneration for Enhanced Quality Assurance.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 112,
+   "paper": "Integrating Deep Learning into CAD, CAE System - Generative Design and Evaluation of 3D Conceptual Wheel.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 113,
+   "paper": "Intelligent CAD 2.0.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 114,
+   "paper": "Interactive Procedural Computer-Aided Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 115,
+   "paper": "Introducing Bidirectional Programming in Constructive Solid Geometry-Based CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 116,
+   "paper": "Joint Neural SDF Reconstruction and Semantic Segmentation for CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 117,
+   "paper": "Large Language and Text-to-3D Models for Engineering Design Optimisation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 118,
+   "paper": "Large Language Models for Computer-Aided Design - A Survey.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 119,
+   "paper": "Learning From Design Procedure To Generate CAD Programs for Data Augmentation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 120,
+   "paper": "Lessons on Datasets and Paradigms in Machine Learning for Symbolic Computation - A Case Study on CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 121,
+   "paper": "Leveraging Vision-Language Models for Manufacturing Feature Recognition in CAD Designs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 122,
+   "paper": "Leveraging Vision-Language Models for Manufacturing Feature.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 123,
+   "paper": "LION - Latent Point Diffusion Models for 3D Shape Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 124,
+   "paper": "LLaMA-Mesh - Unifying 3D Mesh Generation with Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 125,
+   "paper": "Locally Attentional SDF Diffusion for Controllable 3D Shape Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 126,
+   "paper": "Magic3DSketch - Create Colorful 3D Models From Sketch-Based 3D Modeling Guided by Text and Language-Image Pre-Training.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 127,
+   "paper": "Make-A-Shape - A Ten-Million-scale 3D Shape Model.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 128,
+   "paper": "Mamba-CAD - State Space Model For 3D Computer-Aided Design Generative Modeling.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 129,
+   "paper": "MamTiff-CAD - Multi-Scale Latent Diffusion with Mamba+ for Complex Parametric Sequence.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 130,
+   "paper": "MeshDiffusion - Score-Based Generative 3D Mesh Modeling.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 131,
+   "paper": "Meshtron - High-Fidelity, Artist-Like 3D Mesh Generation At Scale.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 132,
+   "paper": "mrCAD - Multimodal Refinement of Computer-Aided Designs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 133,
+   "paper": "MUSE - Benchmarking Manufacturable, Functional, and Assemblable Text-to-CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 134,
+   "paper": "Neural Surrogate-Driven Modelling, Optimisation, and Generation of Engineering Designs - A Concise Review.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 135,
+   "paper": "NeurCADRecon - Neural Representation for Reconstructing CAD Surfaces by Enforcing Zero Gaussian Curvature.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 136,
+   "paper": "NURBGen - High-Fidelity Text-to-CAD Generation through LLM-Driven NURBS Modeling.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 137,
+   "paper": "OctFusion - Octree-based Diffusion Models for 3D Shape Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 138,
+   "paper": "OpenECAD - An Efficient Visual Language Model for Editable 3D-CAD Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 139,
+   "paper": "OSCAR - Open-Set CAD Retrieval from a Language Prompt and a Single Image.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 140,
+   "paper": "Parametric + Direct CAD integration.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 141,
+   "paper": "Parametric Primitive Analysis of CAD Sketches with Vision Transformer.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 142,
+   "paper": "PHT-CAD - Efficient CAD Parametric Primitive Analysis with Progressive Hierarchical Tuning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 143,
+   "paper": "PICASSO - A Feed-Forward Framework for Parametric Inference of CAD Sketches via Rendering Self-Supervision.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 144,
+   "paper": "PLLM - Pseudo-Labeling Large Language Models for CAD Program Synthesis.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 145,
+   "paper": "Pointer-CAD - Unifying B-Rep and Command Sequences via Pointer-based Edges & Faces Selection.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 146,
+   "paper": "PS-CAD - Local Geometry Guidance via Prompting and Selection for CAD Reconstruction.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 147,
+   "paper": "Query2CAD - Generating CAD Models Using Natural Language Queries.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 148,
+   "paper": "QueryCAD - Grounded Question Answering for CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 149,
+   "paper": "RAG-6DPose - Retrieval-Augmented 6D Pose Estimation via Leveraging CAD as Knowledge Base.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 150,
+   "paper": "ReCAD - Reinforcement Learning Enhanced Parametric CAD Model Generation with Vision-Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 151,
+   "paper": "Regularized Diffusion Modeling for CAD Representation Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 152,
+   "paper": "Reinforcement Learning for Block Decomposition of CAD Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 153,
+   "paper": "Revisiting CAD Model Generation by Learning Raster Sketch.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 154,
+   "paper": "RLCAD - Reinforcement Learning Training Gym for Revolution Involved CAD Command Sequence Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 155,
+   "paper": "Scaling Instructable Agents Across Many Simulated Worlds.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 156,
+   "paper": "Seek-CAD - A Self-refined Generative Modeling for 3D Parametric CAD Using Local Inference via DeepSeek.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 157,
+   "paper": "Self-Supervised Graph Neural Network for Mechanical CAD Retrieval.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 158,
+   "paper": "Self-Supervised Representation Learning for CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 159,
+   "paper": "Semantic Enrichment of CAD-Based Industrial Environments via Scene Graphs for Simulation and Reasoning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 160,
+   "paper": "SHAPE-IT - Exploring Text-to-Shape-Display for Generative Shape-Changing Behaviors with LLMs.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 161,
+   "paper": "ShapeGraMM - On the Fly Procedural Generation of Massive Models for Real-Time Visualisation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 162,
+   "paper": "Sketch2CAD - 3D CAD Model Reconstruction from 2D Sketch using Visual Transformer.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 163,
+   "paper": "Sketch2Prototype - Rapid Conceptual Design Exploration and Prototyping with Generative AI.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 164,
+   "paper": "SketchDNN - Joint Continuous-Discrete Diffusion for CAD Sketch Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 165,
+   "paper": "SketchGraphs - Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 166,
+   "paper": "SldprtNet - A Large-Scale Multimodal Dataset for CAD Generation in Language-Driven 3D Design.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 167,
+   "paper": "STEP-LLM - Generating CAD STEP Models from Natural Language with Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 168,
+   "paper": "TAR3D - Creating High-Quality 3D Assets via Next-Part Prediction.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 169,
+   "paper": "Text-to-CAD Evaluation with CADTESTS.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 170,
+   "paper": "Text-to-CAD Generation Through Infusing Visual Feedback in Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 171,
+   "paper": "Text-to-CadQuery - A New Paradigm for CAD Generation with Scalable Large Model Capabilities.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 172,
+   "paper": "Text2CAD - Generating Sequential CAD Designs from Beginner-to-Expert Level Text Prompts.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 173,
+   "paper": "Text2CAD - Generating Sequential CAD Models from Beginner-to-Expert Level Text Prompts.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 174,
+   "paper": "Text2CAD - Text to 3D CAD Generation via Technical Drawings.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 175,
+   "paper": "Text2CAD-Bench - A Benchmark for LLM-based Text-to-Parametric CAD Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 176,
+   "paper": "The Geometry of Categorical and Hierarchical Concepts in Large Language Models.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 177,
+   "paper": "TOOLCAD - Exploring Tool-Using Large Language Models in Text-to-CAD Generation with Reinforcement Learning.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 178,
+   "paper": "Topology-Aware Latent Diffusion for 3D Shape Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 179,
+   "paper": "Toward AI-driven Multimodal Interfaces for Industrial CAD Modeling.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 180,
+   "paper": "Towards a Natural Language Interface for CAD.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 181,
+   "paper": "Towards High-Fidelity CAD Generation via LLM-Driven Program Generation and Text-Based B-Rep Primitive Grounding.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 182,
+   "paper": "Training a Foundation Model for Materials on a Budget.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 183,
+   "paper": "Turbo3D - Ultra-fast Text-to-3D Generation.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 184,
+   "paper": "VoxHammer - Training-Free Precise and Coherent 3D Editing in Native 3D Space.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 185,
+   "paper": "VQ-CAD - Computer-Aided Design Model Generation with Vector Quantized Diffusion.md",
+   "status": "reviewed"
+  },
+  {
+   "index": 186,
+   "paper": "WorldCraft - Photo-Realistic 3D World Creation and Customization via LLM Agents.md",
+   "status": "reviewed"
+  }
+ ],
+ "suite_tests": 9349,
+ "readme_policy": "do not edit README during campaign; full rewrite pending; track suite_tests here",
+ "campaign_complete": true,
+ "batch_19_36_new_papers": {
+  "description": "Newly-added text-to-CAD papers 19-36 (find -newermt '-4 days', sorted, sed 19,36p). Read FULLY; deterministic buildables implemented where not already covered by existing modules.",
+  "built_this_session": [
+   {
+    "module": "src/harnesscad/agents/agent/triz_matrix.py",
+    "test": "tests/agents/agent/test_triz_matrix.py",
+    "paper": "Enhancing Creativity via TRIZ-Inspired Text-to-CAD (#33)",
+    "feature": "40 inventive principles + 39 engineering parameters + seeded contradiction-matrix lookup + Stage-2 prompt scaffold (deterministic, no model call)"
+   },
+   {
+    "module": "src/harnesscad/eval/bench/sequence/soft_target_distribution.py",
+    "test": "tests/eval/bench/sequence/test_soft_target_distribution.py",
+    "paper": "Drawing2CAD (#30)",
+    "feature": "triangular soft-target label-smoothing distribution w~=(beta-|k-t|)/Z over [t-delta,t+delta], beta=2,delta=3, + soft cross-entropy (Eqs 6-7)"
+   },
+   {
+    "module": "src/harnesscad/domain/reconstruction/sequences/spcc_components.py",
+    "test": "tests/domain/reconstruction/sequences/test_spcc_components.py",
+    "paper": "CAD-Llama (#21)",
+    "feature": "6-way canonical extrusion-direction classification (D.3) + consecutive-equivalent sketch-extrude component collapse, origin-invariant, threshold=3 (D.1)"
+   },
+   {
+    "module": "src/harnesscad/data/dataengine/preference/compiler_judge.py",
+    "test": "tests/data/dataengine/preference/test_compiler_judge.py",
+    "paper": "CAD-Judge (#19)",
+    "feature": "Compiler-as-a-Judge binary labelling rule: desirable iff compiled AND CD<=threshold; batch labels + invalidity ratio (the decision rule missing from binary_preferences.py)"
+   }
   ],
-  "suite_tests": 9349,
-  "readme_policy": "do not edit README during campaign; full rewrite pending; track suite_tests here",
-  "campaign_complete": true
+  "already_covered_no_dup": [
+   {
+    "paper": "CAD-Judge (#19)",
+    "existing": "binary_preferences.py (CJM record), kto.py (prospect-theory objective); added only the missing CD-threshold decision rule"
+   },
+   {
+    "paper": "CADKnitter (#20)",
+    "existing": "eval/bench/geometry/compositional_metrics.py (CD/IV/PR/VR + contact slicing), box_contact.py, contact_heatmap.py"
+   },
+   {
+    "paper": "CADmium (#22)",
+    "existing": "eval/bench/geometry/mesh_discrepancy.py (sphericity, Sphericity Discrepancy, Euler characteristic, Exact Euler Characteristic Match, median CD)"
+   },
+   {
+    "paper": "cadrille (#24)",
+    "existing": "solid_iou.py/voxel_iou.py + selftrain reward stack (IoU+invalid reward, hard-example mining already in dataengine)"
+   },
+   {
+    "paper": "CADSmith (#25)",
+    "existing": "agents/generation/kernel_metrics.py, difficulty_tiers.py, api_reference.py, error_patterns.py (kernel bbox/volume/face-count checks, T1-T3 tiers, RAG-KB scaffolds)"
+   },
+   {
+    "paper": "CAD-Tokenizer (#26)",
+    "existing": "domain/reconstruction/sequences/command_grammar.py + grammar_fsa (FSA valid-next-token masking)"
+   },
+   {
+    "paper": "Clarify Before You Draw (#28)",
+    "existing": "agents/agent/intent_resolution.py (clarification / ambiguity handling)"
+   },
+   {
+    "paper": "CME-CAD (#29)",
+    "existing": "data/dataengine/reward/workplane_reward.py (gated R=format*exec*(IoU*RIoU+plane*Rplane), origin+axis-vector deviation), executability_reward.py"
+   },
+   {
+    "paper": "DreamCAD (#31)",
+    "existing": "domain/geometry/parametric/bezier.py, nurbs_surface.py, tessellation.py (Bezier/NURBS patch eval + differentiable-style tessellation)"
+   },
+   {
+    "paper": "Embodied CAD (#32)",
+    "existing": "agents/agent/tool_schema.py + tool_metrics.py + tool_reward.py (typed skill library, solver-aligned trajectory metrics, format/policy/exec reward)"
+   },
+   {
+    "paper": "Foundation Models / LLMForge (#34)",
+    "existing": "data/dataengine/reward/visual_score.py (multi-aspect visual composite), eval/bench/vision/silhouette_iou.py, protocols/parameter_dimension_scoring.py, benchmark_taxonomy.py"
+   },
+   {
+    "paper": "From Concept to Manufacturing (#35)",
+    "existing": "eval/bench/protocols/benchmark_taxonomy.py + drawing_analysis_rubric.py + manufacturing_feature_recognition.py + defect_confusion.py (8-task VLM engineering-design taxonomy)"
+   }
+  ],
+  "skipped_no_deterministic_component": [
+   {
+    "paper": "CAD-Prompted Generative Models (#23)",
+    "why": "Purely text-to-image (Stable Diffusion) CAD-image prompting + human Likert feasibility/novelty study; the feasibility-novelty tradeoff is an empirical finding with no deterministic algorithm to build."
+   },
+   {
+    "paper": "CHIA (#27)",
+    "why": "Open-source framework for agentic hardware/software (RTL) co-design on Ray; out of scope for mechanical text-to-CAD and explicitly nondeterministic agent orchestration."
+   },
+   {
+    "paper": "Further results on Minimal and Minimum Cylindrical Algebraic Decompositions (#36)",
+    "why": "'CAD' here = Cylindrical Algebraic Decomposition (symbolic real algebraic geometry). Acronym collision, not computer-aided design; no text-to-CAD component."
+   }
+  ],
+  "most_valuable_feature": "TRIZ contradiction matrix scaffold (triz_matrix.py) -- the only entirely-uncovered deterministic capability in the batch: canonical 40 principles + 39 parameters + matrix lookup + Stage-2 prompt scaffold, enabling deterministic creative-alternative ideation with zero model calls.",
+  "tests": "37 new unit tests across 4 modules, all passing (python -m pytest, 37 passed)."
+ },
+ "batch_new_papers_1_18": {
+  "description": "Newly-added text-to-CAD papers 1-18 (find -newermt '-6 days', sorted, sed 1,18p) -- the LOWER HALF. Read fully via extracted text; deterministic buildables implemented where not already covered by existing modules.",
+  "built_this_session": [
+   {
+    "module": "src/harnesscad/domain/reconstruction/brep/a2z_scan_labeling.py",
+    "test": "tests/domain/reconstruction/brep/test_a2z_scan_labeling.py",
+    "paper": "A2Z-10M+ (#1)",
+    "feature": "tiny-loop/hole classification by perimeter ratio (Step-II, |L|>2 & L/Lmax<tau_h), proximity-aware multi-scale SPH poly6 soft-label membership with normalised argmax (Sec 3.2), and sketch-artist skill-amplitude schedule alpha(kappa)=(6-kappa)/5 (Sec 3.3)"
+   },
+   {
+    "module": "src/harnesscad/domain/spec/representation_completeness.py",
+    "test": "tests/domain/spec/test_representation_completeness.py",
+    "paper": "AI+CAD / WHUCAD (#5)",
+    "feature": "six-layer engineering-semantic completeness checklist + three-tier level assignment (solid_modeling / feature_modeling / industrial_parametric) + DeepCAD-vs-WHUCAD ranking"
+   },
+   {
+    "module": "src/harnesscad/domain/programs/cad_ir.py",
+    "test": "tests/domain/programs/test_cad_ir.py",
+    "paper": "ArtisanCAD (#8)",
+    "feature": "CAD-IR procedural rep: produces/consumes entity dependency DAG, structural validation (unique names, no double-produce, resolved deps), Kahn topological order (stable, cycle-detecting), parameterized skill instantiation"
+   },
+   {
+    "module": "src/harnesscad/eval/bench/protocols/constrained_multiobjective.py",
+    "test": "tests/eval/bench/protocols/test_constrained_multiobjective.py",
+    "paper": "BikeBench (#11)",
+    "feature": "constrained multi-objective design eval: per-design feasibility (g<=tol), population feasibility-rate + mean constraint-satisfaction + per-constraint rates, min-max-normalised weighted objective aggregation over feasible designs"
+   },
+   {
+    "module": "src/harnesscad/data/dataengine/domain_mixing.py",
+    "test": "tests/data/dataengine/test_domain_mixing.py",
+    "paper": "BlendCLIP (#12)",
+    "feature": "curriculum synthetic->real domain-mixing schedule: linear warmup real_fraction, integer batch composition (label-efficient ~1.5% real), materialised schedule table with cumulative sample totals"
+   },
+   {
+    "module": "src/harnesscad/eval/bench/vision/quantity_alignment.py",
+    "test": "tests/eval/bench/vision/test_quantity_alignment.py",
+    "paper": "Boosting Quant/Spatial Awareness ZSOC / QICA (#13)",
+    "feature": "counting eval protocol: MAE/RMSE (FSC-147), numerically-conditioned quantity bins (few/several/many), multi-level quantity-alignment consistency score combining exact relative-count accuracy + bin-level agreement"
+   },
+   {
+    "module": "src/harnesscad/domain/reconstruction/brep/brep_clip_tokens.py",
+    "test": "tests/domain/reconstruction/brep/test_brep_clip_tokens.py",
+    "paper": "BRepCLIP (#14)",
+    "feature": "dual discrete vocabularies (6 surface types / 5 curve types) + one-hot+log-scaled descriptor face/edge tokens + fixed-length mean-pooled global BRep descriptor + cosine CAD-aware similarity metric"
+   },
+   {
+    "module": "src/harnesscad/eval/bench/geometry/identity_preservation.py",
+    "test": "tests/eval/bench/geometry/test_identity_preservation.py",
+    "paper": "B-repLer (#16)",
+    "feature": "text-driven edit evaluation: identity_preservation (out-of-region entities preserved), edit_locality (changes confined to intended region), blended identity score + added/removed/modified id sets"
+   },
+   {
+    "module": "src/harnesscad/data/dataengine/reward/group_relative_advantage.py",
+    "test": "tests/data/dataengine/reward/test_group_relative_advantage.py",
+    "paper": "CAD-Coder CoT+Geometric Reward (#17)",
+    "feature": "GRPO group-relative advantage A_i=(r_i-mean)/(std+eps) (zero for degenerate/singleton groups) + CAD reward composition 1/(1+CD) geometric x binary format reward (non-executing => 0)"
+   },
+   {
+    "module": "src/harnesscad/domain/programs/featurescript_ops.py",
+    "test": "tests/domain/programs/test_featurescript_ops.py",
+    "paper": "CADFS (#18)",
+    "feature": "FeatureScript 15-op vocabulary + makeQuery-style validation allowing any op to reference entities produced by ANY earlier op (role must be produced by target op), boolean-kind and pattern-count constraints -- lifting the flat sketch-extrude-only limitation"
+   }
+  ],
+  "already_covered_no_dup": [
+   {"paper": "Advanced Knowledge Extraction of Physical Design Drawings (#2)", "existing": "domain/drawings/hough_primitives.py (explicitly mined from this paper: deterministic Hough line/circle detection)"},
+   {"paper": "Agent-Aided Design / AADvark (#3)", "existing": "domain/geometry/assembly/mobility.py (Kutzbach-Gruebler mechanism mobility, scissors test)"},
+   {"paper": "AgentsCAD (#4)", "existing": "domain/fabrication/overhang.py (45deg overhang detection, orientation search, stability descriptors -- mined from this paper)"},
+   {"paper": "Arko-T (#6)", "existing": "eval/quality/sequence/design_state.py (design-state 5-tuple z=(F,Phi,C,H,A) + editability score, mined from this paper)"},
+   {"paper": "ArtiCAD (#7)", "existing": "domain/geometry/assembly/mobility.py (kinematic-tree DOF), mates.py (ports), domain/spec/urdf.py (URDF)"},
+   {"paper": "ASSEMCAD (#9)", "existing": "domain/geometry/assembly/mates.py (typed ports/mates closed-form transforms) + mobility.py (connectivity/mate-aware clash), mined from this paper"},
+   {"paper": "Automated CAD Modeling Sequence Generation / TCADGen+CADLLM (#10)", "existing": "eval/quality/sequence/confidence.py (dual-channel type+argument confidence, selective-correction refinement context)"},
+   {"paper": "BrepGPT (#15)", "existing": "domain/reconstruction/brep/voronoi_half_patch.py (Voronoi Half-Patch representation, mined from this paper)"}
+  ],
+  "notes": "10 modules built (papers 1,5,8,11,12,13,14,16,17,18); 8 already covered by prior-agent modules (papers 2,3,4,6,7,9,10,15). No paper skipped -- every paper in range 1-18 now has a deterministic module.",
+  "tests": "93 new unit tests across 10 modules, all passing (python -m pytest, 93 passed)."
+ }
 }
