@@ -53,8 +53,10 @@ from harnesscad.io.formats import amf as amf_codec
 from harnesscad.io.formats import dxf as dxf_codec
 from harnesscad.io.formats import glb as glb_codec
 from harnesscad.io.formats import obj as obj_codec
+from harnesscad.io.formats import ply as ply_codec
 from harnesscad.io.formats import step as step_codec
 from harnesscad.io.formats import stl as stl_codec
+from harnesscad.io.formats import threemf as threemf_codec
 from harnesscad.io.formats import svg as svg_codec
 from harnesscad.io.formats import xcsg as xcsg_codec
 
@@ -326,6 +328,34 @@ def _write_amf(obj: Any, path: str, compress: bool = False, **_: Any) -> None:
     amf_codec.write_amf(path, objects, unit=mesh.unit, compress=compress)
 
 
+def _read_ply(path: str, **_: Any) -> Mesh:
+    with open(path, "rb") as fh:
+        data = fh.read()
+    verts, tris, unit = ply_codec.parse_ply(data)
+    return Mesh.from_vertices_faces(verts, tris, name=os.path.basename(path),
+                                    unit=unit or "millimeter")
+
+
+def _write_ply(obj: Any, path: str, binary: bool = False, **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    ply_codec.write_ply(path, verts, faces, unit=mesh.unit, binary=binary)
+
+
+def _read_3mf(path: str, **_: Any) -> Mesh:
+    verts, tris, unit, _color = threemf_codec.read_3mf(path)
+    return Mesh.from_vertices_faces(verts, tris, name=os.path.basename(path),
+                                    unit=unit)
+
+
+def _write_3mf(obj: Any, path: str, color: Any = None, **_: Any) -> None:
+    mesh = to_mesh(obj)
+    verts, faces = mesh.indexed()
+    unit = mesh.unit if mesh.unit in threemf_codec.UNITS else "millimeter"
+    threemf_codec.write_3mf(path, verts, faces, unit=unit, color=color,
+                            name=mesh.name)
+
+
 def _read_step(path: str, **_: Any) -> step_codec.StepFile:
     with open(path, "r", encoding="utf-8") as fh:
         return step_codec.parse(fh.read())
@@ -452,6 +482,23 @@ _ADAPTERS: Dict[str, _Adapter] = {
         reader=_read_amf, writer=_write_amf, lossless=True,
         note="Unit-bearing, indexed, multi-volume XML (or ZIP with compress=True). "
              "Faces are fan-triangulated on write.",
+    ),
+    "harnesscad.io.formats.ply": _Adapter(
+        extensions=(".ply",), mime="model/ply", kind="mesh",
+        read_symbols=("parse_ply",), write_symbols=("write_ply", "serialize_ply"),
+        reader=_read_ply, writer=_write_ply, lossless=True,
+        note="Stanford PLY (ascii + binary_little_endian). Indexed v/f. PLY has no "
+             "native unit, so the mesh unit is persisted in a 'comment unit <name>' "
+             "line that round-trips; other tools ignore it.",
+    ),
+    "harnesscad.io.formats.threemf": _Adapter(
+        extensions=(".3mf",), mime="model/3mf", kind="mesh",
+        read_symbols=("read_3mf", "loads_model"),
+        write_symbols=("write_3mf", "dumps_model"),
+        reader=_read_3mf, writer=_write_3mf, lossless=True,
+        note="3MF OPC ZIP (Content_Types + .rels + 3D/3dmodel.model). Indexed, "
+             "unit-bearing, optional #RRGGBB(AA) object colour. Fixed ZIP "
+             "timestamps so the bytes are reproducible.",
     ),
     "harnesscad.io.formats.step": _Adapter(
         extensions=(".step", ".stp"), mime="model/step", kind="brep",
