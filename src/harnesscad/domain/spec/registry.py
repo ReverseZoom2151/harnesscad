@@ -471,6 +471,33 @@ def _fmt_express(text: str, **kw):
     return parse_schema(text)
 
 
+def _fmt_nurbs(text: str, **kw):
+    """A NURBGen NURBS-surface JSON B-rep document -> per-face validation errors."""
+    from harnesscad.domain.spec.nurbs_json_validator import validate_model
+
+    data = json.loads(text)
+    if not isinstance(data, dict):
+        raise SpecError("the 'nurbs' format expects a JSON object of faces")
+    errors = validate_model(data)
+    return {"faces": sorted(data), "errors": errors,
+            "ok": all(not e for e in errors.values())}
+
+
+def _fmt_scad(text: str, **kw):
+    """OpenSCAD source -> its Customizer-annotated editable parameters (Zoo/CADAM)."""
+    from harnesscad.domain.spec.scad_parameters import parse_parameters
+
+    return parse_parameters(text)
+
+
+def _fmt_cadmium(text: str, **kw):
+    """A CADmium CAD-op sequence (text) -> a canonical, checkable CadSequence."""
+    from harnesscad.domain.spec.cadmium_sequence import normalise, parse
+
+    seq = parse(text)
+    return {"sequence": seq, "normal_form": normalise(seq)}
+
+
 _FORMATS: Dict[str, Tuple[Callable[..., Any], str, str]] = {
     "urdf": (_fmt_urdf, "harnesscad.domain.spec.urdf",
              "URDF robot description -> link/joint tree (validated)"),
@@ -482,6 +509,12 @@ _FORMATS: Dict[str, Tuple[Callable[..., Any], str, str]] = {
             "ISO wheel-rim specification code -> derived geometry"),
     "express": (_fmt_express, "harnesscad.domain.spec.express_schema_parser",
                 "EXPRESS schema (ISO 10303-11) -> Schema + inheritance graph"),
+    "nurbs": (_fmt_nurbs, "harnesscad.domain.spec.nurbs_json_validator",
+              "NURBGen NURBS-surface JSON B-rep -> per-face structural validity"),
+    "scad": (_fmt_scad, "harnesscad.domain.spec.scad_parameters",
+             "OpenSCAD source -> its Customizer-annotated editable parameters"),
+    "cadmium": (_fmt_cadmium, "harnesscad.domain.spec.cadmium_sequence",
+                "CADmium CAD-op sequence text -> a canonical, checkable CadSequence"),
 }
 
 
@@ -836,6 +869,48 @@ UNADAPTED_REASONS: Dict[str, str] = {
         "the two-round clarification MDP needs an ORACLE (a human or the ground "
         "truth spec) to answer the questions -- reachable via clarify_metrics, "
         "not a standalone route",
+    "harnesscad.domain.spec.contract":
+        "the Measured Geometric Contract (MGC) is the Specify-phase artifact of "
+        "Parts-Driven Development: predicates compiled from a parsed part brief "
+        "and checked by a differential oracle against a re-measured file -- "
+        "reached through the PDD pipeline (`harnesscad pdd`), not as a standalone "
+        "spec-surface route",
+    "harnesscad.domain.spec.contract_split":
+        "the hidden/visible MGC partition is an anti-gaming EVALUATION step: it "
+        "splits a compiled contract into a visible half handed to the generator "
+        "and a hidden half kept only for scoring -- reached inside the PDD "
+        "evaluation pipeline (`harnesscad pdd`), never a front-door route",
+    "harnesscad.domain.spec.design_brief":
+        "an alternative note-taking brief IR (the text-to-cad skill template) with "
+        "documented default resolution; the harness's brief front door is "
+        "`compile_brief` / `formalize`, and this IR is consumed by that spec "
+        "pipeline rather than exposed as its own rival interpreter",
+    "harnesscad.domain.spec.part_brief_parser":
+        "a deterministic dimensional-brief -> PartSpec -> OpenSCAD path (cad-agent); "
+        "its brief-reading half is subsumed by the `formalize` / `case_frame` "
+        "interpreters the spec pipeline already routes, and its SCAD synthesis is a "
+        "generator concern, not a spec-surface route",
+    "harnesscad.domain.spec.kcl_grammar":
+        "a checked, importable model of Zoo/KittyCAD's KCL lexical grammar, keyword "
+        "set and AST node vocabulary -- reference data for a Zoo-backend author "
+        "(`harnesscad.io.adapters.zoo_api`), not a brief-to-spec route",
+    "harnesscad.domain.spec.representation_completeness":
+        "a schema/scoring utility that ranks CAD data-representation formats by "
+        "which engineering-semantic layers they preserve -- an analysis metric "
+        "reached via the eval surface, not a front door that turns input into a "
+        "checked spec",
+    "harnesscad.domain.spec.zoo_catalog":
+        "inert reference data (KCL stdlib, engine op set, file-conversion matrix) "
+        "for a Zoo-backend / codec author to read what Zoo supports -- consulted by "
+        "the Zoo adapter, not a spec-surface route",
+    "harnesscad.domain.spec.zoo_cli_catalog":
+        "a static catalogue of the Zoo CLI verb surface (geometry queries, convert, "
+        "ml endpoints) for an agent driving the `zoo` binary -- reference data for "
+        "the Zoo adapter, not a brief-to-spec route",
+    "harnesscad.domain.spec.zoo_ml_feedback":
+        "the Zoo text-to-CAD response/feedback model and its thumbs-up acceptance "
+        "metric -- an offline eval metric over completed generations, reached via "
+        "the eval surface, not a spec front door",
 }
 
 
