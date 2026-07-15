@@ -60,31 +60,40 @@ import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
+from harnesscad.domain.geometry.assembly.joint_taxonomy import (
+    JOINT_DOF_REMOVED,
+    SPATIAL_DOF,
+    dof_removed_or_none,
+)
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
 # --------------------------------------------------------------------------- #
 # Mate degree-of-freedom table
 # --------------------------------------------------------------------------- #
-#: DOF *removed* by each mate type (6 = fully fixed, 0 = free).
-MATE_DOF: Dict[str, int] = {
-    "rigid": 6,        # welded / bonded — no relative motion
-    "fixed": 6,        # alias for rigid
-    "revolute": 5,     # hinge — 1 rotational DOF remains
-    "hinge": 5,        # alias for revolute
-    "slider": 5,       # prismatic — 1 translational DOF remains
-    "prismatic": 5,    # alias for slider
-    "cylindrical": 4,  # rotate + slide about one axis — 2 DOF remain
-    "planar": 3,       # slide in a plane + spin about its normal — 3 DOF remain
-}
+#: DOF *removed* by each mate type (6 = fully fixed, 0 = free). Sourced verbatim
+#: from the single authoritative
+#: :mod:`harnesscad.domain.geometry.assembly.joint_taxonomy` so this verifier
+#: applies exactly the same DOF rules that ``mates`` and ``mobility`` do -- the
+#: reconciliation that closes the "``Mate(kind='ball')`` silently passes" hole.
+#: Every classical joint (rigid/revolute/slider/cylindrical/planar), every
+#: extended joint (ball/spherical/gear/press-fit/thread/snap) and the ASSEMCAD
+#: port contacts (face_to_face/coaxial/coaxial_face) now carry a rule here, keyed
+#: by both their canonical name and their aliases.
+MATE_DOF: Dict[str, int] = dict(JOINT_DOF_REMOVED)
 
 #: DOF of a single free rigid body.
-BODY_DOF = 6
+BODY_DOF = SPATIAL_DOF
 
 
 def mate_dof(kind: str) -> Optional[int]:
-    """DOF removed by a mate of type ``kind``; ``None`` if the kind is unknown."""
-    return MATE_DOF.get(str(kind).strip().lower())
+    """DOF removed by a mate of type ``kind``; ``None`` if the kind is unknown.
+
+    Resolves through the shared taxonomy (case-insensitive, alias-aware). A
+    ``None`` return is the signal callers use to *refuse* an unrecognised mate
+    rather than silently pass it.
+    """
+    return dof_removed_or_none(kind)
 
 
 # --------------------------------------------------------------------------- #
@@ -191,7 +200,13 @@ class AssemblyModel:
         return len(self.parts)
 
     def removed_dof(self) -> int:
-        """Sum of DOF removed by every recognised mate (unknown mates ignored)."""
+        """Sum of DOF removed by every recognised mate.
+
+        An unrecognised mate kind removes nothing here (it has no DOF rule), but
+        it is *not* silently tolerated: :func:`assembly_diagnostics` raises it to
+        an ERROR (``unknown-mate``) so the mobility count is never quietly built
+        on a mate the taxonomy cannot account for.
+        """
         total = 0
         for m in self.mates:
             dof = mate_dof(m.kind)
@@ -251,14 +266,16 @@ class AssemblyCheck:
         evaluated).
       * ERROR ``over-constrained``     — residual DOF < 0.
       * WARNING ``under-constrained``  — residual DOF > 0.
-      * WARNING ``unknown-mate``       — a mate kind not in :data:`MATE_DOF`
-        (excluded from the DOF sum).
+      * ERROR ``unknown-mate``         — a mate kind with no DOF rule in the
+        shared taxonomy (:data:`MATE_DOF`). Rejected, not silently excluded from
+        the DOF sum — the "refuse, don't silently pass" discipline.
       * WARNING ``bad-part-ref``       — a mate references an unknown part.
       * ERROR ``unsatisfied-mate``     — a mate's anchors do not coincide under
         the current placement (gap > tolerance).
 
-    Only ``over-constrained`` and ``unsatisfied-mate`` are ERRORs, so an
-    under-constrained mechanism does not flip ``report.ok`` to False.
+    ``over-constrained``, ``unknown-mate`` and ``unsatisfied-mate`` are ERRORs;
+    an under-constrained mechanism is only a WARNING and does not flip
+    ``report.ok`` to False.
     """
 
     name = "assembly"
@@ -294,11 +311,11 @@ def assembly_diagnostics(model: AssemblyModel) -> List[Diagnostic]:
     # Per-mate validation (unknown kinds / dangling part refs).
     for m in model.mates:
         if mate_dof(m.kind) is None:
-            diags.append(_warn(
+            diags.append(_err(
                 "unknown-mate",
-                f"mate {m.label()} has unknown kind '{m.kind}' "
-                f"(known: {', '.join(sorted(MATE_DOF))}); excluded from the DOF "
-                "count.", m.name or None))
+                f"mate {m.label()} has unknown kind '{m.kind}' with no DOF rule "
+                f"(known: {', '.join(sorted(MATE_DOF))}); rejected rather than "
+                "silently excluded from the DOF count.", m.name or None))
         for ref in (m.a, m.b):
             if ref is not None and ref not in part_set:
                 diags.append(_warn(

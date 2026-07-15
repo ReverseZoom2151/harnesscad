@@ -38,6 +38,13 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Iterable, Mapping, Optional, Sequence
 
+from harnesscad.domain.geometry.assembly.joint_taxonomy import (
+    JOINT_DOF_REMOVED,
+    SPATIAL_DOF,
+    UnknownJointKindError,
+    is_known_joint_kind,
+    joint_freedom,
+)
 from harnesscad.domain.geometry.assembly.mates import (
     CONTACT_MATES,
     MATE_DOF_REMOVED,
@@ -56,33 +63,24 @@ __all__ = [
 ]
 
 # Per-joint kinematic freedom f_i (ArtiCAD delta(tau); ASSEMCAD kinematic axioms).
+# Derived from the single authoritative :mod:`joint_taxonomy` so the full joint
+# set (revolute/slider/ball/cylindrical/planar/gear/press-fit/thread/snap and the
+# ASSEMCAD port contacts) is covered and can never drift from the DOF verifier.
 JOINT_FREEDOM: Mapping[str, int] = {
-    "fixed": 0,
-    "revolute": 1,
-    "prismatic": 1,
-    "slider": 1,
-    "cylindrical": 2,
-    "planar": 3,
-    "ball": 3,
-    "spherical": 3,
-    "free": 6,
+    kind: SPATIAL_DOF - removed for kind, removed in JOINT_DOF_REMOVED.items()
 }
 
 
 def mate_freedom(mate_kind: str) -> int:
     """Freedom (6 - DOF removed) left by an ASSEMCAD mate type."""
     if mate_kind not in MATE_DOF_REMOVED:
-        raise ValueError(f"unknown mate type {mate_kind!r}")
-    return 6 - MATE_DOF_REMOVED[mate_kind]
+        raise UnknownJointKindError(f"unknown mate type {mate_kind!r}")
+    return SPATIAL_DOF - MATE_DOF_REMOVED[mate_kind]
 
 
 def _freedom_of(joint_kind: str) -> int:
-    key = joint_kind.lower()
-    if key in JOINT_FREEDOM:
-        return JOINT_FREEDOM[key]
-    if key in MATE_DOF_REMOVED:
-        return mate_freedom(key)
-    raise ValueError(f"unknown joint/mate type {joint_kind!r}")
+    """Freedom of any taxonomy joint / mate kind. Raises on an unknown kind."""
+    return joint_freedom(joint_kind)
 
 
 def kutzbach_mobility(n_links: int, joint_kinds: Sequence[str],
@@ -151,7 +149,7 @@ def validate_kinematic_tree(
             errors.append(f"joint references unknown parent {parent!r}")
         if child not in part_set:
             errors.append(f"joint references unknown child {child!r}")
-        if kind.lower() not in JOINT_FREEDOM and kind.lower() not in MATE_DOF_REMOVED:
+        if not is_known_joint_kind(kind):
             errors.append(f"joint has unknown type {kind!r}")
 
     n = len(part_set)

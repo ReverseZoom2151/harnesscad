@@ -41,6 +41,11 @@ import math
 from dataclasses import dataclass, field
 from typing import Iterable, Mapping, Optional, Sequence
 
+from harnesscad.domain.geometry.assembly.joint_taxonomy import (
+    UnknownJointKindError,
+    joint_dof_removed,
+)
+
 __all__ = [
     "PORT_TYPES",
     "MATE_TYPES",
@@ -73,17 +78,15 @@ MATE_TYPES: tuple[str, ...] = (
 
 # Relative DOF removed by each mate type (of the free 6 between two rigid bodies).
 # ASSEMCAD axiom C-02 / F-01: coaxial removes 2 translational + 2 rotational = 4,
-# leaving one slide + one spin. face_to_face fixes the two in-plane offsets are free
-# but the normal gap, in-plane rotation are pinned per the mate's option set; we use
-# the standard mechanical-mate DOF counts.
+# leaving one slide + one spin. face_to_face fixes the normal gap and the two
+# in-plane rotations per the mate's option set.
+#
+# The numbers are NOT re-declared here: they are looked up from the single
+# authoritative :mod:`joint_taxonomy` (``gear_mesh``/``thread_engage``/
+# ``snap_to_face`` resolve through its aliases), so this table can never drift
+# from the one the DOF verifier and mobility analysis apply.
 MATE_DOF_REMOVED: Mapping[str, int] = {
-    "face_to_face": 3,    # coincident plane: 1 translation (normal) + 2 rotations
-    "coaxial": 4,         # collinear axes: 2 translation + 2 rotation
-    "coaxial_face": 5,    # coaxial + axial seat: leaves 1 rotation (revolute)
-    "gear_mesh": 5,       # meshed spur pair: coupled single rotation
-    "press_fit": 6,       # interference fit: fully constrained
-    "thread_engage": 5,   # helical pair: 1 coupled screw DOF
-    "snap_to_face": 6,    # snap seat: fully constrained
+    kind: joint_dof_removed(kind) for kind in MATE_TYPES
 }
 
 # Mate types whose geometry intentionally interferes (ASSEMCAD Eq. 3): a positive
@@ -173,7 +176,9 @@ class Mate:
 
     def __post_init__(self):
         if self.kind not in MATE_TYPES:
-            raise ValueError(f"unknown mate type {self.kind!r}")
+            raise UnknownJointKindError(
+                f"{self.kind!r} is not an ASSEMCAD port-typed mate; "
+                f"valid kinds: {', '.join(MATE_TYPES)}")
         if self.base_port == self.incoming_port:
             raise ValueError("a mate must join two distinct ports")
 
