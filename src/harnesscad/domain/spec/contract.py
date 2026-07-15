@@ -34,6 +34,13 @@ import hashlib
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Optional, Tuple, Union
 
+from harnesscad.domain.fabrication.printability_verdict import (
+    Measurements,
+    PrinterProfile,
+    check_fit,
+    printability_verdict,
+)
+
 __all__ = [
     "PredicateKind",
     "Predicate",
@@ -297,10 +304,15 @@ def compile_contract(brief: Any) -> MeasuredGeometricContract:
     :class:`~harnesscad.domain.spec.design_brief.CADBrief`, or a plain mapping,
     and is defensive about partial input. Every measurable the brief *states* is
     derived into a bound predicate (dimensions -> volume + bounding box; holes ->
-    hole count + genus; wall -> min wall; material + volume -> mass; assembly ->
-    mobility DOF; interference-free -> zero overlap). Every measurable the brief
-    does *not* state is emitted as an ``unbound=True`` predicate -- a
-    ``[NEEDS CLARIFICATION]`` marker whose magnitude is never guessed.
+    hole count + genus; wall -> min wall; stated tolerance -> tolerance; material
+    or density + volume -> mass; assembly -> mobility DOF; interference-free ->
+    zero overlap). Stated dimensions additionally yield a printability read: a
+    ``fits_build_volume`` MEASURED predicate (a hard geometric limit) and a
+    ``dfm_printable`` ADVISORY verdict (a judgement against a default FDM
+    profile, reusing :mod:`harnesscad.domain.fabrication.printability_verdict`).
+    Every measurable the brief does *not* state is emitted as an ``unbound=True``
+    predicate -- a ``[NEEDS CLARIFICATION]`` marker whose magnitude is never
+    guessed (centre of mass and tolerance included).
     """
     fields = _brief_fields(brief)
     part_id = _coerce_str(fields.get("part_id") or fields.get("model") or "part")
@@ -314,6 +326,10 @@ def compile_contract(brief: Any) -> MeasuredGeometricContract:
     hole_diameter = _coerce_float(fields.get("hole_diameter"))
     wall = _coerce_float(fields.get("wall"))
     density = _coerce_float(fields.get("density_g_mm3"))
+    material = _coerce_str(fields.get("material"))
+    tolerance_spec = _coerce_float(fields.get("tolerance_mm"))
+    if tolerance_spec is None:
+        tolerance_spec = _coerce_float(fields.get("tolerance"))
     mobility = fields.get("mobility_dof")
     is_assembly = _truthy(fields.get("is_assembly")) or mobility is not None
 
@@ -394,22 +410,85 @@ def compile_contract(brief: Any) -> MeasuredGeometricContract:
             _unbound("min_wall_mm", "brief does not state a minimum wall thickness")
         )
 
-    # --- Material density + volume -> mass. ---
-    if density and density > 0.0 and have_dims:
+    # --- Stated tolerance -> dimensional tolerance predicate. ---
+    if tolerance_spec is not None and tolerance_spec > 0.0:
+        predicates.append(
+            Predicate(
+                key="tolerance_mm",
+                target=float(tolerance_spec),
+                tolerance=1e-3,
+                kind=PredicateKind.MEASURED,
+                note="general dimensional tolerance stated in brief",
+            )
+        )
+    else:
+        predicates.append(
+            _unbound("tolerance_mm", "brief does not state a dimensional tolerance")
+        )
+
+    # --- Printability / DFM read against a default FDM profile. ---
+    # Derivable only from stated geometry: the hard geometric limit (fit in the
+    # printer's usable build volume) is MEASURED; the rolled-up printable/score
+    # verdict is a judgement bound to a chosen profile and stays ADVISORY.
+    if have_dims:
+        profile = PrinterProfile()
+        size = (float(width), float(depth), float(height))
+        wall_mm = float(wall) if (wall and wall > 0.0) else None
+        fit = check_fit(size, profile)
+        predicates.append(
+            Predicate(
+                key="fits_build_volume",
+                target=bool(fit.fits or fit.rotated_fits),
+                tolerance=0.0,
+                kind=PredicateKind.MEASURED,
+                note=(
+                    "must fit the printer usable build volume "
+                    "%s mm (margin %s mm, rotation allowed)"
+                    % (profile.build_volume_mm, profile.margin_mm)
+                ),
+            )
+        )
+        verdict = printability_verdict(
+            Measurements(size_mm=size, min_wall_mm=wall_mm), profile
+        )
+        codes = ",".join(str(issue["code"]) for issue in verdict["issues"])
+        predicates.append(
+            Predicate(
+                key="dfm_printable",
+                target=None,
+                kind=PredicateKind.ADVISORY,
+                note=(
+                    "printable=%s score=%s issues=[%s] (default FDM profile)"
+                    % (verdict["printable"], verdict["score"], codes)
+                ),
+            )
+        )
+
+    # --- Material density (explicit or from the density table) + volume -> mass. ---
+    material_density = _density_for_material(material)
+    resolved_density = density if (density and density > 0.0) else material_density
+    if resolved_density and resolved_density > 0.0 and have_dims:
         volume = _nominal_volume(kind, width, depth, height, wall)
-        mass = volume * float(density)
+        mass = volume * float(resolved_density)
+        if density and density > 0.0:
+            source = "stated density"
+        else:
+            source = "%s density table" % material
         predicates.append(
             Predicate(
                 key="mass_g",
                 target=mass,
                 tolerance=max(1e-3, mass * 1e-3),
                 kind=PredicateKind.MEASURED,
-                note="mass from stated density and nominal volume",
+                note="mass from %s and nominal volume" % source,
             )
         )
     else:
         predicates.append(
-            _unbound("mass_g", "mass needs a stated material density and dimensions")
+            _unbound(
+                "mass_g",
+                "mass needs a stated material (or density) and dimensions",
+            )
         )
 
     # Centre of mass is never guessed from magnitude -- it stays unbound unless
@@ -477,6 +556,77 @@ def compile_contract(brief: Any) -> MeasuredGeometricContract:
 # --------------------------------------------------------------------------- #
 # Helpers (pure, defensive; no kernel imports).
 # --------------------------------------------------------------------------- #
+
+
+# Material densities in grams per cubic millimetre (g/mm^3), i.e. the common
+# g/cm^3 value divided by 1000. Kept deliberately small and named; a material the
+# table does not list yields no density, so mass stays unbound rather than guessed.
+# Sources (nominal room-temperature values):
+#   * Polymer filament/resin datasheets -- Prusa/Ultimaker material tables and
+#     Formlabs resin technical sheets (PLA 1.24, ABS 1.04, PETG 1.27, PA12 1.01,
+#     TPU 1.21, standard SLA resin 1.18 g/cm^3).
+#   * Metals -- MatWeb / ASM alloy references (Al 6061 2.70, mild steel 7.87,
+#     304 stainless 8.00, Ti-6Al-4V 4.43, brass 8.50, copper 8.96 g/cm^3).
+MATERIAL_DENSITY_G_PER_MM3: dict = {
+    "pla": 0.00124,
+    "abs": 0.00104,
+    "petg": 0.00127,
+    "nylon": 0.00101,
+    "tpu": 0.00121,
+    "resin": 0.00118,
+    "aluminum": 0.00270,
+    "steel": 0.00787,
+    "stainless": 0.00800,
+    "titanium": 0.00443,
+    "brass": 0.00850,
+    "copper": 0.00896,
+}
+
+# Spelling/synonym aliases mapped onto the canonical density-table keys.
+_MATERIAL_ALIASES: dict = {
+    "polylacticacid": "pla",
+    "acrylonitrilebutadienestyrene": "abs",
+    "petg": "petg",
+    "pet": "petg",
+    "pa": "nylon",
+    "pa12": "nylon",
+    "polyamide": "nylon",
+    "sla": "resin",
+    "aluminium": "aluminum",
+    "al": "aluminum",
+    "al6061": "aluminum",
+    "6061": "aluminum",
+    "al7075": "aluminum",
+    "7075": "aluminum",
+    "mildsteel": "steel",
+    "carbonsteel": "steel",
+    "1018": "steel",
+    "stainlesssteel": "stainless",
+    "304": "stainless",
+    "316": "stainless",
+    "ss304": "stainless",
+    "ti": "titanium",
+    "ti6al4v": "titanium",
+    "cu": "copper",
+}
+
+
+def _density_for_material(name: str) -> Optional[float]:
+    """Density (g/mm^3) for a named material, or ``None`` when unknown.
+
+    The name is normalised to lowercase alphanumerics, resolved through the
+    synonym aliases, then looked up in :data:`MATERIAL_DENSITY_G_PER_MM3`. An
+    unrecognised material returns ``None`` so mass stays unbound, never guessed.
+    """
+    key = "".join(ch for ch in _coerce_str(name).lower() if ch.isalnum())
+    if not key:
+        return None
+    if key in MATERIAL_DENSITY_G_PER_MM3:
+        return MATERIAL_DENSITY_G_PER_MM3[key]
+    canonical = _MATERIAL_ALIASES.get(key)
+    if canonical is not None:
+        return MATERIAL_DENSITY_G_PER_MM3.get(canonical)
+    return None
 
 
 def _unbound(key: str, note: str) -> Predicate:
