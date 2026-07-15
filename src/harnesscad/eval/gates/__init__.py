@@ -19,4 +19,5 @@ The rule the whole repository turns on:
 from __future__ import annotations
 
 __all__ = ["precision_floor", "judge_gate", "liveness_floor",
-           "heldout_isolation", "warning_channel"]
+           "heldout_isolation", "warning_channel",
+           "orphan_provenance", "mutation_score", "coverage_matrix"]

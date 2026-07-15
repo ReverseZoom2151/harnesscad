@@ -2594,6 +2594,24 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.pdd.pipeline",
+      "imports": [],
+      "layer": "agents",
+      "name": "pipeline",
+      "package": "pdd",
+      "summary": "The PDD orchestrator: brief -> MGC -> CISP -> artifact -> measured verdict.",
+      "symbols": [
+        "GateOutcome",
+        "OracleOutcome",
+        "PddPipeline",
+        "PddVerdict",
+        "PhaseResult",
+        "main",
+        "run_pdd"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.agents.rag.api_knowledge",
       "imports": [],
       "layer": "agents",
@@ -3383,6 +3401,29 @@
         "agent",
         "format",
         "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.core.cisp.provenance",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.canonical_json"
+      ],
+      "layer": "core",
+      "name": "provenance",
+      "package": "cisp",
+      "summary": "CISP provenance citations -- traceSDD's orphan-REQ check, applied to geometry.",
+      "symbols": [
+        "OpDelta",
+        "Provenance",
+        "attributed_features",
+        "build_provenance",
+        "orphan_ops",
+        "unattributed_features"
+      ],
+      "tags": [
+        "verify"
       ]
     },
     {
@@ -19999,6 +20040,46 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.spec.contract",
+      "imports": [],
+      "layer": "domain",
+      "name": "contract",
+      "package": "spec",
+      "summary": "Measured Geometric Contract (MGC): the Specify-phase artifact of PDD.",
+      "symbols": [
+        "ContractReport",
+        "MeasuredGeometricContract",
+        "Predicate",
+        "PredicateKind",
+        "PredicateResult",
+        "check",
+        "compile_contract"
+      ],
+      "tags": [
+        "benchmark",
+        "spec"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.spec.contract_split",
+      "imports": [
+        "harnesscad.domain.spec",
+        "harnesscad.domain.spec.contract"
+      ],
+      "layer": "domain",
+      "name": "contract_split",
+      "package": "spec",
+      "summary": "THE HIDDEN-PREDICATE MGC SPLIT. A contract the generator can read in full is",
+      "symbols": [
+        "ContractModuleUnavailable",
+        "is_eligible_to_hide",
+        "split_contract"
+      ],
+      "tags": [
+        "spec"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.spec.design_brief",
       "imports": [],
       "layer": "domain",
@@ -26266,6 +26347,40 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.gates.coverage_matrix",
+      "imports": [
+        "harnesscad",
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops._REGISTRY",
+        "harnesscad.registry"
+      ],
+      "layer": "eval",
+      "name": "coverage_matrix",
+      "package": "gates",
+      "summary": "THE COVERAGE-MATRIX CENSUS + DRIFT PAUSE-GATE (the Kitchen Loop's coverage matrix).",
+      "symbols": [
+        "BackendSpec",
+        "Cell",
+        "CoverageReport",
+        "DriftReport",
+        "add_arguments",
+        "census",
+        "check",
+        "claims",
+        "classify",
+        "codec_formats",
+        "discover_backends",
+        "format_text",
+        "load_baseline",
+        "main",
+        "op_vocabulary",
+        "run",
+        "selfcheck",
+        "write_baseline"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.gates.heldout_isolation",
       "imports": [],
       "layer": "eval",
@@ -26339,6 +26454,80 @@
         "write_baseline"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.gates.mutation_score",
+      "imports": [
+        "harnesscad.eval.quality.geometry.defect_injection",
+        "harnesscad.eval.quality.geometry.defect_injection.DEFECT_CLASSES",
+        "harnesscad.eval.quality.geometry.defect_injection.DefectError",
+        "harnesscad.eval.quality.geometry.defect_injection.INJECTORS",
+        "harnesscad.eval.quality.geometry.defect_injection.Mesh",
+        "harnesscad.eval.quality.geometry.defect_injection.topology_verifier",
+        "harnesscad.eval.quality.geometry.defect_injection.unit_cube_mesh",
+        "harnesscad.eval.quality.geometry.defect_injection.unit_tetrahedron",
+        "harnesscad.eval.quality.geometry.oracle_fleet",
+        "harnesscad.eval.quality.geometry.oracle_fleet.load_fleet",
+        "harnesscad.eval.quality.geometry.oracle_fleet.load_known_good_parts"
+      ],
+      "layer": "eval",
+      "name": "mutation_score",
+      "package": "gates",
+      "summary": "THE VERIFIER-FLEET MUTATION SCORE GATE. A verifier fleet you never try to",
+      "symbols": [
+        "CaseResult",
+        "MutationReport",
+        "add_arguments",
+        "check",
+        "format_text",
+        "main",
+        "run",
+        "self_check_report"
+      ],
+      "tags": [
+        "benchmark",
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.gates.orphan_provenance",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Extrude",
+        "harnesscad.core.cisp.ops.Fillet",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.Primitive",
+        "harnesscad.core.cisp.provenance",
+        "harnesscad.core.cisp.provenance.Provenance",
+        "harnesscad.core.cisp.provenance.build_provenance",
+        "harnesscad.core.cisp.provenance.orphan_ops",
+        "harnesscad.core.cisp.provenance.unattributed_features",
+        "harnesscad.core.loop",
+        "harnesscad.core.loop.HarnessSession",
+        "harnesscad.eval.selftest.probe",
+        "harnesscad.eval.selftest.probe.resolve"
+      ],
+      "layer": "eval",
+      "name": "orphan_provenance",
+      "package": "gates",
+      "summary": "THE ORPHAN-PROVENANCE GATE. Every build step must move geometry; every measured",
+      "symbols": [
+        "GateReport",
+        "Violation",
+        "add_arguments",
+        "check",
+        "format_text",
+        "main",
+        "measure",
+        "measurement_of",
+        "run",
+        "selfcheck",
+        "session_measure_state"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
     },
     {
       "dotted": "harnesscad.eval.gates.precision_floor",
