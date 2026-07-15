@@ -49,11 +49,11 @@ from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
-    Primitive, Split, Thicken,
+    Primitive, Split, Thicken, Hull, Minkowski,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog,
 )
 from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
 from harnesscad.domain.geometry.mesh.winding_number import (
@@ -410,7 +410,9 @@ class Node:
                         "circles": [list(c) for c in v.circles],
                         "polys": [[list(p) for p in q] for q in v.polys]}
             elif isinstance(v, (list, tuple)):
-                d[k] = [list(x) if isinstance(x, (list, tuple)) else x for x in v]
+                d[k] = [x.spec() if isinstance(x, Node)
+                        else (list(x) if isinstance(x, (list, tuple)) else x)
+                        for x in v]
             else:
                 d[k] = v
         return d
@@ -499,6 +501,10 @@ def eval_node(node: Node, p: Sequence[float]) -> float:
         return _eval_wedge(node, p)
     if t == "offset":
         return eval_node(node.d["child"], p) - float(node.d["delta"])
+    if t == "minkowski":
+        # Minkowski sum with a ball of radius r is the exact SDF dilation: every
+        # point within r of the surface moves inside, i.e. the field drops by r.
+        return eval_node(node.d["child"], p) - float(node.d["radius"])
     if t == "revolve":
         return _eval_revolve(node, p)
     if t == "bool":
@@ -749,7 +755,7 @@ def _has_shell(node: Node) -> bool:
     through.
     """
     if node.t in ("shell", "blendcut", "blend", "sphere", "torus", "wedge",
-                  "offset"):
+                  "offset", "minkowski", "hull"):
         return True
     for key in ("child", "a", "b"):
         kid = node.d.get(key)
@@ -1004,6 +1010,15 @@ def node_bounds(node: Node) -> Tuple[Vec3, Vec3]:
                 (float(node.d["dx"]), float(node.d["dy"]), float(node.d["dz"])))
     if t == "offset":
         return _grow(node_bounds(node.d["child"]), float(node.d["delta"]))
+    if t == "minkowski":
+        # A ball dilation grows every bound by the radius.
+        return _grow(node_bounds(node.d["child"]), float(node.d["radius"]))
+    if t == "hull":
+        out = None
+        for child in node.d["children"]:
+            b = node_bounds(child)
+            out = b if out is None else _union_bounds(out, b)
+        return out  # type: ignore[return-value]
     if t == "bool":
         ba = node_bounds(node.d["a"])
         bb = node_bounds(node.d["b"])
@@ -1147,6 +1162,12 @@ def blend_tree(node: Node, kind: str, k: float) -> Node:
     if t == "offset":
         return Node("offset", child=blend_tree(node.d["child"], kind, k),
                     delta=node.d["delta"])
+    if t == "minkowski":
+        return Node("minkowski", child=blend_tree(node.d["child"], kind, k),
+                    radius=node.d["radius"])
+    if t == "hull":
+        return Node("hull",
+                    children=[blend_tree(c, kind, k) for c in node.d["children"]])
     return node  # pragma: no cover
 
 
@@ -1628,6 +1649,17 @@ class FRepBackend:
     #: freecad: OCCT's ``join`` argument) widen this on the composed instance.
     SHELL_JOINS: Tuple[str, ...] = ("arc",)
 
+    #: Can THIS instance express a convex hull? A signed-distance field cannot
+    #: (the hull of a set of SDFs is not itself an SDF its leaves compose to), so
+    #: frep-proper REFUSES ``Hull`` -- exactly the way it refuses the
+    #: 'intersection' shell join its own field cannot build. An
+    #: :class:`ExternalToolBackend` whose kernel HAS a native hull (openscad's
+    #: ``hull()``, manifold's ``Manifold.hull``) flips this to True on the composed
+    #: instance and lowers the ``hull`` node the op-state model then builds. Like
+    #: ``SHELL_JOINS``, declaring it True without a lowering would put the
+    #: dropped-op bug back, so the two must stay in step.
+    HULL_SUPPORTED: bool = False
+
     #: Override for the wall floor. ``None`` derives it from the active mesher
     #: (:data:`MIN_WALL_CELLS`), which is the honest default because the floor IS a
     #: property of the extraction. ``0.0`` disables the check, which is what the
@@ -1755,6 +1787,10 @@ class FRepBackend:
             return self._split(op)
         if isinstance(op, Thicken):
             return self._thicken(op)
+        if isinstance(op, Hull):
+            return self._hull(op)
+        if isinstance(op, Minkowski):
+            return self._minkowski(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -2066,6 +2102,57 @@ class FRepBackend:
         delta = float(op.thickness)
         target["node"] = Node("offset", child=target["node"], delta=delta)
         self._record_feature("thicken", target, thickness=delta)
+        self.solid_present = True
+        return ApplyResult(True, [self.features[-1]["id"]])
+
+    def _hull(self, op: Hull) -> ApplyResult:
+        """Convex hull of the live bodies, as a ``hull`` node -- if this instance's
+        kernel can build one.
+
+        frep-proper cannot: an SDF has no closed-form convex hull, so it REFUSES
+        (the same discipline as the 'intersection' shell join). openscad and
+        manifold set :attr:`HULL_SUPPORTED` and lower the node with their kernel's
+        native ``hull``.
+        """
+        if not self.HULL_SUPPORTED:
+            return _err(
+                "unsupported-op",
+                "the frep backend cannot express a convex hull: a signed-distance "
+                "field has no closed-form convex-hull operator (the hull of a set "
+                "of SDFs is not itself an SDF its leaves compose to). Use the "
+                "openscad or manifold backend, whose kernels have a native hull")
+        if not self._bodies:
+            return _err("no-solid", "hull requires at least one solid")
+        if op.target or op.tool:
+            idxs: List[int] = []
+            for label, ref in (("target", op.target), ("tool", op.tool)):
+                if not ref:
+                    continue
+                i = self._resolve_body(ref)
+                if i is None:
+                    return _err("bad-ref", f"unknown hull {label} '{ref}'", ref)
+                if i not in idxs:
+                    idxs.append(i)
+        else:
+            idxs = list(range(len(self._bodies)))
+        children = [self._bodies[i]["node"] for i in idxs]
+        node = Node("hull", children=children)
+        for i in sorted(idxs, reverse=True):
+            self._bodies.pop(i)
+        return self._push_body("hull", node)
+
+    def _minkowski(self, op: Minkowski) -> ApplyResult:
+        """Minkowski sum of the last body with a ball of radius r (an exact SDF
+        dilation -- ``field - r``)."""
+        if not self._bodies:
+            return _err("no-solid", "minkowski requires an existing solid")
+        if op.radius <= 0:
+            return _err("bad-value",
+                        f"minkowski radius must be > 0 (got {op.radius})")
+        target = self._bodies[-1]
+        target["node"] = Node("minkowski", child=target["node"],
+                              radius=float(op.radius))
+        self._record_feature("minkowski", target, radius=float(op.radius))
         self.solid_present = True
         return ApplyResult(True, [self.features[-1]["id"]])
 
@@ -2464,6 +2551,9 @@ class FRepBackend:
         for ref in (op.a, op.b):
             if ref and ref not in refs:
                 return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        bad = check_mate_ports(op)
+        if bad is not None:
+            return _err(*bad)
         self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
         return ApplyResult(True, [])
 
@@ -2482,6 +2572,7 @@ class FRepBackend:
         trial.EDGE_SELECTORS = self.EDGE_SELECTORS
         trial.SHELL_JOINS = self.SHELL_JOINS
         trial.SHELL_MIN_WALL_CELLS = self.SHELL_MIN_WALL_CELLS
+        trial.HULL_SUPPORTED = self.HULL_SUPPORTED
         for logged in new_log:
             r = trial.apply(logged)
             if not r.ok:

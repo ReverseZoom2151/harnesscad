@@ -15,11 +15,11 @@ from harnesscad.core.cisp.ops import (
     Op, NewSketch, AddPoint, AddLine, AddCircle, AddRectangle,
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
-    Primitive, Split, Thicken,
+    Primitive, Split, Thicken, Hull, Minkowski,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog,
 )
 
 #: The primitive shapes the semantic stub models (any kernel can build these).
@@ -111,6 +111,10 @@ class StubBackend:
             return self._split(op)
         if isinstance(op, Thicken):
             return self._thicken(op)
+        if isinstance(op, Hull):
+            return self._hull(op)
+        if isinstance(op, Minkowski):
+            return self._minkowski(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -249,6 +253,9 @@ class StubBackend:
         for ref in (op.a, op.b):
             if ref and ref not in refs:
                 return _err("bad-ref", f"unknown mate ref '{ref}'", ref)
+        bad = check_mate_ports(op)
+        if bad is not None:
+            return _err(*bad)
         self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
         return ApplyResult(True, [])
 
@@ -344,6 +351,29 @@ class StubBackend:
         fid = self._new_id("f")
         self.features.append({"type": "thicken", "id": fid,
                               "thickness": op.thickness})
+        return ApplyResult(True, [fid])
+
+    def _hull(self, op: Hull) -> ApplyResult:
+        # The semantic stub models the op regardless of kernel capability (as it
+        # does for Loft, which the CSG backends refuse): a hull consumes the live
+        # bodies and leaves one solid present.
+        if not self.solid_present or not self.features:
+            return _err("no-solid", "hull requires an existing solid")
+        for ref in (op.target, op.tool):
+            if ref and ref not in self._feature_ids():
+                return _err("bad-ref", f"unknown hull ref '{ref}'", ref)
+        fid = self._new_id("f")
+        self.features.append({"type": "hull", "id": fid})
+        self.solid_present = True
+        return ApplyResult(True, [fid])
+
+    def _minkowski(self, op: Minkowski) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "minkowski requires an existing solid")
+        if op.radius <= 0:
+            return _err("bad-value", f"minkowski radius must be > 0 (got {op.radius})")
+        fid = self._new_id("f")
+        self.features.append({"type": "minkowski", "id": fid, "radius": op.radius})
         return ApplyResult(True, [fid])
 
     def _constrain(self, op: Constrain) -> ApplyResult:

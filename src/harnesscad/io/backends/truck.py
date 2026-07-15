@@ -251,6 +251,11 @@ class TruckBackend(ExternalToolBackend):
         "thicken": "truck has no offset-solid / thick-solid operation, so growing "
                    "or shrinking a solid by a wall thickness cannot be built "
                    "without faking it",
+        "hull": "truck has no convex-hull builder, so the hull of a set of bodies "
+                "cannot be built without faking it",
+        "minkowski": "truck has no Minkowski-sum / offset-solid operation, so a "
+                     "ball dilation cannot be built without faking it (it is exact "
+                     "in the frep SDF kernel and in OpenSCAD's minkowski())",
     }
     #: box lowers to an extruded face, cylinder to a cyl node; cone is a degenerate
     #: rsweep on this truck (as the countersink hole is), and sphere/torus/wedge

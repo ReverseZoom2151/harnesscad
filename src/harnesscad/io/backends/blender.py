@@ -863,6 +863,12 @@ class BlenderBackend(ExternalToolBackend):
         "thicken": "the blender lowering has no offset-solid node; Solidify "
                    "thickens a sheet, not a closed solid, so growing/shrinking a "
                    "solid by a wall thickness is not expressed here",
+        "hull": "the blender lowering has no convex-hull node; Blender's convex "
+                "hull is a bmesh operation this build plan does not emit, so a "
+                "hull is refused rather than faked",
+        "minkowski": "the blender lowering has no Minkowski/offset-solid node, so "
+                     "a ball dilation is not expressed here (it is built in the "
+                     "frep SDF kernel and in OpenSCAD's minkowski())",
     }
     #: box/cylinder/cone lower through the extrude/cyl/cone nodes the hole path
     #: already builds; sphere/torus/wedge have no node in this lowering.

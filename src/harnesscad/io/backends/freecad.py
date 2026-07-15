@@ -218,6 +218,12 @@ class FreeCADBackend(ExternalToolBackend):
                 "sketches only (FreeCAD op: loft_sketches)",
         "sweep": "needs a 3D path; the op model holds coplanar sketches only "
                  "(FreeCAD op: sweep_sketch)",
+        "hull": "no convex-hull feature is wired (the F-rep op model builds no "
+                "hull node and FreeCAD has no single hull operation), so a hull is "
+                "refused rather than faked",
+        "minkowski": "no Minkowski / offset-solid feature is wired here; a ball "
+                     "dilation is built in the frep SDF kernel and in OpenSCAD's "
+                     "minkowski(), and refused here",
     }
 
     #: OCCT offsets with either join, exposed as the ``join`` argument of

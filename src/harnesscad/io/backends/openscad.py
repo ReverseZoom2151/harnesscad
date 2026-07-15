@@ -380,6 +380,14 @@ def lower(node: Node, segments: int) -> se.ScadNode:
         if len(kids) == 1:
             return kids[0]
         return se.union()(*kids)
+    if t == "hull":
+        # OpenSCAD's native hull() of the child solids -- exact convex hull.
+        return se.hull()(*[lower(c, segments) for c in node.d["children"]])
+    if t == "minkowski":
+        # Minkowski sum with a ball IS OpenSCAD's minkowski(){ solid; sphere(r); }.
+        r = float(node.d["radius"])
+        return se.minkowski()(lower(node.d["child"], segments),
+                              se.sphere(r=r, segments=segments_for(r, segments)))
     raise OpenScadError("openscad backend: unknown F-rep node kind %r" % t)
 
 
@@ -465,6 +473,10 @@ class OpenScadBackend(ExternalToolBackend):
         # in _check_shell, and they are typed.
         self._frep.SHELL_MIN_WALL_CELLS = 0.0
         self._frep.SHELL_JOINS = ("arc", "intersection")
+        # OpenSCAD has a native hull(), so the composed op-state model may build a
+        # hull node (which lower() turns into hull()). Minkowski likewise lowers to
+        # minkowski(){...} and needs no flag (frep-proper already builds the node).
+        self._frep.HULL_SUPPORTED = True
 
     # -- version (a cache-key input, not a cosmetic banner) -----------------
     def tool_version(self) -> str:

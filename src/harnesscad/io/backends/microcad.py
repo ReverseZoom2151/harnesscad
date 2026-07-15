@@ -314,6 +314,11 @@ class MicrocadBackend(ExternalToolBackend):
                    "alpha, so growing or shrinking a solid by a wall thickness "
                    "cannot be built without changing the part; refused rather "
                    "than approximated",
+        "hull": "microcad has no verified convex-hull operator in the v0.5.0 "
+                "alpha, so a hull is refused rather than guessed",
+        "minkowski": "microcad has no verified Minkowski / 3D offset operator in "
+                     "the v0.5.0 alpha; a ball dilation is built in the frep SDF "
+                     "kernel and in OpenSCAD's minkowski(), and refused here",
     }
     #: box lowers to an extruded Rect, cylinder to Cylinder -- both verified in the
     #: alpha. cone/sphere/torus/wedge have no verified primitive, so are refused.

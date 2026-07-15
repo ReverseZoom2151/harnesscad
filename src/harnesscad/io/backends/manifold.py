@@ -364,6 +364,14 @@ def lower(node: Node, segments: int):
         if len(kids) == 1:
             return kids[0]
         return m.Manifold.batch_boolean(kids, m.OpType.Add)
+    if t == "hull":
+        # Manifold's native, EXACT convex hull. The hull of a set is the hull of
+        # the union of its vertices, so the children are combined then hulled.
+        kids = [lower(c, segments) for c in node.d["children"]]
+        solid = kids[0]
+        for kid in kids[1:]:
+            solid = solid + kid
+        return solid.hull()
     raise ManifoldError("manifold backend: unknown F-rep node kind %r" % t)
 
 
@@ -495,7 +503,9 @@ def _describe(node: Node) -> str:
     if t == "pattern":
         return "pattern<%d>(%s)" % (len(node.d["transforms"]),
                                     _describe(node.d["child"]))
-    keys = sorted(k for k in node.d if k not in ("a", "b", "child"))
+    if t == "hull":
+        return "hull(%s)" % ",".join(_describe(c) for c in node.d["children"])
+    keys = sorted(k for k in node.d if k not in ("a", "b", "child", "children"))
     return "%s{%s}" % (t, ",".join("%s=%r" % (k, node.d[k]) for k in keys))
 
 
@@ -533,6 +543,11 @@ class ManifoldBackend(ExternalToolBackend):
                    "offset-solid would need minkowski_sum/difference, which rounds "
                    "every corner by the rolling ball (a different part), so growing "
                    "or shrinking a general solid exactly is not expressible",
+        "minkowski": "Manifold's minkowski_sum is deliberately not exposed by this "
+                     "backend (it rounds every corner by the rolling ball, the "
+                     "silent-wrong-part bug the refusals exist to prevent); a ball "
+                     "dilation is exact in the frep SDF kernel and in OpenSCAD's "
+                     "minkowski(), so it is built there and refused here",
     }
     #: box/cylinder/cone map to extrude/cylinder; sphere is Manifold.sphere.
     #: torus/wedge have no direct Manifold primitive here.
@@ -556,6 +571,10 @@ class ManifoldBackend(ExternalToolBackend):
         # -- the silent-wrong-part failure. (shell of a prism IS supported and
         # does not taint.)
         self._tainted = False
+        # Manifold has a native, exact Manifold.hull, so the composed op-state
+        # model may build a hull node (lowered by lower() above). (Minkowski stays
+        # refused via UNSUPPORTED, so no minkowski node ever reaches the lowering.)
+        self._frep.HULL_SUPPORTED = True
 
     def reset(self) -> None:
         super().reset()
