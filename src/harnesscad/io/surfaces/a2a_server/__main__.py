@@ -29,7 +29,8 @@ from harnesscad.core.cisp.ops import AddRectangle, Constrain, Extrude, NewSketch
 from harnesscad.core.harness import AgentHarness
 from harnesscad.agents.llm.structured import ParsedOps
 from harnesscad.core.loop import HarnessSession
-from harnesscad.io.surfaces.a2a_server.app import serve
+from harnesscad.io.surfaces.a2a_server.app import make_server, serve
+from harnesscad.io.surfaces.a2a_server.auth import Authenticator, mint_jwt
 from harnesscad.io.surfaces.server import _make_backend
 
 
@@ -68,6 +69,82 @@ def default_harness_factory(backend_name: str = "stub") -> Callable[[], AgentHar
     return factory
 
 
+def _selfcheck() -> int:
+    """Prove the auth wiring end-to-end: a valid token passes, a missing one 401s.
+
+    Spins up an in-process server (port 0) with auth REQUIRED and a throwaway
+    HMAC secret, then drives it over real HTTP with (a) a valid Bearer JWT and
+    (b) no credential. Returns 0 only if the valid call is accepted and the
+    anonymous call is rejected with 401 + a ``WWW-Authenticate`` challenge.
+    """
+    import json
+    import threading
+    import urllib.error
+    import urllib.request
+
+    secret = "selfcheck-secret-not-a-real-key"
+    authenticator = Authenticator(required=True, jwt_secret=secret)
+    httpd = make_server(
+        default_harness_factory("stub"),
+        host="127.0.0.1",
+        port=0,
+        authenticator=authenticator,
+    )
+    host, port = httpd.server_address[0], httpd.server_address[1]
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    ok = True
+    try:
+        base = f"http://{host}:{port}/"
+        body = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/get",
+                "params": {"id": "does-not-exist"},
+            }
+        ).encode("utf-8")
+
+        # (a) Valid token -> accepted (HTTP 200; a JSON-RPC error body is fine).
+        token = mint_jwt(secret, subject="selfcheck")
+        req = urllib.request.Request(
+            base,
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            valid_status = resp.status
+        print(f"[selfcheck] valid token -> HTTP {valid_status} (expected 200)")
+        ok = ok and valid_status == 200
+
+        # (b) No credential -> 401 with a WWW-Authenticate challenge.
+        req = urllib.request.Request(
+            base, data=body, headers={"Content-Type": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=5):
+                missing_status = 200
+                challenge = None
+        except urllib.error.HTTPError as err:
+            missing_status = err.code
+            challenge = err.headers.get("WWW-Authenticate")
+        print(
+            f"[selfcheck] missing credential -> HTTP {missing_status} "
+            f"(expected 401); WWW-Authenticate={challenge!r}"
+        )
+        ok = ok and missing_status == 401 and bool(challenge)
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+        thread.join(timeout=5)
+
+    print("[selfcheck] PASS" if ok else "[selfcheck] FAIL")
+    return 0 if ok else 1
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m surfaces.a2a_server",
@@ -76,7 +153,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--backend", default="stub", choices=["stub", "cadquery"])
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9100)
+    parser.add_argument(
+        "--selfcheck",
+        action="store_true",
+        help="Verify auth wiring (valid token passes, missing one 401s) and exit.",
+    )
     args = parser.parse_args(argv)
+
+    if args.selfcheck:
+        return _selfcheck()
 
     factory = default_harness_factory(args.backend)
     print(
