@@ -21,19 +21,20 @@ Design notes:
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from harnesscad.core.cisp.ops import (
-    Op, NewSketch, AddCircle, AddRectangle, Constrain, Extrude, Boolean,
+    Op, NewSketch, AddCircle, AddRectangle, Constrain, Extrude, Boolean, parse_op,
 )
 
 # expander: (**params) -> list[Op]
 Expander = Callable[..., List[Op]]
 
 # similarity strategy is shared with the memory store
-from harnesscad.agents.memory.store import Similarity, TokenOverlapSimilarity
+import harnesscad.agents.memory.persistence as persistence
+from harnesscad.agents.memory.similarity import default_similarity
+from harnesscad.agents.memory.store import Similarity
 
 
 @dataclass
@@ -79,7 +80,7 @@ class Skill:
 
 class SkillLibrary:
     def __init__(self, similarity: Optional[Similarity] = None) -> None:
-        self.similarity: Similarity = similarity or TokenOverlapSimilarity()
+        self.similarity: Similarity = similarity or default_similarity()
         self._skills: Dict[str, Skill] = {}
 
     # --- registration -----------------------------------------------------
@@ -114,6 +115,72 @@ class SkillLibrary:
         self._skills[skill.name] = skill
         return True
 
+    def learn_from_correction(
+        self,
+        name: str,
+        corrected_ops: Sequence[Any],
+        session_factory: Callable[[], Any],
+        *,
+        description: str = "",
+        params: Optional[Dict[str, dict]] = None,
+        sample_params: Optional[Dict[str, Any]] = None,
+        oracle: Optional[Callable[[Any, List[Op]], Any]] = None,
+        overwrite: bool = False,
+    ) -> bool:
+        """Generalise a HUMAN correction of a produced part into a verified skill.
+
+        The corrective loop (blueprint 26.7.4): a person fixes a bad part -- by
+        editing its op stream or supplying a corrected trajectory from a
+        diagnostic -- and that fix becomes a reusable, named construction pattern
+        instead of a one-off. ``corrected_ops`` is the fixed op stream (CISP ``Op``
+        objects OR their serialised dicts, e.g. straight out of an
+        :class:`~harnesscad.agents.memory.store.Episode`); it is frozen into a
+        skill template.
+
+        This is deliberately the SAME Voyager gate as :meth:`add_verified`: the
+        corrected ops are EXECUTED on a fresh session and the skill is admitted
+        ONLY if they actually build (``ok == True``). A human saying "this is the
+        fix" is not enough -- a correction that does not itself verify is
+        unverified plausible garbage and is refused, keeping the library
+        monotonically trustworthy. Pass a stronger ``oracle`` (e.g. the harness's
+        measured output gate, ``callable(session, ops) -> verdict`` with an ``ok``
+        attribute) to additionally require the built geometry pass that gate.
+
+        Returns True if the corrected skill was admitted (now in the library,
+        verified), False otherwise (library unchanged). ``overwrite`` guards an
+        existing name: without it, a name already present is left untouched.
+        """
+        if name in self._skills and not overwrite:
+            return False
+        ops = _freeze_ops(corrected_ops)
+        if not ops:
+            return False
+        skill = Skill(
+            name=name,
+            description=description or f"correction-derived skill '{name}'",
+            template=_const_expander(ops),
+            params=dict(params or {}),
+            sample_params=dict(sample_params or {}),
+        )
+        try:
+            expanded = skill.expand(**skill.verify_params())
+            session = session_factory()
+            result = session.apply_ops(expanded)
+        except Exception:
+            return False
+        if not getattr(result, "ok", False):
+            return False
+        if oracle is not None:
+            try:
+                verdict = oracle(session, expanded)
+            except Exception:
+                return False
+            if not bool(getattr(verdict, "ok", verdict)):
+                return False
+        skill.verified = True
+        self._skills[name] = skill
+        return True
+
     # --- lookup -----------------------------------------------------------
     def __contains__(self, name: str) -> bool:
         return name in self._skills
@@ -141,8 +208,8 @@ class SkillLibrary:
         return {"version": 1, "skills": [s.to_dict() for s in self._skills.values()]}
 
     def save(self, path: str) -> None:
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(self.to_dict(), fh, indent=2, sort_keys=True)
+        """Persist skill metadata deterministically and atomically."""
+        persistence.dump_json(self.to_dict(), path)
 
     @classmethod
     def load(cls, path: str, expanders: Dict[str, Expander],
@@ -151,8 +218,7 @@ class SkillLibrary:
         from `expanders` (name -> callable). A skill whose expander is missing is
         loaded as metadata only and cannot expand until re-registered in code.
         """
-        with open(path, "r", encoding="utf-8") as fh:
-            d = json.load(fh)
+        d = persistence.load_json(path)
         lib = cls(similarity=similarity)
         for s in d.get("skills", []):
             name = s["name"]
@@ -166,6 +232,42 @@ class SkillLibrary:
                 verified=s.get("verified", False),
             )
         return lib
+
+
+def _freeze_ops(items: Sequence[Any]) -> List[Op]:
+    """Coerce a corrected op stream to concrete ``Op`` objects.
+
+    Accepts CISP ``Op`` instances (kept as-is) or their serialised dict form
+    (rebuilt via :func:`~harnesscad.core.cisp.ops.parse_op`), so a correction can
+    be supplied straight from an :class:`Episode`'s stored ``ops`` list or from a
+    live op stream. Anything else is skipped; an all-unparseable stream yields
+    ``[]`` and the learn call refuses.
+    """
+    out: List[Op] = []
+    for it in items:
+        if isinstance(it, Op):
+            out.append(it)
+        elif isinstance(it, dict):
+            try:
+                out.append(parse_op(it))
+            except Exception:
+                continue
+    return out
+
+
+def _const_expander(ops: List[Op]) -> Expander:
+    """A skill template that ignores params and re-emits a fixed op stream.
+
+    The corrected geometry is captured literally: a copy is returned each call so
+    a caller cannot mutate the stored fix. Correction-derived skills are exact by
+    construction; a later revision can register a parameterised expander in code.
+    """
+    frozen = list(ops)
+
+    def _expand(**_params: Any) -> List[Op]:
+        return list(frozen)
+
+    return _expand
 
 
 def _missing_expander(name: str) -> Expander:
