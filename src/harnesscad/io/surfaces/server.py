@@ -43,7 +43,8 @@ FLEET_TIERS = (LINT, PHYSICS, DOMAIN)
 #: BackendUnavailable and we fall back to the stub WITH A NOTE rather than
 #: crashing. `cadquery` and `freecad` are the two real B-rep kernels (exact
 #: volumes, STEP in and out); the rest are meshes or fields.
-BACKENDS = ("stub", "cadquery", "frep", "blender", "openscad", "freecad")
+BACKENDS = ("stub", "cadquery", "frep", "blender", "openscad", "freecad",
+            "manifold", "rhino3dm")
 
 
 def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
@@ -86,6 +87,29 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         except BackendUnavailable as exc:
             return (StubBackend(), "stub",
                     f"freecad backend unavailable ({exc}); fell back to stub")
+    if name == "manifold":
+        # The Manifold mesh-boolean kernel: an INDEPENDENT algorithm (guaranteed-
+        # manifold booleans, in-process). Adding it makes the differential oracle
+        # stronger -- a genuinely different kernel, not another OCCT/F-rep wrapper.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.manifold import ManifoldBackend
+        try:
+            return ManifoldBackend(), "manifold", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"manifold backend unavailable ({exc}); fell back to stub")
+    if name == "rhino3dm":
+        # openNURBS via the standalone rhino3dm wheel: an INDEPENDENT geometry +
+        # IO voice. It builds only primitives/extrusions and REFUSES every other
+        # op with a typed unsupported-op, but the volume/bbox it reports for those
+        # is an independent oracle voice, and it converts to/from .3dm.
+        from harnesscad.io.backends.base import BackendUnavailable
+        from harnesscad.io.backends.rhino3dm import Rhino3dmBackend
+        try:
+            return Rhino3dmBackend(), "rhino3dm", None
+        except BackendUnavailable as exc:
+            return (StubBackend(), "stub",
+                    f"rhino3dm backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
 
 

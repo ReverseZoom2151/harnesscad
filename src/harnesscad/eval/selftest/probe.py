@@ -74,16 +74,17 @@ __all__ = [
 
 #: Every backend the harness can drive, in the order a report should list them.
 BACKENDS: Tuple[str, ...] = (
-    "stub", "frep", "cadquery", "freecad", "openscad", "blender")
+    "stub", "frep", "cadquery", "freecad", "openscad", "blender", "manifold",
+    "rhino3dm")
 
 #: The ones that answer ``query('measure')`` with real geometry. ``stub`` does
 #: not: it is a bookkeeping backend and cannot take part in a geometric oracle.
 GEOMETRIC_BACKENDS: Tuple[str, ...] = (
-    "frep", "cadquery", "freecad", "openscad", "blender")
+    "frep", "cadquery", "freecad", "openscad", "blender", "manifold", "rhino3dm")
 
 #: Preference order when a consensus has to be named: an exact B-rep kernel first.
 EXACTNESS_ORDER: Tuple[str, ...] = (
-    "cadquery", "freecad", "openscad", "blender", "frep")
+    "cadquery", "freecad", "openscad", "blender", "manifold", "rhino3dm", "frep")
 
 
 @dataclass(frozen=True)
@@ -148,12 +149,22 @@ TOLERANCES: Dict[str, Tolerance] = {
     # Meshed CSG: exact on planar parts, polygonisation error on curved ones.
     "openscad": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
     "blender": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
+    # Manifold: a guaranteed-manifold mesh-boolean kernel. Same regime as the
+    # other mesh engines -- exact on planar parts, shared polygonisation error on
+    # curved ones (it facets a circle by the SAME $fn law, so the error matches).
+    "manifold": Tolerance(0.01, 1e-3, 0.0, 0.0, 0, "mesh"),
     # Sampled SDF: the error scales with the grid, and the grid scales with the
     # part. 1% on a chunky part, plus 20% of (cell / thinnest extent) -- which is
     # the measured behaviour: a 100x50x3 plate (cell/min = 0.69) lands 4.4% low, a
     # 120x30x6 five-hole strip (0.42) lands 6.5% low. Still 10x tighter than the
     # smallest real shell bug (11.7%).
     "frep": Tolerance(0.01, 0.05, _FREP_HALF_CELL, 0.20, _FREP_CELLS, "field"),
+    # openNURBS container backend: it only builds box/cylinder primitives, and it
+    # reports their volume analytically (w*h*d cross-checked against Box.Volume;
+    # pi*r^2*d) with the bounding box read off rhino3dm's own GetBoundingBox. Both
+    # are exact for these primitives, so it is an exact voice on the ops it
+    # supports -- and it REFUSES everything else rather than guess.
+    "rhino3dm": Tolerance(1e-9, 1e-6, 0.0, 0.0, 0, "brep"),
     # No geometry at all.
     "stub": Tolerance(math.inf, math.inf, 0.0, 0.0, 0, "none"),
 }
