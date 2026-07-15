@@ -51,7 +51,8 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 __all__ = [
     "Standing", "Board", "ranking", "from_reports", "from_solvers",
-    "load_standings", "near_miss_proof", "render", "main",
+    "load_standings", "near_miss_proof", "contract_residual_proof", "render",
+    "main",
 ]
 
 
@@ -62,6 +63,18 @@ class Standing:
     Built from a :class:`~harnesscad.eval.hardcorpus.score.HeldOutReport` or its
     ``to_dict`` form. ``failed`` is brief-id -> reasons; it names WHICH briefs the
     oracle failed and WHY, never the answer key.
+
+    THE THIRD LENS -- THE MEASURED GEOMETRIC CONTRACT
+    -------------------------------------------------
+    Beside the field's weak metric and the measured oracle, a submission MAY carry
+    the PDD contract lens (``audit/pdd_synthesis.md``): the count its per-part
+    Measured Geometric Contract SATISFIES (``contract_satisfied``) and the count it
+    satisfies AND the oracle also solves (``contract_and_oracle``). A base
+    ``HeldOutReport`` does not carry these -- the board stays runnable on the
+    reports that already exist -- so they are optional: ``None`` when absent, and
+    the row prints them as ``-``. When present the board ranks on the STRICTER
+    ``contract_and_oracle`` rate, so the many-to-one residual (contract passes,
+    oracle fails) is visible in its own column rather than hidden inside a headline.
     """
 
     name: str
@@ -72,6 +85,11 @@ class Standing:
     field_fooled: int = 0
     mean_iou: Optional[float] = None
     failed: Dict[str, List[str]] = field(default_factory=dict)
+    #: submissions whose per-part MGC is satisfied (optional; None when unscored).
+    contract_satisfied: Optional[int] = None
+    #: submissions the MGC satisfies AND the oracle solves (optional; the strict
+    #: "both" count the board ranks on when it is present).
+    contract_and_oracle: Optional[int] = None
 
     @property
     def oracle_rate(self) -> float:
@@ -90,6 +108,45 @@ class Standing:
     def gap(self) -> float:
         """How far the field's headline number overstates the truth, in rate points."""
         return self.weak_rate - self.oracle_rate
+
+    @property
+    def has_contract(self) -> bool:
+        """Whether this submission carries the MGC lens at all."""
+        return self.contract_satisfied is not None or self.contract_and_oracle is not None
+
+    @property
+    def contract_rate(self) -> Optional[float]:
+        """The share of the corpus the per-part MGC satisfies, or None if unscored."""
+        if self.contract_satisfied is None or not self.n:
+            return None
+        return self.contract_satisfied / float(self.n)
+
+    @property
+    def combined_rate(self) -> Optional[float]:
+        """The share the MGC satisfies AND the oracle solves -- the honest 'both'."""
+        if self.contract_and_oracle is None or not self.n:
+            return None
+        return self.contract_and_oracle / float(self.n)
+
+    @property
+    def contract_residual(self) -> Optional[int]:
+        """Count the MGC passes but the oracle FAILS -- the many-to-one residual.
+
+        ``contract_satisfied - contract_and_oracle``: submissions whose envelope
+        (volume + bbox + genus) cannot be told from the correct part yet a point
+        probe still fails them. ``None`` when the contract lens is absent.
+        """
+        if self.contract_satisfied is None or self.contract_and_oracle is None:
+            return None
+        return max(0, self.contract_satisfied - self.contract_and_oracle)
+
+    @property
+    def rank_rate(self) -> float:
+        """The rate the board ranks on: the strict 'both' when the MGC is present,
+        else the measured oracle -- so an unscored submission ranks exactly as
+        before and a contract-scored one is held to the stricter bar."""
+        both = self.combined_rate
+        return both if both is not None else self.oracle_rate
 
     @classmethod
     def from_report(cls, name: str, report: Any) -> "Standing":
@@ -110,7 +167,9 @@ class Standing:
             weak_passed=int(d.get("weak_passed", 0) or 0),
             field_fooled=int(d.get("field_fooled", 0) or 0),
             mean_iou=d.get("mean_iou"),
-            failed={k: list(v) for k, v in (d.get("failed") or {}).items()})
+            failed={k: list(v) for k, v in (d.get("failed") or {}).items()},
+            contract_satisfied=_opt_int(d.get("contract_satisfied")),
+            contract_and_oracle=_opt_int(d.get("contract_and_oracle")))
 
     def to_dict(self) -> dict:
         return {"name": self.name, "n": self.n, "built": self.built,
@@ -118,17 +177,30 @@ class Standing:
                 "weak_passed": self.weak_passed, "weak_rate": self.weak_rate,
                 "field_fooled": self.field_fooled, "fooled_rate": self.fooled_rate,
                 "gap": self.gap, "mean_iou": self.mean_iou,
+                "contract_satisfied": self.contract_satisfied,
+                "contract_rate": self.contract_rate,
+                "contract_and_oracle": self.contract_and_oracle,
+                "combined_rate": self.combined_rate,
+                "contract_residual": self.contract_residual,
                 "failed": {k: list(v) for k, v in self.failed.items()}}
 
 
 def ranking(standings: Sequence[Standing]) -> List[Standing]:
-    """Rank on the measured oracle first, then fewest parts the field was fooled on.
+    """Rank on the strict contract-AND-oracle rate, then fewest residual/fooled.
 
-    Deterministic: higher ``oracle_rate`` wins; ties go to the submission the field
-    overrated least (lower ``field_fooled``); then alphabetical by name.
+    Deterministic. The primary key is :attr:`Standing.rank_rate` -- the
+    contract-satisfied-AND-oracle-solved rate where the submission carries the MGC
+    lens, and the plain oracle rate where it does not (so an unscored submission
+    ranks exactly as it did before the contract lens was added). Ties then go to
+    the submission with the smaller many-to-one residual (contract passes, oracle
+    fails), then the one the field overrated least (lower ``field_fooled``), then
+    alphabetically by name.
     """
-    return sorted(standings,
-                  key=lambda s: (-s.oracle_rate, s.field_fooled, s.name))
+    return sorted(
+        standings,
+        key=lambda s: (-s.rank_rate,
+                       s.contract_residual if s.contract_residual is not None else 0,
+                       s.field_fooled, s.name))
 
 
 @dataclass
@@ -146,7 +218,8 @@ class Board:
 
     def to_dict(self) -> dict:
         return {"ranking": [s.to_dict() for s in self.ranked()],
-                "near_miss_proof": near_miss_proof()}
+                "near_miss_proof": near_miss_proof(),
+                "contract_residual_proof": contract_residual_proof()}
 
     def render(self) -> str:
         return render(self.standings)
@@ -226,33 +299,84 @@ def near_miss_proof() -> List[dict]:
     return proof
 
 
+def contract_residual_proof() -> List[dict]:
+    """The fixed, submission-independent contract-vs-oracle residual.
+
+    Grades the discriminative near-miss twins against each case's Measured
+    Geometric Contract (via :mod:`harnesscad.eval.hardcorpus.contract_grader`,
+    imported lazily) beside the measured oracle. A ``residual_gap`` row is a WRONG
+    twin the CONTRACT passes -- same volume, bbox and genus as the correct part --
+    that only the oracle's point probes catch: the many-to-one residual the PDD
+    synthesis (``audit/pdd_synthesis.md``) names, made visible. This is why a high
+    contract rate beside a low oracle rate is possible at all, and it is the exact
+    thing the board's ``contract_and_oracle`` ranking bar defends against.
+
+    Grading touches the exact kernel; if the contract grader, the discriminative
+    corpus, or that backend is absent this returns an empty list rather than
+    failing to import -- the board stays runnable with no kernel and no model.
+    """
+    try:
+        from harnesscad.eval.hardcorpus import contract_grader as _cg
+    except Exception:                                          # noqa: BLE001
+        return []
+    try:
+        report = _cg.grade_discriminative()
+    except Exception:                                          # noqa: BLE001
+        return []
+    grades = getattr(report, "grades", ()) or ()
+    return [g.to_dict() for g in grades]
+
+
+def _opt_int(value: Any) -> Optional[int]:
+    """Coerce an optional count from a report dict; None stays None."""
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _fmt_rate(value: float) -> str:
     return "%6.3f" % value
 
 
+def _fmt_opt_rate(value: Optional[float]) -> str:
+    return "   -  " if value is None else "%6.3f" % value
+
+
+def _fmt_opt_int(value: Optional[int]) -> str:
+    return "  - " if value is None else "%4d" % value
+
+
 def render(standings: Sequence[Standing]) -> str:
-    """The full scoreboard as text: the two-column ranking, then the near-miss proof."""
+    """The full scoreboard: the three-lens ranking, then the two standing proofs."""
     lines: List[str] = []
-    lines.append("HARD-CORPUS LEADERBOARD -- the field's grader vs the measured oracle")
+    lines.append("HARD-CORPUS LEADERBOARD -- field grader vs oracle vs measured contract")
     lines.append("=" * 78)
-    lines.append("Every submission is scored on BOTH the weak metrics the field uses")
-    lines.append("(valid + IoU + Chamfer) and the measured oracle (point membership).")
-    lines.append("'fooled' is the count the field PASSED and the oracle FAILED -- the gap.")
+    lines.append("Every submission is scored on the weak metric the field uses (valid +")
+    lines.append("IoU + Chamfer), the measured oracle (point membership), and -- when it")
+    lines.append("carries the lens -- the per-part Measured Geometric Contract (MGC).")
+    lines.append("'ctrct' is the MGC-satisfied rate; 'both' is MGC-AND-oracle (the bar the")
+    lines.append("board ranks on); 'resid' is the count the MGC passes and the oracle")
+    lines.append("FAILS -- the many-to-one residual. A '-' means the lens was not scored.")
     lines.append("")
-    lines.append("%-4s %-22s %6s %8s %8s %7s %7s"
-                 % ("#", "submission", "n", "weak", "oracle", "gap", "fooled"))
+    lines.append("%-4s %-18s %5s %7s %7s %7s %7s %5s"
+                 % ("#", "submission", "n", "weak", "oracle", "ctrct", "both", "resid"))
     lines.append("-" * 78)
     ranked = ranking(standings)
     if not ranked:
         lines.append("     (no submission yet -- the frontier run is pending)")
     for i, s in enumerate(ranked):
-        lines.append("%-4d %-22s %6d %8s %8s %7s %7d"
-                     % (i + 1, s.name[:22], s.n, _fmt_rate(s.weak_rate),
-                        _fmt_rate(s.oracle_rate), _fmt_rate(s.gap), s.field_fooled))
+        lines.append("%-4d %-18s %5d %7s %7s %7s %7s %5s"
+                     % (i + 1, s.name[:18], s.n, _fmt_rate(s.weak_rate),
+                        _fmt_rate(s.oracle_rate), _fmt_opt_rate(s.contract_rate),
+                        _fmt_opt_rate(s.combined_rate), _fmt_opt_int(s.contract_residual)))
     lines.append("-" * 78)
-    lines.append("Ranked on the measured oracle; ties to the submission the field")
-    lines.append("overrated least. A wide 'gap' is a submission the field would have")
-    lines.append("believed and the geometry does not.")
+    lines.append("Ranked on the contract-AND-oracle 'both' rate where present, else the")
+    lines.append("oracle; ties to the smaller residual, then the submission the field")
+    lines.append("overrated least. A submission with a high 'ctrct' but a low 'both' hit")
+    lines.append("the envelope and missed the geometry -- the residual made a column.")
     lines.append("")
 
     proof = near_miss_proof()
@@ -280,6 +404,29 @@ def render(standings: Sequence[Standing]) -> str:
         lines.append("Each row is a WRONG part the field's grader scores correct and the")
         lines.append("measured oracle catches on a single point. That is the result this")
         lines.append("board exists to rank submissions against.")
+
+    lines.append("")
+    lines.append("CONTRACT RESIDUAL -- the MGC passes, the oracle fails (no submission needed)")
+    lines.append("-" * 78)
+    cres = contract_residual_proof()
+    if not cres:
+        lines.append("     (the contract grader/kernel is absent; residual unavailable here)")
+    else:
+        lines.append("%-16s %-10s %-10s %-8s %-8s"
+                     % ("case", "label", "contract", "oracle", "residual"))
+        for row in cres:
+            lines.append(
+                "%-16s %-10s %-10s %-8s %-8s"
+                % (str(row.get("case_id", ""))[:16], str(row.get("label", ""))[:10],
+                   "SATISFIED" if row.get("satisfied") else "FAILED",
+                   "n/a" if row.get("oracle_solved") is None
+                   else ("solved" if row.get("oracle_solved") else "UNSOLVED"),
+                   "GAP" if row.get("residual_gap") else "-"))
+        lines.append("")
+        lines.append("A 'residual' GAP is a WRONG twin the per-part Measured Geometric")
+        lines.append("Contract passes (same volume + bbox + genus as the correct part) and")
+        lines.append("only the oracle's point probes fail -- the many-to-one residual the")
+        lines.append("'both' ranking column exists to defend against.")
     return "\n".join(lines)
 
 
