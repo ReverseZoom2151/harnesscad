@@ -17,18 +17,23 @@ This is the grounding layer that sits beside the harness spine:
                     reflection node after failures).
 
 Everything is JSON-persistable (save/load) and dependency-free. Retrieval uses a
-pluggable ``Similarity`` — the default is embedding-free (difflib + token
-overlap); a real embedder is a documented future upgrade (swap the object in via
-``MemoryStore(similarity=MyEmbedder())`` without touching call sites).
+pluggable ``Similarity`` — the default is now Okapi BM25 (``similarity.py``),
+which strictly beats the old token-overlap Jaccard (term saturation, length
+normalisation, corpus IDF). An OPTIONAL dense embedder is a one-line swap
+(``MemoryStore(similarity=EmbeddingSimilarity(encode))``) and never a hard
+dependency. The legacy :class:`TokenOverlapSimilarity` is kept for compatibility.
 """
 
 from __future__ import annotations
 
 import difflib
-import json
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple
+
+import harnesscad.agents.memory.persistence as persistence
+from harnesscad.agents.memory.decay import retention
+from harnesscad.agents.memory.similarity import default_similarity
 
 _TOKEN = re.compile(r"[a-z0-9]+")
 
@@ -113,7 +118,7 @@ class Episode:
 
 class MemoryStore:
     def __init__(self, similarity: Optional[Similarity] = None) -> None:
-        self.similarity: Similarity = similarity or TokenOverlapSimilarity()
+        self.similarity: Similarity = similarity or default_similarity()
         self.working: Dict[str, Any] = {}      # per-task scratchpad
         self.episodic: List[Episode] = []
         self.semantic: Dict[str, Any] = {}
@@ -139,21 +144,71 @@ class MemoryStore:
         return ep
 
     def recall_episodic(self, brief: str, k: int = 3,
-                        outcome: Optional[str] = None) -> List[Episode]:
+                        outcome: Optional[str] = None, *,
+                        now: Optional[float] = None, tau: float = 5.0,
+                        decay: bool = True) -> List[Episode]:
         """Return the k past attempts whose brief is most similar to `brief`.
 
         Optionally filter by `outcome` (e.g. only "ok" attempts to seed from).
+
+        Ranking is ``similarity * retention``. Similarity uses the corpus-aware
+        ``rank`` of the backend when it offers one (Okapi BM25 computes IDF over
+        the candidate briefs, so a rare discriminating word outweighs a common
+        one), falling back to the pairwise ``score`` otherwise.
+
+        ``retention`` folds in ``decay.py``'s Ebbinghaus curve so that, all else
+        equal, an OLDER memory ranks below a fresher one. Age is measured on the
+        caller's own logical clock: each episode's ``meta['tick']`` is its
+        recorded time, and ``now`` is the reference "current" tick (defaulting to
+        the newest tick present, so the most recent episode has zero elapsed).
+        When no episode carries a tick, or ``decay`` is False, retention is 1.0
+        for all and ranking is pure similarity -- the historical behaviour, so
+        older callers are unaffected. No wall clock is ever read.
         """
         pool = self.episodic
         if outcome is not None:
             pool = [e for e in pool if e.outcome == outcome]
-        scored: List[Tuple[float, int, Episode]] = [
-            (self.similarity.score(brief, e.brief), i, e)
-            for i, e in enumerate(pool)
-        ]
-        # Sort by score desc, then insertion order for a stable tie-break.
+        if not pool:
+            return []
+
+        sims = self._similarities(brief, [e.brief for e in pool])
+
+        ref_now = now
+        if decay and ref_now is None:
+            ticks = [self._episode_tick(e) for e in pool]
+            ticks = [t for t in ticks if t is not None]
+            ref_now = max(ticks) if ticks else None
+
+        scored: List[Tuple[float, int, Episode]] = []
+        for i, ep in enumerate(pool):
+            weight = sims[i]
+            if decay and ref_now is not None:
+                tick = self._episode_tick(ep)
+                if tick is not None:
+                    strength = float(ep.meta.get("strength", 1.0)) or 1.0
+                    weight *= retention(strength, ref_now - tick, tau)
+            scored.append((weight, i, ep))
+        # Sort by weighted score desc, then insertion order for a stable tie-break.
         scored.sort(key=lambda t: (-t[0], t[1]))
         return [e for _, _, e in scored[:k]]
+
+    def _similarities(self, query: str, docs: List[str]) -> List[float]:
+        """Similarity of ``query`` to each doc, corpus-aware when supported."""
+        rank = getattr(self.similarity, "rank", None)
+        if callable(rank):
+            return list(rank(query, docs))
+        return [self.similarity.score(query, d) for d in docs]
+
+    @staticmethod
+    def _episode_tick(ep: Episode) -> Optional[float]:
+        """The episode's recorded logical time, or None if it carries none."""
+        t = ep.meta.get("tick")
+        if t is None:
+            return None
+        try:
+            return float(t)
+        except (TypeError, ValueError):
+            return None
 
     # --- semantic ---------------------------------------------------------
     def set_semantic(self, key: str, value: Any) -> None:
@@ -180,8 +235,13 @@ class MemoryStore:
         }
 
     def save(self, path: str) -> None:
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(self.to_dict(), fh, indent=2, sort_keys=True)
+        """Persist the whole store deterministically and atomically.
+
+        Written via a temp file + fsync + ``os.replace`` (see ``persistence.py``)
+        so a crash mid-write cannot leave the next session a truncated file, and
+        ``sort_keys`` makes the bytes a pure function of the data.
+        """
+        persistence.dump_json(self.to_dict(), path)
 
     @classmethod
     def from_dict(cls, d: dict, similarity: Optional[Similarity] = None) -> "MemoryStore":
@@ -194,5 +254,4 @@ class MemoryStore:
 
     @classmethod
     def load(cls, path: str, similarity: Optional[Similarity] = None) -> "MemoryStore":
-        with open(path, "r", encoding="utf-8") as fh:
-            return cls.from_dict(json.load(fh), similarity=similarity)
+        return cls.from_dict(persistence.load_json(path), similarity=similarity)
