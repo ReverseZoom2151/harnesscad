@@ -388,6 +388,17 @@ def lower(node: Node, segments: int) -> se.ScadNode:
         r = float(node.d["radius"])
         return se.minkowski()(lower(node.d["child"], segments),
                               se.sphere(r=r, segments=segments_for(r, segments)))
+    if t == "scale":
+        # Per-axis scale about the origin -- OpenSCAD's scale([sx,sy,sz]), emitted
+        # through the same multmatrix() the pattern lowering uses (a diagonal 4x4),
+        # so uniform and non-uniform scales are both exact.
+        sx, sy, sz = float(node.d["sx"]), float(node.d["sy"]), float(node.d["sz"])
+        return se.multmatrix([
+            [sx, 0.0, 0.0, 0.0],
+            [0.0, sy, 0.0, 0.0],
+            [0.0, 0.0, sz, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])(lower(node.d["child"], segments))
     raise OpenScadError("openscad backend: unknown F-rep node kind %r" % t)
 
 

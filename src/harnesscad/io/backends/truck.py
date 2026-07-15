@@ -256,6 +256,11 @@ class TruckBackend(ExternalToolBackend):
         "minkowski": "truck has no Minkowski-sum / offset-solid operation, so a "
                      "ball dilation cannot be built without faking it (it is exact "
                      "in the frep SDF kernel and in OpenSCAD's minkowski())",
+        "scale": "truck's driver applies RIGID transforms only (builder::"
+                 "transformed, used by transform/pattern/mirror); a per-axis "
+                 "scale is not a rigid transform and is not wired/verified here, "
+                 "so it is refused rather than faked (Scale is exact in the frep, "
+                 "openscad and manifold backends)",
     }
     #: box lowers to an extruded face, cylinder to a cyl node; cone is a degenerate
     #: rsweep on this truck (as the countersink hole is), and sphere/torus/wedge

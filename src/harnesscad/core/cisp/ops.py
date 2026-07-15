@@ -284,6 +284,84 @@ class Minkowski(Op):
     radius: float = 1.0
 
 
+@dataclass(frozen=True)
+class Transform(Op):
+    """Rigidly move a body IN PLACE: rotate about the origin, then translate.
+
+    This is the standalone affine placement every CSG family exposes
+    (``translate`` / ``rotate``) and closes audit gap #31 -- until now an in-place
+    body move was only expressible as an :class:`AddInstance`, which places a NEW
+    assembly instance rather than transforming a body already in the model.
+
+    ``feature_or_body`` names the body to move (empty = the last body). The
+    rotation is an intrinsic-order triple applied about the WORLD axes through the
+    origin: first ``rx`` about X, then ``ry`` about Y, then ``rz`` about Z (all in
+    degrees), and finally the translation (``tx``, ``ty``, ``tz``). Every kernel
+    that can place a pattern instance can place a Transform (it lowers to the same
+    rigid-transform machinery :class:`LinearPattern` / :class:`CircularPattern`
+    use); a backend without a verified rigid-transform syntax refuses it with a
+    typed ``unsupported-op``.
+    """
+
+    OP: ClassVar[str] = "transform"
+    feature_or_body: str = ""
+    tx: float = 0.0
+    ty: float = 0.0
+    tz: float = 0.0
+    rx: float = 0.0
+    ry: float = 0.0
+    rz: float = 0.0
+
+
+@dataclass(frozen=True)
+class Scale(Op):
+    """Scale a body about the origin by per-axis factors (closes audit gap #30).
+
+    ``sx`` / ``sy`` / ``sz`` are the factors along each world axis; equal factors
+    are a uniform resize, unequal factors a non-uniform (anisotropic) one -- the
+    ``scale([sx,sy,sz])`` every CSG family and KCL expose, which CISP previously
+    could not name at all. ``feature_or_body`` names the body (empty = the last
+    body). All three factors must be > 0 (a zero or negative factor collapses or
+    reflects the solid; mirroring is :class:`Mirror`'s job).
+
+    A UNIFORM scale is metric-exact in every kernel. A NON-UNIFORM scale has an
+    exact SURFACE in every kernel (each point maps by ``p -> (sx*x, sy*y, sz*z)``),
+    so a mesh / CSG / SDF-zero-set backend reproduces it exactly; a backend whose
+    representation cannot carry an anisotropic scale refuses it with a typed
+    ``unsupported-op`` rather than build a wrong part.
+    """
+
+    OP: ClassVar[str] = "scale"
+    feature_or_body: str = ""
+    sx: float = 1.0
+    sy: float = 1.0
+    sz: float = 1.0
+
+
+@dataclass(frozen=True)
+class PatternTransform(Op):
+    """Replicate a feature at an EXPLICIT list of per-instance placements.
+
+    The general pattern (KCL ``pattern_transform``) that :class:`LinearPattern`
+    and :class:`CircularPattern` are special cases of, closing audit gap #28.
+    ``placements`` is a FLAT tuple of six-float instance transforms
+    ``(tx0, ty0, tz0, rx0, ry0, rz0, tx1, ...)`` -- kept flat (not a tuple of
+    tuples) so the op stays hashable and round-trips through JSON, exactly like
+    :class:`AddPolygon.points`. Each six-tuple is one placement with the same
+    rotate-then-translate convention as :class:`Transform`; the identity placement
+    is not implied, so include it explicitly to keep the original. The length must
+    be a positive multiple of six.
+
+    It lowers to the same replicated-instance node the linear / circular patterns
+    build, so every kernel that honours those honours this; a backend without a
+    verified rigid-transform syntax refuses it with a typed ``unsupported-op``.
+    """
+
+    OP: ClassVar[str] = "pattern_transform"
+    feature: str = ""
+    placements: tuple = ()
+
+
 # --- extended mechanical features -----------------------------------------
 @dataclass(frozen=True)
 class Revolve(Op):
@@ -536,6 +614,7 @@ _REGISTRY = {
         AddArc, AddEllipse, AddPolygon, AddSpline,
         Constrain, Extrude, Fillet, Boolean,
         Primitive, Split, Thicken, Hull, Minkowski,
+        Transform, Scale, PatternTransform,
         Revolve, Chamfer, Hole, Shell, Draft,
         Loft, Sweep, LinearPattern, CircularPattern, Mirror,
         AddInstance, Mate, SetParam,

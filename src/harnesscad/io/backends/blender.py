@@ -157,6 +157,17 @@ def _patterner(tr: Sequence[float]) -> Xform:
     return place
 
 
+def _scaler(sx: float, sy: float, sz: float) -> Xform:
+    """Per-axis scale about the origin, as a point transform baked into the leaf
+    meshes exactly like a mirror or a pattern instance is."""
+    fx, fy, fz = float(sx), float(sy), float(sz)
+
+    def scale(p: Vec3) -> Vec3:
+        return (fx * p[0], fy * p[1], fz * p[2])
+
+    return scale
+
+
 
 
 def prism(loop: Sequence[Tuple[float, float]], plane: str, w0: float, w1: float,
@@ -331,6 +342,13 @@ class _Lowering:
             kids = [self.node(node.d["child"], _compose(xform, _patterner(tr)))
                     for tr in node.d["transforms"]]
             return self._union(kids)
+        if t == "scale":
+            # Per-axis scale about the origin, baked into the descendant leaf meshes
+            # exactly like a mirror or pattern instance (exact for any factors).
+            child = node.d["child"]
+            scaled = _compose(xform, _scaler(node.d["sx"], node.d["sy"],
+                                             node.d["sz"]))
+            return self.node(child, scaled)
         raise ValueError("blender backend: unknown F-rep node kind %r" % t)
 
     @staticmethod

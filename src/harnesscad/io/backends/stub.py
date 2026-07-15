@@ -16,6 +16,7 @@ from harnesscad.core.cisp.ops import (
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
     Primitive, Split, Thicken, Hull, Minkowski,
+    Transform, Scale, PatternTransform,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -115,6 +116,12 @@ class StubBackend:
             return self._hull(op)
         if isinstance(op, Minkowski):
             return self._minkowski(op)
+        if isinstance(op, Transform):
+            return self._transform(op)
+        if isinstance(op, Scale):
+            return self._scale(op)
+        if isinstance(op, PatternTransform):
+            return self._pattern_transform(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -374,6 +381,46 @@ class StubBackend:
             return _err("bad-value", f"minkowski radius must be > 0 (got {op.radius})")
         fid = self._new_id("f")
         self.features.append({"type": "minkowski", "id": fid, "radius": op.radius})
+        return ApplyResult(True, [fid])
+
+    def _transform(self, op: Transform) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "transform requires an existing solid")
+        if op.feature_or_body and op.feature_or_body not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature_or_body}'",
+                        op.feature_or_body)
+        fid = self._new_id("f")
+        self.features.append({"type": "transform", "id": fid,
+                              "translate": [op.tx, op.ty, op.tz],
+                              "rotate_deg": [op.rx, op.ry, op.rz]})
+        return ApplyResult(True, [fid])
+
+    def _scale(self, op: Scale) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "scale requires an existing solid")
+        if op.sx <= 0 or op.sy <= 0 or op.sz <= 0:
+            return _err("bad-value", "scale factors sx, sy, sz must be > 0")
+        if op.feature_or_body and op.feature_or_body not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature_or_body}'",
+                        op.feature_or_body)
+        fid = self._new_id("f")
+        self.features.append({"type": "scale", "id": fid,
+                              "factors": [op.sx, op.sy, op.sz]})
+        return ApplyResult(True, [fid])
+
+    def _pattern_transform(self, op: PatternTransform) -> ApplyResult:
+        if not self.solid_present:
+            return _err("no-solid", "pattern_transform requires an existing solid")
+        pts = tuple(op.placements)
+        if len(pts) < 6 or len(pts) % 6 != 0:
+            return _err("bad-value",
+                        "pattern_transform placements must be a non-empty flat "
+                        "tuple of six-float (tx,ty,tz,rx,ry,rz) instances")
+        if op.feature and op.feature not in self._feature_ids():
+            return _err("bad-ref", f"unknown feature '{op.feature}'", op.feature)
+        fid = self._new_id("f")
+        self.features.append({"type": "pattern_transform", "id": fid,
+                              "count": len(pts) // 6})
         return ApplyResult(True, [fid])
 
     def _constrain(self, op: Constrain) -> ApplyResult:

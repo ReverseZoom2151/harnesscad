@@ -372,6 +372,12 @@ def lower(node: Node, segments: int):
         for kid in kids[1:]:
             solid = solid + kid
         return solid.hull()
+    if t == "scale":
+        # Per-axis scale about the origin -- Manifold's native scale(vec3), exact
+        # for both uniform and non-uniform factors.
+        child = lower(node.d["child"], segments)
+        return child.scale((float(node.d["sx"]), float(node.d["sy"]),
+                            float(node.d["sz"])))
     raise ManifoldError("manifold backend: unknown F-rep node kind %r" % t)
 
 
@@ -503,6 +509,9 @@ def _describe(node: Node) -> str:
     if t == "pattern":
         return "pattern<%d>(%s)" % (len(node.d["transforms"]),
                                     _describe(node.d["child"]))
+    if t == "scale":
+        return "scale[%r,%r,%r](%s)" % (node.d["sx"], node.d["sy"], node.d["sz"],
+                                        _describe(node.d["child"]))
     if t == "hull":
         return "hull(%s)" % ",".join(_describe(c) for c in node.d["children"])
     keys = sorted(k for k in node.d if k not in ("a", "b", "child", "children"))

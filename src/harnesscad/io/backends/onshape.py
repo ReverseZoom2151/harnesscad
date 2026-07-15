@@ -179,6 +179,14 @@ REFUSED_OPS: Dict[str, str] = {
             "subset",
     "minkowski": "a Minkowski sum / offset-solid has no query-free feature "
                  "mapping here; this backend maps only sketch+extrude+boolean",
+    "transform": "an in-place body move is an Onshape Transform feature that needs "
+                 "a body query for the seed; this backend maps only the "
+                 "coordinate-free sketch+extrude+boolean subset",
+    "scale": "a scale is an Onshape Transform (scale) feature that needs a body "
+             "query for the seed; not mapped in the coordinate-free subset",
+    "pattern_transform": "a transform pattern needs a body query for the seed and "
+                         "the per-instance transforms as query-bound features; "
+                         "only sketch+extrude+boolean are mapped here",
 }
 
 #: Human-readable record of the op->feature mapping, surfaced by

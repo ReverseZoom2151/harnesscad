@@ -50,6 +50,7 @@ from harnesscad.core.cisp.ops import (
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
     Primitive, Split, Thicken, Hull, Minkowski,
+    Transform, Scale, PatternTransform,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -522,6 +523,16 @@ def eval_node(node: Node, p: Sequence[float]) -> float:
         child = node.d["child"]
         vals = [eval_node(child, _untransform(p, tr)) for tr in node.d["transforms"]]
         return comb.union_all(vals)
+    if t == "scale":
+        # A point p is inside the scaled solid iff (px/sx, py/sy, pz/sz) is inside
+        # the child, so the ZERO-SET (and hence the meshed / measured surface) is
+        # exact for any positive factors. The magnitude is scaled by the SMALLEST
+        # factor, which keeps the field a conservative (<= true) distance -- the
+        # 1-Lipschitz property the sampler needs. For a uniform scale this is the
+        # exact signed distance.
+        sx, sy, sz = float(node.d["sx"]), float(node.d["sy"]), float(node.d["sz"])
+        q = (p[0] / sx, p[1] / sy, p[2] / sz)
+        return eval_node(node.d["child"], q) * min(sx, sy, sz)
     raise ValueError("unknown F-rep node kind '%s'" % t)  # pragma: no cover
 
 
@@ -755,7 +766,7 @@ def _has_shell(node: Node) -> bool:
     through.
     """
     if node.t in ("shell", "blendcut", "blend", "sphere", "torus", "wedge",
-                  "offset", "minkowski", "hull"):
+                  "offset", "minkowski", "hull", "scale"):
         return True
     for key in ("child", "a", "b"):
         kid = node.d.get(key)
@@ -926,6 +937,48 @@ def rigid_transform(origin: Sequence[float], axis: Sequence[float],
             r[2][0], r[2][1], r[2][2], t[2])
 
 
+def compose_transforms(outer: Sequence[float],
+                       inner: Sequence[float]) -> Tuple[float, ...]:
+    """The 3x4 affine that applies ``inner`` first, then ``outer``.
+
+    Each argument is a row-major 3x4 matrix (rotation block + translation column),
+    the same layout :func:`rigid_transform` returns. ``result = outer . inner``.
+    """
+    ro = [[outer[0], outer[1], outer[2]], [outer[4], outer[5], outer[6]],
+          [outer[8], outer[9], outer[10]]]
+    to = [outer[3], outer[7], outer[11]]
+    ri = [[inner[0], inner[1], inner[2]], [inner[4], inner[5], inner[6]],
+          [inner[8], inner[9], inner[10]]]
+    ti = [inner[3], inner[7], inner[11]]
+    out: List[float] = []
+    for i in range(3):
+        for j in range(3):
+            out.append(ro[i][0] * ri[0][j] + ro[i][1] * ri[1][j]
+                       + ro[i][2] * ri[2][j])
+        out.insert(i * 4 + 3,
+                   ro[i][0] * ti[0] + ro[i][1] * ti[1] + ro[i][2] * ti[2] + to[i])
+    return tuple(out)
+
+
+def euler_transform(tx: float, ty: float, tz: float,
+                    rx: float, ry: float, rz: float) -> Tuple[float, ...]:
+    """A rigid transform: rotate rx about X, then ry about Y, then rz about Z
+    (each about a world axis through the origin), then translate (tx, ty, tz).
+
+    This is the one convention :class:`ops.Transform` / :class:`ops.PatternTransform`
+    document, so every backend that reads a 3x4 pattern transform places a body the
+    same way.
+    """
+    t = rigid_transform((0.0, 0.0, 0.0), (1.0, 0.0, 0.0), float(rx))
+    t = compose_transforms(rigid_transform((0.0, 0.0, 0.0), (0.0, 1.0, 0.0),
+                                            float(ry)), t)
+    t = compose_transforms(rigid_transform((0.0, 0.0, 0.0), (0.0, 0.0, 1.0),
+                                            float(rz)), t)
+    translate = (1.0, 0.0, 0.0, float(tx), 0.0, 1.0, 0.0, float(ty),
+                 0.0, 0.0, 1.0, float(tz))
+    return compose_transforms(translate, t)
+
+
 def _apply_transform(p: Sequence[float], tr: Sequence[float]) -> Vec3:
     """Forward: the world point a pattern instance places ``p`` at."""
     x, y, z = float(p[0]), float(p[1]), float(p[2])
@@ -1056,6 +1109,12 @@ def node_bounds(node: Node) -> Tuple[Vec3, Vec3]:
             hi = tuple(max(p[i] for p in pts) for i in range(3))
             out = (lo, hi) if out is None else _union_bounds(out, (lo, hi))  # type: ignore
         return out  # type: ignore[return-value]
+    if t == "scale":
+        (clo, chi) = node_bounds(node.d["child"])
+        s = (float(node.d["sx"]), float(node.d["sy"]), float(node.d["sz"]))
+        lo = tuple(min(clo[i] * s[i], chi[i] * s[i]) for i in range(3))
+        hi = tuple(max(clo[i] * s[i], chi[i] * s[i]) for i in range(3))
+        return (lo, hi)  # type: ignore[return-value]
     raise ValueError("unknown F-rep node kind '%s'" % t)  # pragma: no cover
 
 
@@ -1159,6 +1218,9 @@ def blend_tree(node: Node, kind: str, k: float) -> Node:
     if t == "pattern":
         return Node("pattern", child=blend_tree(node.d["child"], kind, k),
                     transforms=node.d["transforms"])
+    if t == "scale":
+        return Node("scale", child=blend_tree(node.d["child"], kind, k),
+                    sx=node.d["sx"], sy=node.d["sy"], sz=node.d["sz"])
     if t == "offset":
         return Node("offset", child=blend_tree(node.d["child"], kind, k),
                     delta=node.d["delta"])
@@ -1791,6 +1853,12 @@ class FRepBackend:
             return self._hull(op)
         if isinstance(op, Minkowski):
             return self._minkowski(op)
+        if isinstance(op, Transform):
+            return self._transform(op)
+        if isinstance(op, Scale):
+            return self._scale(op)
+        if isinstance(op, PatternTransform):
+            return self._pattern_transform(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -2456,6 +2524,54 @@ class FRepBackend:
         self._record_feature("mirror", body, plane=op.plane,
                              feature_ref=op.feature_or_body)
         return ApplyResult(True, [self.features[-1]["id"]])
+
+    def _transform(self, op: Transform) -> ApplyResult:
+        """Rigidly move the NAMED feature (or the last body) in place.
+
+        A single-instance ``pattern`` node carries the rigid transform, so this
+        reuses the exact machinery :func:`_linear_pattern` /
+        :func:`_circular_pattern` build -- and every kernel that lowers a pattern
+        lowers a transform for free.
+        """
+        target, bad = self._feature_target(op.feature_or_body)
+        if bad is not None:
+            return bad
+        body, node = target
+        tr = euler_transform(op.tx, op.ty, op.tz, op.rx, op.ry, op.rz)
+        built = Node("pattern", child=node, transforms=[tr])
+        self._graft(body, node, built)
+        self._record_feature("transform", body, feature_ref=op.feature_or_body)
+        return ApplyResult(True, [self.features[-1]["id"]])
+
+    def _scale(self, op: Scale) -> ApplyResult:
+        """Scale the NAMED feature (or the last body) about the origin.
+
+        The zero-set of the ``scale`` node is exact for any positive factors, so
+        both uniform and non-uniform scales are honoured (see :func:`eval_node`).
+        """
+        if op.sx <= 0 or op.sy <= 0 or op.sz <= 0:
+            return _err("bad-value", "scale factors sx, sy, sz must be > 0")
+        target, bad = self._feature_target(op.feature_or_body)
+        if bad is not None:
+            return bad
+        body, node = target
+        built = Node("scale", child=node, sx=float(op.sx), sy=float(op.sy),
+                     sz=float(op.sz))
+        self._graft(body, node, built)
+        self._record_feature("scale", body, feature_ref=op.feature_or_body,
+                             factors=(float(op.sx), float(op.sy), float(op.sz)))
+        return ApplyResult(True, [self.features[-1]["id"]])
+
+    def _pattern_transform(self, op: PatternTransform) -> ApplyResult:
+        if not self._bodies:
+            return _err("no-solid", "pattern_transform requires an existing solid")
+        pts = tuple(float(v) for v in op.placements)
+        if len(pts) < 6 or len(pts) % 6 != 0:
+            return _err("bad-value",
+                        "pattern_transform placements must be a non-empty flat "
+                        "tuple of six-float (tx,ty,tz,rx,ry,rz) instances")
+        trs = [euler_transform(*pts[i:i + 6]) for i in range(0, len(pts), 6)]
+        return self._pattern_body("pattern_transform", op.feature, len(trs), trs)
 
     def _pattern_body(self, feature: str, ref: str, count: int,
                       transforms: List[Sequence[float]], **extra) -> ApplyResult:

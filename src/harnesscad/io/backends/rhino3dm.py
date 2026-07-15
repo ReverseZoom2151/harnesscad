@@ -59,6 +59,7 @@ from harnesscad.core.cisp.ops import (
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
     Primitive, Split, Thicken, Hull, Minkowski,
+    Transform, Scale, PatternTransform,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -236,6 +237,26 @@ class Rhino3dmBackend:
         if isinstance(op, Minkowski):
             return _unsupported("minkowski", "no Minkowski-sum / offset operation "
                                 "exists in this container library")
+        if isinstance(op, Transform):
+            return _unsupported("transform", "each solid is stored as an analytic "
+                                "primitive (kind + analytic volume + axis-aligned "
+                                "bbox), not a transformable Brep, so an in-place "
+                                "rotate/translate cannot be applied without "
+                                "abandoning the exact analytic measurement that is "
+                                "this backend's only value; AddInstance and Mirror "
+                                "are refused for the same reason")
+        if isinstance(op, Scale):
+            return _unsupported("scale", "a uniform scale is a Rhino Transform.Scale "
+                                "and a non-uniform scale a Transform.Scale(plane, x, "
+                                "y, z), neither wired here; and the analytic "
+                                "primitive model carries no transformable Brep to "
+                                "apply one to. Scale is built by the frep, openscad "
+                                "or manifold backend")
+        if isinstance(op, PatternTransform):
+            return _unsupported("pattern_transform",
+                                "patterning needs a boolean union, which is absent "
+                                "(LinearPattern and CircularPattern are refused for "
+                                "the same reason)")
         if isinstance(op, Boolean):
             return _unsupported("boolean", "openNURBS has no solid boolean engine")
         if isinstance(op, Fillet):

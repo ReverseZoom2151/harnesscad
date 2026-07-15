@@ -319,6 +319,17 @@ class MicrocadBackend(ExternalToolBackend):
         "minkowski": "microcad has no verified Minkowski / 3D offset operator in "
                      "the v0.5.0 alpha; a ball dilation is built in the frep SDF "
                      "kernel and in OpenSCAD's minkowski(), and refused here",
+        "transform": "microcad's rigid-transform (translate / rotate) syntax is "
+                     "not verified in the v0.5.0 alpha; a guessed transform would "
+                     "misplace the body, so an in-place move is refused (as mirror "
+                     "and the patterns are)",
+        "scale": "microcad's scale syntax is not verified in the v0.5.0 alpha; a "
+                 "guessed scale would resize the body wrongly, so it is refused "
+                 "rather than faked",
+        "pattern_transform": "microcad's rigid-transform / repeat syntax is not "
+                             "verified in the v0.5.0 alpha; a guessed transform "
+                             "would misplace the instances (as linear_pattern and "
+                             "circular_pattern are refused)",
     }
     #: box lowers to an extruded Rect, cylinder to Cylinder -- both verified in the
     #: alpha. cone/sphere/torus/wedge have no verified primitive, so are refused.

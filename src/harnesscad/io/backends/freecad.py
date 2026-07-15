@@ -224,6 +224,10 @@ class FreeCADBackend(ExternalToolBackend):
         "minkowski": "no Minkowski / offset-solid feature is wired here; a ball "
                      "dilation is built in the frep SDF kernel and in OpenSCAD's "
                      "minkowski(), and refused here",
+        "scale": "no scale-transform feature is wired in the driver; FreeCAD could "
+                 "scale a shape (Part transformGeometry / Draft.scale), but it is "
+                 "not exposed here, so a scale is refused rather than faked (Scale "
+                 "is exact in the frep, openscad and manifold backends)",
     }
 
     #: OCCT offsets with either join, exposed as the ``join`` argument of

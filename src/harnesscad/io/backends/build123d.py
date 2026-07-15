@@ -57,6 +57,7 @@ from harnesscad.core.cisp.ops import (
     AddArc, AddEllipse, AddPolygon, AddSpline,
     Constrain, Extrude, Fillet, Boolean,
     Primitive, Split, Thicken, Hull, Minkowski,
+    Transform, Scale, PatternTransform,
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
@@ -342,6 +343,16 @@ class Build123dBackend:
                         "has no 3D Minkowski / ball-dilation operation exposed "
                         "through build123d. A ball dilation is built by the frep "
                         "SDF kernel or by OpenSCAD's minkowski()")
+        if isinstance(op, Transform):
+            return self._transform(op)
+        if isinstance(op, Scale):
+            return _err("unsupported-op",
+                        "the build123d backend does not wire a scale transform: a "
+                        "uniform scale is OCCT gp_Trsf.SetScale and a non-uniform "
+                        "scale BRepBuilderAPI_GTransform, neither yet exposed here. "
+                        "Scale is built by the frep, openscad or manifold backend")
+        if isinstance(op, PatternTransform):
+            return self._pattern_transform(op)
         if isinstance(op, Constrain):
             return self._constrain(op)
         if isinstance(op, Extrude):
@@ -899,6 +910,82 @@ class Build123dBackend:
             return _err("kernel-error", f"circular_pattern failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "circular_pattern", "id": fid, "count": op.count})
+        self._solids[index] = result
+        return ApplyResult(True, [fid])
+
+    @staticmethod
+    def _place(base, tx, ty, tz, rx, ry, rz):
+        """Rotate ``base`` about X, then Y, then Z (world axes through the origin),
+        then translate -- the one convention ops.Transform / ops.PatternTransform
+        document, and the same sequence :meth:`_place_shape` uses for AddInstance."""
+        b = _b123d()
+        placed = base
+        if rx:
+            placed = placed.rotate(b.Axis.X, rx)
+        if ry:
+            placed = placed.rotate(b.Axis.Y, ry)
+        if rz:
+            placed = placed.rotate(b.Axis.Z, rz)
+        if tx or ty or tz:
+            placed = placed.translate((tx, ty, tz))
+        return placed
+
+    def _transform(self, op: Transform) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "transform requires an existing solid")
+        target, bad = self._feature_target(op.feature_or_body)
+        if bad is not None:
+            return bad
+        index, base = target
+        try:
+            _b123d()
+            placed = self._place(base, op.tx, op.ty, op.tz, op.rx, op.ry, op.rz)
+            # Match frep's _graft: moving the body's CURRENT state moves it in
+            # place; moving an earlier named feature adds a moved copy.
+            if base is self._solids[index]:
+                result = placed
+            else:
+                result = self._solids[index] + placed
+            if _volume(result) <= MIN_VOLUME:
+                return _err("degenerate", "transform produced no solid")
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"transform failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "transform", "id": fid})
+        self._solids[index] = result
+        return ApplyResult(True, [fid])
+
+    def _pattern_transform(self, op: PatternTransform) -> ApplyResult:
+        if not self.solid_present or not self._solids:
+            return _err("no-solid", "pattern_transform requires an existing solid")
+        pts = tuple(float(v) for v in op.placements)
+        if len(pts) < 6 or len(pts) % 6 != 0:
+            return _err("bad-value",
+                        "pattern_transform placements must be a non-empty flat "
+                        "tuple of six-float (tx,ty,tz,rx,ry,rz) instances")
+        target, bad = self._feature_target(op.feature)
+        if bad is not None:
+            return bad
+        index, base = target
+        try:
+            _b123d()
+            result = None
+            for i in range(0, len(pts), 6):
+                placed = self._place(base, *pts[i:i + 6])
+                result = placed if result is None else result + placed
+            if base is not self._solids[index]:
+                result = self._solids[index] + result
+            if _volume(result) <= MIN_VOLUME:
+                return _err("degenerate", "pattern_transform produced no solid")
+        except BackendUnavailable:
+            raise
+        except _err_types() as exc:
+            return _err("kernel-error", f"pattern_transform failed: {exc}")
+        fid = self._new_id("f")
+        self.features.append({"type": "pattern_transform", "id": fid,
+                              "count": len(pts) // 6})
         self._solids[index] = result
         return ApplyResult(True, [fid])
 
