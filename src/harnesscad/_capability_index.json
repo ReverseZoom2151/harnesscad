@@ -295,7 +295,8 @@
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.surfaces.mcp.tools",
-        "harnesscad.io.surfaces.mcp.tools.ToolCatalog"
+        "harnesscad.io.surfaces.mcp.tools.ToolCatalog",
+        "harnesscad.io.surfaces.mcp.tools.ToolDescription"
       ],
       "layer": "agents",
       "name": "planner",
@@ -305,6 +306,7 @@
         "PlanError",
         "Planner",
         "build_emit_ops_tool",
+        "build_retrieve_tool",
         "prioritize_diagnostics"
       ],
       "tags": [
@@ -574,6 +576,25 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.agents.agents.contractor",
+      "imports": [],
+      "layer": "agents",
+      "name": "contractor",
+      "package": "agents",
+      "summary": "Contractor -- recursive parent->child work delegation (hierarchical subcontracts).",
+      "symbols": [
+        "Award",
+        "Contractor",
+        "ContractorReport",
+        "Subcontract",
+        "award_contract",
+        "main"
+      ],
+      "tags": [
+        "curves"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.agents.message_tree",
       "imports": [],
       "layer": "agents",
@@ -837,6 +858,8 @@
     {
       "dotted": "harnesscad.agents.context.manager",
       "imports": [
+        "harnesscad.agents.context.tokenizer",
+        "harnesscad.agents.context.tokenizer.default_counter",
         "harnesscad.agents.llm.base",
         "harnesscad.agents.llm.base.Message",
         "harnesscad.agents.llm.base.ToolSpec"
@@ -923,6 +946,29 @@
       ],
       "tags": [
         "fabrication"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.context.tokenizer",
+      "imports": [
+        "harnesscad.agents.context.manager",
+        "harnesscad.agents.context.manager.HeuristicCounter",
+        "harnesscad.agents.context.manager.TokenCounter"
+      ],
+      "layer": "agents",
+      "name": "tokenizer",
+      "package": "context",
+      "summary": "Real token counting for the context window (docs/blueprint.md sec.3).",
+      "symbols": [
+        "BPEApproxCounter",
+        "HFTokenizerCounter",
+        "TiktokenCounter",
+        "default_counter",
+        "main"
+      ],
+      "tags": [
+        "fabrication",
+        "parsing"
       ]
     },
     {
@@ -2492,6 +2538,7 @@
         "harnesscad.agents.memory.error_notebook",
         "harnesscad.agents.memory.error_notebook.ErrorNotebook",
         "harnesscad.agents.memory.error_notebook.ErrorNotebookEntry",
+        "harnesscad.agents.memory.persistence",
         "harnesscad.agents.memory.skills",
         "harnesscad.agents.memory.skills.Skill",
         "harnesscad.agents.memory.skills.SkillLibrary",
@@ -2520,11 +2567,46 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.memory.persistence",
+      "imports": [],
+      "layer": "agents",
+      "name": "persistence",
+      "package": "memory",
+      "summary": "persistence \u2014 atomic, deterministic JSON writes for the memory subsystem.",
+      "symbols": [
+        "atomic_write_text",
+        "dump_json",
+        "load_json"
+      ],
+      "tags": [
+        "memory"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.memory.similarity",
+      "imports": [],
+      "layer": "agents",
+      "name": "similarity",
+      "package": "memory",
+      "summary": "similarity \u2014 stdlib-first similarity backends for memory recall.",
+      "symbols": [
+        "BM25Similarity",
+        "EmbeddingSimilarity",
+        "default_similarity",
+        "make_similarity"
+      ],
+      "tags": [
+        "memory"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.memory.skills",
       "imports": [
+        "harnesscad.agents.memory.persistence",
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.default_similarity",
         "harnesscad.agents.memory.store",
         "harnesscad.agents.memory.store.Similarity",
-        "harnesscad.agents.memory.store.TokenOverlapSimilarity",
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.AddCircle",
         "harnesscad.core.cisp.ops.AddRectangle",
@@ -2532,7 +2614,8 @@
         "harnesscad.core.cisp.ops.Constrain",
         "harnesscad.core.cisp.ops.Extrude",
         "harnesscad.core.cisp.ops.NewSketch",
-        "harnesscad.core.cisp.ops.Op"
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.parse_op"
       ],
       "layer": "agents",
       "name": "skills",
@@ -2557,7 +2640,13 @@
     },
     {
       "dotted": "harnesscad.agents.memory.store",
-      "imports": [],
+      "imports": [
+        "harnesscad.agents.memory.decay",
+        "harnesscad.agents.memory.decay.retention",
+        "harnesscad.agents.memory.persistence",
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.default_similarity"
+      ],
       "layer": "agents",
       "name": "store",
       "package": "memory",
@@ -2827,8 +2916,36 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.rag.retrieval_eval",
+      "imports": [
+        "harnesscad.agents.rag.retriever",
+        "harnesscad.agents.rag.retriever.build_from_docs"
+      ],
+      "layer": "agents",
+      "name": "retrieval_eval",
+      "package": "rag",
+      "summary": "Retrieval-quality metrics for the RAG grounding layer (blueprint sec.16.8).",
+      "symbols": [
+        "EvalCase",
+        "RetrievalReport",
+        "evaluate",
+        "main",
+        "mrr",
+        "recall_at_k",
+        "reciprocal_rank",
+        "selfcheck"
+      ],
+      "tags": [
+        "benchmark",
+        "fabrication",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.rag.retriever",
       "imports": [
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.BM25Similarity",
         "harnesscad.agents.rag.chunk",
         "harnesscad.agents.rag.chunk.Chunk",
         "harnesscad.agents.rag.chunk.chunk_document",
@@ -2844,6 +2961,8 @@
       "symbols": [
         "HybridRetriever",
         "Retrieved",
+        "SimilarityBM25Index",
+        "SimilarityEmbedder",
         "build_from_docs"
       ],
       "tags": [
@@ -3881,10 +4000,15 @@
         "harnesscad.agents.llm.base.LLM",
         "harnesscad.agents.llm.litellm_backend",
         "harnesscad.agents.llm.litellm_backend.LiteLLMClient",
+        "harnesscad.agents.memory.harness_memory",
+        "harnesscad.agents.memory.harness_memory.HarnessMemory",
         "harnesscad.core.harness",
         "harnesscad.core.harness.AgentHarness",
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
+        "harnesscad.core.routing",
+        "harnesscad.core.routing.RoutingLLM",
+        "harnesscad.core.routing.TaskClass",
         "harnesscad.core.trace",
         "harnesscad.core.trace.Tracer",
         "harnesscad.eval.reliability.loopdetect",
@@ -35071,7 +35195,11 @@
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
         "harnesscad.io.surfaces.a2a_server.app",
+        "harnesscad.io.surfaces.a2a_server.app.make_server",
         "harnesscad.io.surfaces.a2a_server.app.serve",
+        "harnesscad.io.surfaces.a2a_server.auth",
+        "harnesscad.io.surfaces.a2a_server.auth.Authenticator",
+        "harnesscad.io.surfaces.a2a_server.auth.mint_jwt",
         "harnesscad.io.surfaces.server",
         "harnesscad.io.surfaces.server._make_backend"
       ],
@@ -35093,6 +35221,9 @@
         "harnesscad.agents.a2a.messages",
         "harnesscad.agents.a2a.messages.AgentCard",
         "harnesscad.io.surfaces.a2a_server",
+        "harnesscad.io.surfaces.a2a_server.auth",
+        "harnesscad.io.surfaces.a2a_server.auth.AuthError",
+        "harnesscad.io.surfaces.a2a_server.auth.Authenticator",
         "harnesscad.io.surfaces.a2a_server.card",
         "harnesscad.io.surfaces.a2a_server.card.build_agent_card",
         "harnesscad.io.surfaces.a2a_server.handler",
@@ -35113,18 +35244,39 @@
       ]
     },
     {
+      "dotted": "harnesscad.io.surfaces.a2a_server.auth",
+      "imports": [],
+      "layer": "io",
+      "name": "auth",
+      "package": "surfaces",
+      "summary": "Request authentication for the A2A server (stdlib-only, opt-in via env).",
+      "symbols": [
+        "AuthError",
+        "Authenticator",
+        "Principal",
+        "mint_jwt",
+        "verify_jwt"
+      ],
+      "tags": [
+        "surface"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.surfaces.a2a_server.card",
       "imports": [
         "harnesscad.agents.a2a.messages",
         "harnesscad.agents.a2a.messages.AgentCard",
-        "harnesscad.agents.a2a.messages.AgentSkill"
+        "harnesscad.agents.a2a.messages.AgentSkill",
+        "harnesscad.io.surfaces.a2a_server.auth",
+        "harnesscad.io.surfaces.a2a_server.auth.Authenticator"
       ],
       "layer": "io",
       "name": "card",
       "package": "surfaces",
       "summary": "The HarnessCAD A2A ``AgentCard`` \u2014 the discovery/handshake artefact.",
       "symbols": [
-        "build_agent_card"
+        "build_agent_card",
+        "build_security"
       ],
       "tags": [
         "agent",
@@ -35503,6 +35655,34 @@
       ],
       "tags": [
         "fabrication",
+        "surface"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.surfaces.mcp.client",
+      "imports": [
+        "harnesscad.io.surfaces.mcp",
+        "harnesscad.io.surfaces.mcp.jsonrpc",
+        "harnesscad.io.surfaces.mcp.server",
+        "harnesscad.io.surfaces.mcp.server.PROTOCOL_VERSION",
+        "harnesscad.io.surfaces.mcp.server.SUPPORTED_PROTOCOLS"
+      ],
+      "layer": "io",
+      "name": "client",
+      "package": "surfaces",
+      "summary": "McpClient -- a spec-compliant Model Context Protocol *client* (stdlib only).",
+      "symbols": [
+        "HttpTransport",
+        "McpCapabilityError",
+        "McpClient",
+        "McpConnectionError",
+        "McpError",
+        "McpProtocolError",
+        "McpRpcError",
+        "StdioTransport",
+        "main"
+      ],
+      "tags": [
         "surface"
       ]
     },
