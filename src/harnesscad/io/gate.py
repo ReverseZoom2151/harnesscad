@@ -1166,9 +1166,20 @@ def check(model: Any, path: Optional[str] = None, *, source: Any = None,
         # straight to a codec with no backend behind it. There is no built
         # geometry to measure, so there is no part to get wrong -- this is
         # transport, not emission. Say so explicitly; do not imply a pass.
-        empty = _structural_measurement(model)
-        return GateReport(path=path, ok=not empty[0], failures=tuple(empty[0]),
-                          measurement=empty[1], declared=(), forced=forced)
+        fails, meas = _structural_measurement(model)
+        if validation_rules is not None:
+            # The caller DECLARED an acceptance contract, and there is no
+            # geometry to evaluate it against. Passing here would hand back
+            # ok=True for a contract nobody ran -- the exact "silence is not
+            # success" this gate exists to prevent. Refuse instead.
+            fails = list(fails) + [Failure(
+                "validation-rules-unevaluated", "declared",
+                "validation rules were supplied but there is no measurable "
+                "geometry to run them against; the contract is unverified",
+                measured=None, expected="a measurable solid")]
+            meas["declared_intent"] = "unevaluated"
+        return GateReport(path=path, ok=not fails, failures=tuple(fails),
+                          measurement=meas, declared=(), forced=forced)
 
     verts, faces = geom
     from_backend = bool(_backend_of(source) or _backend_of(model))
