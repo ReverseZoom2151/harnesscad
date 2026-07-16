@@ -27,10 +27,30 @@ CENSUS = {"dead": ["frep:hole.kind", "frep:fillet.edges"]}
 
 class TestRatchet(unittest.TestCase):
     def test_the_committed_census_is_real(self):
+        """Every census entry is a well-formed backend:op.field.
+
+        This used to also assert the census was NON-EMPTY -- a guard against a
+        census stubbed out to nothing, written when frep had 15 dead fields and an
+        empty list could only mean somebody had switched the gate off. It is now
+        empty because all 15 were FIXED, so that assertion had inverted into a test
+        that fails on success. What is worth pinning is the shape of an entry (the
+        gate keys off it) and the debt's DIRECTION, below.
+        """
         base = lf.baseline()
-        self.assertTrue(base["dead"])
+        self.assertIsInstance(base["dead"], list)
         for entry in base["dead"]:
             self.assertRegex(entry, r"^[a-z]+:[a-z_]+\.[a-z_0-9]+$")
+
+    def test_the_census_never_grows(self):
+        """The ratchet's one rule, pinned against the committed file.
+
+        The census may only ever shrink. It is empty today; if a future diff adds
+        an entry, that is a new dead field being written down instead of fixed, and
+        this test is where that argument has to be had.
+        """
+        self.assertEqual(lf.baseline()["dead"], [],
+                         "the dead-field census grew. A dead field is a bug to "
+                         "fix, not a debt to record -- see the module docstring")
 
     def test_the_known_debt_passes(self):
         rep = _Report([_Cell("frep", "hole", "kind"),

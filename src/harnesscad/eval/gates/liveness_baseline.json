@@ -3,21 +3,5 @@
   "backends": [
     "frep"
   ],
-  "dead": [
-    "frep:chamfer.distance2",
-    "frep:chamfer.edges",
-    "frep:circular_pattern.axis",
-    "frep:circular_pattern.feature",
-    "frep:constrain.b",
-    "frep:constrain.value",
-    "frep:fillet.edges",
-    "frep:hole.cbore_depth",
-    "frep:hole.cbore_diameter",
-    "frep:hole.csk_angle",
-    "frep:hole.csk_diameter",
-    "frep:hole.face_or_sketch",
-    "frep:hole.kind",
-    "frep:linear_pattern.feature",
-    "frep:mirror.feature_or_body"
-  ]
+  "dead": []
 }

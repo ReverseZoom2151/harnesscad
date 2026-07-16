@@ -7,8 +7,9 @@ value away. An op field the kernel ignores is a parameter the model cannot
 control, the brief cannot request, and the grader cannot see — the same shape of
 bug as the shell that grew the part while every verifier stayed silent.
 
-Today `frep` has 15 dead fields. Failing the build on all 15 would only mean the
-gate gets switched off, so this gate is a RATCHET, not a cliff:
+`frep` had 15 dead fields when this gate was written. Failing the build on all 15
+would only have meant the gate got switched off, so this gate is a RATCHET, not a
+cliff:
 
   * the census below is COMMITTED (`liveness_baseline.json`);
   * a dead field that is NOT in the census fails the build;
@@ -16,7 +17,25 @@ gate gets switched off, so this gate is a RATCHET, not a cliff:
     tightened in the same diff (the gate tells you the exact edit);
   * the census may only ever shrink.
 
-The number in the census is a debt, and it is now a visible one.
+The number in the census is a debt, and it is now a visible one. THE CENSUS IS
+NOW EMPTY: all 15 were fixed, the ratchet caught the revivals and forced the
+census down to zero, and the floor is now a real floor -- any dead field on frep
+fails the build outright, with nothing to hide behind.
+
+That makes the OTHER two failure modes the ones to understand, because an empty
+census is not the same as a clean bill of health:
+
+  * UNMAPPED is the failure that actually mattered. The gate can only see fields
+    the oracle probes, and `field_liveness.unmapped()` fails the build when the op
+    schema grows and the oracle does not. It earned its keep: three commits added
+    twelve ops to CISP and taught the oracle none of them, and the 48 unprobed
+    fields -- the newest, so the likeliest to be unwired -- were reported rather
+    than passing green. Two of them (`thicken.both`, `mate`'s ports) were in fact
+    dead. A gate that measures nothing must fail, not pass.
+  * a REJ cell (see `_CAPABILITY_CODES` and the `INERT_FIELDS` allow-list in the
+    oracle) is a backend turning away an op the schema calls legal. It is reported
+    rather than absorbed, because "the backend refuses it" and "the field is dead"
+    are different findings with different fixes.
 
     python -m harnesscad.eval.gates.liveness_floor            # the gate (CI)
     python -m harnesscad.eval.gates.liveness_floor --update   # deliberate re-census
