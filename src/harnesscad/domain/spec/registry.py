@@ -401,7 +401,10 @@ _LINTERS: Dict[str, Tuple[Callable[[str], List[str]], str, str, bool]] = {
                "prompt/constraint lint against the known object categories", False),
 }
 
-#: A linter whose findings make :attr:`SpecResult.ok` False.
+#: The linters whose own findings make :attr:`SpecResult.ok` False, derived from
+#: the blocking flag each linter declares in :data:`_LINTERS`. Never hardcode a
+#: linter name against this: :func:`_blocking` reads the set, so registering a
+#: blocking linter is enough to make it block.
 _BLOCKING = frozenset(n for n, v in _LINTERS.items() if v[3])
 
 
@@ -426,7 +429,20 @@ def lint(brief: str, only: Optional[Sequence[str]] = None) -> List[str]:
 
 
 def _blocking(issues: Sequence[str]) -> bool:
-    return any(i.startswith("leakage:") for i in issues)
+    """True when any issue was raised BY a linter declared blocking.
+
+    A finding is attributed to a linter by its ``'<linter>: '`` prefix -- the
+    convention every linter above follows for its own findings. The attribution
+    is deliberately by prefix and not "everything this linter returned":
+    ``leakage`` also emits advisory ``'style: '`` lines, which are not code
+    leakage and must not block a brief. Likewise a ``'lint-error: '`` line is
+    the route reporting that a linter crashed, not that linter's verdict.
+
+    This reads :data:`_BLOCKING` rather than naming a linter, so a second
+    blocking linter starts blocking the moment it declares the flag.
+    """
+    prefixes = tuple("%s:" % n for n in sorted(_BLOCKING))
+    return any(i.startswith(prefixes) for i in issues)
 
 
 # --------------------------------------------------------------------------- #

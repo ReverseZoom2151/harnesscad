@@ -183,6 +183,50 @@ class TestBriefToCheckedSpec(unittest.TestCase):
         self.assertTrue(any(i.startswith("leakage:") for i in result.issues),
                         result.issues)
 
+
+class TestBlockingIsDeclaredNotHardcoded(unittest.TestCase):
+    """``_blocking`` must read the DECLARED blocking flags, not one linter's name.
+
+    Leakage is the only blocking linter today, so a ``startswith('leakage:')``
+    hardcode passes every other test in this file while quietly ignoring the
+    flag. These tests register a SECOND blocking linter, which is the only way
+    to tell the two implementations apart.
+    """
+
+    def _register(self, name, fn, blocking):
+        S._LINTERS[name] = (fn, "harnesscad.domain.spec.clarify_leakage",
+                            "test-only linter", blocking)
+        blocking_set = S._BLOCKING
+        S._BLOCKING = frozenset(
+            n for n, v in S._LINTERS.items() if v[3])
+        self.addCleanup(setattr, S, "_BLOCKING", blocking_set)
+        self.addCleanup(S._LINTERS.pop, name, None)
+
+    def test_a_second_blocking_linter_actually_blocks(self):
+        self._register("banned", lambda b: ["banned: brief names a vendor"], True)
+        result = S.compile_brief("a plate 100 mm long")
+        self.assertTrue(any(i.startswith("banned:") for i in result.issues),
+                        result.issues)
+        # Fails under the `startswith("leakage:")` hardcode: the declared flag
+        # is ignored and the brief compiles ok.
+        self.assertFalse(result.ok, result.issues)
+
+    def test_a_non_blocking_linters_findings_do_not_block(self):
+        self._register("advice", lambda b: ["advice: consider a fillet"], False)
+        result = S.compile_brief("a plate 100 mm long")
+        self.assertTrue(any(i.startswith("advice:") for i in result.issues),
+                        result.issues)
+        self.assertTrue(result.ok, result.issues)
+
+    def test_style_findings_from_the_blocking_leakage_linter_do_not_block(self):
+        # `leakage` is blocking, but it also emits advisory `style:` lines that
+        # are not code leakage. Blocking is attributed by the finding's own
+        # prefix, so a style-only brief stays ok.
+        self.assertIn("leakage", S._BLOCKING)
+        self.assertFalse(S._blocking(["style: brief is very long"]))
+        self.assertFalse(S._blocking(["lint-error: leakage raised OSError: x"]))
+        self.assertTrue(S._blocking(["leakage: code in a brief: cq.Workplane"]))
+
     def test_compile_is_deterministic(self):
         self.assertEqual(S.compile_brief(BRIEF).to_dict(),
                          S.compile_brief(BRIEF).to_dict())
