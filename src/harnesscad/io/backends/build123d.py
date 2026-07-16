@@ -1285,7 +1285,8 @@ class Build123dBackend:
             return _err("kernel-error", f"thicken failed: {exc}")
         fid = self._new_id("f")
         self.features.append({"type": "thicken", "id": fid,
-                              "thickness": op.thickness})
+                              "thickness": op.thickness,
+                              "both": bool(op.both)})
         self._solids[-1] = result
         return ApplyResult(True, [fid])
 

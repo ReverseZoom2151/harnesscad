@@ -358,8 +358,9 @@ class StubBackend:
             return _err("bad-value", "thicken thickness must be non-zero")
         fid = self._new_id("f")
         self.features.append({"type": "thicken", "id": fid,
-                              "thickness": thicken_delta(op),
-                              "both": bool(op.both)})
+                              "thickness": op.thickness,
+                              "both": bool(op.both),
+                              "delta": thicken_delta(op)})
         return ApplyResult(True, [fid])
 
     def _hull(self, op: Hull) -> ApplyResult:

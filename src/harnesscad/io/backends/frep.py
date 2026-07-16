@@ -2170,7 +2170,8 @@ class FRepBackend:
         target = self._bodies[-1]
         delta = thicken_delta(op)
         target["node"] = Node("offset", child=target["node"], delta=delta)
-        self._record_feature("thicken", target, thickness=delta, both=bool(op.both))
+        self._record_feature("thicken", target, thickness=float(op.thickness),
+                             both=bool(op.both))
         self.solid_present = True
         return ApplyResult(True, [self.features[-1]["id"]])
 
