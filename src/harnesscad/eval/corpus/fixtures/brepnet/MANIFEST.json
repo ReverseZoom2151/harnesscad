@@ -1,0 +1,252 @@
+{
+  "source_repo": "https://github.com/AutodeskAILab/BRepNet",
+  "source_path": "resources/cad_repos/BRepNet-master/BRepNet-master/tests/test_data",
+  "license": "CC-BY-NC-SA-4.0",
+  "attribution": "Autodesk AI Lab, BRepNet (CC BY-NC-SA 4.0). Not vendored: license does not permit redistribution here. Files are read from resources/ when present.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "100027_258e3965_0",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/100027_258e3965_0.step",
+      "sha256": "c9844b7267a3ca5f96e518a014768890536e9dfe0d79c0011f956ea9226a9b24",
+      "bytes": 17746,
+      "format": "step"
+    },
+    {
+      "name": "23642_cd2f2029_0",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/23642_cd2f2029_0.step",
+      "sha256": "bb57e65560ea3772b6ece853fc1c93563c50c5fdc025e4ca304c3826c3372e97",
+      "bytes": 258968,
+      "format": "step"
+    },
+    {
+      "name": "block",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block.step",
+      "sha256": "a89beb479314c0bf34108d9bfb13f1497f8f636cbe8089c570b1df48d61f59f6",
+      "bytes": 8972,
+      "format": "step"
+    },
+    {
+      "name": "block_fillet1",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block_fillet1.step",
+      "sha256": "2aab63f4ce5bacef1124a88bd45467a7b0bd090f2c0f551975196a323ce25352",
+      "bytes": 10442,
+      "format": "step"
+    },
+    {
+      "name": "block_fillet3",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block_fillet3.step",
+      "sha256": "7df644aa67ee2fd8c7ed7bc0921c5e11a4f820e48caa7200aa797d8e770c5225",
+      "bytes": 13623,
+      "format": "step"
+    },
+    {
+      "name": "block_hole",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block_hole.step",
+      "sha256": "ccdd021653418866d7315cea2832386393bbf1c29c502a8edd89bbbb52c22490",
+      "bytes": 10852,
+      "format": "step"
+    },
+    {
+      "name": "block_through_hole",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block_through_hole.step",
+      "sha256": "f5f249b5121137843746c6adcc3e0d3e50d744a7c32cb127748fe25429cc5619",
+      "bytes": 10599,
+      "format": "step"
+    },
+    {
+      "name": "block_torus_fillet3",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/block_torus_fillet3.step",
+      "sha256": "b43a2636549d8248a4ac5daee28d33228c609d6bcb464d8f2a19233c5b85f475",
+      "bytes": 14703,
+      "format": "step"
+    },
+    {
+      "name": "cylinder",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/cylinder.step",
+      "sha256": "8a181c967cde8f5fd17a5925374313f5444d9f947cca9495e1246ee2367af90c",
+      "bytes": 5628,
+      "format": "step"
+    },
+    {
+      "name": "face_3_loops",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/face_3_loops.step",
+      "sha256": "bc94c74e531cbcea9a7e4b75883e35c1b1b29f88cb1d22b936e3bbb7e037e843",
+      "bytes": 25417,
+      "format": "step"
+    },
+    {
+      "name": "four_cone",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/four_cone.step",
+      "sha256": "00123718eb34e7549bf0a3eb7f052d1c6434c2efa18c52146d9ce0e401666d48",
+      "bytes": 15890,
+      "format": "step"
+    },
+    {
+      "name": "polygon_35_side",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/polygon_35_side.step",
+      "sha256": "88e95b2720a3b54995805945f1e03ffe18a83a3259891c998b65ff944e94bd09",
+      "bytes": 56732,
+      "format": "step"
+    },
+    {
+      "name": "sphere",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/sphere.step",
+      "sha256": "fe5fd7aac159afc379d7d929fe250c2fcb00833bb5980aaab013fb8ee8a53549",
+      "bytes": 4566,
+      "format": "step"
+    },
+    {
+      "name": "three_concave_edge",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/three_concave_edge.step",
+      "sha256": "036ac3b37eba8ac99d4d8983799f8048fc451900b6ff5c2f55a78124f4e97acf",
+      "bytes": 14081,
+      "format": "step"
+    },
+    {
+      "name": "two_concave_closed_edge",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/two_concave_closed_edge.step",
+      "sha256": "e1608a9bb4b8e56d8c7f9fbe5cd7492c370b7c5b26922ca1f2b2169f622847bd",
+      "bytes": 12832,
+      "format": "step"
+    },
+    {
+      "name": "two_elliptical_edges",
+      "role": "known_good",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/two_elliptical_edges.step",
+      "sha256": "cf6123f39de2aa7ab6c4781c23bc5252e159fd366e13d2143139705c58aa4587",
+      "bytes": 12657,
+      "format": "step"
+    },
+    {
+      "name": "simple_solid_dataset",
+      "role": "metadata",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/simple_solids/simple_solid_dataset.json",
+      "sha256": "8adbad5ba0e32508a6a5c6a1a495027737855d938164aa5e4a05fec9d400f84c",
+      "bytes": 2510,
+      "format": "json"
+    },
+    {
+      "name": "21165_5cb2d287_0000_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/21165_5cb2d287_0000_2.step",
+      "sha256": "af8cc336a2a2b526aac1063ee83e0c53cdce1b1cfd5ed662f28f8cbc59adce2c",
+      "bytes": 15526,
+      "format": "step"
+    },
+    {
+      "name": "21256_997bab67_0078_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/21256_997bab67_0078_2.step",
+      "sha256": "97e0cd31f1013460b83f0b92fa51821314de3b8268f89b5f39997cae546ee2a1",
+      "bytes": 241289,
+      "format": "step"
+    },
+    {
+      "name": "22604_bcab4db9_0001_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/22604_bcab4db9_0001_2.step",
+      "sha256": "3ed1dbfa121135500b4e4bf8e201526918474c4c9fcc8c445522e11036408e42",
+      "bytes": 197380,
+      "format": "step"
+    },
+    {
+      "name": "23521_5ef2a47a_0018_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/23521_5ef2a47a_0018_2.step",
+      "sha256": "28378610744040c8c71f9ed60983cd21a7f08c2af20afa11035ad5f50d702825",
+      "bytes": 48704,
+      "format": "step"
+    },
+    {
+      "name": "26086_bf892d7f_0024_1",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/26086_bf892d7f_0024_1.step",
+      "sha256": "e8a39b571a98998a24d26b76191ef934e474a43bd36749e0b22e07c134e2b740",
+      "bytes": 23734,
+      "format": "step"
+    },
+    {
+      "name": "54360_db08c779_0036_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/54360_db08c779_0036_2.step",
+      "sha256": "c9ac359945bd266dba4b1db99fd6faeb499455acd0c2cb8d9eea8114f962cd81",
+      "bytes": 146812,
+      "format": "step"
+    },
+    {
+      "name": "54516_ac9e2ef4_0008_1",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/54516_ac9e2ef4_0008_1.step",
+      "sha256": "3250c43f9199e482bc49415f6e0f45c6c33d36f2573c1a35b5b69721a96596f4",
+      "bytes": 15914,
+      "format": "step"
+    },
+    {
+      "name": "66312_164f2d26_0003_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/66312_164f2d26_0003_2.step",
+      "sha256": "2f9fb84f6d6413f61a416559a7dbb8e6c768b966c3c771b635c73d2f7a391e5d",
+      "bytes": 37715,
+      "format": "step"
+    },
+    {
+      "name": "76879_65a30a82_0010_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/76879_65a30a82_0010_2.step",
+      "sha256": "963683a9f3dce8eedce88012f762e5bb4e9b4a14eb4ab6eb78d66ba07586610c",
+      "bytes": 12528,
+      "format": "step"
+    },
+    {
+      "name": "82144_98698423_0001_2",
+      "role": "known_bad",
+      "vendored": null,
+      "resource": "cad_repos/BRepNet-master/BRepNet-master/tests/test_data/issues_16/82144_98698423_0001_2.step",
+      "sha256": "3a8d72ac452670300decaf47a745c5f64b317e711695e6e5d5dee1b6672aa957",
+      "bytes": 22176,
+      "format": "step"
+    }
+  ]
+}
