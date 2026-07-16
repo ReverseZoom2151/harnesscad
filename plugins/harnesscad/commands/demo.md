@@ -1,0 +1,22 @@
+---
+name: demo
+description: run the built-in constrained-plate sample
+---
+
+# harnesscad demo
+
+run the built-in constrained-plate sample
+
+## Usage
+
+```bash
+harnesscad demo [--backend <stub|cadquery|build123d|frep|blender|openscad|freecad|manifold|rhino3dm|microcad|truck>] [--core-only]
+```
+
+## Arguments
+
+- `--backend`:  (choices: stub, cadquery, build123d, frep, blender, openscad, freecad, manifold, rhino3dm, microcad, truck; default: stub)
+- `--core-only`: run only the core verifiers (skip the discovered fleet)
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

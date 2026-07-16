@@ -1,0 +1,31 @@
+---
+name: render
+description: run ops (or the demo) and rasterise the model to a shaded-solid PNG
+---
+
+# harnesscad render
+
+run ops (or the demo) and rasterise the model to a shaded-solid PNG
+
+## Usage
+
+```bash
+harnesscad render <out> [--ops <ops>] [--backend <stub|cadquery|build123d|frep|blender|openscad|freecad|manifold|rhino3dm|microcad|truck>] [--view <back|bottom|front|hero|iso|left|side|top>] [--shading <flat|smooth>] [--no-edges] [--width <width>] [--height <height>] [--ssaa <ssaa>] [--projection <orthographic|perspective>] [--force]
+```
+
+## Arguments
+
+- `out`: output PNG path (required)
+- `--ops`: path to a JSON array of ops (default: the built-in demo)
+- `--backend`: geometry backend (default: frep -- it meshes anything) (choices: stub, cadquery, build123d, frep, blender, openscad, freecad, manifold, rhino3dm, microcad, truck; default: frep)
+- `--view`: named camera view (default: iso) (choices: back, bottom, front, hero, iso, left, side, top; default: iso)
+- `--shading`:  (choices: flat, smooth; default: smooth)
+- `--no-edges`: do not draw the feature edges over the solid
+- `--width`:  (default: 1200)
+- `--height`:  (default: 900)
+- `--ssaa`: supersampling factor 1..4 (default 2) (default: 2)
+- `--projection`:  (choices: orthographic, perspective; default: orthographic)
+- `--force`: write the artifact even when the output gate refuses it. The file is written AND a <name>.INVALID.json sidecar naming every failed measurement is written beside it. For debugging only.
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

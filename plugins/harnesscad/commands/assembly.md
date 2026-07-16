@@ -1,0 +1,22 @@
+---
+name: assembly
+description: assembly checks over placed parts (AABB interference + fix vectors)
+---
+
+# harnesscad assembly
+
+assembly checks over placed parts (AABB interference + fix vectors)
+
+## Usage
+
+```bash
+harnesscad assembly [--list] [--json]
+```
+
+## Arguments
+
+- `--list`: list every assembly-check route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

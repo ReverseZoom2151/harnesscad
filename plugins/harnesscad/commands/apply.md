@@ -1,0 +1,23 @@
+---
+name: apply
+description: run a JSON array of ops
+---
+
+# harnesscad apply
+
+run a JSON array of ops
+
+## Usage
+
+```bash
+harnesscad apply <ops> [--backend <stub|cadquery|build123d|frep|blender|openscad|freecad|manifold|rhino3dm|microcad|truck>] [--verify <core|full>]
+```
+
+## Arguments
+
+- `ops`: path to a JSON array of ops (required)
+- `--backend`:  (choices: stub, cadquery, build123d, frep, blender, openscad, freecad, manifold, rhino3dm, microcad, truck; default: stub)
+- `--verify`: 'core' runs the three core checks; 'full' runs the whole discovered verifier fleet over the plan (advisory: reported, not fatal) (choices: core, full; default: core)
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

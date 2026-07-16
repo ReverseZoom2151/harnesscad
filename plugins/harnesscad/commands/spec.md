@@ -1,0 +1,32 @@
+---
+name: spec
+description: spec surface: a brief -> a checked spec -> constraints; EXPRESS/Part-21 validation; structured spec formats
+---
+
+# harnesscad spec
+
+spec surface: a brief -> a checked spec -> constraints; EXPRESS/Part-21 validation; structured spec formats
+
+## Usage
+
+```bash
+harnesscad spec [--list] [--rivals] [--unadapted] [--brief <brief>] [--brief-file <brief_file>] [--interpreter <interpreter>] [--clarifier <clarifier>] [--format <fmt>] [--file <file>] [--part21 <part21>] [--schema <schema>] [--json]
+```
+
+## Arguments
+
+- `--list`: list every registered spec route
+- `--rivals`: list the rival families (selected by name, never blended)
+- `--unadapted`: list spec modules with no route, and why
+- `--brief`: a natural-language brief to compile into a checked spec
+- `--brief-file`: read the brief from a file instead of --brief
+- `--interpreter`: which brief interpreter to use (a RIVAL choice) (default: formalize)
+- `--clarifier`: which clarifier to use (a RIVAL choice), or 'none' (default: interview)
+- `--format`: parse a structured spec format instead (urdf/srdf/plate/rim/express)
+- `--file`: the file the --format / --part21 route reads
+- `--part21`: a Part-21 .step file to validate against --schema
+- `--schema`: an EXPRESS .exp schema file (with --part21)
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

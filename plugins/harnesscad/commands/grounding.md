@@ -1,0 +1,26 @@
+---
+name: grounding
+description: CAD-viewport grounding stack: catalogue, set-of-marks, corpora
+---
+
+# harnesscad grounding
+
+CAD-viewport grounding stack: catalogue, set-of-marks, corpora
+
+## Usage
+
+```bash
+harnesscad grounding [--list] [--field-map] [--benchmarks <benchmarks>] [--marks <marks>] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every grounding route
+- `--field-map`: print the ACU field map + the CAD blind spot
+- `--benchmarks`: print the benchmark table (optionally one domain)
+- `--marks`: a box list (JSON or @file) -> the numbered mark table
+- `--unadapted`: list grounding modules with no route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

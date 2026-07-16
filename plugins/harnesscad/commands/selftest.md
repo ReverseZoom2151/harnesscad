@@ -1,0 +1,32 @@
+---
+name: selftest
+description: SELF-evaluation: the harness evaluating the harness. Six engines differentially tested against each other, an analytic golden corpus, precision/recall PER VERIFIER, and metamorphic laws. Points INWARD: nothing here scores a model.
+---
+
+# harnesscad selftest
+
+SELF-evaluation: the harness evaluating the harness. Six engines differentially tested against each other, an analytic golden corpus, precision/recall PER VERIFIER, and metamorphic laws. Points INWARD: nothing here scores a model.
+
+## Usage
+
+```bash
+harnesscad selftest [--differential] [--golden] [--fleet] [--properties] [--field-liveness] [--all] [--backend <backends>] [--fleet-backend <fleet_backend>] [--count <count>] [--seed <seed>] [--json] [--strict]
+```
+
+## Arguments
+
+- `--differential`: run one op stream on every available engine and report where they disagree (no ground truth needed)
+- `--golden`: check every engine against parts whose volume/bbox/genus are known in closed form
+- `--fleet`: precision/recall/F1 PER VERIFIER over a known-good and a known-bad corpus
+- `--properties`: metamorphic laws (a shell must not grow the part, scaling by k scales volume by k^3, ...) over a seeded random corpus
+- `--field-liveness`: for EVERY op field, prove that changing it changes the geometry -- the one oracle the differential cannot be, because all six engines drop the SAME fields and so agree while all being wrong
+- `--all`: run all the oracles (the default)
+- `--backend`: restrict to these engines (repeatable); default is every one installed on this machine
+- `--fleet-backend`: the engine the fleet audit builds its corpora on (default: frep, which always works) (default: frep)
+- `--count`: property streams to generate (default: 200) (default: 200)
+- `--seed`: property corpus seed (default: 20260714) (default: 20260714)
+- `--json`: emit the whole report as JSON
+- `--strict`: exit non-zero when an oracle finds something (default: 0 -- a finding is this command WORKING)
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

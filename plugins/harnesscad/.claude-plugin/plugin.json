@@ -1,0 +1,20 @@
+{
+  "commands": "./commands/",
+  "description": "Verifier-first text-to-CAD harness: op streams are verified before the kernel runs them, geometry is cross-checked across independent backends, and results are measured, not trusted.",
+  "keywords": [
+    "cad",
+    "text-to-cad",
+    "verification",
+    "b-rep",
+    "agent"
+  ],
+  "license": "MIT",
+  "metadata": {
+    "command_count": 37,
+    "generated_from": "harnesscad.core.cli.build_parser"
+  },
+  "name": "harnesscad",
+  "repository": "https://github.com/ReverseZoom2151/harnesscad",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

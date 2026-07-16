@@ -1,0 +1,30 @@
+---
+name: capabilities
+description: discover/dispatch capability modules (--list/--search/--show/--stats)
+---
+
+# harnesscad capabilities
+
+discover/dispatch capability modules (--list/--search/--show/--stats)
+
+## Usage
+
+```bash
+harnesscad capabilities [--list] [--tag <tag>] [--layer <layer>] [--package <package>] [--search <search>] [--show <show>] [--stats] [--orphans] [--rebuild] [--limit <limit>]
+```
+
+## Arguments
+
+- `--list`: list modules
+- `--tag`: filter by capability tag
+- `--layer`: filter by layer
+- `--package`: filter by package
+- `--search`: substring search name/doc/symbols
+- `--show`: show one module by dotted path
+- `--stats`: print index statistics
+- `--orphans`: list unimported modules
+- `--rebuild`: rebuild the JSON index
+- `--limit`: cap listed results (0 = all) (default: 0)
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

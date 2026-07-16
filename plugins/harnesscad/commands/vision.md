@@ -1,0 +1,27 @@
+---
+name: vision
+description: vision surface: trace an image back to CISP ops, calibrate px->mm
+---
+
+# harnesscad vision
+
+vision surface: trace an image back to CISP ops, calibrate px->mm
+
+## Usage
+
+```bash
+harnesscad vision [--list] [--trace <trace>] [--calibrate <calibrate>] [--apply] [--poses] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every vision route
+- `--trace`: a greyscale image (JSON 2-D array, or @file) to trace to ops
+- `--calibrate`: reference pixel width and known width, for --trace
+- `--apply`: apply the traced ops to a stub-backed HarnessSession
+- `--poses`: list the camera-pose ID grid
+- `--unadapted`: list vision modules with no route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

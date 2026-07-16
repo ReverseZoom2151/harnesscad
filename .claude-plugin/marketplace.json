@@ -1,0 +1,23 @@
+{
+  "description": "Verifier-first text-to-CAD harness: op streams are verified before the kernel runs them, geometry is cross-checked across independent backends, and results are measured, not trusted.",
+  "name": "harnesscad",
+  "owner": {
+    "name": "harnesscad"
+  },
+  "plugins": [
+    {
+      "category": "productivity",
+      "description": "Verifier-first text-to-CAD harness: op streams are verified before the kernel runs them, geometry is cross-checked across independent backends, and results are measured, not trusted.",
+      "license": "MIT",
+      "name": "harnesscad",
+      "source": "./plugins/harnesscad",
+      "tags": [
+        "cad",
+        "text-to-cad",
+        "verification"
+      ],
+      "version": "0.1.0"
+    }
+  ],
+  "version": "0.1.0"
+}

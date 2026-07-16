@@ -1,0 +1,28 @@
+---
+name: reliability
+description: repair-loop surface: brep/code/compiler repair, fallback, infeasibility taxonomy, mcts search
+---
+
+# harnesscad reliability
+
+repair-loop surface: brep/code/compiler repair, fallback, infeasibility taxonomy, mcts search
+
+## Usage
+
+```bash
+harnesscad reliability [--list] [--feasibility <feasibility>] [--compiler-error <compiler_error>] [--grammar-gate <grammar_gate>] [--allowed <allowed>] [--variant <sGC|rGC>] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every reliability route
+- `--feasibility`: comma-separated 0/1 feasibility flags -> the rate
+- `--compiler-error`: normalise a raw compiler error string to a code
+- `--grammar-gate`: a corrected CoT (text or @file) to grammar-verify
+- `--allowed`: the allowed filename set P for --grammar-gate (default: )
+- `--variant`: grammar-gate variant (strict sGC or relaxed rGC) (choices: sGC, rGC; default: sGC)
+- `--unadapted`: list reliability modules with no route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

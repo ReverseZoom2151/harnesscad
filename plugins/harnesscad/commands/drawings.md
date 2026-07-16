@@ -1,0 +1,23 @@
+---
+name: drawings
+description: drawing-understanding surface: Hough primitives, symbol points, primitive graphs, raster codec/metrics, render self-supervision
+---
+
+# harnesscad drawings
+
+drawing-understanding surface: Hough primitives, symbol points, primitive graphs, raster codec/metrics, render self-supervision
+
+## Usage
+
+```bash
+harnesscad drawings [--list] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every drawing-understanding route
+- `--unadapted`: list drawing modules with no route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

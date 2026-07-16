@@ -1,0 +1,28 @@
+---
+name: ecosystem
+description: which system, which backend, which bridge, which kernel
+---
+
+# harnesscad ecosystem
+
+which system, which backend, which bridge, which kernel
+
+## Usage
+
+```bash
+harnesscad ecosystem [--list] [--systems] [--system <system>] [--select <select>] [--bridge <bridge>] [--freecad <freecad>] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every ecosystem route
+- `--systems`: list every code-CAD system in the catalogue
+- `--system`: show one system's honest spec
+- `--select`: rank backends against a requirement, e.g. '{"paradigm": "csg"}'
+- `--bridge`: can these two systems hand off?
+- `--freecad`: list a FreeCAD workbench's real operations
+- `--unadapted`: list adapter/backend modules with no route, and why
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

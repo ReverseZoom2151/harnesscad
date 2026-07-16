@@ -1,0 +1,28 @@
+---
+name: core
+description: core guards: op-decoding constraints, routing, feature tree, context
+---
+
+# harnesscad core
+
+core guards: op-decoding constraints, routing, feature tree, context
+
+## Usage
+
+```bash
+harnesscad core [--list] [--rivals] [--allowed] [--has-sketch] [--has-solid] [--tokens <tokens>] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every core route
+- `--rivals`: list the rival families (selected by name, never blended)
+- `--allowed`: print the ops the given state admits
+- `--has-sketch`: the state already has a sketch
+- `--has-solid`: the state already has a solid
+- `--tokens`: run a token stream through the grammar FSA
+- `--unadapted`: list core modules with no route, and why
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

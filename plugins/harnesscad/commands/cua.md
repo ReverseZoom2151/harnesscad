@@ -1,0 +1,24 @@
+---
+name: cua
+description: computer-use surface: the five live-GUI CAD environments and the deterministic action primitives they compose from
+---
+
+# harnesscad cua
+
+computer-use surface: the five live-GUI CAD environments and the deterministic action primitives they compose from
+
+## Usage
+
+```bash
+harnesscad cua [--list] [--environments] [--unadapted] [--json]
+```
+
+## Arguments
+
+- `--list`: list every routed primitive module
+- `--environments`: list every CUA environment and whether it can run here
+- `--unadapted`: list io/cua support modules with no direct route
+- `--json`: emit JSON instead of text
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

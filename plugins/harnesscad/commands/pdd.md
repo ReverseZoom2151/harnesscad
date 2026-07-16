@@ -1,0 +1,26 @@
+---
+name: pdd
+description: Parts-Driven Development: brief -> MGC -> CISP -> artifact -> a single measured PASS/FAIL/UNCERTIFIED verdict
+---
+
+# harnesscad pdd
+
+Parts-Driven Development: brief -> MGC -> CISP -> artifact -> a single measured PASS/FAIL/UNCERTIFIED verdict
+
+## Usage
+
+```bash
+harnesscad pdd <brief> --ops <ops> [--backend <stub|cadquery|build123d|frep|blender|openscad|freecad|manifold|rhino3dm|microcad|truck>] [--measurement <measurement>] [--part-id <part_id>] [--json]
+```
+
+## Arguments
+
+- `brief`: the part brief: a natural-language string, or a path to a file holding one (required)
+- `--ops`: path to a JSON array of CISP ops -- the plan the model built (the pipeline never generates it) (required)
+- `--backend`: geometry backend used to build the part (default: stub) (choices: stub, cadquery, build123d, frep, blender, openscad, freecad, manifold, rhino3dm, microcad, truck; default: stub)
+- `--measurement`: path to a JSON object of contract-keyed measurements the MGC is checked against (e.g. volume_mm3, bbox_mm, genus); when omitted a best-effort mapping is adapted from the output gate's measurement
+- `--part-id`: id to stamp on a contract that has none
+- `--json`: emit the verdict as JSON
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.

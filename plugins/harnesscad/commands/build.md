@@ -1,0 +1,29 @@
+---
+name: build
+description: build a part from a natural-language brief via the LLM planner
+---
+
+# harnesscad build
+
+build a part from a natural-language brief via the LLM planner
+
+## Usage
+
+```bash
+harnesscad build <brief> [--backend <stub|cadquery|build123d|frep|blender|openscad|freecad|manifold|rhino3dm|microcad|truck>] [--model <model>] [--out <out>] [--trace <trace>] [--max-iters <max_iters>] [--strategy <refine|best-of-n>] [--best-of <best_of>] [--force]
+```
+
+## Arguments
+
+- `brief`: natural-language design brief (required)
+- `--backend`:  (choices: stub, cadquery, build123d, frep, blender, openscad, freecad, manifold, rhino3dm, microcad, truck; default: cadquery)
+- `--model`: model name for the default LLM client
+- `--out`: write the exported STEP to this path
+- `--trace`: write JSONL trace events to this path
+- `--max-iters`: max plan->apply->replan iterations (default 5) (default: 5)
+- `--strategy`: 'refine' feeds the (soundness-gated) diagnostics back and replans. 'best-of-n' draws N independent plans, applies each in a fresh session and lets the deterministic verifier pick the winner -- no feedback channel, therefore no poisoning surface. (choices: refine, best-of-n; default: refine)
+- `--best-of`: N for --strategy best-of-n (default 4) (default: 4)
+- `--force`: write the artifact even when the output gate refuses it. The file is written AND a <name>.INVALID.json sidecar naming every failed measurement is written beside it. For debugging only.
+
+This file is generated from the live CLI parser by
+`harnesscad.io.surfaces.plugin_manifest`; do not edit by hand.
