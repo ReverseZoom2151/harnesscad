@@ -26,7 +26,8 @@ This is the Aider-style loop from the blueprint, kernel-agnostic:
 from __future__ import annotations
 
 import hashlib
-from typing import Callable, List, Mapping, Optional, Sequence
+from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional,
+                    Sequence, Union)
 
 from harnesscad.io.backends.base import GeometryBackend
 from harnesscad.core.cisp.ops import Op, canonical_json
@@ -37,8 +38,12 @@ from harnesscad.core.cisp.protocol import ApplyOpsResult
 # so the gate no longer has to rebuild a session per op-prefix via build_provenance.
 from harnesscad.core.cisp import provenance as _provenance
 from harnesscad.core.state.opdag import OpDAG
+
+if TYPE_CHECKING:  # pragma: no cover - typing only, never imported at runtime
+    from harnesscad.core.cisp import op_gate as _op_gate
 from harnesscad.core.trace import NullTracer, Tracer
-from harnesscad.eval.verifiers.verify import Diagnostic, VerifyReport, Verifier, default_verifiers
+from harnesscad.eval.verifiers.verify import (Diagnostic, Severity, VerifyReport,
+                                              Verifier, default_verifiers)
 
 
 #: Verification levels for HarnessSession.
@@ -65,7 +70,11 @@ class HarnessSession:
                  fleet_blocking: bool = False,
                  record_provenance: bool = False,
                  provenance_measure: Optional[
-                     Callable[["HarnessSession"], Optional[Mapping]]] = None) -> None:
+                     Callable[["HarnessSession"], Optional[Mapping]]] = None,
+                 op_catalog: Optional[Union["_op_gate.AllowedOperationsCatalog",
+                                            Mapping]] = None,
+                 op_gate_context: Optional[Mapping] = None,
+                 op_protected_regions: Sequence = ()) -> None:
         self.backend = backend
         self.opdag = OpDAG()
         self.verifiers = verifiers if verifiers is not None else default_verifiers()
@@ -96,6 +105,18 @@ class HarnessSession:
         self._provenance_measure = provenance_measure
         self._prov: Optional[_provenance.Provenance] = None
         self._prov_saw_measurement = False
+        #: Operation-admissibility catalog (core/cisp/op_gate.py). None -- the
+        #: default -- means NO preflight: apply_ops behaves byte for byte as
+        #: before. When a catalog IS provided, every batch is judged against it
+        #: BEFORE a single op reaches the backend, and an inadmissible batch is
+        #: refused whole (nothing mutates) with the gate's typed diagnostics.
+        self.op_catalog = op_catalog
+        self.op_gate_context = op_gate_context
+        self.op_protected_regions = tuple(op_protected_regions)
+        #: The GateReport of the last preflighted batch, or None when no catalog
+        #: is configured / no batch has run. Carries the patch_proposal
+        #: bookkeeping (protected_targets_checked / _avoided, patch_status).
+        self.last_gate_report: Optional["_op_gate.GateReport"] = None
         self.backend.reset()
         self.opdag.checkpoint("start")
         if self.record_provenance:
@@ -255,6 +276,60 @@ class HarnessSession:
             return []
         return _provenance.orphan_ops(prov)
 
+    # --- op-admissibility preflight (opt-in) ------------------------------
+    def _gate_preflight(self, ops: List[Op], run_id: str) -> Optional[ApplyOpsResult]:
+        """Judge the whole batch against the op catalog BEFORE executing any op.
+
+        Returns None to proceed (no catalog configured, or every op admissible)
+        and a refusing ApplyOpsResult when the gate rejects the batch. This is a
+        PREFLIGHT, not a per-op gate: it runs against the pending stream, so a
+        refused batch never touches the backend and `applied` is 0 -- strictly
+        stronger than the loop's block-and-correct, which stops at the first bad
+        op after earlier ones already landed.
+
+        No-op unless `op_catalog` was supplied to the constructor.
+        """
+        if self.op_catalog is None:
+            return None
+        # Imported lazily so a session without a catalog -- the default -- never
+        # pays for the gate module.
+        from harnesscad.core.cisp import op_gate
+
+        report = op_gate.gate(ops, self.op_catalog,
+                              context=self.op_gate_context,
+                              protected_regions=self.op_protected_regions)
+        self.last_gate_report = report
+        self.tracer.event("op_gate", run_id, {
+            "ok": report.ok,
+            "patch_status": report.patch_status,
+            "protected_targets_checked": list(report.protected_targets_checked),
+            "protected_targets_avoided": list(report.protected_targets_avoided),
+        })
+        if report.ok:
+            return None
+        # The gate's refusals are TYPED (op_index / op_name / feature /
+        # reason_code); carry all of that through to the loop's Diagnostic
+        # channel rather than flattening it to a string.
+        diags = [Diagnostic(
+            severity=Severity.ERROR,
+            code=f"op_gate.{r.reason_code}",
+            message=r.message,
+            where=f"op[{r.op_index}] {r.op_name} on {r.feature}",
+        ) for r in report.refusals]
+        first = report.refusals[0]
+        rejected = ops[first.op_index].to_dict() if 0 <= first.op_index < len(ops) else None
+        self.tracer.event("rejected", run_id, {
+            "op": rejected,
+            "reason": "op-gate-refused",
+            "diagnostics": [d.to_dict() for d in diags],
+        })
+        self.tracer.event("run_end", run_id, {
+            "ok": False, "applied": 0, "digest": self.backend.state_digest(),
+            "step_rewards": list(self.step_rewards),
+            "mean_step_reward": self.mean_step_reward()})
+        return ApplyOpsResult(False, 0, self.backend.state_digest(), diags,
+                              rejected=rejected)
+
     # --- core loop --------------------------------------------------------
     def apply_ops(self, ops: List[Op]) -> ApplyOpsResult:
         diags: List[Diagnostic] = []
@@ -264,6 +339,11 @@ class HarnessSession:
         # reading it after apply_ops always sees the trajectory it just ran.
         self.step_rewards: List[dict] = []
         self.tracer.event("run_start", run_id, {"op_count": len(ops)})
+        # Preflight: refuse an inadmissible batch before anything mutates.
+        # Returns None (and costs nothing) unless an op catalog was configured.
+        refusal = self._gate_preflight(ops, run_id)
+        if refusal is not None:
+            return refusal
         for index, op in enumerate(ops):
             res = self.backend.apply(op)
             if not res.ok:
