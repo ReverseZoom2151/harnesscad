@@ -33,11 +33,32 @@ Layout
 ``loops``    the shared attempt loop; ``feedback=`` selects the arm
 ``report``   aggregation + the tables
 ``runner``   the resumable orchestrator
+
+``clarification_bench``  a SECOND, independent probe over the same corpus: it
+             mutates a ``Brief.text`` to inject exactly one ambiguity and grades
+             the questions an assistant asks back (Matched / Hallucinated /
+             Missed). It is deliberately NOT a ``--loop`` arm. Every arm in
+             ``loops`` is a model-driven attempt loop that ``run_brief``
+             dispatches and ``metrics.grade`` scores against the brief's
+             geometric ground truth; this bench runs no model and scores
+             QUESTIONS, not geometry, so putting it in ``ALL_LOOPS`` would only
+             mean ``--loop all`` handing it to a ``run_brief`` that cannot run
+             it. It is registered here, on the package surface, instead.
 """
 
 from __future__ import annotations
 
 from harnesscad.eval.pressure.briefs import BRIEFS, Brief, brief_by_id, briefs_for
+from harnesscad.eval.pressure.clarification_bench import (
+    DIRECT_CONFLICT,
+    UNDER_SPECIFIED,
+    ClarificationGrade,
+    MisleadingBrief,
+    QuestionMatch,
+    grade_clarification,
+    mutate_direct_conflict,
+    mutate_under_specified,
+)
 from harnesscad.eval.pressure.loops import BLIND, HARNESS, LOOPS, run_brief
 from harnesscad.eval.pressure.metrics import AttemptRecord, BriefResult, grade
 
@@ -53,4 +74,12 @@ __all__ = [
     "AttemptRecord",
     "BriefResult",
     "grade",
+    "UNDER_SPECIFIED",
+    "DIRECT_CONFLICT",
+    "MisleadingBrief",
+    "QuestionMatch",
+    "ClarificationGrade",
+    "mutate_under_specified",
+    "mutate_direct_conflict",
+    "grade_clarification",
 ]
