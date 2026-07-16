@@ -45,7 +45,14 @@ __all__ = [
     "thread",
     "heatsert",
     "aci",
+    "fits",
+    "designation",
+    "material",
+    "servo",
+    "gridfinity",
+    "defaults",
     "carbon",
+    "carbon_intensity",
     "provenance",
     "normalize_names",
     "name_semantics",
@@ -290,6 +297,157 @@ def aci(value: Any) -> dict:
             "rgb": aci_to_rgb(index), "special": bool(is_special(index))}
 
 
+def _zone_dict(z: Any) -> dict:
+    return {"designation": z.designation, "nominal_mm": z.nominal_mm,
+            "hole": bool(z.hole), "grade": z.grade,
+            "lower_mm": z.lower_mm, "upper_mm": z.upper_mm,
+            "width_mm": z.width_mm, "min_size_mm": z.min_size_mm,
+            "max_size_mm": z.max_size_mm, "size_range": z.size_range}
+
+
+def fits(zone: str, size_mm: float, processes: bool = False) -> dict:
+    """ISO 286 tolerance zones and fits at a nominal size. The TABLE, not a guess.
+
+    A paired designation ('H7/g6') resolves the whole fit -- both zones, the
+    signed worst-case clearances, and whether it is a clearance / transition /
+    interference fit. A single zone ('H7', 'g6') resolves that zone alone.
+    With ``processes``, the zone width is checked against the processes that can
+    reasonably hold it -- a tolerance no process can hold is a drawing, not a part.
+    """
+    from harnesscad.domain.standards.iso286_fits import (
+        fit, processes_that_can_hold, zone_limits,
+    )
+
+    name = str(zone)
+    size = float(size_mm)
+    if "/" in name:
+        f = fit(name, size)
+        out = {"designation": f.designation, "nominal_mm": f.nominal_mm,
+               "kind": f.kind, "min_clearance_mm": f.min_clearance_mm,
+               "max_clearance_mm": f.max_clearance_mm,
+               "hole": _zone_dict(f.hole), "shaft": _zone_dict(f.shaft)}
+        width = f.hole.width_mm
+    else:
+        out = _zone_dict(zone_limits(size, name))
+        width = out["width_mm"]
+    if processes:
+        out["processes_that_can_hold"] = list(processes_that_can_hold(width))
+    return out
+
+
+def _plain(value: Any) -> Any:
+    """NamedTuple -> dict, recursively; anything else untouched."""
+    if hasattr(value, "_asdict"):
+        return {k: _plain(v) for k, v in value._asdict().items()}
+    if isinstance(value, tuple):
+        return [_plain(v) for v in value]
+    return value
+
+
+def designation(name: str) -> dict:
+    """A standard part designation ('M5', '608', '2020', 'NEMA17') -> its dimensions.
+
+    One front door over the whole stock catalogue: cap screws, hex bolts and
+    nuts, washers, dowel pins, bearings, extrusion profiles, NEMA motor frames
+    and clearance holes. The KIND is inferred from the designation; an unknown
+    designation raises rather than resolving to something plausible.
+    """
+    from harnesscad.domain.standards.part_catalog import resolve
+
+    kind, record = resolve(str(name))
+    return {"kind": kind, "requested": str(name), "record": _plain(record)}
+
+
+def material(name: str) -> dict:
+    """A material's cited mechanical properties. Missing values stay None, never 0.
+
+    Every number carries its citation (``record['citations']``): a property with
+    no source is absent, not invented. An unknown material raises.
+    """
+    from harnesscad.domain.standards.materials_db import material as material_record
+
+    return dict(material_record(str(name))._asdict())
+
+
+def servo(name: str) -> dict:
+    """A named servo's envelope: body, lugs, mount-hole layout and drive shaft.
+
+    The hole positions and shaft centre are returned already resolved to (x, y)
+    coordinates -- the numbers a bracket is cut from, not a spacing to re-derive.
+    """
+    from harnesscad.domain.standards.servo_database import (
+        servo_lookup, servo_mount_hole_positions, servo_shaft_xy,
+    )
+
+    k = servo_lookup(str(name))
+    out = dict(k._asdict())
+    out["body"] = list(k.body)
+    out["mount"] = list(k.mount)
+    out["hole"] = list(k.hole)
+    out["mount_hole_positions"] = [list(p) for p in servo_mount_hole_positions(k)]
+    out["shaft_xy"] = list(servo_shaft_xy(k))
+    return out
+
+
+def gridfinity(nx: int, ny: int, nz: int = 1) -> dict:
+    """The Gridfinity envelope for an nx * ny * nz bin. The standard's own numbers.
+
+    Base footprint is the grid it occupies; body footprint is the (smaller) bin
+    itself -- the difference is the clearance that makes bins droppable. Grid
+    centres are relative to the footprint centre.
+    """
+    from harnesscad.domain.standards.servo_database import (
+        GRIDFINITY, gridfinity_base_footprint, gridfinity_body_footprint,
+        gridfinity_body_height, gridfinity_grid_centers,
+        gridfinity_hole_offset_from_center,
+    )
+
+    return {
+        "nx": int(nx), "ny": int(ny), "nz": int(nz),
+        "base_footprint": list(gridfinity_base_footprint(int(nx), int(ny))),
+        "body_footprint": list(gridfinity_body_footprint(int(nx), int(ny))),
+        "body_height": gridfinity_body_height(int(nz)),
+        "grid_centers": [list(c) for c in gridfinity_grid_centers(int(nx), int(ny))],
+        "hole_offset_from_center": gridfinity_hole_offset_from_center(GRIDFINITY),
+        "envelope": dict(GRIDFINITY._asdict()),
+    }
+
+
+def defaults(part_type: Optional[str] = None,
+             size: Optional[str] = None,
+             smallest_local_extent_mm: Optional[float] = None) -> dict:
+    """The house CAD defaults: wall, cosmetic fillet, feature order, origin.
+
+    What to reach for when the prompt did not say. ``part_type`` narrows the
+    origin convention to one; ``size`` ('M5') adds that screw's normal clearance
+    hole; ``smallest_local_extent_mm`` scales the fillet to the feature it rounds.
+    """
+    from harnesscad.domain.standards.cad_defaults import (
+        BOOLEAN_OVERSHOOT_MM, COSMETIC_FILLET_RANGE_MM, ENCLOSURE_WALL_RANGE_MM,
+        ORIGIN_CONVENTIONS, clearance_hole_diameter, clearance_hole_radius,
+        default_fillet_radius, default_wall_thickness, feature_order,
+        origin_convention,
+    )
+
+    out: Dict[str, Any] = {
+        "wall_thickness": default_wall_thickness(),
+        "wall_range": list(ENCLOSURE_WALL_RANGE_MM),
+        "fillet_radius": default_fillet_radius(
+            None if smallest_local_extent_mm is None
+            else float(smallest_local_extent_mm)),
+        "fillet_range": list(COSMETIC_FILLET_RANGE_MM),
+        "boolean_overshoot": BOOLEAN_OVERSHOOT_MM,
+        "feature_order": list(feature_order()),
+        "origin_conventions": dict(ORIGIN_CONVENTIONS),
+    }
+    if part_type is not None:
+        out["origin_convention"] = origin_convention(str(part_type))
+    if size is not None:
+        out["clearance_hole_diameter"] = clearance_hole_diameter(str(size))
+        out["clearance_hole_radius"] = clearance_hole_radius(str(size))
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Standards accounting: embodied carbon + cited provenance
 # --------------------------------------------------------------------------- #
@@ -308,6 +466,41 @@ def carbon(uses: Sequence[Dict[str, Any]], top_n: Optional[int] = None,
     if top_n is not None:
         out["top"] = accounting.carbon_top(uses, n=int(top_n), table=table)
     return out
+
+
+def carbon_intensity(name: str) -> dict:
+    """One material's cited CO2e intensity, straight out of ICE v3 (Bath).
+
+    A different question from :func:`carbon`: not "what does this BOM cost the
+    atmosphere" but "what is the number, and who says so". Returns the intensity
+    with its recycled content, recyclability and source citation. The dataset is
+    loaded lazily on first use; an unknown material raises rather than being
+    tallied as zero.
+    """
+    from harnesscad.domain.standards import embodied_carbon_ice as ice
+
+    if not ice.is_available() and not ice.load_ice():
+        raise CatalogueError("the ICE v3 dataset is not available (expected at %s)"
+                             % ice.default_ice_path())
+    record = ice.lookup_material(str(name))
+    if record is None:
+        raise CatalogueError("no ICE material %r (have: %s)"
+                             % (name, ", ".join(ice.manifest_keys())))
+    combined = ice.combined_carbon_intensity(str(name))
+    return {
+        "requested": str(name),
+        "key": record.key,
+        "label": record.label,
+        "category": record.category,
+        "co2e_per_kg": record.co2e_per_kg,
+        "combined_co2e_per_kg": None if combined is None else combined[0],
+        "combined_source": None if combined is None else combined[1],
+        "recycled_content_pct": record.recycled_content_pct,
+        "recyclability_pct": record.recyclability_pct,
+        "source": record.source,
+        "source_url": record.source_url,
+        "source_version": record.source_version,
+    }
 
 
 def provenance(spec: Dict[str, Any]) -> dict:
@@ -454,10 +647,26 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "heat-set insert bore schedule, depth/volume, wall fit"),
     ("standards", "aci", _STD + "aci_color",
      "AutoCAD Color Index: name <-> index <-> RGB, nearest legal index"),
+    ("standards", "fits", _STD + "iso286_fits",
+     "ISO 286 tolerance zones and fits, ISO 2768 general tolerances, "
+     "process capability"),
+    ("standards", "designation", _STD + "part_catalog",
+     "stock designations (screws, nuts, washers, dowels, bearings, extrusion, "
+     "NEMA) -> dimensions"),
+    ("standards", "material", _STD + "materials_db",
+     "cited mechanical properties per material (E, nu, rho, yield, ultimate)"),
+    ("standards", "servo", _STD + "servo_database",
+     "named servo envelopes: body, lugs, mount-hole layout, drive shaft"),
+    ("standards", "gridfinity", _STD + "servo_database",
+     "the Gridfinity envelope: base/body footprint, height, grid centres"),
+    ("standards", "defaults", _STD + "cad_defaults",
+     "the house CAD defaults: wall, cosmetic fillet, feature order, origin"),
     ("standards", "carbon", _STD + "accounting",
      "the standards-accounting front door (embodied carbon + cited provenance)"),
     ("standards", "carbon", _STD + "embodied_carbon",
      "embodied-carbon (CO2e) accounting over a bill of materials; worst offenders"),
+    ("standards", "carbon_intensity", _STD + "embodied_carbon_ice",
+     "one material's cited CO2e intensity from ICE v3 (Bath), with its source"),
     ("standards", "provenance", _STD + "evidence_bundle",
      "the cited-provenance bundle over a design spec (records, digest, gate)"),
 )
