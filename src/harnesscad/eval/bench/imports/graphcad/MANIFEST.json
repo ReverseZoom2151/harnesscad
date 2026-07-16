@@ -1,0 +1,17 @@
+{
+  "source_repo": "Graph-CAD",
+  "source_path": "cad_repos/Graph-CAD-main/Graph-CAD-main",
+  "license": "UNLICENSED",
+  "attribution": "Graph-CAD authors (github.com/Open3DA/Graph-CAD); no LICENSE file in the repo, so nothing is redistributed",
+  "entries": [
+    {
+      "name": "CADBench.jsonl",
+      "role": "task_corpus",
+      "vendored": null,
+      "resource": "cad_repos/Graph-CAD-main/Graph-CAD-main/CADBench.jsonl",
+      "sha256": "1660ff5d8b9131c14d589cc0bb2be856ce7a105719dd89d14af90853e223a02c",
+      "bytes": 1133120,
+      "format": "jsonl"
+    }
+  ]
+}
