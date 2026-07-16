@@ -212,6 +212,18 @@ class PlanError(RuntimeError):
         self.raw = raw
 
 
+#: Header for the additional recall sources (skill triggers / observation
+#: ledger). It states the tier explicitly: unlike the MEMORY block above it,
+#: nothing here passed the measured output gate -- a trigger match is a string
+#: hit and an advisory is a statistic about past failures. Both are hints to
+#: weigh, and the header must not let a model read them as measurements.
+UNVERIFIED_RECALL_HEADER = (
+    "UNVERIFIED RECALL -- hints from past runs that did NOT pass the measured "
+    "output gate. Treat as priors to weigh, not as facts about this part; the "
+    "brief and the measured state below override them:"
+)
+
+
 def _diag_code(d: Any) -> str:
     """The code of a diagnostic, whether it is a dict or a Diagnostic object.
 
@@ -284,7 +296,10 @@ class Planner:
                  retriever: Any = None,
                  max_retrieval_rounds: int = 3,
                  quality_references: bool = False,
-                 max_iterations: int = 5) -> None:
+                 max_iterations: int = 5,
+                 skill_router: Any = None,
+                 observation_ledger: Any = None,
+                 part_family: str = "") -> None:
         self.llm = llm
         self.use_tool = use_tool
         self.feedback_tiers = tuple(feedback_tiers)
@@ -344,6 +359,28 @@ class Planner:
         self._qr_error_history: List[str] = []
         #: The snippets injected into the LAST prompt (introspection/tests).
         self.last_references: List[str] = []
+        # ADDITIONAL RECALL SOURCES, both additive and both UNVERIFIED.
+        # `skill_router` is an agents/memory/skill_triggers.TriggerRouter
+        # (`route(brief) -> [RouteMatch]`): which mined skill a brief routes to.
+        # `observation_ledger` is an agents/memory/observation_ledger
+        # .ObservationLedger (`advisories(family) -> [Advisory]`): which rules
+        # THIS part family keeps failing.
+        #
+        # They are kept OUT of the memory block on purpose. That block is
+        # headed "retrieved from past runs that PASSED the measured output
+        # gate"; a trigger match is a string-similarity hit and an advisory is
+        # a statistic about past failures. Neither is a verified fact about
+        # this part, and both say so (RouteMatch.unverified /
+        # Advisory.unverified), so they get their own block that repeats it.
+        #
+        # The ledger keys on part family, which cannot be guessed from the
+        # brief without inventing a classifier; `part_family` is supplied by
+        # the caller who knows, and no family means no advisories.
+        self.skill_router = skill_router
+        self.observation_ledger = observation_ledger
+        self.part_family = str(part_family or "")
+        #: The unverified-recall lines injected into the LAST prompt.
+        self.last_unverified_recall: List[str] = []
 
     # --- message assembly ------------------------------------------------
     def build_messages(
@@ -371,6 +408,12 @@ class Planner:
                     "MEMORY — retrieved from past runs that PASSED the measured "
                     "output gate:\n" + block)
 
+        # Unverified recall AFTER the verified memory block and before the
+        # brief: it is context, but it must never be read as gate-passed fact.
+        unverified = self._unverified_recall(brief)
+        if unverified:
+            parts.append(UNVERIFIED_RECALL_HEADER + "\n" + "\n".join(unverified))
+
         parts.append(f"DESIGN BRIEF:\n{brief}")
         if state_summary:
             parts.append(
@@ -392,6 +435,34 @@ class Planner:
         parts.extend(self._references(diagnostics))
         msgs.append(user("\n\n".join(parts)))
         return msgs
+
+    def _unverified_recall(self, brief: str) -> List[str]:
+        """Lines from the additional, unverified recall sources.
+
+        Returns [] when neither source is attached -- the default -- so the
+        prompt is byte-for-byte the pre-wiring one. Each source is guarded
+        independently: recall is an enhancement, and one broken source must
+        neither take the run down nor suppress the other.
+        """
+        self.last_unverified_recall = []
+        lines: List[str] = []
+        router = self.skill_router
+        if router is not None:
+            try:
+                for match in router.route(brief):
+                    lines.append(f"- skill '{match.name}' matches this brief "
+                                 f"(trigger: {match.matched_trigger!r})")
+            except Exception:  # noqa: BLE001 - advisory recall, never a gate
+                pass
+        ledger = self.observation_ledger
+        if ledger is not None and self.part_family:
+            try:
+                for adv in ledger.advisories(self.part_family):
+                    lines.append(f"- {adv.message}")
+            except Exception:  # noqa: BLE001
+                pass
+        self.last_unverified_recall = lines
+        return lines
 
     def _references(self, diagnostics: Optional[List[Any]]) -> List[str]:
         """State-conditioned reference snippets for THIS iteration.
