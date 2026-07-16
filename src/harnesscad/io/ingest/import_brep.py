@@ -77,6 +77,42 @@ def _cq():
     return cadquery
 
 
+def _step_units(path: str) -> tuple:
+    """The file's DECLARED length unit, read kernel-free. ``(units_dict, note)``.
+
+    This does NOT rescale anything, and that is deliberate. OCCT's STEP reader
+    already resolves the file's declared unit and hands back millimetres: a
+    part-21 file declaring ``SI_UNIT($,.METRE.)`` for a 10 m box measures 10000
+    on ``ImportedPart.bbox``, not 10. Multiplying by ``scale_to_mm`` here would
+    apply the same 1000x a SECOND time -- it would CAUSE the silent-1000x bug
+    this module's units awareness exists to catch, not fix it.
+
+    What was actually missing is that the rescale was INVISIBLE: a metre-declared
+    file quietly became a 10000 mm part with nothing saying why. So this reads
+    the declaration independently (io/formats/step_units.py, no kernel) and
+    reports it, giving the importer a cross-check against OCCT's own conversion.
+
+    Never raises: an unparseable/absent declaration is simply no units.
+    """
+    try:
+        from harnesscad.io.formats.step_units import extract_step_units
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            units = extract_step_units(fh.read())
+    except Exception:  # noqa: BLE001 - units are advisory, never a read failure
+        return {}, ""
+    info = units.to_dict()
+    # A millimetre file (scale 1.0) is the assumed case and stays silent, so an
+    # mm import's `note` is exactly what it always was. Only an explicitly
+    # non-mm declaration -- the case that silently moved the numbers -- speaks.
+    if abs(units.scale_to_mm - 1.0) <= 1e-12:
+        return info, ""
+    note = (f"declared unit {units.unit_name} (x{units.scale_to_mm:g} to mm); "
+            "measurements below are millimetres after the kernel's own unit "
+            "conversion")
+    extra = "; ".join(str(n) for n in units.notes)
+    return info, f"{note} [{extra}]" if extra else note
+
+
 def detect_format(path: str) -> str:
     """Format tag from the file extension ("unknown" if unrecognised)."""
     _, ext = os.path.splitext(path or "")
@@ -123,9 +159,19 @@ def import_solid(path: str) -> ImportedPart:
 
     metrics = _measure_shape(shape)
     bbox = list(metrics.get("bbox", [0.0, 0.0, 0.0]))
+    # Latched BEFORE the units annotation below: `units` is metadata, not a
+    # measurement, and must never make an unmeasurable part look available.
+    measured = bool(metrics)
+    note = "" if measured else "loaded but unmeasurable"
+    if fmt == "step":
+        units_info, units_note = _step_units(path)
+        if units_info:
+            metrics["units"] = units_info
+        if units_note:
+            note = f"{note}; {units_note}" if note else units_note
     return ImportedPart(
         path=path, fmt=fmt, shape=shape, metrics=metrics, bbox=bbox,
-        available=bool(metrics), note="" if metrics else "loaded but unmeasurable")
+        available=measured, note=note)
 
 
 # --------------------------------------------------------------------------- #
