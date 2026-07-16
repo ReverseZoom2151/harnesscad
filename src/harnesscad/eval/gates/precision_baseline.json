@@ -109,6 +109,17 @@
       "precision_floor": null,
       "reason": ""
     },
+    "edge-fillet": {
+      "fired": 8,
+      "measured_precision": 1.0,
+      "measured_recall": 0.5,
+      "model_facing": true,
+      "model_facing_codes": [
+        "*"
+      ],
+      "precision_floor": 1.0,
+      "reason": "Registered per this gate's own unregistered-verifier rule: measured on the committed corpus at precision 1.0 with zero false positives (fired 8x, all edge-fillet-degenerate, recall 0.5). MODEL-FACING, so the floor is pinned at 1.0 regardless of measurement; a single false positive fails the build."
+    },
     "edit-consistency": {
       "fired": 0,
       "measured_precision": null,
