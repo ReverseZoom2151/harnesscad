@@ -304,9 +304,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
           f"{result.current_value:.3f} -> {result.proposed_value:.3f} "
           f"(cosine {result.confidence:.3f})")
 
-    mass = estimate_mass_from_sag(0.055, 0.0275, 0.100,
+    # Sag produced by a +60 g mass error: sag = dm * g * reach / kp.
+    sag_full = 0.060 * GRAVITY * 0.75 / 400.0
+    mass = estimate_mass_from_sag(sag_full, sag_full / 2.0, 0.100,
                                   kp=400.0, reach_full=0.75, reach_half=0.375)
     assert mass["scaling_confirmed"]
+    assert abs(float(mass["estimated_delta"]) - 0.060) < 1e-9
     print(f"[selfcheck] mass: {mass['current_value']:.3f} -> "
           f"{float(mass['proposed_value']):.3f} kg "
           f"(delta +{float(mass['estimated_delta']) * 1000:.1f} g)")
