@@ -16,9 +16,11 @@ Two stages, cheapest first (the classic broad-phase / narrow-phase split):
 
   2. **Narrow phase** on each surviving pair:
        * If CadQuery/OCCT is available *and* both parts carry a real shape, the
-         exact overlap is the volume of the boolean *common* (intersection) of
-         the two solids (``BRepAlgoAPI_Common``). A positive common volume is a
-         definite clash -> ERROR ``interference``.
+         overlap is the volume of the boolean *common* (intersection) of the two
+         solids, computed through :mod:`metric_booleans` on the manifold3d mesh
+         kernel (an OCCT boolean is forbidden here and hangs on exactly this
+         geometry). A common volume above the noise epsilon is a definite clash
+         -> ERROR ``interference``.
        * Otherwise, if the parts carry (or can produce) an AABB, fall back to a
          pure-python bounding-box overlap. A box overlap does not prove the
          solids touch, so it is reported as an *approximate* WARNING
@@ -51,6 +53,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+from harnesscad.eval.verifiers import metric_booleans
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
@@ -268,24 +271,15 @@ def _cadquery_available() -> bool:
 
 
 def _common_volume(shape_a, shape_b) -> Optional[float]:
-    """Volume of the OCCT boolean common of two solids, or ``None`` if the
-    kernel is unavailable / the operation failed (caller degrades)."""
-    try:
-        from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
-        from OCP.GProp import GProp_GProps
-        from OCP.BRepGProp import BRepGProp
+    """Volume of the boolean common of two solids, or ``None`` when it is not
+    measurable (caller degrades to the bounding-box approximation).
 
-        wa = getattr(shape_a, "wrapped", shape_a)
-        wb = getattr(shape_b, "wrapped", shape_b)
-        common = BRepAlgoAPI_Common(wa, wb)
-        common.Build()
-        if not common.IsDone():
-            return None
-        props = GProp_GProps()
-        BRepGProp.VolumeProperties_s(common.Shape(), props)
-        return abs(float(props.Mass()))
-    except Exception:  # noqa: BLE001 - any kernel failure -> approximate fallback
-        return None
+    Computed with manifold3d, NOT with an OCCT boolean -- see
+    :mod:`harnesscad.eval.verifiers.metric_booleans` for the policy and why.
+    Two placed parts that overlap are the exact geometry an OCCT boolean is
+    known to hang on, and this gate exists to be run on precisely that.
+    """
+    return metric_booleans.common_volume(shape_a, shape_b)
 
 
 # --------------------------------------------------------------------------- #

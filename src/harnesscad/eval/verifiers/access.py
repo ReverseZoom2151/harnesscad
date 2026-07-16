@@ -12,10 +12,13 @@ feature's own diameter when larger) extruded ``approach_length`` along the
 feature's approach / extraction vector (its hole axis, default +Z) — and test it
 against every *other* body:
 
-  1. **Exact (OCCT) path** — when cadquery/OCCT is available and the obstructing
-     part carries a real shape: the swept tool cylinder is intersected
-     (``BRepAlgoAPI_Common``) with the part; a positive common volume means the
-     corridor is physically blocked -> WARNING ``no-tool-access``.
+  1. **Exact (mesh-kernel) path** — when cadquery/OCCT is available and the
+     obstructing part carries a real shape: the swept tool cylinder is
+     intersected with the part through :mod:`metric_booleans`, which runs the
+     boolean on the manifold3d mesh kernel (an OCCT boolean is forbidden on the
+     metric path and hangs on exactly this near-tangent geometry). A common
+     volume above the noise epsilon means the corridor is physically blocked ->
+     WARNING ``no-tool-access``.
 
   2. **Pure-python bbox-corridor fallback** — always available: the swept
      envelope is bounded by an axis-aligned corridor box (the approach segment
@@ -56,6 +59,7 @@ import math
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+from harnesscad.eval.verifiers import metric_booleans
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity, VerifyReport
 
 
@@ -410,30 +414,18 @@ def _cadquery_available() -> bool:
 
 def _swept_common_volume(feat: dict, radius: float, length: float,
                          part_shape) -> Optional[float]:
-    """Volume of the OCCT common of the swept tool cylinder and a part, or
-    ``None`` when the kernel is unavailable / the operation failed."""
+    """Volume shared by the swept tool cylinder and a part, or ``None`` when it
+    is not measurable (caller degrades to the corridor-bbox approximation).
+
+    Computed with manifold3d, NOT with an OCCT boolean -- see
+    :mod:`harnesscad.eval.verifiers.metric_booleans` for the policy and why. A
+    tool corridor swept flush against a part face produces the near-tangent
+    contact an OCCT boolean is known to hang on.
+    """
     try:
-        from OCP.BRepPrimAPI import BRepPrimAPI_MakeCylinder
-        from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
-        from OCP.GProp import GProp_GProps
-        from OCP.BRepGProp import BRepGProp
-        from OCP.gp import gp_Ax2, gp_Pnt, gp_Dir
-
-        pos = feat["pos"]
-        axis = feat["axis"]
-        frame = gp_Ax2(gp_Pnt(pos[0], pos[1], pos[2]),
-                       gp_Dir(axis[0], axis[1], axis[2]))
-        tool = BRepPrimAPI_MakeCylinder(frame, radius, length).Shape()
-
-        wb = getattr(part_shape, "wrapped", part_shape)
-        common = BRepAlgoAPI_Common(tool, wb)
-        common.Build()
-        if not common.IsDone():
-            return None
-        props = GProp_GProps()
-        BRepGProp.VolumeProperties_s(common.Shape(), props)
-        return abs(float(props.Mass()))
-    except Exception:  # noqa: BLE001 - any kernel failure -> approximate fallback
+        return metric_booleans.swept_cylinder_common_volume(
+            feat["pos"], feat["axis"], radius, length, part_shape)
+    except Exception:  # noqa: BLE001 - a malformed feature degrades, never crashes
         return None
 
 
