@@ -67,12 +67,16 @@ import threading
 from dataclasses import dataclass, field as dc_field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from harnesscad.core.cisp.ops import (AddCircle, AddInstance, AddLine, AddPoint,
-                                      AddRectangle, Boolean, Chamfer, Constrain,
+from harnesscad.core.cisp.ops import (AddArc, AddCircle, AddEllipse,
+                                      AddInstance, AddLine, AddPoint,
+                                      AddPolygon, AddRectangle, AddSpline,
+                                      Boolean, Chamfer, Constrain,
                                       CircularPattern, Draft, Extrude, Fillet,
-                                      Hole, LinearPattern, Loft, Mate, Mirror,
-                                      NewSketch, Op, Revolve, SetParam, Shell,
-                                      Sweep, _REGISTRY)
+                                      Hole, Hull, LinearPattern, Loft, Mate,
+                                      Minkowski, Mirror, NewSketch, Op,
+                                      PatternTransform, Primitive, Revolve,
+                                      Scale, SetParam, Shell, Split, Sweep,
+                                      Thicken, Transform, _REGISTRY)
 from harnesscad.core.loop import HarnessSession
 from harnesscad.eval.selftest.probe import BACKENDS, BackendFactory, resolve
 
@@ -185,6 +189,19 @@ _TWO_FEATURES: Tuple[Op, ...] = (
     NewSketch("XY"), AddRectangle("sk1", 100.0, 0.0, 20.0, 20.0),
     Extrude("sk1", 10.0), Fillet(("|Z",), 2.0))
 
+#: TWO DISJOINT BODIES: a 60 x 40 x 20 box (f1) at the origin and a 20 x 20 x 10
+#: block (f2) 100 mm away. Unlike :data:`_TWO_FEATURES`, whose two features are
+#: two nodes of ONE body, these are two SEPARATE solids -- so a ``feature`` /
+#: ``feature_or_body`` reference has two targets that are distinguishable by
+#: measurement. That distinction is load-bearing for the body ops (transform,
+#: scale, pattern_transform, hull): a rigid transform COMMUTES with the fillet in
+#: _TWO_FEATURES, so f1 and f2 there produce the same solid and the field would
+#: score DEAD for a reason that is a property of the FIXTURE, not the backend --
+#: the shell.kind mistake, repeated. Two disjoint bodies cannot commute.
+_TWO_BODIES: Tuple[Op, ...] = (
+    NewSketch("XY"), AddRectangle("sk1", 0.0, 0.0, 60.0, 40.0), Extrude("sk1", 20.0),
+    NewSketch("XY"), AddRectangle("sk2", 100.0, 0.0, 20.0, 20.0), Extrude("sk2", 10.0))
+
 
 def _cases() -> Dict[str, Case]:
     return {
@@ -223,6 +240,41 @@ def _cases() -> Dict[str, Case]:
             variants={"sketch": _v("sk2"), "x": _v(30.0), "y": _v(30.0),
                       "w": _v(30.0), "h": _v(20.0)},
         ),
+        # An arc is a BOUNDARY curve: it contributes its sampled points to the
+        # sketch's polyline chain, which closes into a region. A 270-degree arc is
+        # therefore a closed profile on its own (the closing chord is implied),
+        # which is the only stream in which its centre/radius/angles can be alive.
+        "add_arc": Case(
+            prelude=(NewSketch("XY"), NewSketch("XY")),
+            op=AddArc("sk1", 0.0, 0.0, 20.0, 0.0, 270.0),
+            postlude=(Extrude("sk1", 10.0),),
+            variants={"sketch": _v("sk2"), "cx": _v(15.0), "cy": _v(15.0),
+                      "r": _v(30.0), "start": _v(45.0), "end": _v(180.0)},
+        ),
+        # ``rotation`` is only observable on a NON-circular ellipse -- rx == ry is
+        # a circle and every rotation of it is the same region.
+        "add_ellipse": Case(
+            prelude=(NewSketch("XY"), NewSketch("XY")),
+            op=AddEllipse("sk1", 0.0, 0.0, 20.0, 10.0, 0.0),
+            postlude=(Extrude("sk1", 10.0),),
+            variants={"sketch": _v("sk2"), "cx": _v(15.0), "cy": _v(15.0),
+                      "rx": _v(30.0), "ry": _v(18.0), "rotation": _v(45.0)},
+        ),
+        "add_polygon": Case(
+            prelude=(NewSketch("XY"), NewSketch("XY")),
+            op=AddPolygon("sk1", (0.0, 0.0, 40.0, 0.0, 40.0, 30.0, 0.0, 30.0)),
+            postlude=(Extrude("sk1", 10.0),),
+            variants={"sketch": _v("sk2"),
+                      "points": _v((0.0, 0.0, 60.0, 0.0, 60.0, 45.0, 0.0, 45.0))},
+        ),
+        "add_spline": Case(
+            prelude=(NewSketch("XY"), NewSketch("XY")),
+            op=AddSpline("sk1", (0.0, 0.0, 40.0, 0.0, 40.0, 30.0, 0.0, 30.0), True),
+            postlude=(Extrude("sk1", 10.0),),
+            variants={"sketch": _v("sk2"),
+                      "points": _v((0.0, 0.0, 60.0, 0.0, 60.0, 45.0, 0.0, 45.0)),
+                      "closed": _v(False)},
+        ),
         "constrain": Case(
             prelude=(NewSketch("XY"), AddCircle("sk1", 0.0, 0.0, 10.0),
                      NewSketch("XY"), AddCircle("sk2", 0.0, 0.0, 10.0)),
@@ -253,6 +305,68 @@ def _cases() -> Dict[str, Case]:
                      Extrude("sk3", 40.0)),
             op=Boolean("cut", "f1", "f2"),
             variants={"kind": _v("union"), "target": _v("f2"), "tool": _v("f3")},
+        ),
+        # ``shape`` selects which of the other six fields the op even READS
+        # ("Unused fields are ignored" -- ops.Primitive), so r / r2 / h are each
+        # exercised from a base whose shape consumes them. Asking a box about its
+        # torus radius would measure the schema's own indifference, not the kernel.
+        "primitive": Case(
+            op=Primitive("box", 40.0, 30.0, 20.0, 10.0, 5.0, 25.0),
+            variants={
+                "shape": _v("sphere"),
+                "dx": _v(60.0),
+                "dy": _v(50.0),
+                "dz": _v(35.0),
+                "r": _v(20.0, shape="sphere", r=10.0),
+                "r2": _v(12.0, shape="cone", r=20.0, r2=5.0, h=30.0),
+                "h": _v(40.0, shape="cylinder", r=10.0, h=25.0),
+            },
+        ),
+        "split": Case(
+            prelude=_BOX,
+            op=Split("XY", 10.0, "positive"),
+            variants={"plane": _v("XZ"), "offset": _v(5.0), "keep": _v("negative")},
+        ),
+        "thicken": Case(
+            prelude=_BOX,
+            op=Thicken((), 3.0, False),
+            variants={"faces": _v((">Z",)), "thickness": _v(6.0), "both": _v(True)},
+        ),
+        # Two DISJOINT bodies, so naming one of them is measurably different from
+        # hulling both: the hull of one convex box is that box, the hull of both
+        # spans the 100 mm gap between them.
+        "hull": Case(
+            prelude=_TWO_BODIES,
+            op=Hull("", ""),
+            variants={"target": _v("f1"), "tool": _v("f2", target="f1")},
+        ),
+        "minkowski": Case(
+            prelude=_BOX,
+            op=Minkowski(3.0),
+            variants={"radius": _v(6.0)},
+        ),
+        "transform": Case(
+            prelude=_TWO_BODIES,
+            op=Transform("f1", 10.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+            variants={"feature_or_body": _v("f2"), "tx": _v(50.0), "ty": _v(50.0),
+                      "tz": _v(50.0), "rx": _v(90.0), "ry": _v(90.0),
+                      "rz": _v(90.0)},
+        ),
+        "scale": Case(
+            prelude=_TWO_BODIES,
+            op=Scale("f1", 1.5, 1.0, 1.0),
+            variants={"feature_or_body": _v("f2"), "sx": _v(2.0), "sy": _v(2.0),
+                      "sz": _v(2.0)},
+        ),
+        # Two placements: the identity (keep the original) and one 60 mm along +Y.
+        # The identity is not implied, so it is written out.
+        "pattern_transform": Case(
+            prelude=_TWO_BODIES,
+            op=PatternTransform("f1", (0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                       0.0, 60.0, 0.0, 0.0, 0.0, 0.0)),
+            variants={"feature": _v("f2"),
+                      "placements": _v((0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                                        0.0, 90.0, 0.0, 0.0, 0.0, 45.0))},
         ),
         "revolve": Case(
             prelude=(NewSketch("XY"), AddRectangle("sk1", 20.0, 0.0, 10.0, 10.0),
@@ -373,8 +487,31 @@ def _cases() -> Dict[str, Case]:
                             AddInstance("f1", 50.0, 0.0, 0.0, 0.0, 0.0, 0.0),
                             AddInstance("f1", 0.0, 50.0, 0.0, 0.0, 0.0, 0.0)),
             op=Mate("rigid", "i1", "i2", None),
-            variants={"kind": _v("revolute"), "a": _v("i3"), "b": _v("i3"),
-                      "value": _v(5.0)},
+            variants={
+                "kind": _v("revolute"), "a": _v("i3"), "b": _v("i3"),
+                "value": _v(5.0),
+                # The four port fields are exercised from a base that is already a
+                # PORT-TYPED mate, because a half-typed mate is refused outright
+                # (check_mate_ports: "needs both base_port_type and
+                # incoming_port_type") and two refusals would score N/A -- burying
+                # the question. Both the base and the alternate value are
+                # ADMISSIBLE under 'coaxial' (axis / bore / shaft_seat), so a DEAD
+                # cell here means the mate was recorded without the ports it
+                # names, not that the compatibility gate turned the alternate away.
+                "base_port": _v("p2", kind="coaxial", base_port="p1",
+                                incoming_port="q1", base_port_type="bore",
+                                incoming_port_type="axis"),
+                "incoming_port": _v("q2", kind="coaxial", base_port="p1",
+                                    incoming_port="q1", base_port_type="bore",
+                                    incoming_port_type="axis"),
+                "base_port_type": _v("shaft_seat", kind="coaxial", base_port="p1",
+                                     incoming_port="q1", base_port_type="bore",
+                                     incoming_port_type="axis"),
+                "incoming_port_type": _v("bore", kind="coaxial", base_port="p1",
+                                         incoming_port="q1",
+                                         base_port_type="bore",
+                                         incoming_port_type="axis"),
+            },
         ),
         # SetParam edits op #1 (the rectangle) and replays. Retargeting it at op #2
         # (the extrude, which has no 'w') is a typed bad-param error -- which is a
