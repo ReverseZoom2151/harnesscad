@@ -1,0 +1,11 @@
+# Vendored third-party data is byte-exact: every file's SHA-256 is recorded in
+# its MANIFEST.json and re-verified by the loaders' --selfcheck. Line-ending
+# normalisation would silently invalidate those hashes, so it is disabled for
+# every per-source data directory.
+graphcad/** -text
+agentscad/** -text
+zoo_kcl/** -text
+textcad/** -text
+cadam/** -text
+intentforge/** -text
+cadjudge/** -text
