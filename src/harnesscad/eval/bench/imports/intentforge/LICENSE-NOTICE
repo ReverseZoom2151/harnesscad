@@ -1,0 +1,12 @@
+The JSON files in this directory are vendored verbatim from the IntentForge
+project, src/benchmark/prompts/ (rejection_prompts.json,
+l_bracket_rejection_prompts.json) and src/benchmark/expected/
+(expected_rejections.json).
+
+Source: IntentForge (resources/cad_repos/IntentForge-main/IntentForge-main)
+License: Apache License, Version 2.0
+
+Redistribution permitted under the Apache License 2.0; the full license text
+is in the source repository's LICENSE file. Provenance (resources-relative
+source path, SHA-256, byte count) for every vendored file is recorded in
+MANIFEST.json alongside this notice.

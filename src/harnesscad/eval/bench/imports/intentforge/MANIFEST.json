@@ -1,0 +1,35 @@
+{
+  "source_repo": "IntentForge",
+  "source_path": "cad_repos/IntentForge-main/IntentForge-main/src/benchmark",
+  "license": "Apache-2.0",
+  "attribution": "IntentForge (Apache License 2.0)",
+  "entries": [
+    {
+      "name": "rejection_prompts",
+      "role": "rejection_prompts",
+      "vendored": "rejection_prompts.json",
+      "resource": "cad_repos/IntentForge-main/IntentForge-main/src/benchmark/prompts/rejection_prompts.json",
+      "sha256": "92086047e9af8e55530a2436d696d6e7ffc21fa4f7068eda1b2e1815d4a47636",
+      "bytes": 3265,
+      "format": "json"
+    },
+    {
+      "name": "l_bracket_rejection_prompts",
+      "role": "rejection_prompts",
+      "vendored": "l_bracket_rejection_prompts.json",
+      "resource": "cad_repos/IntentForge-main/IntentForge-main/src/benchmark/prompts/l_bracket_rejection_prompts.json",
+      "sha256": "5e77c0ec311bf40d97525e4e847405998a8c993f2a1edc7fe5bc12c8adfa2ac2",
+      "bytes": 1341,
+      "format": "json"
+    },
+    {
+      "name": "expected_rejections",
+      "role": "expected_rejections",
+      "vendored": "expected_rejections.json",
+      "resource": "cad_repos/IntentForge-main/IntentForge-main/src/benchmark/expected/expected_rejections.json",
+      "sha256": "9a139d3c6d0f785ef91be6f94d37a94f1b18a72456f86d3591156e04ea35aa85",
+      "bytes": 201,
+      "format": "json"
+    }
+  ]
+}
