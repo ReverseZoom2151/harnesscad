@@ -50,6 +50,7 @@ __all__ = [
     "planar_drc",
     "printability",
     "feature_minima",
+    "printer_profile",
     "rule_packs",
     "difficulty",
     "feature_attributes",
@@ -463,6 +464,44 @@ def feature_minima(features: Sequence[Mapping[str, Any]],
 
 
 # --------------------------------------------------------------------------- #
+# Printer wrapper profiles (the machine the part has to survive)
+# --------------------------------------------------------------------------- #
+def printer_profile(profile: Mapping[str, Any],
+                    gcode: Optional[str] = None) -> dict:
+    """Validate a printer wrapper profile, and optionally G-code against it.
+
+    The profile carries the ENVELOPE -- the machine's real motion bounds -- which
+    is the bound :func:`printability`'s build-volume fit exists to check against.
+    Pass ``gcode`` to additionally validate a body statically: absolute moves
+    outside the envelope fail; relative positioning (``G91``) warns and suspends
+    bounds checking until ``G90`` restores it, because a relative move's absolute
+    position is not knowable from the line. Unknown commands warn and never fail:
+    this reads G-code, it does not claim to be a firmware.
+    """
+    from harnesscad.domain.fabrication.printer_profiles import (
+        load_profile, to_printability_profile, validate_gcode,
+    )
+
+    spec = load_profile(profile)
+    out: dict = {
+        "backend": spec.backend,
+        "machine": spec.machine_name,
+        "filament": spec.filament_type,
+        "motion_bounds_mm": {
+            axis: list(bounds) for axis, bounds in spec.motion_bounds_mm.items()
+        },
+        "build_volume_mm": list(to_printability_profile(spec).build_volume_mm),
+    }
+    if gcode is not None:
+        report = validate_gcode(gcode, spec)
+        out["gcode"] = report.to_dict() if hasattr(report, "to_dict") else {
+            "ok": report.ok, "errors": list(report.errors),
+            "warnings": list(report.warnings),
+        }
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Declarative rule packs (rules as data, not as code)
 # --------------------------------------------------------------------------- #
 def rule_packs(metrics: Mapping[str, Any], family: Optional[str] = None,
@@ -574,6 +613,9 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
     ("dfam", "feature_minima", _FAB + "feature_minima",
      "per-feature FDM minima (wall, rib, hole, boss, text, gap, bridge, overhang); "
      "composes into the printability verdict (AgentSCAD)"),
+    ("dfam", "printer_profile", _FAB + "printer_profiles",
+     "printer wrapper profiles: validated machine envelope + static G-code bounds "
+     "checking, the machine side of the printability fit (text-to-cad)"),
     ("rules", "rule_packs", _FAB + "rule_packs",
      "versioned declarative rule packs: condition expressions over design metrics, "
      "evaluated without eval, with dependency interactions (IntentForge)"),
