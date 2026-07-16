@@ -70,6 +70,7 @@ from harnesscad.domain.geometry.features import airfoil
 from harnesscad.domain.geometry.features import cap_references
 from harnesscad.domain.geometry.features import enclosure
 from harnesscad.domain.geometry.features import feature_model
+from harnesscad.domain.geometry.features import fillet_feasibility
 from harnesscad.domain.geometry.features import sketch_extrude
 from harnesscad.domain.geometry.features import height_patterns
 from harnesscad.domain.geometry.features import holes
@@ -95,6 +96,8 @@ from harnesscad.domain.geometry.mesh import colorize as mesh_colorize
 from harnesscad.domain.geometry.mesh import hierarchical_sampler
 from harnesscad.domain.geometry.mesh import integer_geometry
 from harnesscad.domain.geometry.mesh import intersection_repair
+from harnesscad.domain.geometry.mesh import isotropic_remesh as mesh_remesh
+from harnesscad.domain.geometry.mesh import repair_toolkit
 from harnesscad.domain.geometry.mesh import sampling as mesh_sampling
 from harnesscad.domain.geometry.mesh import segmentation as mesh_segmentation
 from harnesscad.domain.geometry.mesh import smoothing as mesh_smoothing
@@ -109,6 +112,7 @@ from harnesscad.domain.geometry.parametric import chord_tolerance
 from harnesscad.domain.geometry.parametric import facets
 from harnesscad.domain.geometry.parametric import hybrid_representation
 from harnesscad.domain.geometry.parametric import knot_insertion
+from harnesscad.domain.geometry.parametric import offset_nurbs
 from harnesscad.domain.geometry.parametric import path_offset
 from harnesscad.domain.geometry.parametric import simplify as polyline_simplify
 from harnesscad.domain.geometry.parametric import solid_lines
@@ -146,6 +150,7 @@ from harnesscad.domain.geometry.topology import region_selectors
 from harnesscad.domain.geometry.topology import relative_dimensions
 from harnesscad.domain.geometry.topology import selector_dsl
 from harnesscad.domain.geometry.topology import selector_grammar
+from harnesscad.domain.geometry.topology import sew as topo_sew
 from harnesscad.domain.geometry.topology import synthetic_brep
 from harnesscad.domain.geometry.topology import topological_naming
 
@@ -180,6 +185,7 @@ from harnesscad.domain.geometry.volumes import occupancy
 from harnesscad.domain.geometry.volumes import partition_of_unity
 from harnesscad.domain.geometry.volumes import sparse_subdivision
 from harnesscad.domain.geometry.volumes import split_signal
+from harnesscad.domain.geometry.volumes import topology_optimize
 from harnesscad.domain.geometry.volumes import triplane_grid
 from harnesscad.domain.geometry.volumes import tsdf
 
@@ -875,6 +881,90 @@ _TABLE: Tuple[Tuple[str, str, Callable[..., Any], Tuple[str, ...], str], ...] = 
     ("view.triplane.encoding", _G + "views.triplane_encoding",
      triplane_encoding.tripe_encoding, ("render",),
      "TriPE triplane positional encoding (RoPE fusion of 2D + 1D positions)."),
+
+    # ---- mesh: repair toolkit (never-raise dict contract) ------------------
+    # Each entry returns a dict rather than raising; the toolkit carries no
+    # mesh boolean and no mesh offset -- those were deferred and are not here.
+    ("mesh.repair.weld", _G + "mesh.repair_toolkit", repair_toolkit.weld_vertices,
+     ("meshing", "repair"),
+     "Merge vertices within a tolerance on a spatial grid; returns a result dict."),
+    ("mesh.repair.unify_normals", _G + "mesh.repair_toolkit",
+     repair_toolkit.unify_normals, ("meshing", "repair"),
+     "Make triangle winding consistent by BFS over the face-adjacency dual graph."),
+    ("mesh.repair.fill_holes", _G + "mesh.repair_toolkit", repair_toolkit.fill_holes,
+     ("meshing", "repair"),
+     "Fan-triangulate every boundary loop (a fan fill, not a minimal-area patch)."),
+    ("mesh.repair.remove_degenerate", _G + "mesh.repair_toolkit",
+     repair_toolkit.remove_degenerate, ("meshing", "repair"),
+     "Drop repeated-index, zero-area and duplicate triangles."),
+    ("mesh.repair.decimate", _G + "mesh.repair_toolkit", repair_toolkit.decimate,
+     ("meshing", "repair"),
+     "QEM (Garland-Heckbert) edge-collapse decimation to a target triangle count."),
+    ("mesh.repair.pipeline", _G + "mesh.repair_toolkit", repair_toolkit.repair_pipeline,
+     ("meshing", "repair"),
+     "weld -> unify_normals -> fill_holes -> remove_degenerate, chained."),
+    ("mesh.is_closed", _G + "mesh.repair_toolkit", repair_toolkit.is_closed,
+     ("meshing", "repair", "verify"),
+     "Is every undirected edge shared by exactly two triangles?"),
+    ("mesh.is_manifold", _G + "mesh.repair_toolkit", repair_toolkit.is_manifold,
+     ("meshing", "repair", "verify"),
+     "Edge- and vertex-manifold check, with the offending entities listed."),
+
+    # ---- mesh: isotropic remeshing ----------------------------------------
+    ("mesh.remesh.isotropic", _G + "mesh.isotropic_remesh", mesh_remesh.isotropic_remesh,
+     ("meshing",),
+     "Botsch-Kobbelt remesh (split/collapse/flip/smooth) toward a target edge "
+     "length; boundary vertices and boundary edges are preserved."),
+
+    # ---- topology: tolerant sewing + heal ----------------------------------
+    ("topology.sew", _G + "topology.sew", topo_sew.sew_faces,
+     ("topology", "brep", "repair", "tolerancing"),
+     "Sew boundary-polygon faces into edge-connected shells within a tolerance; "
+     "reports free edges and closedness per shell."),
+    ("topology.sew.heal", _G + "topology.sew", topo_sew.heal_sewn,
+     ("topology", "brep", "repair", "tolerancing"),
+     "Heal a sewn result: weld, drop sub-tolerance edges/faces, snap sliver gaps "
+     "(the input result is never mutated)."),
+    ("topology.sew.tolerance_monotonic", _G + "topology.sew",
+     topo_sew.check_tolerance_monotonicity,
+     ("topology", "brep", "tolerancing", "verify"),
+     "Check vertex.tol >= edge.tol >= face.tol on a sewn result; lists violations."),
+
+    # ---- parametric: NURBS offsets (measured-deviation honesty contract) ---
+    ("curve.nurbs.offset", _G + "parametric.offset_nurbs", offset_nurbs.offset_curve,
+     ("curves", "surface"),
+     "Planar NURBS curve offset: exact with zero deviation on line/circle/arc, "
+     "else sample-offset-refit reporting the measured actual_max_deviation."),
+    ("curve.nurbs.offset_loop", _G + "parametric.offset_nurbs", offset_nurbs.offset_loop,
+     ("curves",),
+     "Offset a closed planar loop of curves: convex corners get an exact arc "
+     "fillet, concave corners are trimmed to the offset intersection."),
+    ("surface.nurbs.offset", _G + "parametric.offset_nurbs", offset_nurbs.offset_surface,
+     ("surface",),
+     "NURBS surface offset along the analytic normal: exact on plane/sphere, "
+     "else grid-sample-refit reporting the measured actual_max_deviation."),
+
+    # ---- features: fillet feasibility (a PREFLIGHT PREDICATE) --------------
+    # This decides whether a rolling-ball fillet COULD be built; it builds no
+    # fillet geometry -- the rolling-ball construction itself is deferred.
+    ("feature.fillet.feasibility", _G + "features.fillet_feasibility",
+     fillet_feasibility.check_fillet_feasibility, ("features", "verify"),
+     "PREDICATE ONLY: can a rolling-ball fillet of this radius sit on this edge? "
+     "Returns a verdict + diagnostics; it does not build the fillet."),
+    ("feature.fillet.supported_contract", _G + "features.fillet_feasibility",
+     fillet_feasibility.supported_contract, ("features", "verify"),
+     "The input contract the feasibility predicate accepts (planar+planar and "
+     "planar+cylindrical supports only)."),
+
+    # ---- volumes: SIMP topology optimisation -------------------------------
+    ("volume.topology_optimize", _G + "volumes.topology_optimize",
+     topology_optimize.optimize, ("voxel", "optimization"),
+     "SIMP density topology optimiser on a 2D Q4 grid: multi-load-case compliance "
+     "minimisation at a volume fraction. Never raises; returns a result dict."),
+    ("volume.topology_optimize.pareto", _G + "volumes.topology_optimize",
+     topology_optimize.pareto_sweep, ("voxel", "optimization"),
+     "Epsilon-constraint sweep of the SIMP optimiser over a set of volume "
+     "fractions (a compliance/volume trade-off front)."),
 )
 
 
