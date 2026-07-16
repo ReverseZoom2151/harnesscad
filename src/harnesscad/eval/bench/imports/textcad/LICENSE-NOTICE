@@ -1,0 +1,12 @@
+The benchmark brief markdown files in this directory are vendored verbatim
+from the text-to-cad project's benchmarks/ directory (briefs only; the
+reference renders/gifs are not copied, and reference OpenSCAD material is
+referenced by resources path, never vendored).
+
+Source: text-to-cad (resources/cad_repos/text-to-cad-main/text-to-cad-main)
+License: MIT License, Copyright (c) 2026 earthtojake
+
+Redistribution permitted under the MIT License; the full license text is in
+the source repository's LICENSE file. Provenance (resources-relative source
+path, SHA-256, byte count) for every vendored file is recorded in
+MANIFEST.json alongside this notice.

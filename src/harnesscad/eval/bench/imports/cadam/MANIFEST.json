@@ -1,0 +1,242 @@
+{
+  "source_repo": "CADAM",
+  "source_path": "cad_repos/CADAM-master/CADAM-master/benchmarks",
+  "license": "GPL-3.0",
+  "attribution": "CADAM (GNU GPL v3); GPL: nothing vendored, resolved from resources/ at run time",
+  "entries": [
+    {
+      "name": "01-twisted-hex-vase",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/01-twisted-hex-vase.md",
+      "sha256": "4144b949925d352c1e410087be06a4a2b9556ac57cf8dac70aae90957ea63d83",
+      "bytes": 3494,
+      "format": "md"
+    },
+    {
+      "name": "02-knurled-control-knob",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/02-knurled-control-knob.md",
+      "sha256": "5d6b84909ef74e1cc4ac9b129f925c472b49f854ac509bad9624b9c10c4d1d06",
+      "bytes": 6029,
+      "format": "md"
+    },
+    {
+      "name": "03-hex-bolt-and-nut",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/03-hex-bolt-and-nut.md",
+      "sha256": "cbd6152092bc572bf2b3eaad4e242861e7b23ef5062317688ff0b9756b8c5e3e",
+      "bytes": 1617,
+      "format": "md"
+    },
+    {
+      "name": "04-honeycomb-bracket",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/04-honeycomb-bracket.md",
+      "sha256": "3365cf8e947997ecbf12a8f609aab492bc69c8ae8b4692f05b2212054bdb266d",
+      "bytes": 6159,
+      "format": "md"
+    },
+    {
+      "name": "05-naca-airfoil-wing",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/05-naca-airfoil-wing.md",
+      "sha256": "6d2aa58e9a0a647d762b0b051e9e516798849e6a2d18215fe4079729d70e1431",
+      "bytes": 6083,
+      "format": "md"
+    },
+    {
+      "name": "06-threaded-jar-and-lid",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/06-threaded-jar-and-lid.md",
+      "sha256": "4d2c8d50c59ebee8c0fc1115eed41ea9883923b44c18e9fedd08f6aceef09ba6",
+      "bytes": 3789,
+      "format": "md"
+    },
+    {
+      "name": "07-bevel-gear-drive",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/07-bevel-gear-drive.md",
+      "sha256": "4444eea70212efcfb200c7ba2cfe0a09c29c1e6d2f425216fb2d5f756a9f9062",
+      "bytes": 2880,
+      "format": "md"
+    },
+    {
+      "name": "08-centrifugal-impeller",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/08-centrifugal-impeller.md",
+      "sha256": "9350df319c5148344186d412949997c48d5411e80a8400888789e8eab466c729",
+      "bytes": 4502,
+      "format": "md"
+    },
+    {
+      "name": "09-herringbone-planetary-gearbox",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/09-herringbone-planetary-gearbox.md",
+      "sha256": "32d80993f099130d26e5e07341fc55c50a9e8333ecc2cba9fdfec9308d376703",
+      "bytes": 6006,
+      "format": "md"
+    },
+    {
+      "name": "10-radial-aircraft-engine",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/10-radial-aircraft-engine.md",
+      "sha256": "957e0fd77f41f3e660bc58062b6c1eb3d46ab2f074963e114592d1a62f8bc469",
+      "bytes": 8435,
+      "format": "md"
+    },
+    {
+      "name": "11-turbofan-jet-engine",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/11-turbofan-jet-engine.md",
+      "sha256": "5d29218fd0d94bc97402190cc719583f8278d2590aa776428a17c52f161ac67f",
+      "bytes": 5379,
+      "format": "md"
+    },
+    {
+      "name": "12-axial-turbine-blisk",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/12-axial-turbine-blisk.md",
+      "sha256": "fbe2888ac94051325cff65dc0220d894ec2d54292823c75bc20158149af0bc73",
+      "bytes": 6498,
+      "format": "md"
+    },
+    {
+      "name": "13-v8-engine",
+      "role": "brief",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/13-v8-engine.md",
+      "sha256": "fe9464b5d3e3077459b65692b5e3c3342b41196719512d30c2ec7880eac12a87",
+      "bytes": 14002,
+      "format": "md"
+    },
+    {
+      "name": "01-twisted-hex-vase",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/01-twisted-hex-vase.scad",
+      "sha256": "c15bec80982700b54759e150c3430f52d778d3cdade5e96cf5bc418027ddc2a4",
+      "bytes": 1949,
+      "format": "scad"
+    },
+    {
+      "name": "02-knurled-control-knob",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/02-knurled-control-knob.scad",
+      "sha256": "9679e611ec077d228112e192211c402eb7da5792eb1db9c19789e6fddbae1ec9",
+      "bytes": 3856,
+      "format": "scad"
+    },
+    {
+      "name": "03-hex-bolt-and-nut",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/03-hex-bolt-and-nut.scad",
+      "sha256": "57c5fcca2c17ebe5006ed675bf092792dfd3bfd02716a3e5838db1328a2b5142",
+      "bytes": 511,
+      "format": "scad"
+    },
+    {
+      "name": "04-honeycomb-bracket",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/04-honeycomb-bracket.scad",
+      "sha256": "02e2fe1fe4f9ee539a7e43f3248d2f56eebb4502e8fd641d06276f9ab495975e",
+      "bytes": 4095,
+      "format": "scad"
+    },
+    {
+      "name": "05-naca-airfoil-wing",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/05-naca-airfoil-wing.scad",
+      "sha256": "d34d51e6d2e9bb15a71840b5f8e18b4927c485bf63b44f43b42a43c248e05226",
+      "bytes": 4427,
+      "format": "scad"
+    },
+    {
+      "name": "06-threaded-jar-and-lid",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/06-threaded-jar-and-lid.scad",
+      "sha256": "0554035ae9f646f6ada78be3e317859c58e36a65effa73e748f6a6f7ec33a409",
+      "bytes": 2365,
+      "format": "scad"
+    },
+    {
+      "name": "07-bevel-gear-drive",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/07-bevel-gear-drive.scad",
+      "sha256": "274faf7fc33899bc5f77e40d67bd9d26d52873e0f146bc158ca9e052e1042fd8",
+      "bytes": 1501,
+      "format": "scad"
+    },
+    {
+      "name": "08-centrifugal-impeller",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/08-centrifugal-impeller.scad",
+      "sha256": "342daf182afb35c0a1f08753662d5795445367b78a3eb8af3652d4c81bf52f66",
+      "bytes": 2546,
+      "format": "scad"
+    },
+    {
+      "name": "09-herringbone-planetary-gearbox",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/09-herringbone-planetary-gearbox.scad",
+      "sha256": "251aaacaaa76d258c9d21f4eb90aa45e5ee5353b96eb07f6397d16414c5548e3",
+      "bytes": 4575,
+      "format": "scad"
+    },
+    {
+      "name": "10-radial-aircraft-engine",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/10-radial-aircraft-engine.scad",
+      "sha256": "a817241295d78ff62580e09105431097e969e0356c23f13169407cf8b1285473",
+      "bytes": 6648,
+      "format": "scad"
+    },
+    {
+      "name": "11-turbofan-jet-engine",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/11-turbofan-jet-engine.scad",
+      "sha256": "703f50f7c603e271e8feef3f029793bbe4e52e8811f6c04fb6836b3abd59c6da",
+      "bytes": 4264,
+      "format": "scad"
+    },
+    {
+      "name": "12-axial-turbine-blisk",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/12-axial-turbine-blisk.scad",
+      "sha256": "e31b9926d939333bfe82b29d07f685ed7dbc54c407568b494ad2dc9670732fc9",
+      "bytes": 4386,
+      "format": "scad"
+    },
+    {
+      "name": "13-v8-engine",
+      "role": "reference_scad",
+      "vendored": null,
+      "resource": "cad_repos/CADAM-master/CADAM-master/benchmarks/13-v8-engine.scad",
+      "sha256": "ceb53a28734c4a29a4b6ecde281779248e2f6e0e0767a3186acd37a988238e9e",
+      "bytes": 13618,
+      "format": "scad"
+    }
+  ]
+}

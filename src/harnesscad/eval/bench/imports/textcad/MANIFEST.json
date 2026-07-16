@@ -1,0 +1,98 @@
+{
+  "source_repo": "text-to-cad",
+  "source_path": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks",
+  "license": "MIT",
+  "attribution": "text-to-cad (MIT License, Copyright (c) 2026 earthtojake)",
+  "entries": [
+    {
+      "name": "01-rectangular-calibration-block",
+      "role": "brief",
+      "vendored": "01-rectangular-calibration-block.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/01-rectangular-calibration-block.md",
+      "sha256": "de540c2b5d1d1edf4bf1af61068ca4ad5de2f762451472d2d42106c1824de231",
+      "bytes": 1148,
+      "format": "md"
+    },
+    {
+      "name": "02-circular-flange",
+      "role": "brief",
+      "vendored": "02-circular-flange.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/02-circular-flange.md",
+      "sha256": "491f7c13444e2b01dd234eb641ea05218adc9438c1c9b49873291d8b478370f7",
+      "bytes": 1285,
+      "format": "md"
+    },
+    {
+      "name": "03-l-bracket",
+      "role": "brief",
+      "vendored": "03-l-bracket.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/03-l-bracket.md",
+      "sha256": "8b4db7b45ab2866f3b6e82641aa60420da48ef9c09798832555c5ae485d05793",
+      "bytes": 2049,
+      "format": "md"
+    },
+    {
+      "name": "04-stepped-shaft-keyway",
+      "role": "brief",
+      "vendored": "04-stepped-shaft-keyway.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/04-stepped-shaft-keyway.md",
+      "sha256": "9c8a839fc9691323a26e46acda719289848190091c73d18a71c3e0e4d0b75c82",
+      "bytes": 1374,
+      "format": "md"
+    },
+    {
+      "name": "05-open-top-electronics-enclosure",
+      "role": "brief",
+      "vendored": "05-open-top-electronics-enclosure.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/05-open-top-electronics-enclosure.md",
+      "sha256": "cb51b212162a888bf20e595383323c2106f1023051d32479c862c31a7aae41fc",
+      "bytes": 1792,
+      "format": "md"
+    },
+    {
+      "name": "06-clevis-bracket-lightening-cutouts",
+      "role": "brief",
+      "vendored": "06-clevis-bracket-lightening-cutouts.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/06-clevis-bracket-lightening-cutouts.md",
+      "sha256": "62334eadee6111ad71b0fcebbef5a8758c957a257a82261f09f93be042e95f9d",
+      "bytes": 2363,
+      "format": "md"
+    },
+    {
+      "name": "07-radial-engine-cylinder",
+      "role": "brief",
+      "vendored": "07-radial-engine-cylinder.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/07-radial-engine-cylinder.md",
+      "sha256": "168ac0964d89a53a59f8d2e0906fc682770fdc457c896dc1e3daa0a18d89b840",
+      "bytes": 2291,
+      "format": "md"
+    },
+    {
+      "name": "08-centrifugal-impeller",
+      "role": "brief",
+      "vendored": "08-centrifugal-impeller.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/08-centrifugal-impeller.md",
+      "sha256": "65871a7cc5b275b6cb8cc1072b4df44a858387012ede5ccd8ebe88ef137edba3",
+      "bytes": 2045,
+      "format": "md"
+    },
+    {
+      "name": "09-spiral-staircase",
+      "role": "brief",
+      "vendored": "09-spiral-staircase.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/09-spiral-staircase.md",
+      "sha256": "d7a3c82bcc817c435665bea189eafb676fd9ab5a1fc4b3a8a23a60c790e8b726",
+      "bytes": 2027,
+      "format": "md"
+    },
+    {
+      "name": "10-planetary-gear-stage",
+      "role": "brief",
+      "vendored": "10-planetary-gear-stage.md",
+      "resource": "cad_repos/text-to-cad-main/text-to-cad-main/benchmarks/10-planetary-gear-stage.md",
+      "sha256": "22b61f5f0942299596ec1f79206d1e10f0bba693fc0e8c307c6b53e7d00f24e0",
+      "bytes": 2493,
+      "format": "md"
+    }
+  ]
+}
