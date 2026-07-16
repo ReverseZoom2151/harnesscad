@@ -1,0 +1,6 @@
+The OBJ meshes and polygon_corpus.txt in this directory are
+vendored from the manifold project (test/models/,
+test/polygons/), github.com/elalish/manifold, and are
+redistributed under the Apache License, Version 2.0
+(http://www.apache.org/licenses/LICENSE-2.0).
+See MANIFEST.json for per-file provenance and SHA-256 sums.

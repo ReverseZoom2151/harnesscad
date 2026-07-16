@@ -1,0 +1,171 @@
+{
+  "source_repo": "https://github.com/elalish/manifold",
+  "source_path": "resources/cad_repos/manifold-master/manifold-master/test",
+  "license": "Apache-2.0",
+  "attribution": "manifold (github.com/elalish/manifold). Apache License 2.0.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "Cray_left",
+      "role": "boolean_operand",
+      "vendored": "models/Cray_left.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Cray_left.obj",
+      "sha256": "4276e824ed0e6c5e776357561adfae51b650f961dbfcb3be4c42567191e7a607",
+      "bytes": 30456,
+      "format": "obj"
+    },
+    {
+      "name": "Cray_right",
+      "role": "boolean_operand",
+      "vendored": "models/Cray_right.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Cray_right.obj",
+      "sha256": "064af131332e0713eed0c712d822321d65da281c8c53f67aec6fff7557fba1e6",
+      "bytes": 1516,
+      "format": "obj"
+    },
+    {
+      "name": "Generic_Twin_7081.1.t0_left",
+      "role": "boolean_operand",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Generic_Twin_7081.1.t0_left.obj",
+      "sha256": "378c4ee0ed86465d8d6c5d2439b44bdd1ff21b066bedd029411662de713a5bef",
+      "bytes": 1112136,
+      "format": "obj"
+    },
+    {
+      "name": "Generic_Twin_7081.1.t0_right",
+      "role": "boolean_operand",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Generic_Twin_7081.1.t0_right.obj",
+      "sha256": "743cbdbf63e7cd08177b90764925d356984f9407cb6e6a2c685f5e7b6cdc43f0",
+      "bytes": 645926,
+      "format": "obj"
+    },
+    {
+      "name": "Generic_Twin_7863.1.t0_left",
+      "role": "boolean_operand",
+      "vendored": "models/Generic_Twin_7863.1.t0_left.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Generic_Twin_7863.1.t0_left.obj",
+      "sha256": "cdc87c0d0a01aea1abf46dbb733d71740a92a44290e02c4dc74ef111dda74b22",
+      "bytes": 11123,
+      "format": "obj"
+    },
+    {
+      "name": "Generic_Twin_7863.1.t0_right",
+      "role": "boolean_operand",
+      "vendored": "models/Generic_Twin_7863.1.t0_right.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Generic_Twin_7863.1.t0_right.obj",
+      "sha256": "7e6799c29481e8871f6bda3c392fcad584f1f53097c027097284224fb2c3f12d",
+      "bytes": 12815,
+      "format": "obj"
+    },
+    {
+      "name": "Havocglass8_left",
+      "role": "boolean_operand",
+      "vendored": "models/Havocglass8_left.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Havocglass8_left.obj",
+      "sha256": "d615109be824305941058a3c6ace90a01ad179c081c136e8a4f37ede5950bb6d",
+      "bytes": 8394,
+      "format": "obj"
+    },
+    {
+      "name": "Havocglass8_right",
+      "role": "boolean_operand",
+      "vendored": "models/Havocglass8_right.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Havocglass8_right.obj",
+      "sha256": "3427f4cb99565ad8b89e3dec05944cb13b3286eca021cd8ff578dc56aad0e955",
+      "bytes": 812,
+      "format": "obj"
+    },
+    {
+      "name": "hull-body",
+      "role": "boolean_operand",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/hull-body.obj",
+      "sha256": "a7f2cdaa5bcf97f0a6c9e7b8de46b653955e7af4e95bab0f576608881ebf9f26",
+      "bytes": 283769,
+      "format": "obj"
+    },
+    {
+      "name": "hull-mask",
+      "role": "boolean_operand",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/hull-mask.obj",
+      "sha256": "9b40b7fda026c2b08e82b57df2dbc8460e35582720cf44a6b563d594d64ef513",
+      "bytes": 415821,
+      "format": "obj"
+    },
+    {
+      "name": "Offset1",
+      "role": "offset_regression",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Offset1.obj",
+      "sha256": "e46b6e4f47e6b7f80eaf87cc0298674403e07136b19086f36af0bb98841bb997",
+      "bytes": 199313,
+      "format": "obj"
+    },
+    {
+      "name": "Offset2",
+      "role": "offset_regression",
+      "vendored": "models/Offset2.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Offset2.obj",
+      "sha256": "eacbd24925a91811e6e296bceaea14b4d8fdc93323674d3fb8c3e16ea9017fe3",
+      "bytes": 53192,
+      "format": "obj"
+    },
+    {
+      "name": "Offset3",
+      "role": "offset_regression",
+      "vendored": "models/Offset3.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Offset3.obj",
+      "sha256": "ca13ac6d4154725116886999d576ce22c164e55a3fccb645ef71e17b0871e8a6",
+      "bytes": 2242,
+      "format": "obj"
+    },
+    {
+      "name": "Offset4",
+      "role": "offset_regression",
+      "vendored": "models/Offset4.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/Offset4.obj",
+      "sha256": "c894fd2ca43a8cc0ce259cc2473c7062efc59dd7217603a91c1b7d897e0264c3",
+      "bytes": 2760,
+      "format": "obj"
+    },
+    {
+      "name": "openscad-nonmanifold-crash",
+      "role": "non_manifold_crash",
+      "vendored": "models/openscad-nonmanifold-crash.obj",
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/openscad-nonmanifold-crash.obj",
+      "sha256": "497bd6df29f4c6fd4f3e85f72c31d88e95f01eb11ff1ec51b674e5b459fafcea",
+      "bytes": 72429,
+      "format": "obj"
+    },
+    {
+      "name": "self_intersectA",
+      "role": "self_intersection",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/self_intersectA.obj",
+      "sha256": "924331ec4fb079dc9250d1f656b47d97c049162a5a049b76381c36559edb36f3",
+      "bytes": 873958,
+      "format": "obj"
+    },
+    {
+      "name": "self_intersectB",
+      "role": "self_intersection",
+      "vendored": null,
+      "resource": "cad_repos/manifold-master/manifold-master/test/models/self_intersectB.obj",
+      "sha256": "8861af4b7d694f3c4c85c9f083ac105a9b37f4b55f231f3559f8c91827acdf4e",
+      "bytes": 878051,
+      "format": "obj"
+    },
+    {
+      "name": "polygon_corpus",
+      "role": "polygon_corpus",
+      "vendored": "polygon_corpus.txt",
+      "resource": "cad_repos/manifold-master/manifold-master/test/polygons/polygon_corpus.txt",
+      "sha256": "69b9709fb8608b827aedbf0c0afbe13e04364c84e1cb626385c7899a7bdac509",
+      "bytes": 44279,
+      "format": "txt"
+    }
+  ]
+}
