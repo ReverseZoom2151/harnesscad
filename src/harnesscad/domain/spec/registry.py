@@ -880,6 +880,14 @@ UNADAPTED_REASONS: Dict[str, str] = {
         "splits a compiled contract into a visible half handed to the generator "
         "and a hidden half kept only for scoring -- reached inside the PDD "
         "evaluation pipeline (`harnesscad pdd`), never a front-door route",
+    "harnesscad.domain.spec.caid_artifact":
+        "the raw-JSON half of the same SimCorrect/OpenCAD design-artifact "
+        "handshake `design_patch` restates with dataclasses: payload validation, "
+        "bidirectional tag name resolution, and patch construction straight from "
+        "a fault-identification result -- loaded and applied by the physics eval "
+        "loop (`harnesscad.eval.quality.physics.sim_correction_loop` and "
+        "`fault_identification`), which owns the corrector; the spec front door "
+        "never reads it",
     "harnesscad.domain.spec.design_patch":
         "the versioned design-artifact / design-patch handshake (OpenCAD's "
         "`caid-design-artifact-v1` / `caid-design-patch-v1`): it carries an "
@@ -898,6 +906,34 @@ UNADAPTED_REASONS: Dict[str, str] = {
         "its brief-reading half is subsumed by the `formalize` / `case_frame` "
         "interpreters the spec pipeline already routes, and its SCAD synthesis is a "
         "generator concern, not a spec-surface route",
+    "harnesscad.domain.spec.part_metadata_contract":
+        "forgent3d/aicad's three checkable rules over a GENERATED part's "
+        "metadata -- selector copy form, assembly-level vs per-part parameter "
+        "placement, and `__viewer` preview isolation -- an output validator that "
+        "audits a model the harness has already built (the metadata counterpart "
+        "of `harnesscad.domain.programs.validate`, which audits generated code), "
+        "not a reader of briefs",
+    "harnesscad.domain.spec.project_object":
+        "Forma-OSS's addressable, versioned namespace VIEW of a whole project "
+        "document (`product.geometry` at its current version, with per-attribute "
+        "identity/kind inference and data-URL redaction) -- the navigation layer "
+        "the iteration engine `harnesscad.agents.agent.project_iteration` targets "
+        "its edits through; it slices a document that already exists rather than "
+        "compiling a brief into one",
+    "harnesscad.domain.spec.prompt_spec_extract":
+        "Studio-OSS's deterministic extraction of a SCORING target from a prompt: "
+        "its symmetry confidence, per-family ideal aspect-ratio bounds and texture "
+        "hint are scorer tolerances rather than constraints a planner could bind, "
+        "and its one consumer is the spec-conditioned half of "
+        "`harnesscad.eval.quality.geometry.two_stage_score` -- an eval-surface "
+        "target, not a rival of the `formalize` / `case_frame` interpreters",
+    "harnesscad.domain.spec.safety_scope":
+        "Forma-OSS's brief-time scope POLICY gate (weapons, medical/life-support, "
+        "automotive control, mains AC, high-power battery): it yields a refusal "
+        "verdict, never a spec, and its own docs demand enforcement before any "
+        "agent runs -- which `harnesscad.core.pipeline._scope_refuse` already does "
+        "as the first act of `build`, a hard BuildError upstream of this surface "
+        "rather than an advisory lint inside it",
     "harnesscad.domain.spec.kcl_grammar":
         "a checked, importable model of Zoo/KittyCAD's KCL lexical grammar, keyword "
         "set and AST node vocabulary -- reference data for a Zoo-backend author "
