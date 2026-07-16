@@ -92,4 +92,4 @@ THE RULES THIS PACKAGE KEEPS
 from __future__ import annotations
 
 __all__ = ["occt", "weak", "oracle", "generate", "discriminative", "constraints",
-           "ambiguous", "score", "report"]
+           "ambiguous", "score", "report", "contract_grader"]
