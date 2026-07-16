@@ -89,7 +89,8 @@ class HarnessSession:
                                             Mapping]] = None,
                  op_gate_context: Optional[Mapping] = None,
                  op_protected_regions: Sequence = (),
-                 hook_bus: Optional[Any] = None) -> None:
+                 hook_bus: Optional[Any] = None,
+                 quirk_preflight: bool = False) -> None:
         self.backend = backend
         self.opdag = OpDAG()
         self.verifiers = verifiers if verifiers is not None else default_verifiers()
@@ -137,6 +138,15 @@ class HarnessSession:
         #: bus with no handlers registered for an event is itself a no-op, so
         #: both the unwired and the empty-bus cases cost a dict build at most.
         self.hook_bus = hook_bus
+        #: Consult the mined OCCT kernel-quirk catalogs before an op stream is
+        #: executed (agents/generation/quirk_preflight.py). ADVISORY: findings
+        #: are WARNING diagnostics, never refusals -- "OCCT is known to
+        #: misbehave here" is a reason to warn a model, not to refuse a caller.
+        #: OFF by default, because a caller's diagnostics list is part of the
+        #: contract they already have.
+        self.quirk_preflight = bool(quirk_preflight)
+        #: The advisory findings of the last preflighted batch.
+        self.last_quirk_warnings: List[Any] = []
         self.backend.reset()
         self.opdag.checkpoint("start")
         if self.record_provenance:
@@ -314,6 +324,39 @@ class HarnessSession:
         except Exception:  # noqa: BLE001 - an observer cannot break the loop
             pass
 
+    # --- kernel-quirk preflight (opt-in, advisory) ------------------------
+    def _quirk_preflight(self, ops: List[Op], run_id: str) -> List[Diagnostic]:
+        """Advisory kernel-quirk warnings for the pending batch.
+
+        Returns [] (and imports nothing) unless `quirk_preflight` was asked
+        for. Never raises and never blocks: an advisory catalog lookup that
+        fails must not cost the caller their batch.
+        """
+        self.last_quirk_warnings = []
+        if not self.quirk_preflight:
+            return []
+        try:
+            from harnesscad.agents.generation.quirk_preflight import quirk_warnings
+
+            findings = quirk_warnings(ops)
+        except Exception:  # noqa: BLE001 - advisory only, never a gate
+            return []
+        self.last_quirk_warnings = findings
+        if not findings:
+            return []
+        self.tracer.event("quirk_preflight", run_id, {
+            "warnings": [{"op_index": w.op_index, "op": w.op_name,
+                          "quirk_id": w.quirk_id, "message": w.message}
+                         for w in findings]})
+        # WARNING, never ERROR: VerifyReport.ok keys off ERROR alone, so these
+        # are surfaced to the caller without touching the transaction.
+        return [Diagnostic(
+            severity=Severity.WARNING,
+            code=f"occt_quirk.{w.quirk_id}",
+            message=w.message,
+            where=f"op[{w.op_index}] {w.op_name}",
+        ) for w in findings]
+
     # --- op-admissibility preflight (opt-in) ------------------------------
     def _gate_preflight(self, ops: List[Op], run_id: str) -> Optional[ApplyOpsResult]:
         """Judge the whole batch against the op catalog BEFORE executing any op.
@@ -377,10 +420,16 @@ class HarnessSession:
         # reading it after apply_ops always sees the trajectory it just ran.
         self.step_rewards: List[dict] = []
         self.tracer.event("run_start", run_id, {"op_count": len(ops)})
+        # Advisory kernel-quirk findings first, so they are reported even for a
+        # batch the gate goes on to refuse: "this op stream trips a known OCCT
+        # bug" is exactly the feedback a refused planner needs.
+        quirk_diags = self._quirk_preflight(ops, run_id)
+        diags += quirk_diags
         # Preflight: refuse an inadmissible batch before anything mutates.
         # Returns None (and costs nothing) unless an op catalog was configured.
         refusal = self._gate_preflight(ops, run_id)
         if refusal is not None:
+            refusal.diagnostics[:0] = quirk_diags
             return refusal
         for index, op in enumerate(ops):
             self._fire("iteration_start", {"run_id": run_id, "index": index,
