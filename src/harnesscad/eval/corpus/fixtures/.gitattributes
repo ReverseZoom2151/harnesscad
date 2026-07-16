@@ -1,0 +1,9 @@
+# Vendored fixture data is byte-exact: MANIFEST.json records SHA-256 sums
+# computed over the bytes as committed. EOL normalisation on checkout would
+# silently break every hash, so it is disabled for the data directories.
+brepnet/** -text
+cadgenbench/** -text
+manifold/** -text
+cad_coder/** -text
+birdhouse/** -text
+cadclaw/** -text
