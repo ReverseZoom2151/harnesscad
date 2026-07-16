@@ -59,7 +59,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from harnesscad.eval.corpus.fixtures import (
     FixtureEntry,
@@ -70,17 +70,22 @@ from harnesscad.eval.corpus.fixtures import (
 
 __all__ = [
     "LOADERS",
+    "BRIEF_LOADERS",
     "ImportedBrief",
     "imports_dir",
     "load_manifest",
+    "loader",
+    "briefs_from",
+    "all_briefs",
+    "availability",
     "resources_root",
     "sha256_of",
     "FixtureEntry",
     "Manifest",
 ]
 
-#: Loader module names, in the inventory's ranked order. The hub can iterate
-#: these; each module exposes ``main(argv)`` with ``--selfcheck``.
+#: Loader module names, in the inventory's ranked order. The hub iterates these
+#: (see :func:`loader`); each module exposes ``main(argv)`` with ``--selfcheck``.
 LOADERS: Tuple[str, ...] = (
     "graphcad_cadbench",
     "agentscad_tasks",
@@ -89,6 +94,91 @@ LOADERS: Tuple[str, ...] = (
     "intentforge_refusals",
     "cadjudge_prompts",
 )
+
+#: The subset of :data:`LOADERS` that emits :class:`ImportedBrief` records.
+#: ``intentforge_refusals`` is deliberately absent: its cases are prompt ->
+#: expected-REJECTION oracle pairs, so they are NOT briefs to build from
+#: (turning a refusal canary into a build brief would invert its meaning). It
+#: is reachable through :func:`loader` like every other source.
+BRIEF_LOADERS: Tuple[str, ...] = (
+    "graphcad_cadbench",
+    "agentscad_tasks",
+    "zoo_kcl_manifest",
+    "cadam_textcad_briefs",
+    "cadjudge_prompts",
+)
+
+
+def loader(name: str):
+    """Return one loader module by its :data:`LOADERS` name.
+
+    The modules are bound STATICALLY at the bottom of this file, not fetched
+    with ``importlib``: the capability index reads the AST, so a real import
+    statement is what makes each loader a reachable module rather than an
+    orphan the index reports as dead code.
+    """
+    try:
+        return _MODULES[name]
+    except KeyError:
+        raise KeyError(
+            "no such import loader: %r (known: %s)"
+            % (name, ", ".join(LOADERS))) from None
+
+
+def briefs_from(name: str) -> List["ImportedBrief"]:
+    """Every :class:`ImportedBrief` one loader emits; ``[]`` when it emits none.
+
+    Preserves each loader's documented degrade-to-empty contract: a source
+    whose data lives in ``resources/`` returns ``[]`` when that tree is not
+    checked out, and a malformed/absent manifest degrades the same way rather
+    than propagating. AN EMPTY LIST ALWAYS MEANS "NOT PRESENT", NEVER "PASSED"
+    -- the rule every manifest-mode loader states.
+    """
+    if name not in BRIEF_LOADERS:
+        loader(name)          # raises KeyError for an unknown name
+        return []             # a known non-brief source (intentforge_refusals)
+    try:
+        return list(loader(name).briefs())
+    except (OSError, ValueError, KeyError, json.JSONDecodeError):
+        # A missing/corrupt MANIFEST.json is the same not-present condition the
+        # loaders already degrade on; it must not break the hub for the sources
+        # that ARE present.
+        return []
+
+
+def all_briefs() -> List["ImportedBrief"]:
+    """Every imported brief from every brief-emitting source, in LOADERS order.
+
+    Deterministic and degrade-clean: sources whose resources are absent simply
+    contribute nothing, so this is empty on a bare wheel and never raises.
+    """
+    out: List["ImportedBrief"] = []
+    for name in BRIEF_LOADERS:
+        out.extend(briefs_from(name))
+    return out
+
+
+def availability() -> Dict[str, Dict[str, int]]:
+    """Per-source manifest availability -- what actually resolves on this box.
+
+    The honest census behind an empty :func:`all_briefs`: it distinguishes "no
+    resources checkout" from "loader broken". Never raises.
+    """
+    out: Dict[str, Dict[str, int]] = {}
+    for name in LOADERS:
+        try:
+            mod = loader(name)
+            manifests = ([mod.textcad_manifest(), mod.cadam_manifest()]
+                         if name == "cadam_textcad_briefs"
+                         else [mod.manifest()])
+            total = {"total": 0, "present": 0, "vendored": 0, "absent": 0}
+            for m in manifests:
+                for key, value in m.availability().items():
+                    total[key] += value
+            out[name] = total
+        except (OSError, ValueError, KeyError, json.JSONDecodeError):
+            out[name] = {"total": 0, "present": 0, "vendored": 0, "absent": 0}
+    return out
 
 
 def imports_dir() -> Path:
@@ -192,3 +282,41 @@ class ImportedBrief:
             "tags": list(self.tags),
             "note": self.note,
         }
+
+
+# --------------------------------------------------------------------------- #
+# The loader routes.
+#
+# These imports sit at the BOTTOM on purpose. Every loader does
+# ``from harnesscad.eval.bench.imports import ImportedBrief, load_manifest``,
+# so the cycle only resolves once this module has finished defining them --
+# importing at the top would be a partially-initialised-module ImportError.
+#
+# They are real ``import`` statements rather than ``importlib`` lookups because
+# the capability index scans the AST: a statically imported loader is a
+# reachable capability, an importlib-dispatched one is reported as an orphan.
+# No loader touches a kernel or a model at import time (stdlib only), and each
+# resolves its data lazily inside its own functions, so binding them here costs
+# nothing and keeps the resources/ tree optional.
+# --------------------------------------------------------------------------- #
+
+from harnesscad.eval.bench.imports import agentscad_tasks         # noqa: E402
+from harnesscad.eval.bench.imports import cadam_textcad_briefs    # noqa: E402
+from harnesscad.eval.bench.imports import cadjudge_prompts        # noqa: E402
+from harnesscad.eval.bench.imports import graphcad_cadbench       # noqa: E402
+from harnesscad.eval.bench.imports import intentforge_refusals    # noqa: E402
+from harnesscad.eval.bench.imports import zoo_kcl_manifest        # noqa: E402
+
+#: name -> loader module, for :func:`loader`. Keys are exactly :data:`LOADERS`
+#: (asserted below, so a loader added to one and not the other cannot ship).
+_MODULES: Dict[str, Any] = {
+    "graphcad_cadbench": graphcad_cadbench,
+    "agentscad_tasks": agentscad_tasks,
+    "zoo_kcl_manifest": zoo_kcl_manifest,
+    "cadam_textcad_briefs": cadam_textcad_briefs,
+    "intentforge_refusals": intentforge_refusals,
+    "cadjudge_prompts": cadjudge_prompts,
+}
+
+assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"
+assert all(n in LOADERS for n in BRIEF_LOADERS), "BRIEF_LOADERS names a non-loader"
