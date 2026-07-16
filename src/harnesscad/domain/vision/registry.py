@@ -56,6 +56,10 @@ __all__ = [
     "prompt",
     "cache",
     "guard",
+    "design_intent",
+    "intent_prompt",
+    "sketch_analysis",
+    "contract_check",
     "discover",
     "routed_modules",
     "unadapted",
@@ -277,6 +281,66 @@ def guard(base: Sequence[float], residual: Sequence[float]):
     return guard_residual(list(base), list(residual))
 
 
+def design_intent(text: str):
+    """Raw perception text -> a typed :class:`DesignIntent`, or ``None``.
+
+    The vision pass that writes the JSON is the learned half and is not here.
+    The parse is TOLERANT by design: markdown fences are stripped and anything
+    that is not a well-formed DIR comes back as ``None`` rather than raising,
+    because the caller's answer to bad perception is another perception pass,
+    not a traceback.
+    """
+    from harnesscad.domain.vision.design_intent import parse_design_intent
+
+    return parse_design_intent(str(text))
+
+
+def intent_prompt(intent: Any, likelihood_floor: float = 0.4,
+                  flat_2d: Optional[bool] = None,
+                  profile_shape: Optional[str] = None) -> str:
+    """A :class:`DesignIntent` -> a generation prompt, by TEMPLATE alone.
+
+    No model runs here and none needs to: perception is learned, but prompt
+    assembly is pure text -- which is what makes it auditable. Pass ``flat_2d``
+    and ``profile_shape`` from a :func:`sketch_analysis` to hold the prompt to
+    what was literally drawn.
+    """
+    from harnesscad.domain.vision.design_intent import design_intent_to_prompt
+
+    return design_intent_to_prompt(intent, likelihood_floor=float(likelihood_floor),
+                                   flat_2d=flat_2d, profile_shape=profile_shape)
+
+
+def sketch_analysis(text: str):
+    """Pass-1 perception text -> a typed :class:`GeometricAnalysis`, or ``None``.
+
+    Pass 1 records only what is LITERALLY drawn -- outline, topology, thickness
+    cues, internal features. Same tolerant contract as :func:`design_intent`.
+    """
+    from harnesscad.domain.vision.sketch_geometry_contract import (
+        parse_geometric_analysis,
+    )
+
+    return parse_geometric_analysis(str(text))
+
+
+def contract_check(intent: Any, analysis: Any) -> List[dict]:
+    """Every hard-constraint violation of a Pass-2 DIR against its Pass-1 record.
+
+    An empty list means the intent is admissible. This is the two-pass pipeline's
+    whole point: a flat 2-D sketch may not become a solid, a feature that was
+    never observed may not be invented, and a cut may not quietly become an
+    addition. Upstream those rules were prompt text a model was trusted to obey;
+    here they are checked.
+    """
+    from harnesscad.domain.vision.sketch_geometry_contract import (
+        check_dir_against_analysis,
+    )
+
+    return [{"code": v.code, "message": v.message}
+            for v in check_dir_against_analysis(intent, analysis)]
+
+
 # --------------------------------------------------------------------------- #
 # Discovery
 # --------------------------------------------------------------------------- #
@@ -311,6 +375,10 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "digest-bound multi-view geometry prompt bundle"),
     ("model", "guard", _VIS + "residual_guard",
      "reject a model residual that is not finite / shaped / bounded"),
+    ("model", "design_intent", _VIS + "design_intent",
+     "perception text -> a typed design-intent record; record -> prompt by template"),
+    ("model", "contract_check", _VIS + "sketch_geometry_contract",
+     "hold a design intent to what the sketch literally showed (two-pass contract)"),
     ("view", "poses", _VIS + "pose_grid",
      "the camera-pose ID grid"),
     ("view", "view_grid", _VIS + "multiview_grid",
