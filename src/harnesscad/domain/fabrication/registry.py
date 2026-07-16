@@ -49,6 +49,8 @@ __all__ = [
     "overhangs",
     "planar_drc",
     "printability",
+    "feature_minima",
+    "rule_packs",
     "difficulty",
     "feature_attributes",
     "export_plan",
@@ -419,6 +421,83 @@ def printability(size_mm: Sequence[float], is_valid_solid: Optional[bool] = None
 
 
 # --------------------------------------------------------------------------- #
+# Feature-typed printability minima (judges named features, one at a time)
+# --------------------------------------------------------------------------- #
+def feature_minima(features: Sequence[Mapping[str, Any]],
+                   measurements: Optional[Mapping[str, Any]] = None,
+                   profile: Optional[Mapping[str, Any]] = None) -> dict:
+    """Judge INDIVIDUAL named features against AgentSCAD's per-feature minima.
+
+    Each entry is ``{feature, value, label}`` -- "this boss is 2.4 mm across" --
+    checked against a floor (wall, rib, through/blind hole, boss, text,
+    clearance gap, merge overlap, cut extension) or a ceiling (bridge span,
+    overhang angle) that is far stricter than the nozzle-width floor. Distinct
+    from :func:`printability`, which judges ONE whole-model metric bundle: this
+    judges each feature by its TYPE. Pass ``measurements`` to merge the two --
+    the feature findings become printability issues and share its
+    ``{printable, score, issues}`` contract, one scoring definition throughout.
+    """
+    from harnesscad.domain.fabrication.feature_minima import (
+        MeasuredFeature, check_features, feature_verdict,
+    )
+    from harnesscad.domain.fabrication.printability_verdict import (
+        Measurements, PrinterProfile,
+    )
+
+    measured = [MeasuredFeature(feature=str(f["feature"]), value=float(f["value"]),
+                                label=str(f.get("label", "")))
+                for f in features]
+    prof = PrinterProfile(**dict(profile)) if profile else PrinterProfile()
+    m = None
+    if measurements is not None:
+        spec = dict(measurements)
+        spec["size_mm"] = tuple(float(v) for v in spec["size_mm"])
+        m = Measurements(**spec)
+    verdict = feature_verdict(measured, measurements=m, profile=prof)
+    verdict["findings"] = [{"feature": f.feature, "label": f.label, "value": f.value,
+                            "severity": f.severity, "threshold": f.threshold,
+                            "recommended": f.recommended, "units": f.units,
+                            "message": f.message, "rule": f.rule}
+                           for f in check_features(measured)]
+    return verdict
+
+
+# --------------------------------------------------------------------------- #
+# Declarative rule packs (rules as data, not as code)
+# --------------------------------------------------------------------------- #
+def rule_packs(metrics: Mapping[str, Any], family: Optional[str] = None,
+               pack_ids: Optional[Sequence[str]] = None,
+               packs: Optional[Sequence[Mapping[str, Any]]] = None) -> dict:
+    """Evaluate versioned condition-expression rule packs over design metrics.
+
+    A rule is DATA: a boolean pass expression over named metrics
+    (``"hole_edge_distance >= 1.5 * hole_diameter"``), a ``when`` gate, a
+    severity, a confidence and reasoning links. Distinct from :func:`analyze`
+    and :func:`readiness`, whose checks are hard-coded Python for a fixed
+    process or a fixed descriptor: here the rules ship as packs you can filter,
+    version and extend without touching this module. Defaults to the vendored
+    IntentForge packs; pass ``packs`` (pack dicts) to bring your own. Expressions
+    run on an interpreter, never ``eval``; a missing metric yields a typed
+    ``not_evaluable`` finding, never a crash or a silent pass.
+    """
+    from harnesscad.domain.fabrication.rule_packs import (
+        FabricationRulePack, evaluate_packs, vendored_packs,
+    )
+
+    loaded = ([FabricationRulePack.from_dict(dict(p)) for p in packs]
+              if packs is not None else vendored_packs())
+    if pack_ids:
+        wanted = set(pack_ids)
+        loaded = [p for p in loaded if p.pack_id in wanted]
+    result = evaluate_packs(loaded, dict(metrics), family=family)
+    out = result.to_dict()
+    out["packs"] = [{"pack_id": p.pack_id, "pack_version": p.pack_version,
+                     "category": p.category, "rules": len(p.rules)}
+                    for p in loaded]
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Export planning (planned, never executed)
 # --------------------------------------------------------------------------- #
 def export_plan(source: str, export_format: str = "stl", out_dir: str = ".",
@@ -492,6 +571,12 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "FDM overhang detection + build-orientation search (AgentsCAD DFAM floor)"),
     ("dfam", "printability", _FAB + "printability_verdict",
      "printability verdict, issue-code taxonomy and build-volume fit (forgent3d)"),
+    ("dfam", "feature_minima", _FAB + "feature_minima",
+     "per-feature FDM minima (wall, rib, hole, boss, text, gap, bridge, overhang); "
+     "composes into the printability verdict (AgentSCAD)"),
+    ("rules", "rule_packs", _FAB + "rule_packs",
+     "versioned declarative rule packs: condition expressions over design metrics, "
+     "evaluated without eval, with dependency interactions (IntentForge)"),
     ("layout", "planar_drc", _FAB + "planar_layout",
      "DBU-quantised planar layout + mask-style design-rule checker"),
     ("feature", "difficulty", _FAB + "feature_difficulty",
