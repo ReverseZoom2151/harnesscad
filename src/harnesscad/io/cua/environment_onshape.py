@@ -536,6 +536,10 @@ RECIPES: Dict[str, GuiRecipe] = {
 REQUIRES_VIEWPORT: Dict[str, str] = {
     "add_point": "a sketch point needs a viewport click at a computed pixel",
     "add_line": "a line needs two viewport picks",
+    "add_arc": "an arc needs viewport picks for its endpoints and its bulge",
+    "add_ellipse": "an ellipse needs viewport picks for its centre and both axes",
+    "add_polygon": "a polygon needs a viewport pick per vertex",
+    "add_spline": "a spline needs a viewport pick per control point",
     "constrain": "a constraint needs the two sketch entities picked in the viewport",
     "fillet": "fillet needs the target edges picked in the viewport",
     "chamfer": "chamfer needs the target edges picked in the viewport",
@@ -552,6 +556,16 @@ REQUIRES_VIEWPORT: Dict[str, str] = {
     "add_instance": "assembly insert is a different workspace element",
     "mate": "a mate needs two instances picked in the assembly",
     "set_param": "editing a feature needs it selected in the tree first",
+    "primitive": "Onshape has no primitive command: a solid comes from a sketch "
+                 "plus a feature, which is the sketch-then-feature subset above",
+    "split": "split needs the splitting plane or face picked in the viewport",
+    "thicken": "thicken needs the faces to offset picked in the viewport",
+    "transform": "transform needs the body selected in the tree/viewport",
+    "scale": "scale needs the body selected in the tree/viewport",
+    "pattern_transform": "needs the seed feature selected in the tree, and there "
+                         "is no per-instance placement-list dialog",
+    "hull": "Onshape has no convex-hull feature",
+    "minkowski": "Onshape has no Minkowski-sum feature",
 }
 
 

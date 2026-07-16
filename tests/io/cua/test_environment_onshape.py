@@ -108,10 +108,21 @@ class TestOpToGuiMapping(unittest.TestCase):
     """The op -> Onshape-GUI table is DATA and honest about what it cannot bind."""
 
     def test_every_op_is_either_bound_or_explicitly_refused(self):
-        for tag in _REGISTRY:
-            with self.subTest(op=tag):
-                self.assertTrue(tag in E.RECIPES or tag in E.REQUIRES_VIEWPORT,
-                                "op %r is neither bound nor refused" % tag)
+        # Asserted as a SET, not per-op subTests: a subTest failure is reported
+        # one at a time by some runners, which makes a 12-op hole look like a
+        # 1-op hole. The whole gap is named at once or not at all.
+        declared = set(E.RECIPES) | set(E.REQUIRES_VIEWPORT)
+        self.assertEqual(
+            sorted(set(_REGISTRY) - declared), [],
+            "ops neither bound nor refused: implement-or-refuse means a CISP op "
+            "the GUI cannot drive must say so in REQUIRES_VIEWPORT")
+
+    def test_the_capability_surface_declares_every_op(self):
+        """The refusal must reach the CAPABILITIES a caller actually reads."""
+        caps = E.OnshapeGuiEnvironment.CAPABILITIES
+        declared = set(caps.supported_ops) | set(caps.unsupported_ops)
+        self.assertEqual(sorted(set(_REGISTRY) - declared), [])
+        self.assertIn("add_arc", caps.unsupported_ops)
 
     def test_bound_and_refused_are_disjoint(self):
         self.assertEqual(set(E.RECIPES) & set(E.REQUIRES_VIEWPORT), set())

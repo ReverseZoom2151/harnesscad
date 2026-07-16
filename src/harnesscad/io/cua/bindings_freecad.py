@@ -12,9 +12,12 @@ off a live FreeCAD 1.1.1 UIA tree on this machine (see the probe transcript):
 * the Part Design toolbar exposes ``Pad``, ``Pocket``, ``Revolve``, ``Groove``,
   ``Hole``, ``Additive Loft``, ``Additive Pipe``, ``Additive Primitive``,
   ``Boolean Operation``, ``Fillet``, ``Chamfer``, ``Draft``, ``Thickness``,
-  ``Mirror``, ``Linear Pattern``, ``Polar Pattern`` — a vocabulary that is
-  **isomorphic to the CISP op set**, so :data:`OP_TO_BUTTON` is a static dict and
-  not a vision problem;
+  ``Mirror``, ``Linear Pattern``, ``Polar Pattern`` -- a vocabulary that maps
+  **one-to-one onto the feature ops of the CISP op set**, so
+  :data:`OP_TO_BUTTON` is a static dict and not a vision problem. It is not the
+  WHOLE op set: sketch-entity ops and the CSG/transform ops have no Part Design
+  button at all, and they are refused by name in :data:`REQUIRES_VIEWPORT`
+  rather than left unhandled;
 * ``Additive Primitive`` (invoked directly, not through its dropdown) opens the
   Box task panel, whose three quantity fields are exposed under their Qt
   objectNames ``boxLength`` / ``boxWidth`` / ``boxHeight``, with ``OK`` / ``Cancel``
@@ -25,6 +28,13 @@ viewport. A fillet needs an EDGE, a pocket needs a FACE, a boolean needs a
 selection in the model tree — those are picks, not parameters, and a table cannot
 express them. They are listed in :data:`REQUIRES_VIEWPORT` with the reason, and
 the environment refuses them rather than pretending.
+
+Implement or refuse -- there is no third state. :data:`OP_TO_BUTTON` and
+:data:`REQUIRES_VIEWPORT` together must cover EVERY tag in the CISP registry, and
+a test asserts it. An op that is in neither is not "unsupported", it is undeclared:
+the environment would accept it, drive nothing, and report no taint, which is the
+silent pass the CISP protocol exists to forbid. When a new op is registered, this
+table is what makes the refusal loud.
 """
 
 from __future__ import annotations
@@ -129,9 +139,16 @@ OP_TO_BUTTON: Dict[str, str] = {
     "circular_pattern": "Polar Pattern",
 }
 
-#: Ops whose FreeCAD button exists and is resolvable, but which CANNOT be driven
-#: coordinate-free because they need a PICK (an edge, a face, a tree item) rather
-#: than a parameter. Declared, with the reason, and refused — never faked.
+#: Every op this environment REFUSES, each with the reason it cannot be driven
+#: coordinate-free. Declared, with the reason, and refused -- never faked.
+#:
+#: Most need a PICK (an edge, a face, a tree item) rather than a parameter, and
+#: for those the FreeCAD button exists and is resolvable. The rest are refused
+#: for reasons that are not picks at all and are named as such: the op lives in a
+#: different workbench, or Part Design simply has no such command. The refusal is
+#: what matters, not its cause -- this table plus :data:`OP_TO_BUTTON` must cover
+#: the whole CISP op set, so a new op is refused by default rather than silently
+#: unhandled.
 REQUIRES_VIEWPORT: Dict[str, str] = {
     "extrude": "Pad needs a sketch drawn in the Sketcher, which is viewport drawing",
     "revolve": "needs a sketch profile + an axis picked in the viewport",
@@ -151,10 +168,26 @@ REQUIRES_VIEWPORT: Dict[str, str] = {
     "add_line": "sketch drawing happens in the viewport",
     "add_circle": "sketch drawing happens in the viewport",
     "add_rectangle": "sketch drawing happens in the viewport",
+    "add_arc": "sketch drawing happens in the viewport",
+    "add_ellipse": "sketch drawing happens in the viewport",
+    "add_polygon": "sketch drawing happens in the viewport",
+    "add_spline": "sketch drawing happens in the viewport",
     "constrain": "constraints are applied to picked sketch entities",
     "set_param": "editing a feature needs a model-tree pick",
     "add_instance": "assembly is a different workbench",
     "mate": "assembly is a different workbench",
+    "primitive": "the Additive Primitive dropdown opens a DIFFERENT task panel per "
+                 "shape and only the Box panel's field names (boxLength / boxWidth "
+                 "/ boxHeight) were read off the live tree; the other shapes are "
+                 "not guessed",
+    "split": "sectioning needs the cutting datum plane picked in the viewport",
+    "thicken": "needs the faces to offset picked in the viewport",
+    "transform": "needs the body selected in the model tree",
+    "scale": "needs the body selected in the model tree",
+    "pattern_transform": "needs the seed feature selected in the model tree, and "
+                         "Part Design has no per-instance placement-list dialog",
+    "hull": "Part Design has no convex-hull command",
+    "minkowski": "Part Design has no Minkowski-sum command",
 }
 
 #: THE RECIPES: op runs the GUI can build coordinate-free, end to end.
