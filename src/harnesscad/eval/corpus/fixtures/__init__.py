@@ -17,6 +17,13 @@ imports the highest-value REAL fixtures found in the resources tree
   8 languages: a natural cross-backend differential oracle (MIT, vendored).
 * :mod:`.cadclaw_bom` -- CADCLAW's BOM sextet, 1 good + 5 labeled-wrong: a
   fleet-audit-style precision corpus for BOM verifiers (MIT, vendored).
+* :mod:`.step_canaries` -- pythonocc-core and ruststep STEP/BREP parse canaries
+  (LGPL / permissive: manifest-only, SHA-256 verified, nothing vendored).
+
+Every loader is reachable through this hub: :data:`LOADERS` names them,
+:func:`loader` returns one by name, and :func:`availability` is the per-source
+manifest census. (``eval/bench/imports`` is the external-benchmark sibling of
+this package and carries the same hub surface over the same dataclasses.)
 
 Discipline shared by every loader:
 
@@ -42,12 +49,28 @@ from typing import Dict, List, Optional, Tuple
 
 __all__ = [
     "FixtureEntry",
+    "LOADERS",
     "Manifest",
+    "availability",
     "fixtures_dir",
+    "loader",
     "resources_root",
     "sha256_of",
     "load_manifest",
 ]
+
+#: Loader module names, in the package docstring's order. Each module exposes
+#: ``manifest()`` plus its own case accessors, and ``main(argv)`` with
+#: ``--selfcheck``. Bound to real modules at the bottom of this file.
+LOADERS: Tuple[str, ...] = (
+    "brepnet_steps",
+    "cadgenbench_pose",
+    "manifold_meshes",
+    "cad_coder_heldout",
+    "birdhouse_nversion",
+    "cadclaw_bom",
+    "step_canaries",
+)
 
 
 def fixtures_dir() -> Path:
@@ -177,3 +200,63 @@ def load_manifest(source: str) -> Manifest:
         entries=entries,
         data_dir=data_dir,
     )
+
+
+def loader(name: str):
+    """Return one fixture loader module by its :data:`LOADERS` name."""
+    try:
+        return _MODULES[name]
+    except KeyError:
+        raise KeyError(
+            "no such fixture loader: %r (known: %s)"
+            % (name, ", ".join(LOADERS))) from None
+
+
+def availability() -> Dict[str, Dict[str, int]]:
+    """Per-source manifest availability -- what actually resolves on this box.
+
+    The honest census behind an empty case list: it tells "no resources
+    checkout" apart from "loader broken". Never raises, so it is safe on a
+    bare wheel where the manifest-mode sources resolve nothing.
+    """
+    out: Dict[str, Dict[str, int]] = {}
+    for name in LOADERS:
+        try:
+            out[name] = loader(name).manifest().availability()
+        except (OSError, ValueError, KeyError, json.JSONDecodeError):
+            out[name] = {"total": 0, "present": 0, "vendored": 0, "absent": 0}
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# The loader routes.
+#
+# Bottom-of-module on purpose: every loader does
+# ``from harnesscad.eval.corpus.fixtures import Manifest, load_manifest``, so
+# the cycle only resolves once this module has defined them. Real ``import``
+# statements rather than ``importlib`` lookups, so the capability index's AST
+# scan sees reachable modules. No loader touches a kernel at import time and
+# each resolves its data lazily, so binding them costs nothing and keeps the
+# resources/ tree optional.
+# --------------------------------------------------------------------------- #
+
+from harnesscad.eval.corpus.fixtures import birdhouse_nversion   # noqa: E402
+from harnesscad.eval.corpus.fixtures import brepnet_steps        # noqa: E402
+from harnesscad.eval.corpus.fixtures import cad_coder_heldout    # noqa: E402
+from harnesscad.eval.corpus.fixtures import cadclaw_bom          # noqa: E402
+from harnesscad.eval.corpus.fixtures import cadgenbench_pose     # noqa: E402
+from harnesscad.eval.corpus.fixtures import manifold_meshes      # noqa: E402
+from harnesscad.eval.corpus.fixtures import step_canaries        # noqa: E402
+
+#: name -> loader module, for :func:`loader`. Keys are exactly :data:`LOADERS`.
+_MODULES: Dict[str, object] = {
+    "brepnet_steps": brepnet_steps,
+    "cadgenbench_pose": cadgenbench_pose,
+    "manifold_meshes": manifold_meshes,
+    "cad_coder_heldout": cad_coder_heldout,
+    "birdhouse_nversion": birdhouse_nversion,
+    "cadclaw_bom": cadclaw_bom,
+    "step_canaries": step_canaries,
+}
+
+assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"
