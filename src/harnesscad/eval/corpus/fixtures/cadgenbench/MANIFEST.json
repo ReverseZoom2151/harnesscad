@@ -1,0 +1,99 @@
+{
+  "source_repo": "https://github.com/huggingface/cadgenbench",
+  "source_path": "resources/cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures",
+  "license": "Apache-2.0",
+  "attribution": "cadgenbench, Copyright 2026 Hugging Face. Apache License 2.0.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "box_10_10_10",
+      "role": "geometry",
+      "vendored": "geometry/box_10_10_10.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/box_10_10_10.step",
+      "sha256": "c4b79e3781087fc11e04eaab93e12d7a2a6673f460822f021ca18df040087987",
+      "bytes": 15364,
+      "format": "step"
+    },
+    {
+      "name": "box_10_10_10_cube_rot73",
+      "role": "geometry",
+      "vendored": "geometry/box_10_10_10_cube_rot73.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/box_10_10_10_cube_rot73.step",
+      "sha256": "f28a88c2e8d938cd3285cbcdb72ccf50f3dba6d2540f2ed6dde6ca144da57dd1",
+      "bytes": 16515,
+      "format": "step"
+    },
+    {
+      "name": "box_10_20_30",
+      "role": "geometry",
+      "vendored": "geometry/box_10_20_30.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/box_10_20_30.step",
+      "sha256": "0a25ce20f148185ad62167f45c75d9c8f07c0f59f5117e0c63dec0645c17a587",
+      "bytes": 15416,
+      "format": "step"
+    },
+    {
+      "name": "box_10_20_30_rot37_t10",
+      "role": "geometry",
+      "vendored": "geometry/box_10_20_30_rot37_t10.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/box_10_20_30_rot37_t10.step",
+      "sha256": "7893ed5128f4c1f114f99af5e4397fde14d087afda5e3bee4108cc4b91f25bb8",
+      "bytes": 17843,
+      "format": "step"
+    },
+    {
+      "name": "box_20_20_20",
+      "role": "geometry",
+      "vendored": "geometry/box_20_20_20.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/box_20_20_20.step",
+      "sha256": "29910e79a5f3a61a7806243c3abee6e63b20351eeaa36f85a20eba65edced3ad",
+      "bytes": 15442,
+      "format": "step"
+    },
+    {
+      "name": "l_bracket",
+      "role": "geometry",
+      "vendored": "geometry/l_bracket.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/l_bracket.step",
+      "sha256": "245e2ef6c23ffe8630581de96e2f9a3d19b05225c6dae0406c1fea932e87a487",
+      "bytes": 22276,
+      "format": "step"
+    },
+    {
+      "name": "l_bracket_l_rot45",
+      "role": "geometry",
+      "vendored": "geometry/l_bracket_l_rot45.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/l_bracket_l_rot45.step",
+      "sha256": "418f5a18fae3a56b35d0527619fd18d685d1bd73b2a1e8cbd978b3fa01c91d98",
+      "bytes": 23844,
+      "format": "step"
+    },
+    {
+      "name": "sphere_10",
+      "role": "geometry",
+      "vendored": "geometry/sphere_10.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/sphere_10.step",
+      "sha256": "6eea446a9fe13d7fca062af1da90d1ed9663613994d5b65f1fa69fba14b949df",
+      "bytes": 2060,
+      "format": "step"
+    },
+    {
+      "name": "tapered_box",
+      "role": "geometry",
+      "vendored": "geometry/tapered_box.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/geometry/tapered_box.step",
+      "sha256": "31f9bf80e0ed793aef84a2d5c5516d7f9062a3e72a45774280779e54e28c3826",
+      "bytes": 16986,
+      "format": "step"
+    },
+    {
+      "name": "open_shell",
+      "role": "known_bad",
+      "vendored": "open_shell.step",
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/open_shell.step",
+      "sha256": "735c5257fc20a7c55bbb1e9f6e544850b2c079731a4af8676f6a6c3b1541187e",
+      "bytes": 6009,
+      "format": "step"
+    }
+  ]
+}

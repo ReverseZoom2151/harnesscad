@@ -1,0 +1,5 @@
+The STEP fixtures in this directory are vendored from the
+cadgenbench project (tests/fixtures/), Copyright 2026
+Hugging Face, and are redistributed under the Apache
+License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+See MANIFEST.json for per-file provenance and SHA-256 sums.
