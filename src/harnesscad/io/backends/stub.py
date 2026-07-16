@@ -20,7 +20,8 @@ from harnesscad.core.cisp.ops import (
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, check_mate_ports, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog, mate_record,
+    thicken_delta,
 )
 
 #: The primitive shapes the semantic stub models (any kernel can build these).
@@ -263,7 +264,7 @@ class StubBackend:
         bad = check_mate_ports(op)
         if bad is not None:
             return _err(*bad)
-        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        self.mates.append(mate_record(op))
         return ApplyResult(True, [])
 
     def _set_param(self, op: SetParam) -> ApplyResult:
@@ -357,7 +358,8 @@ class StubBackend:
             return _err("bad-value", "thicken thickness must be non-zero")
         fid = self._new_id("f")
         self.features.append({"type": "thicken", "id": fid,
-                              "thickness": op.thickness})
+                              "thickness": thicken_delta(op),
+                              "both": bool(op.both)})
         return ApplyResult(True, [fid])
 
     def _hull(self, op: Hull) -> ApplyResult:

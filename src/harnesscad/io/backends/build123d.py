@@ -61,7 +61,8 @@ from harnesscad.core.cisp.ops import (
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, check_mate_ports, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog, mate_record,
+    thicken_delta,
 )
 from harnesscad.core.constraints import ConstraintGraph
 from harnesscad.domain.geometry.topology.selector_dsl import Entity, SelectorError
@@ -449,7 +450,7 @@ class Build123dBackend:
         bad = check_mate_ports(op)
         if bad is not None:
             return _err(*bad)
-        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        self.mates.append(mate_record(op))
         return ApplyResult(True, [])
 
     def _set_param(self, op: SetParam) -> ApplyResult:
@@ -1275,7 +1276,7 @@ class Build123dBackend:
         try:
             b = _b123d()
             target = self._solids[-1]
-            result = b.offset(target, amount=float(op.thickness))
+            result = b.offset(target, amount=thicken_delta(op))
             if _volume(result) <= MIN_VOLUME:
                 return _err("degenerate", "thicken produced a zero-volume solid")
         except BackendUnavailable:

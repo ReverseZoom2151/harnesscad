@@ -54,7 +54,8 @@ from harnesscad.core.cisp.ops import (
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, check_mate_ports, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog, mate_record,
+    thicken_delta,
 )
 from harnesscad.domain.geometry.mesh.halfedge import HalfedgeMesh
 from harnesscad.domain.geometry.mesh.winding_number import (
@@ -2167,9 +2168,9 @@ class FRepBackend:
                         "solid; a per-face thicken (Thicken.faces) needs a B-rep "
                         "face set this SDF kernel does not carry")
         target = self._bodies[-1]
-        delta = float(op.thickness)
+        delta = thicken_delta(op)
         target["node"] = Node("offset", child=target["node"], delta=delta)
-        self._record_feature("thicken", target, thickness=delta)
+        self._record_feature("thicken", target, thickness=delta, both=bool(op.both))
         self.solid_present = True
         return ApplyResult(True, [self.features[-1]["id"]])
 
@@ -2670,7 +2671,7 @@ class FRepBackend:
         bad = check_mate_ports(op)
         if bad is not None:
             return _err(*bad)
-        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        self.mates.append(mate_record(op))
         return ApplyResult(True, [])
 
     def _set_param(self, op: SetParam) -> ApplyResult:

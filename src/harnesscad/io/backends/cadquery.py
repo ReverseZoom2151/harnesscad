@@ -48,7 +48,8 @@ from harnesscad.core.cisp.ops import (
     Revolve, Chamfer, Hole, Shell, Draft,
     Loft, Sweep, LinearPattern, CircularPattern, Mirror,
     AddInstance, Mate, SetParam,
-    canonical_json, check_mate_ports, edit_oplog,
+    canonical_json, check_mate_ports, edit_oplog, mate_record,
+    thicken_delta,
 )
 from harnesscad.eval.verifiers.assembly import mate_dof
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
@@ -447,7 +448,7 @@ class CadQueryBackend:
         bad = check_mate_ports(op)
         if bad is not None:
             return _err(*bad)
-        self.mates.append({"kind": op.kind, "a": op.a, "b": op.b, "value": op.value})
+        self.mates.append(mate_record(op))
         return ApplyResult(True, [])
 
     def _set_param(self, op: SetParam) -> ApplyResult:
@@ -1351,7 +1352,7 @@ class CadQueryBackend:
             from OCP.BRepOffset import BRepOffset_Mode
             from OCP.GeomAbs import GeomAbs_JoinType
             mk = BRepOffsetAPI_MakeOffsetShape()
-            mk.PerformByJoin(target.val().wrapped, float(op.thickness), 1e-3,
+            mk.PerformByJoin(target.val().wrapped, thicken_delta(op), 1e-3,
                              BRepOffset_Mode.BRepOffset_Skin, False, False,
                              GeomAbs_JoinType.GeomAbs_Arc, False)
             result = cq.Workplane("XY").newObject([cq.Shape.cast(mk.Shape())])

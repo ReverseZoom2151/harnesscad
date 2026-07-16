@@ -697,6 +697,51 @@ def check_mate_ports(op: "Mate"):
     return None
 
 
+def thicken_delta(op: "Thicken") -> float:
+    """How far a :class:`Thicken` moves the solid's boundary, honouring ``both``.
+
+    ``thickness`` is the WALL. With ``both`` false the wall is grown to one side,
+    so the boundary moves the full ``thickness``. With ``both`` true the wall is
+    "symmetric about the surface" (:class:`Thicken`) -- half of it lands outside
+    the existing boundary and half inside, where the solid is already material --
+    so the boundary moves by HALF the thickness. That is the whole observable
+    difference between the two, and it is the same arithmetic in an SDF offset and
+    in an OCCT ``MakeOffsetShape``, which is why it lives here rather than being
+    re-derived (and, as it turned out, re-forgotten) in each backend.
+
+    Every backend read ``faces`` and ``thickness`` and none of them read ``both``:
+    a symmetric thicken and a one-sided one built the SAME solid, silently. Found
+    as a DEAD cell by ``eval/selftest/field_liveness.py`` once that oracle was
+    taught the op.
+    """
+    t = float(op.thickness)
+    return t / 2.0 if bool(getattr(op, "both", False)) else t
+
+
+def mate_record(op: "Mate") -> dict:
+    """The assembly-query record for a :class:`Mate` -- every field it carries.
+
+    A backend appends this to its ``mates`` list, and ``query('assembly')`` hands
+    it back. It exists because all four backends independently wrote
+    ``{"kind", "a", "b", "value"}`` and so dropped the four PORT fields on the
+    floor: :func:`check_mate_ports` gated them and then nothing recorded them, so a
+    mate that named ``base_port='p1'`` and one that named ``base_port='p2'``
+    produced identical model state. The ports were a parameter the model could set,
+    the brief could request, and no grader could see -- caught by
+    ``eval/selftest/field_liveness.py`` as four DEAD cells.
+
+    The port keys are only emitted for a PORT-TYPED mate, so the record for a plain
+    id-only mate is byte-identical to what it has always been.
+    """
+    rec = {"kind": op.kind, "a": op.a, "b": op.b, "value": op.value}
+    ports = {k: str(getattr(op, k, "") or "")
+             for k in ("base_port", "incoming_port",
+                       "base_port_type", "incoming_port_type")}
+    if any(ports.values()):
+        rec.update(ports)
+    return rec
+
+
 def edit_oplog(oplog, op: "SetParam"):
     """Apply a :class:`SetParam` edit to a recorded op log (pure, no side effects).
 

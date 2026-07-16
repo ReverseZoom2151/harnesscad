@@ -27,10 +27,11 @@ from __future__ import annotations
 import math
 import unittest
 
-from harnesscad.core.cisp.ops import (AddCircle, AddRectangle, Chamfer,
-                                      CircularPattern, Constrain, Extrude,
-                                      Fillet, Hole, LinearPattern, Mirror,
-                                      NewSketch, Shell)
+from harnesscad.core.cisp.ops import (AddCircle, AddInstance, AddRectangle,
+                                      Chamfer, CircularPattern, Constrain,
+                                      Extrude, Fillet, Hole, LinearPattern,
+                                      Mate, Mirror, NewSketch, Shell, Thicken,
+                                      thicken_delta)
 from harnesscad.io.backends.frep import (FRepBackend, MIN_WALL_CELLS,
                                          countersink_depth)
 
@@ -405,6 +406,87 @@ class ConstraintTest(unittest.TestCase):
                    Constrain("distance", "e1", None, 60.0)):
             _, err = build(rect + [op, Extrude("sk1", 10.0)])
             self.assertIsNone(err, "%r was refused: %s" % (op, err))
+
+
+class ThickenBothTest(unittest.TestCase):
+    """``Thicken.both`` was read by NO backend -- frep, cadquery, build123d, stub.
+
+    A symmetric thicken and a one-sided one accepted the same op and built the SAME
+    solid, silently. It stayed invisible because the op was added to the protocol
+    after the liveness oracle was written, so nothing ever probed it.
+    """
+
+    def test_a_symmetric_thicken_is_not_a_one_sided_one(self):
+        one, err = build(BOX + [Thicken((), 4.0, False)])
+        self.assertIsNone(err)
+        both, err = build(BOX + [Thicken((), 4.0, True)])
+        self.assertIsNone(err)
+        self.assertNotAlmostEqual(volume(one), volume(both), places=3,
+                                  msg="Thicken.both changed nothing -- the field "
+                                      "is dead again")
+
+    def test_both_moves_the_boundary_by_half_the_wall(self):
+        """'symmetric about the surface' (ops.Thicken): half the wall lands inside,
+        where the solid is already material -- so the boundary moves t/2."""
+        both, err = build(BOX + [Thicken((), 4.0, True)])
+        self.assertIsNone(err)
+        half, err = build(BOX + [Thicken((), 2.0, False)])
+        self.assertIsNone(err)
+        self.assertAlmostEqual(volume(both), volume(half), delta=0.02 * volume(half))
+
+    def test_thicken_delta_is_the_one_definition(self):
+        self.assertEqual(thicken_delta(Thicken((), 4.0, False)), 4.0)
+        self.assertEqual(thicken_delta(Thicken((), 4.0, True)), 2.0)
+
+
+class MatePortTest(unittest.TestCase):
+    """A port-typed Mate was GATED for admissibility and then recorded without its
+    ports: ``{"kind","a","b","value"}`` in all four backends. So a mate joining
+    'p1' and one joining 'p2' produced identical model state -- four DEAD cells."""
+
+    ASM = BOX + [AddInstance("f1", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                 AddInstance("f1", 50.0, 0.0, 0.0, 0.0, 0.0, 0.0)]
+
+    def _mates(self, op):
+        b, err = build(self.ASM + [op])
+        self.assertIsNone(err, "mate was refused: %s" % (err,))
+        return b.query("assembly")["mates"]
+
+    def test_the_ports_a_mate_names_are_recorded(self):
+        m = self._mates(Mate("coaxial", "i1", "i2", None,
+                             base_port="p1", incoming_port="q1",
+                             base_port_type="bore", incoming_port_type="axis"))[0]
+        self.assertEqual(m["base_port"], "p1")
+        self.assertEqual(m["incoming_port"], "q1")
+        self.assertEqual(m["base_port_type"], "bore")
+        self.assertEqual(m["incoming_port_type"], "axis")
+
+    def test_two_different_ports_are_two_different_assemblies(self):
+        a = self._mates(Mate("coaxial", "i1", "i2", None, base_port="p1",
+                             incoming_port="q1", base_port_type="bore",
+                             incoming_port_type="axis"))
+        b = self._mates(Mate("coaxial", "i1", "i2", None, base_port="p2",
+                             incoming_port="q1", base_port_type="bore",
+                             incoming_port_type="axis"))
+        self.assertNotEqual(a, b, "the port name was dropped again")
+
+    def test_a_plain_id_only_mate_records_exactly_what_it_always_did(self):
+        """The port keys are only emitted for a port-typed mate, so the historical
+        record is byte-identical and no downstream reader sees a new key."""
+        m = self._mates(Mate("rigid", "i1", "i2", None))[0]
+        self.assertEqual(m, {"kind": "rigid", "a": "i1", "b": "i2", "value": None})
+
+
+class SchemaCoverageTest(unittest.TestCase):
+    """The anti-rot latch that failed: three commits added twelve ops to the CISP
+    protocol and none of them taught the liveness oracle, so 48 fields -- the ones
+    most likely to be unwired, being the newest -- went unprobed."""
+
+    def test_every_op_field_has_a_liveness_fixture(self):
+        from harnesscad.eval.selftest import field_liveness
+
+        self.assertEqual(field_liveness.unmapped(), [],
+                         "the op schema grew and the liveness oracle did not")
 
 
 if __name__ == "__main__":  # pragma: no cover
