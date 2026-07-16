@@ -1,0 +1,918 @@
+{
+  "source_repo": "https://github.com/anniedoris/CAD-Coder",
+  "source_path": "resources/cad_repos/CAD-Coder-main/CAD-Coder-main/inference",
+  "license": "Apache-2.0",
+  "attribution": "CAD-Coder (github.com/anniedoris/CAD-Coder). Apache License 2.0. Not vendored by design (100-part set): files are read from resources/ when present.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "cadquery_test_data_subset100",
+      "role": "reference_code",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/cadquery_test_data_subset100.jsonl",
+      "sha256": "bf789235070db9d90a03d5bc756fbe6737e183967a28e01814a5b1148879a85d",
+      "bytes": 116932,
+      "format": "jsonl"
+    },
+    {
+      "name": "00002718",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00002718.step",
+      "sha256": "fb57546163e82c281f95e303357993004082f303c80e1a0a01e927bf29fa74b2",
+      "bytes": 32299,
+      "format": "step"
+    },
+    {
+      "name": "00014960",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00014960.step",
+      "sha256": "c1e33ffc826e1ddb63a742ad25dc11a435aad96e121d921d61aad704b69f73c6",
+      "bytes": 23706,
+      "format": "step"
+    },
+    {
+      "name": "00024819",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00024819.step",
+      "sha256": "cafc875736f8ca029c5c9609480f9760d3e086e3bec0b1d11adf0353051565f1",
+      "bytes": 18393,
+      "format": "step"
+    },
+    {
+      "name": "00039769",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00039769.step",
+      "sha256": "215a93e0dd6682428ffe18c0188be9cb3df536ab72100e76d56511825bd0b677",
+      "bytes": 18316,
+      "format": "step"
+    },
+    {
+      "name": "00059989",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00059989.step",
+      "sha256": "2d02f4520967dedb48356b5b28155173c850356c5c402656c5454350f0f95e7f",
+      "bytes": 60811,
+      "format": "step"
+    },
+    {
+      "name": "00070015",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00070015.step",
+      "sha256": "8f935484229983c3804322f4a8c43ff81324f94c23fda4a52766c5a9ca213659",
+      "bytes": 27390,
+      "format": "step"
+    },
+    {
+      "name": "00070021",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00070021.step",
+      "sha256": "8f30f969c7a0d9f12a597071dd49447f17fe83275b6ff84114efbeed7ddbca33",
+      "bytes": 18376,
+      "format": "step"
+    },
+    {
+      "name": "00106662",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00106662.step",
+      "sha256": "5986d098e21204597a07cfe7c059ef3151066f1198a48885ca80de3e62e89ea7",
+      "bytes": 25902,
+      "format": "step"
+    },
+    {
+      "name": "00118368",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00118368.step",
+      "sha256": "61121afd5d12af6c394860ba520933e04a8f454ca7d604a5f26aeae8ba1c83cc",
+      "bytes": 93361,
+      "format": "step"
+    },
+    {
+      "name": "00129614",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00129614.step",
+      "sha256": "82cfc26d15e9a015953c0b345ca585446692979677d2f728eacf3a9dbbf64212",
+      "bytes": 199064,
+      "format": "step"
+    },
+    {
+      "name": "00141107",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00141107.step",
+      "sha256": "d8deeb8ad61202d9a80786ba051129587116085ee257961b017cfd57c1ab611a",
+      "bytes": 32279,
+      "format": "step"
+    },
+    {
+      "name": "00144344",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00144344.step",
+      "sha256": "21a6cfb35807534d1b275bf7c2a5944f731cc2cda876e8d5a6167fea5d041585",
+      "bytes": 25870,
+      "format": "step"
+    },
+    {
+      "name": "00144677",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00144677.step",
+      "sha256": "3106aa6104a20ff06cae5ca4ee7b1b2c8a7eeea4e0e7180f29e4ae1718802990",
+      "bytes": 74335,
+      "format": "step"
+    },
+    {
+      "name": "00144800",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00144800.step",
+      "sha256": "c6cb768acf9fad15fd439a0f87608c627edcb4d60fe754a174509bfdd7ed8587",
+      "bytes": 82458,
+      "format": "step"
+    },
+    {
+      "name": "00152464",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00152464.step",
+      "sha256": "54269c297e171e7c23461f7c462ea754cad980d530f891b7a26370f4f60e8d8d",
+      "bytes": 24498,
+      "format": "step"
+    },
+    {
+      "name": "00167991",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00167991.step",
+      "sha256": "46782c3696bc64e12c30f729b83ef51e1e059f9ffc98e72819646841a15d0948",
+      "bytes": 7683,
+      "format": "step"
+    },
+    {
+      "name": "00186338",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00186338.step",
+      "sha256": "25e57a509341640e5a9d56b2068950333d35ecb3cbf8e991c34689185deae55e",
+      "bytes": 206210,
+      "format": "step"
+    },
+    {
+      "name": "00189332",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00189332.step",
+      "sha256": "ef4ed22b70916607c970ce348b93683a15bd661d8ab68e161773d97dce241f6f",
+      "bytes": 10808,
+      "format": "step"
+    },
+    {
+      "name": "00192544",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00192544.step",
+      "sha256": "9043a1c04c6efdfb86d8335fc18f6e96950b5905639d2ddf1ebb7ac9b56bddf5",
+      "bytes": 79352,
+      "format": "step"
+    },
+    {
+      "name": "00201504",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00201504.step",
+      "sha256": "bc921840938bfdf7ea39167865073ad8434176d90f851a4922b9093c09136c12",
+      "bytes": 37757,
+      "format": "step"
+    },
+    {
+      "name": "00211465",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00211465.step",
+      "sha256": "9826823ebb9772347bf9529124c16e9328729bcf187da6cbfa08c578d64b347d",
+      "bytes": 28177,
+      "format": "step"
+    },
+    {
+      "name": "00217029",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00217029.step",
+      "sha256": "9ba8385acb5a05f37b7d29781d09ae5970f01c61b70ca83a5f7a20cd8aadf6d3",
+      "bytes": 7645,
+      "format": "step"
+    },
+    {
+      "name": "00231272",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00231272.step",
+      "sha256": "80efc286483e3c0a9487537af98da3f0e30e6e5f248288e95a67ce41d868c1e0",
+      "bytes": 11954,
+      "format": "step"
+    },
+    {
+      "name": "00234447",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00234447.step",
+      "sha256": "03adbd88813d7741f7b2241c683156a805ad4ee7423cd32c1ec194cf7d633170",
+      "bytes": 18746,
+      "format": "step"
+    },
+    {
+      "name": "00241318",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00241318.step",
+      "sha256": "d918142c7e2edce70f32acb64d2b61c2a3a5a3349a2dabd9e5e2b6521d587481",
+      "bytes": 37738,
+      "format": "step"
+    },
+    {
+      "name": "00248776",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00248776.step",
+      "sha256": "b1446549baf9df41d3dd481004e70f21093406d9534830d9fb545d6bf766ac4d",
+      "bytes": 11587,
+      "format": "step"
+    },
+    {
+      "name": "00271284",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00271284.step",
+      "sha256": "f5285be4c8ac602798a05facea29b152696ad630696e9b8c24c2e6e353ddfcf8",
+      "bytes": 49160,
+      "format": "step"
+    },
+    {
+      "name": "00278384",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00278384.step",
+      "sha256": "b727580574d083ec00e3a2f407ee3edbaefc5c5374ec0bc1f8cc5f576933dfe8",
+      "bytes": 10936,
+      "format": "step"
+    },
+    {
+      "name": "00302501",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00302501.step",
+      "sha256": "872bb0a28921b139c773c034d6d6e2445ec38d56049e5de6475453a6b0eff8b7",
+      "bytes": 26039,
+      "format": "step"
+    },
+    {
+      "name": "00306373",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00306373.step",
+      "sha256": "1a068631b0b7c8bb92e3efd96e54c9cf45ba87e678936a2326f6686262c5c140",
+      "bytes": 41966,
+      "format": "step"
+    },
+    {
+      "name": "00315650",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00315650.step",
+      "sha256": "bb6e32cdaa7862a7a43babb2ccf42b0b1434f6cd4bee825fbeb09cdf3d055982",
+      "bytes": 10936,
+      "format": "step"
+    },
+    {
+      "name": "00319779",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00319779.step",
+      "sha256": "5c822863f9b10354189bf15442eedbd6710c8a455be9d00d8e6472a2b5d82bfa",
+      "bytes": 55351,
+      "format": "step"
+    },
+    {
+      "name": "00329280",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00329280.step",
+      "sha256": "9f7a0d8a732c0db714df156d74eb343fb1862d6ad8c6b872d2f5e8b973ed798b",
+      "bytes": 50362,
+      "format": "step"
+    },
+    {
+      "name": "00333069",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00333069.step",
+      "sha256": "c62a3fd2ffb568f2f98f9e6d2febfd2890a6aa3b32ff414c6951324f378f0dad",
+      "bytes": 30938,
+      "format": "step"
+    },
+    {
+      "name": "00342885",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00342885.step",
+      "sha256": "30e011f52b04c40f91942c48feb021997e0257a77f8f450892895de320709c55",
+      "bytes": 33268,
+      "format": "step"
+    },
+    {
+      "name": "00344795",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00344795.step",
+      "sha256": "6a1847afcbd1316180503e72efac2b52b5237cf8d3347e1a4a918b4abb06f8bb",
+      "bytes": 7208,
+      "format": "step"
+    },
+    {
+      "name": "00347202",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00347202.step",
+      "sha256": "344428b5fd8bbb0edee01a92e4066a47421858950518a8e28802610e4ec59592",
+      "bytes": 19741,
+      "format": "step"
+    },
+    {
+      "name": "00354124",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00354124.step",
+      "sha256": "d6c8d68cbda861e945e7626538a91a889429fba36a10d8eaef73b0550f536140",
+      "bytes": 57902,
+      "format": "step"
+    },
+    {
+      "name": "00361382",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00361382.step",
+      "sha256": "516c7cfd3f696fb6ee0be178c57d000f15ea5602baa40bd4f8cfc1e2364400d9",
+      "bytes": 31425,
+      "format": "step"
+    },
+    {
+      "name": "00369046",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00369046.step",
+      "sha256": "b39defeab3335166a4ecac348d7738d6234e7d7ead1e0183adf67af970e5a52b",
+      "bytes": 18845,
+      "format": "step"
+    },
+    {
+      "name": "00387732",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00387732.step",
+      "sha256": "df16fd5ec54da64db934ca157ec8fa6eb52732d6723705e2a49de759808bdf75",
+      "bytes": 40296,
+      "format": "step"
+    },
+    {
+      "name": "00410256",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00410256.step",
+      "sha256": "4edf546f14484cca6502959a246a53925954830cbe663fc5066b9a3750458045",
+      "bytes": 23222,
+      "format": "step"
+    },
+    {
+      "name": "00410476",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00410476.step",
+      "sha256": "01f3672fc2025bb3024b683f0e21f7eba1b018d4917017a2be851c20e28ffb37",
+      "bytes": 73485,
+      "format": "step"
+    },
+    {
+      "name": "00417409",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00417409.step",
+      "sha256": "20ea6bea164c1cd0a2615f6ad92ec7d5376a0c4f40166ca4b56fafb102109e89",
+      "bytes": 10804,
+      "format": "step"
+    },
+    {
+      "name": "00417580",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00417580.step",
+      "sha256": "93ce120a4e3ba370d5d73bba1b7d9aef7075b37278e0e7ff627fed450e911074",
+      "bytes": 33261,
+      "format": "step"
+    },
+    {
+      "name": "00427410",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00427410.step",
+      "sha256": "a84d7c77ca88b3bdca5d005ac90da6560d733e9354e8d400d603458fce3934d3",
+      "bytes": 11006,
+      "format": "step"
+    },
+    {
+      "name": "00442545",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00442545.step",
+      "sha256": "df5ec5045f381e614d23803aeb912f1fb2ae6035f588282b1d7f4c7c28c48d1e",
+      "bytes": 60527,
+      "format": "step"
+    },
+    {
+      "name": "00450000",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00450000.step",
+      "sha256": "e7c3649012b2583460a2220c243942733e23cdb4f28ff63b9b7f8edf928267a1",
+      "bytes": 22305,
+      "format": "step"
+    },
+    {
+      "name": "00455421",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00455421.step",
+      "sha256": "78fff28fbf14ce7dfa3d918387dd969f3d6744095693395049774e6277b0dc21",
+      "bytes": 79946,
+      "format": "step"
+    },
+    {
+      "name": "00461826",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00461826.step",
+      "sha256": "806a6c0a4acb908e825ba9f3d1ff6356ced3345571cbf80a0080c735b65ed8fa",
+      "bytes": 18576,
+      "format": "step"
+    },
+    {
+      "name": "00467787",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00467787.step",
+      "sha256": "b82dbed8cfc5971ea141c8dc7eab85cc33b3f388ca6c33a5043304bfc9bb68f1",
+      "bytes": 18729,
+      "format": "step"
+    },
+    {
+      "name": "00472674",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00472674.step",
+      "sha256": "1bd347b93b19f145d6254f480c74d50e1427d50b8bca59391c9687a817bc66ab",
+      "bytes": 60064,
+      "format": "step"
+    },
+    {
+      "name": "00486941",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00486941.step",
+      "sha256": "b278bf9cc473a735a7734a5261dfc567ac2c22cab283ca173672e05232b81816",
+      "bytes": 43078,
+      "format": "step"
+    },
+    {
+      "name": "00507123",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00507123.step",
+      "sha256": "d009ff9bd1b933b580d7b79ee9a074f98a08598c9780dc3858109d16d30698d8",
+      "bytes": 26931,
+      "format": "step"
+    },
+    {
+      "name": "00512113",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00512113.step",
+      "sha256": "35cda094b737bdbf4c83b9e76465a58aec7f072b9a8a40004860bb6aab7fd46d",
+      "bytes": 11360,
+      "format": "step"
+    },
+    {
+      "name": "00519312",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00519312.step",
+      "sha256": "fd47e30d5d500101416fd63868cedee319a5396f566d2226281ab450cfd235f8",
+      "bytes": 29973,
+      "format": "step"
+    },
+    {
+      "name": "00528846",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00528846.step",
+      "sha256": "56aa0dada6cd24f9ac4fc63b1936c160c349c61de4e75c8c0e4a182b231817f9",
+      "bytes": 35038,
+      "format": "step"
+    },
+    {
+      "name": "00531511",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00531511.step",
+      "sha256": "ce7932ca0c5dbfdc98e8b23da0835d9bdba4c027961233835e40c1958a91be25",
+      "bytes": 139887,
+      "format": "step"
+    },
+    {
+      "name": "00534824",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00534824.step",
+      "sha256": "3f818a61cf52fcf2588679d01b9e69f338418d7c224ad01ee38b3eca6abc66d8",
+      "bytes": 81880,
+      "format": "step"
+    },
+    {
+      "name": "00536640",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00536640.step",
+      "sha256": "e4d2d28cb7f4599573cdcd213a06afa9713380392591d49ea4248e62b6f0afea",
+      "bytes": 18017,
+      "format": "step"
+    },
+    {
+      "name": "00540970",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00540970.step",
+      "sha256": "ee2f8c832fbc5f384ccd5f9ab352fe8d2042b8e757f67253783d128dc5ac87c2",
+      "bytes": 29341,
+      "format": "step"
+    },
+    {
+      "name": "00574088",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00574088.step",
+      "sha256": "94d5e158fc3ab683e0afae64b2a698dd5ff98a412e5bf85648fafe8ddfeb504d",
+      "bytes": 18665,
+      "format": "step"
+    },
+    {
+      "name": "00578255",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00578255.step",
+      "sha256": "263f6f77c50743946994692f88829dd1fad31e77c9331126f412a3c0edfd87da",
+      "bytes": 39876,
+      "format": "step"
+    },
+    {
+      "name": "00600430",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00600430.step",
+      "sha256": "99ed0307b8072c005b320f07243e1d962966322a60c9e21b05200b0e915afc80",
+      "bytes": 18552,
+      "format": "step"
+    },
+    {
+      "name": "00618731",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00618731.step",
+      "sha256": "8338784d26b110e7a29db9b8fd1a1f8823466f46875a2176629b702e5cc573db",
+      "bytes": 18409,
+      "format": "step"
+    },
+    {
+      "name": "00629922",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00629922.step",
+      "sha256": "f649f0c32555f1fd5f91f4ced290e9187f84f33f053435414b7eb2da7f2a235e",
+      "bytes": 18629,
+      "format": "step"
+    },
+    {
+      "name": "00642208",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00642208.step",
+      "sha256": "83fb01ca853ddd12f2114ca23fb77b2cb5170009d78b037e04cc29d35836f124",
+      "bytes": 11110,
+      "format": "step"
+    },
+    {
+      "name": "00669299",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00669299.step",
+      "sha256": "755cbce8ef516c822b3877762de87c571181e698133b2971a310209610d4c962",
+      "bytes": 7737,
+      "format": "step"
+    },
+    {
+      "name": "00675497",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00675497.step",
+      "sha256": "2874c32c7bdb8a67ef6e88126cd824b6703f9afdecab750e9f315a1a43a174f7",
+      "bytes": 18757,
+      "format": "step"
+    },
+    {
+      "name": "00682091",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00682091.step",
+      "sha256": "d5452bbba80bf1690e23a5ec5c1435335468bdb49319b1b1cc65be09151bc0ab",
+      "bytes": 33080,
+      "format": "step"
+    },
+    {
+      "name": "00694405",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00694405.step",
+      "sha256": "6687c20164267b14e754d20bff2f293109e48039e79bd58944069bd36916f18b",
+      "bytes": 47835,
+      "format": "step"
+    },
+    {
+      "name": "00707758",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00707758.step",
+      "sha256": "eda71f364f37d3375a6789faaf1d9862afc9f767589de496fd62fba54ddfd806",
+      "bytes": 10541,
+      "format": "step"
+    },
+    {
+      "name": "00747180",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00747180.step",
+      "sha256": "b440d4aa16b59e001ec48f7613fc7cf5ffada34a2826ea4624c9dc366af75517",
+      "bytes": 19005,
+      "format": "step"
+    },
+    {
+      "name": "00753045",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00753045.step",
+      "sha256": "7dcfa8de642aead8d93afea6d577217db06100969278214ef900f5eeac6690f1",
+      "bytes": 18665,
+      "format": "step"
+    },
+    {
+      "name": "00763349",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00763349.step",
+      "sha256": "df24b704139bf314dfff1a8bd64be934679b676e1f1cfca27b8ba6be59a4b466",
+      "bytes": 55167,
+      "format": "step"
+    },
+    {
+      "name": "00765253",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00765253.step",
+      "sha256": "4585ab625d3375151d86e2694c394a039c5216fbe2d4d31a480540f838bc7389",
+      "bytes": 10541,
+      "format": "step"
+    },
+    {
+      "name": "00773053",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00773053.step",
+      "sha256": "79e934ff168ed217f9521a008ab244622cf12c093309c46d01f8d755e3cfd565",
+      "bytes": 82788,
+      "format": "step"
+    },
+    {
+      "name": "00787182",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00787182.step",
+      "sha256": "8f1ec3a4f870344394060ac54d5e001b8301a96ca83260538501227e2a264530",
+      "bytes": 37736,
+      "format": "step"
+    },
+    {
+      "name": "00789379",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00789379.step",
+      "sha256": "273bee0efdf55c2d0cfa1c1006d1e083a7d23fc3e6ab8dbedd79ea70b7fdeaf3",
+      "bytes": 17841,
+      "format": "step"
+    },
+    {
+      "name": "00790402",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00790402.step",
+      "sha256": "b7a9ef6f49e9a1f8530325efcf13d488381bbb712696ae095a995ecc168bbc4c",
+      "bytes": 43644,
+      "format": "step"
+    },
+    {
+      "name": "00812431",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00812431.step",
+      "sha256": "2c5841d4b43e03766e17bd04049284551539b4aa2e1510abaa49a472edcdf29a",
+      "bytes": 30221,
+      "format": "step"
+    },
+    {
+      "name": "00819437",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00819437.step",
+      "sha256": "7dd9de90148653656955ca6e5bb59596a024d2aa02b7b9f762bea013fe449e06",
+      "bytes": 21488,
+      "format": "step"
+    },
+    {
+      "name": "00824840",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00824840.step",
+      "sha256": "5a8597a4a54189f9ecfd6faae735e3c3f3c158fbedee70e5475cb12115ff592d",
+      "bytes": 17648,
+      "format": "step"
+    },
+    {
+      "name": "00824990",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00824990.step",
+      "sha256": "4266194294c3ad85937a37d9042b7d232537545535dfeb3842c0a57f78d15a55",
+      "bytes": 10541,
+      "format": "step"
+    },
+    {
+      "name": "00827834",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00827834.step",
+      "sha256": "095fcafc6fda8ac440e1cecbf9870fb5b79eece551524517c9aaba147949b4df",
+      "bytes": 130133,
+      "format": "step"
+    },
+    {
+      "name": "00828865",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00828865.step",
+      "sha256": "829e74ae42919e3c1a15419cf445e02340e3a0adaafb1bfaf099a99d7f4e9c18",
+      "bytes": 18791,
+      "format": "step"
+    },
+    {
+      "name": "00852119",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00852119.step",
+      "sha256": "752f6bd0a61b366992964081820c9686a8a2e68cea0c26a4639bca3be0ae0b54",
+      "bytes": 31840,
+      "format": "step"
+    },
+    {
+      "name": "00878404",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00878404.step",
+      "sha256": "e4ae6f9b3f6fcdc37d19f1d792f16be387c0c4057481c241d57db6df92dec03b",
+      "bytes": 53175,
+      "format": "step"
+    },
+    {
+      "name": "00904404",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00904404.step",
+      "sha256": "5496063f9bcfb667074ee790c4b5da3b8d1428b08c4430cb7467b472f0f3db22",
+      "bytes": 113259,
+      "format": "step"
+    },
+    {
+      "name": "00932166",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00932166.step",
+      "sha256": "fe7aef1977bccb4feb9beee73f3f509440162451ee3c42d8dc2f082946823b4d",
+      "bytes": 115643,
+      "format": "step"
+    },
+    {
+      "name": "00946705",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00946705.step",
+      "sha256": "60dc3eb2c121dc9d98148e50b3b8fc5da86730e7f00bfdc3df920a5c937361c6",
+      "bytes": 18724,
+      "format": "step"
+    },
+    {
+      "name": "00948991",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00948991.step",
+      "sha256": "628c8b4dc7c41d2c994f26e8f3564e0705b476655fc576f053acfaa41efe8c4b",
+      "bytes": 18728,
+      "format": "step"
+    },
+    {
+      "name": "00950919",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00950919.step",
+      "sha256": "d4016612e47d8de36c5416e3590cc11c3746cec249e086c493449094e3dcd379",
+      "bytes": 10938,
+      "format": "step"
+    },
+    {
+      "name": "00955962",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00955962.step",
+      "sha256": "7a1eceb2caa5cb0578ddf280a0c2bb099030b87b94ecfc8180d11c37ae313358",
+      "bytes": 24915,
+      "format": "step"
+    },
+    {
+      "name": "00959048",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00959048.step",
+      "sha256": "01d127c6086d427e77c9effbe8876dc690f044ce5aed45261b14a6bc4e26f0ce",
+      "bytes": 31087,
+      "format": "step"
+    },
+    {
+      "name": "00961053",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00961053.step",
+      "sha256": "2ffa5597a75b8d8ec14060d8a66f254c44848dfa821dd9ffdda75430a6303e0a",
+      "bytes": 64443,
+      "format": "step"
+    },
+    {
+      "name": "00966577",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00966577.step",
+      "sha256": "d4f2f2f37669ba68becf917c8cf95ed9c3eb27d15a6bcbdcecccb294c0cfcb95",
+      "bytes": 77831,
+      "format": "step"
+    },
+    {
+      "name": "00972984",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00972984.step",
+      "sha256": "50f912fcc43a9d2f61bc38cbc53c650ee64150d8ebed1582813e804ddeb6b29c",
+      "bytes": 50126,
+      "format": "step"
+    },
+    {
+      "name": "00976443",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00976443.step",
+      "sha256": "3691b93c3bc95ba1760b10754a7ad7c68e6b21ce69934217c3938ae25042ef89",
+      "bytes": 10858,
+      "format": "step"
+    },
+    {
+      "name": "00992484",
+      "role": "gt_step",
+      "vendored": null,
+      "resource": "cad_repos/CAD-Coder-main/CAD-Coder-main/inference/test100_gt_steps/00992484.step",
+      "sha256": "067b9d1d7eff94229d4d53f7c5a18e68b9b592bac3cc8f3317c60192bb0499d3",
+      "bytes": 68144,
+      "format": "step"
+    }
+  ]
+}
