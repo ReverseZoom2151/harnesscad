@@ -1,0 +1,17 @@
+{
+  "source_repo": "cad-judge",
+  "source_path": "cad_repos/cad-judge-main/cad-judge-main/data",
+  "license": "Apache-2.0",
+  "attribution": "cad-judge, Zhou et al., ICASSP 2026 (Apache License 2.0); data/cad_seq .pth files skipped entirely",
+  "entries": [
+    {
+      "name": "prompts.json",
+      "role": "prompt_tiers",
+      "vendored": "prompts.json",
+      "resource": "cad_repos/cad-judge-main/cad-judge-main/data/prompts.json",
+      "sha256": "dd6df7cc661cab3544fedc3aa27c238502de1dee0ec48863739bd5bc2839a2a7",
+      "bytes": 9161,
+      "format": "json"
+    }
+  ]
+}

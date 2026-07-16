@@ -1,0 +1,14 @@
+prompts.json in this directory is vendored verbatim from the cad-judge
+project, data/prompts.json.
+
+Source: cad-judge (resources/cad_repos/cad-judge-main/cad-judge-main)
+  "CAD-Judge: Toward Efficient Morphological Grading and Verification for
+  Text-to-CAD Generation", Zhou, Han, Du, Fang, Qiu, Zhang (ICASSP 2026,
+  arXiv:2508.04002)
+License: Apache License, Version 2.0
+
+Redistribution permitted under the Apache License 2.0; the full license text
+is in the source repository's LICENSE file. The repository's data/cad_seq
+model-weight (.pth) files are deliberately NOT imported in any form.
+Provenance (resources-relative source path, SHA-256, byte count) is recorded
+in MANIFEST.json alongside this notice.
