@@ -1068,9 +1068,98 @@ def claims() -> Dict[str, Any]:
     }
 
 
+def _document_state(m: Dict[str, Any], body: str):
+    """A validation_rules_md DocumentState built from the gate's measurement.
+
+    validation_rules_md's BodyState is documented as "a neutral measured-state
+    model replacing the live FreeCAD document, so the checks compose with the
+    harness's own measurement layer instead of a running CAD host". This gate IS
+    that measurement layer, so this is the adapter the module was written for.
+
+    Only genuinely measured quantities are filled in. `None` in a BodyState
+    means "not measured", and the checks FAIL on it with an explicit message
+    rather than passing silently -- so a field the gate cannot honestly supply
+    is left None on purpose, not defaulted into a fake pass. The gate measures
+    ONE mesh, so the document holds one body under `body`, and `total_bodies`
+    is 1 by construction.
+    """
+    from harnesscad.eval.verifiers.validation_rules_md import (BodyState,
+                                                               DocumentState)
+
+    bbox = m.get("bbox")
+    bbox_t = (tuple(float(x) for x in bbox)
+              if isinstance(bbox, (list, tuple)) and len(bbox) == 3 else None)
+    lo, hi = m.get("bbox_min"), m.get("bbox_max")
+    z_range = ((float(lo[2]), float(hi[2]))
+               if isinstance(lo, (list, tuple)) and isinstance(hi, (list, tuple))
+               and len(lo) == 3 and len(hi) == 3 else None)
+    volume = m.get("volume")
+    # "Valid solid" in the gate's own terms: closed, 2-manifold, and not
+    # self-intersecting. When self-intersection could not be checked (the mesh
+    # was too big to do it honestly) validity is left UNMEASURED rather than
+    # asserted from the other two -- the gate does not certify what it skipped.
+    valid: Optional[bool] = None
+    if m.get("self_intersection_checked"):
+        valid = bool(m.get("watertight") and m.get("manifold")
+                     and not m.get("self_intersections"))
+    doc = DocumentState()
+    doc.add(BodyState(
+        label=body,
+        bbox=bbox_t,
+        z_range=z_range,
+        volume=float(volume) if isinstance(volume, (int, float)) else None,
+        solid_count=1 if m.get("triangle_count") else 0,
+        is_valid_solid=valid,
+    ))
+    return doc
+
+
+def _rule_failures(m: Dict[str, Any], validation_rules: str,
+                   validation_params: Optional[Dict[str, Any]],
+                   body: str) -> Tuple[List[Failure], List[Dict[str, Any]]]:
+    """Run a caller's VALIDATION.md against the measurement. (failures, results).
+
+    A VALIDATION.md is a DECLARED intent -- the caller states what the part must
+    be -- so a failing rule is a `declared` Failure and the gate refuses, which
+    is the same treatment the op stream's declared intent already gets.
+
+    A rules document that cannot be parsed or run is itself a failure, not a
+    silent pass: this gate exists so that "no complaint" can never mean "nobody
+    looked".
+    """
+    from harnesscad.eval.verifiers.validation_rules_md import validate
+
+    try:
+        results = validate(_document_state(m, body), validation_params or {},
+                           validation_rules)
+    except Exception as exc:  # noqa: BLE001 - a broken contract is a refusal
+        return [Failure("validation-rules-error", "declared",
+                        f"the supplied validation rules could not be run: "
+                        f"{type(exc).__name__}: {exc}",
+                        measured=None, expected="a runnable VALIDATION.md")], []
+    failures = [
+        Failure(f"validation-rule:{r.check}", "declared", r.message,
+                measured=r.actual, expected=r.expected)
+        for r in results if not r.passed and not r.skipped
+    ]
+    return failures, [r.to_dict() for r in results]
+
+
 def check(model: Any, path: Optional[str] = None, *, source: Any = None,
-          forced: bool = False) -> GateReport:
-    """Measure the artifact and judge it. Never raises, never writes; pure."""
+          forced: bool = False, validation_rules: Optional[str] = None,
+          validation_params: Optional[Dict[str, Any]] = None,
+          validation_body: str = "Body") -> GateReport:
+    """Measure the artifact and judge it. Never raises, never writes; pure.
+
+    ``validation_rules`` optionally supplies a freecad-ai VALIDATION.md
+    (eval/verifiers/validation_rules_md.py): a declarative per-body acceptance
+    contract -- bbox, volume formula, solid count, validity -- run against this
+    gate's own measurement, with ``validation_params`` binding its parameter
+    block and ``validation_body`` naming the single measured body its
+    ``### <BodyLabel>`` rules target. A failing rule refuses the artifact like
+    any other declared intent. ``None`` -- the default -- runs no rules and
+    imports nothing, so every existing caller is unaffected.
+    """
     geom = _geometry(model, source)
     if geom is None:
         # Nothing mesh-shaped: a StepFile / part-21 text / CSG tree handed
@@ -1096,6 +1185,13 @@ def check(model: Any, path: Optional[str] = None, *, source: Any = None,
     failures = measured_failures(m)
     declared, checks = declared_failures(source if source is not None else model)
     failures.extend(declared)
+    if validation_rules is not None:
+        rule_failures, rule_results = _rule_failures(
+            m, validation_rules, validation_params, validation_body)
+        failures.extend(rule_failures)
+        m["validation_rules"] = {"body": validation_body,
+                                 "results": rule_results}
+        checks = list(checks) + rule_results
     m["declared_intent"] = "checked" if checks else "none-declared"
     m["proves"] = list(PROVES)
     m["does_not_prove"] = list(DOES_NOT_PROVE)
@@ -1154,15 +1250,24 @@ def write_sidecar(path: str, report: GateReport) -> str:
 
 
 def guard(model: Any, path: Optional[str] = None, *, source: Any = None,
-          force: bool = False) -> GateReport:
+          force: bool = False, validation_rules: Optional[str] = None,
+          validation_params: Optional[Dict[str, Any]] = None,
+          validation_body: str = "Body") -> GateReport:
     """Judge an artifact on its way out. Raise :class:`InvalidArtifact` or pass.
 
     This is the single call every write path makes *before* it opens the file.
     With ``force=True`` a failing artifact is allowed through, but the returned
     report says ``ok=False`` and the caller MUST write the sidecar (which
     :func:`gated_write` does for you).
+
+    ``validation_rules`` / ``validation_params`` / ``validation_body`` are
+    passed through to :func:`check` -- this is the door every write goes
+    through, so a declarative acceptance contract has to be reachable from it.
     """
-    report = check(model, path, source=source, forced=force)
+    report = check(model, path, source=source, forced=force,
+                   validation_rules=validation_rules,
+                   validation_params=validation_params,
+                   validation_body=validation_body)
     if not report.ok and not force:
         raise InvalidArtifact(report)
     return report
