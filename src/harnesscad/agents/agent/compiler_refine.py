@@ -20,6 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Sequence, Tuple
 
+from harnesscad.agents.agent.minimal_diff_repair import discipline_lines
 from harnesscad.eval.judge.compiler_review import (
     ReviewResult,
     feedback_message,
@@ -28,6 +29,7 @@ from harnesscad.eval.judge.compiler_review import (
 
 __all__ = [
     "FEEDBACK_PREFIX",
+    "REPAIR_GOAL_PREFIX",
     "build_refine_prompt",
     "RefineStep",
     "RefineResult",
@@ -37,10 +39,24 @@ __all__ = [
 #: Prefix inserted before the compiler diagnostic when re-prompting.
 FEEDBACK_PREFIX = "\n\n[Compiler feedback] "
 
+#: Header for the appended minimal-diff repair discipline (opt-in).
+REPAIR_GOAL_PREFIX = "\n[Repair goal]\n"
 
-def build_refine_prompt(base_prompt: str, result: ReviewResult) -> str:
-    """Append the compiler diagnostic to the base prompt for a refine pass."""
-    return f"{base_prompt}{FEEDBACK_PREFIX}{feedback_message(result)}"
+
+def build_refine_prompt(base_prompt: str, result: ReviewResult,
+                        *, minimal_diff: bool = False) -> str:
+    """Append the compiler diagnostic to the base prompt for a refine pass.
+
+    With ``minimal_diff=True`` the AgentSCAD repair discipline
+    (:mod:`harnesscad.agents.agent.minimal_diff_repair`) is appended: fix only
+    the failed check, leave what passes alone, preserve the intent features.
+    Off by default, so the loop's existing output is unchanged.
+    """
+    prompt = f"{base_prompt}{FEEDBACK_PREFIX}{feedback_message(result)}"
+    if minimal_diff:
+        prompt += ("\n" + REPAIR_GOAL_PREFIX
+                   + "\n".join(f"- {rule}" for rule in discipline_lines()))
+    return prompt
 
 
 @dataclass(frozen=True)
