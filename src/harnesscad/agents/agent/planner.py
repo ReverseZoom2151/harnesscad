@@ -212,6 +212,18 @@ class PlanError(RuntimeError):
         self.raw = raw
 
 
+def _diag_code(d: Any) -> str:
+    """The code of a diagnostic, whether it is a dict or a Diagnostic object.
+
+    Both forms reach the planner (the harness feeds back dicts; a caller driving
+    it directly may pass Diagnostics), so the reader tolerates either and
+    returns "" for anything unrecognisable.
+    """
+    if isinstance(d, dict):
+        return str(d.get("code") or "")
+    return str(getattr(d, "code", "") or "")
+
+
 def prioritize_diagnostics(items: List[Any], top_k: int = 0) -> List[Any]:
     """Rank model-facing diagnostics ERROR -> WARNING -> INFO, then take the top-k.
 
@@ -270,7 +282,9 @@ class Planner:
                  exemplars: int = 3,
                  max_diagnostics: int = 5,
                  retriever: Any = None,
-                 max_retrieval_rounds: int = 3) -> None:
+                 max_retrieval_rounds: int = 3,
+                 quality_references: bool = False,
+                 max_iterations: int = 5) -> None:
         self.llm = llm
         self.use_tool = use_tool
         self.feedback_tiers = tuple(feedback_tiers)
@@ -309,6 +323,27 @@ class Planner:
         self.retriever = retriever
         self.max_retrieval_rounds = int(max_retrieval_rounds)
         self.last_retrievals: List[Dict[str, Any]] = []
+        # STATE-CONDITIONED REFERENCES (agents/agent/quality_references.py).
+        # The loop's repair advice used to depend only on the LAST diagnostics;
+        # the injector conditions on the SHAPE of the trajectory instead (first
+        # iteration, the same error twice, the same error three times, running
+        # out of iterations). The planner is the only place a prompt is built,
+        # so it is where the snippets are injected -- and it already sees every
+        # iteration's diagnostics, so it can keep the error history itself
+        # without the harness threading anything through.
+        #
+        # OFF by default: it appends to the prompt, and an unchanged prompt is
+        # the contract every existing caller has. `quality_references=True`
+        # opts in.
+        self.quality_references = bool(quality_references)
+        self.max_iterations = int(max_iterations)
+        #: Advisory-reference bookkeeping: how many prompts we have built (the
+        #: iteration index) and the ordered error-code history driving the
+        #: stuck-loop snippets. Only touched when quality_references is on.
+        self._qr_iteration = 0
+        self._qr_error_history: List[str] = []
+        #: The snippets injected into the LAST prompt (introspection/tests).
+        self.last_references: List[str] = []
 
     # --- message assembly ------------------------------------------------
     def build_messages(
@@ -351,8 +386,51 @@ class Planner:
         trusted = prioritize_diagnostics(trusted, self.max_diagnostics)
         if trusted:
             parts.append(PRIOR_ATTEMPT_HEADER + "\n" + render(trusted))
+        # State-conditioned references LAST: they are advice about how to act on
+        # everything above (the brief, the state, the diagnostics), so they read
+        # as the closing instruction rather than preamble. No-op unless opted in.
+        parts.extend(self._references(diagnostics))
         msgs.append(user("\n\n".join(parts)))
         return msgs
+
+    def _references(self, diagnostics: Optional[List[Any]]) -> List[str]:
+        """State-conditioned reference snippets for THIS iteration.
+
+        Advances the planner's own iteration/error-history bookkeeping and asks
+        `quality_references.references_for_state` what to inject. Returns []
+        when `quality_references` is off -- the default -- so the assembled
+        prompt is byte-for-byte the pre-references one.
+
+        Never fatal: injected context is an enhancement, and a crash here must
+        not cost the caller their plan.
+        """
+        self.last_references = []
+        if not self.quality_references:
+            return []
+        try:
+            from harnesscad.agents.agent.quality_references import (
+                QUALITY_FIX_MAP, AgentLoopState, references_for_state)
+
+            self._qr_iteration += 1
+            codes = [_diag_code(d) for d in (diagnostics or [])]
+            codes = [c for c in codes if c]
+            self._qr_error_history.extend(codes)
+            # Only codes the fix map actually knows earn a targeted repair line;
+            # an unknown code would otherwise spend prompt budget on a generic
+            # "inspect the reported issue" that says nothing the diagnostics
+            # above have not already said. Unknown codes still count toward the
+            # error HISTORY, which is what detects a stuck loop.
+            failed = [c for c in codes if c in QUALITY_FIX_MAP]
+            state = AgentLoopState(
+                iteration=self._qr_iteration,
+                max_iterations=self.max_iterations,
+                failed_quality_codes=failed,
+                error_history=tuple(self._qr_error_history),
+            )
+            self.last_references = references_for_state(state)
+        except Exception:  # noqa: BLE001 - advisory context, never a gate
+            self.last_references = []
+        return self.last_references
 
     def _recall(self, brief: str) -> Any:
         """Retrieve from memory, if a memory is attached. Never fatal.
