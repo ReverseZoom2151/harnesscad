@@ -1,0 +1,12 @@
+{
+  "analysis_type": "buckling",
+  "case_id": "column_buckling",
+  "description": "Clamped-free slender column linear (Euler) buckling factor",
+  "metrics": {
+    "lowest_buckling_factor": {
+      "tolerance_percent": 20.0,
+      "unit": "dimensionless",
+      "value": 86.35904023671266
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "analysis_type": "static",
+  "case_id": "fixed_fixed_center_load",
+  "description": "Fixed-fixed beam with center point load on top face",
+  "metrics": {
+    "max_displacement": {
+      "note": "Default-mesh real-ccx regression metric; point-load local compliance makes this a solver-loop golden value, not a certification reference.",
+      "tolerance_percent": 15.0,
+      "unit": "mm",
+      "value": 0.000657
+    }
+  }
+}

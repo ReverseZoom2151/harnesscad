@@ -1,0 +1,98 @@
+{
+  "source_repo": "cad-cae-copilot (resources/cad_repos/cad-cae-copilot-main/cad-cae-copilot-main)",
+  "source_path": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea",
+  "license": "MIT",
+  "attribution": "cad-cae-copilot, MIT License, Copyright (c) 2026 armpro24-blip",
+  "entries": [
+    {
+      "name": "corpus",
+      "role": "corpus",
+      "vendored": "corpus.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/corpus.json",
+      "sha256": "f3cfa25001074fde00d180c7de9a7b00064a7a2b955f06533cc5e6294aa7043c",
+      "bytes": 1618,
+      "format": "json"
+    },
+    {
+      "name": "tension_rod",
+      "role": "reference",
+      "vendored": "tension_rod.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/tension_rod/reference.json",
+      "sha256": "2081b2b8dcf034f9f808e317d522a2e221e50bcec9ce5a5a1bf25d1cd7defdcd",
+      "bytes": 368,
+      "format": "json"
+    },
+    {
+      "name": "cantilever_end_load",
+      "role": "reference",
+      "vendored": "cantilever_end_load.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/cantilever_end_load/reference.json",
+      "sha256": "4b1ac867abeffcd0a8829bf08b21dc23c06ac7f7fbc42ec9ef9f1e8a8ad1be75",
+      "bytes": 367,
+      "format": "json"
+    },
+    {
+      "name": "cantilever_udl",
+      "role": "reference",
+      "vendored": "cantilever_udl.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/cantilever_udl/reference.json",
+      "sha256": "5bf52e8e016054b8fe2eb9240ba53270a40cb82ec0f9ea4b4935de10a0b289bc",
+      "bytes": 384,
+      "format": "json"
+    },
+    {
+      "name": "fixed_fixed_udl",
+      "role": "reference",
+      "vendored": "fixed_fixed_udl.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/fixed_fixed_udl/reference.json",
+      "sha256": "7d76707d37f72ed09711436b19d1ff06712626c30a925fc24618ab1b6ebad9d1",
+      "bytes": 695,
+      "format": "json"
+    },
+    {
+      "name": "fixed_fixed_center_load",
+      "role": "reference",
+      "vendored": "fixed_fixed_center_load.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/fixed_fixed_center_load/reference.json",
+      "sha256": "b3cbdec364d37e30d79c993786f9bbffda4f194a70cefc0fd5ec1d613c58e221",
+      "bytes": 429,
+      "format": "json"
+    },
+    {
+      "name": "cantilever_midspan_load",
+      "role": "reference",
+      "vendored": "cantilever_midspan_load.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/cantilever_midspan_load/reference.json",
+      "sha256": "ab9489cb17b13577c7966464cdaab473c86e4f80c9e46e65d13d3c33b8911501",
+      "bytes": 404,
+      "format": "json"
+    },
+    {
+      "name": "cantilever_end_load_lateral",
+      "role": "reference",
+      "vendored": "cantilever_end_load_lateral.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/cantilever_end_load_lateral/reference.json",
+      "sha256": "916dda284a8a7c9e4234ad20739f45921bf1c7418530c82692f79ca1a68429c3",
+      "bytes": 556,
+      "format": "json"
+    },
+    {
+      "name": "cantilever_modal",
+      "role": "reference",
+      "vendored": "cantilever_modal.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/cantilever_modal/reference.json",
+      "sha256": "36a0f6ab76138a3652c05c78eee2247bc11fbf89472487fe2e823a1ecd5fa3ce",
+      "bytes": 296,
+      "format": "json"
+    },
+    {
+      "name": "column_buckling",
+      "role": "reference",
+      "vendored": "column_buckling.reference.json",
+      "resource": "cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/benchmarks/datasets/analytical_fea/column_buckling/reference.json",
+      "sha256": "23c874304b2bef8b23b9a59681555f4027e4839e2a47f46058b09f5cba3fb5d5",
+      "bytes": 300,
+      "format": "json"
+    }
+  ]
+}

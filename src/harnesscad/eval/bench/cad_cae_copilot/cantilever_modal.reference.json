@@ -1,0 +1,12 @@
+{
+  "analysis_type": "modal",
+  "case_id": "cantilever_modal",
+  "description": "Clamped-free cantilever first bending natural frequency (modal)",
+  "metrics": {
+    "first_natural_frequency_hz": {
+      "tolerance_percent": 20.0,
+      "unit": "Hz",
+      "value": 835.5165415653297
+    }
+  }
+}

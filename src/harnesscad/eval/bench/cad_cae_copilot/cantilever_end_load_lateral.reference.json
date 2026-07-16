@@ -1,0 +1,19 @@
+{
+  "analysis_type": "static",
+  "case_id": "cantilever_end_load_lateral",
+  "description": "End-loaded cantilever bending about the weak (Z) axis (load in -Y)",
+  "metrics": {
+    "max_displacement": {
+      "tolerance_percent": 12.0,
+      "unit": "mm",
+      "value": 0.09523807619048
+    },
+    "max_von_mises_stress": {
+      "gating": false,
+      "note": "Mesh-sensitive peak stress is reported for evidence but does not determine the case verdict.",
+      "tolerance_percent": 10.0,
+      "unit": "MPa",
+      "value": 29.9999940000012
+    }
+  }
+}

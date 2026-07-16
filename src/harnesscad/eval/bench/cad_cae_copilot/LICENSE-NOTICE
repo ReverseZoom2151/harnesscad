@@ -1,0 +1,22 @@
+The JSON files in this directory are vendored verbatim from the cad-cae-copilot
+project, aieng/benchmarks/datasets/analytical_fea/ (corpus.json plus one
+reference.json per case, renamed to <case_id>.reference.json so the nine files
+sit flat in one directory).
+
+Source: cad-cae-copilot (resources/cad_repos/cad-cae-copilot-main/cad-cae-copilot-main)
+License: MIT License, Copyright (c) 2026 armpro24-blip
+
+Redistribution permitted under the MIT License; the full license text is in the
+source repository's LICENSE file. Provenance (resources-relative source path,
+SHA-256, byte count) for every vendored file is recorded in MANIFEST.json
+alongside this notice.
+
+WHAT THESE FILES ARE, AND ARE NOT, IN THIS HARNESS. They are the UPSTREAM's
+stored reference numbers. They are NOT this harness's ground truth: the oracle
+in eval/bench/analytic_fea.py computes every value from the stated closed form,
+and these files are read only to CROSS-CHECK that computation against an
+independent party. Where a stored number disagrees with the formula it cites,
+the module says so with exact numbers rather than adopting it -- see the
+cantilever_modal / column_buckling rounding notes and, materially, the two
+fixed_fixed_* displacement rows, which upstream itself documents as coarse-mesh
+solver goldens rather than closed-form references.

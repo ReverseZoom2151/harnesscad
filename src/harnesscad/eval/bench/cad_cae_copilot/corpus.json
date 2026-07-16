@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "analysis_type": "static",
+      "case_id": "tension_rod",
+      "reference_path": "tension_rod/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "cantilever_end_load",
+      "reference_path": "cantilever_end_load/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "cantilever_udl",
+      "reference_path": "cantilever_udl/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "fixed_fixed_udl",
+      "reference_path": "fixed_fixed_udl/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "fixed_fixed_center_load",
+      "reference_path": "fixed_fixed_center_load/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "cantilever_midspan_load",
+      "reference_path": "cantilever_midspan_load/reference.json"
+    },
+    {
+      "analysis_type": "static",
+      "case_id": "cantilever_end_load_lateral",
+      "reference_path": "cantilever_end_load_lateral/reference.json"
+    },
+    {
+      "analysis_type": "modal",
+      "case_id": "cantilever_modal",
+      "reference_path": "cantilever_modal/reference.json"
+    },
+    {
+      "analysis_type": "buckling",
+      "case_id": "column_buckling",
+      "reference_path": "column_buckling/reference.json"
+    }
+  ],
+  "corpus_id": "analytical_fea",
+  "description": "Closed-form / analytical reference cases for linear static, modal, and linear buckling FEA.",
+  "layer": "fea_accuracy",
+  "standard": "NAFEMS-style / ASME V&V-10 inspired; not certification",
+  "title": "Analytical FEA benchmark corpus"
+}
