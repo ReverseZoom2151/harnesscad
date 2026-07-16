@@ -12443,6 +12443,7 @@
         "harnesscad.domain.geometry.features.cap_references",
         "harnesscad.domain.geometry.features.enclosure",
         "harnesscad.domain.geometry.features.feature_model",
+        "harnesscad.domain.geometry.features.fillet_feasibility",
         "harnesscad.domain.geometry.features.height_patterns",
         "harnesscad.domain.geometry.features.holes",
         "harnesscad.domain.geometry.features.keyframes",
@@ -12466,6 +12467,8 @@
         "harnesscad.domain.geometry.mesh.hierarchical_sampler",
         "harnesscad.domain.geometry.mesh.integer_geometry",
         "harnesscad.domain.geometry.mesh.intersection_repair",
+        "harnesscad.domain.geometry.mesh.isotropic_remesh",
+        "harnesscad.domain.geometry.mesh.repair_toolkit",
         "harnesscad.domain.geometry.mesh.sampling",
         "harnesscad.domain.geometry.mesh.segmentation",
         "harnesscad.domain.geometry.mesh.smoothing",
@@ -12480,6 +12483,7 @@
         "harnesscad.domain.geometry.parametric.facets",
         "harnesscad.domain.geometry.parametric.hybrid_representation",
         "harnesscad.domain.geometry.parametric.knot_insertion",
+        "harnesscad.domain.geometry.parametric.offset_nurbs",
         "harnesscad.domain.geometry.parametric.path_offset",
         "harnesscad.domain.geometry.parametric.simplify",
         "harnesscad.domain.geometry.parametric.solid_lines",
@@ -12516,6 +12520,7 @@
         "harnesscad.domain.geometry.topology.relative_dimensions",
         "harnesscad.domain.geometry.topology.selector_dsl",
         "harnesscad.domain.geometry.topology.selector_grammar",
+        "harnesscad.domain.geometry.topology.sew",
         "harnesscad.domain.geometry.topology.synthetic_brep",
         "harnesscad.domain.geometry.topology.topological_naming",
         "harnesscad.domain.geometry.transforms",
@@ -12547,6 +12552,7 @@
         "harnesscad.domain.geometry.volumes.partition_of_unity",
         "harnesscad.domain.geometry.volumes.sparse_subdivision",
         "harnesscad.domain.geometry.volumes.split_signal",
+        "harnesscad.domain.geometry.volumes.topology_optimize",
         "harnesscad.domain.geometry.volumes.triplane_grid",
         "harnesscad.domain.geometry.volumes.tsdf",
         "harnesscad.domain.numeric",
@@ -28082,7 +28088,7 @@
       "layer": "eval",
       "name": "discipline_examples",
       "package": "corpus",
-      "summary": "OpenCAD's discipline-tagged example corpus as deterministic, self-grading briefs.",
+      "summary": "OpenCAD's discipline-tagged examples. A PORT RECORD -- NOT A BENCHMARK SPLIT.",
       "symbols": [
         "DisciplineExample",
         "all_examples",
@@ -28091,7 +28097,9 @@
         "main",
         "verify_example"
       ],
-      "tags": []
+      "tags": [
+        "benchmark"
+      ]
     },
     {
       "dotted": "harnesscad.eval.corpus.fixtures.birdhouse_nversion",
