@@ -1,0 +1,81 @@
+{
+  "source_repo": "https://github.com/tpaviot/pythonocc-core + https://github.com/ricosjp/ruststep",
+  "source_path": "resources/cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io + resources/cad_repos/ruststep-master/ruststep-master/ruststep/tests/steps",
+  "license": "LGPL-3.0-only AND LicenseRef-ABC-Dataset",
+  "attribution": "pythonocc-core, Copyright Thomas Paviot et al., LGPL-3.0 (manifest-only, nothing vendored). ruststep is Apache-2.0 (RICOS Co. Ltd.) but its tests/steps/README.md explicitly excludes the STEP fixture from the project license: it is an ABC Dataset part (https://deep-geometry.github.io/abc-dataset/) under the dataset's own terms, so it too is manifest-only.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "io1_ug_214",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/io1-ug-214.stp",
+      "sha256": "be588b5eaa6e0471d2c5c05a4ffaf75841bc5cd0680649de2c1fffa7f209ba64",
+      "bytes": 18418,
+      "format": "step"
+    },
+    {
+      "name": "test_ocaf",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/test_ocaf.stp",
+      "sha256": "65416b3c5c37eea448e16bfef93569e3b1e5c47098f47493591ed94cda9959b0",
+      "bytes": 18261,
+      "format": "step"
+    },
+    {
+      "name": "eight_cyl",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/eight_cyl.stp",
+      "sha256": "99759788ca8aac62063db15ee86ea7c6024d99c1f082577fa22b64f1cd27bf3c",
+      "bytes": 63663,
+      "format": "step"
+    },
+    {
+      "name": "stp_multiple_shp_at_root",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/stp_multiple_shp_at_root.stp",
+      "sha256": "579e4b3e18709f6888a4179f189926e40c35a35c156392ec593105cf1650a60c",
+      "bytes": 98966,
+      "format": "step"
+    },
+    {
+      "name": "as1_pe_203",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/as1_pe_203.stp",
+      "sha256": "be1254354f6929a08ce1c8049d4a0a2f4406da4ea283fc4247d009c81976641c",
+      "bytes": 136663,
+      "format": "step"
+    },
+    {
+      "name": "as1_oc_214",
+      "role": "pythonocc_step",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/as1-oc-214.stp",
+      "sha256": "bc7964773fa00c1ddedc80b58930ae531f91cfc5f1f42d693f903b4dc88c21ca",
+      "bytes": 433606,
+      "format": "step"
+    },
+    {
+      "name": "motor_c",
+      "role": "pythonocc_brep",
+      "vendored": null,
+      "resource": "cad_repos/pythonocc-core-master/pythonocc-core-master/test/test_io/Motor-c.brep",
+      "sha256": "6a381db39565ddf78d1ae7162c2f839bc5886931d510dd0789a72be12a0b2d0b",
+      "bytes": 2584674,
+      "format": "brep"
+    },
+    {
+      "name": "abc_00000050",
+      "role": "ruststep_step",
+      "vendored": null,
+      "resource": "cad_repos/ruststep-master/ruststep-master/ruststep/tests/steps/00000050_80d90bfdd2e74e709956122a_step_000.step",
+      "sha256": "579e4b3e18709f6888a4179f189926e40c35a35c156392ec593105cf1650a60c",
+      "bytes": 98966,
+      "format": "step"
+    }
+  ]
+}
