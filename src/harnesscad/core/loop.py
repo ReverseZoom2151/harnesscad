@@ -58,6 +58,20 @@ from harnesscad.eval.verifiers.verify import (Diagnostic, Severity, VerifyReport
 #:             the core verifiers gate the transaction, the fleet advises.
 VERIFY_LEVELS = ("core", "full")
 
+#: The loop lifecycle events a `hook_bus.HookBus` may be registered against.
+#: Deliberately NOT the freecad-ai tool-call vocabulary hook_bus ships as its
+#: default -- these are the points THIS loop actually has:
+#:   "iteration_start" -- before an op is handed to the backend;
+#:   "plan_accepted"   -- the op applied and regenerated cleanly;
+#:   "verify_verdict"  -- the verifier fleet has ruled on the op;
+#:   "iteration_end"   -- the op is fully resolved (checkpointed or rolled back).
+#: A bus is an OBSERVER here: hook_bus's `block` veto is not honoured, because
+#: an op that has already mutated the backend cannot be un-fired by a listener.
+#: Refusal is the op gate's job (see `_gate_preflight`), which runs before
+#: anything mutates and can actually refuse.
+LOOP_EVENTS = ("iteration_start", "plan_accepted", "verify_verdict",
+               "iteration_end")
+
 
 class HarnessSession:
     def __init__(self, backend: GeometryBackend,
@@ -74,7 +88,8 @@ class HarnessSession:
                  op_catalog: Optional[Union["_op_gate.AllowedOperationsCatalog",
                                             Mapping]] = None,
                  op_gate_context: Optional[Mapping] = None,
-                 op_protected_regions: Sequence = ()) -> None:
+                 op_protected_regions: Sequence = (),
+                 hook_bus: Optional[Any] = None) -> None:
         self.backend = backend
         self.opdag = OpDAG()
         self.verifiers = verifiers if verifiers is not None else default_verifiers()
@@ -117,6 +132,11 @@ class HarnessSession:
         #: is configured / no batch has run. Carries the patch_proposal
         #: bookkeeping (protected_targets_checked / _avoided, patch_status).
         self.last_gate_report: Optional["_op_gate.GateReport"] = None
+        #: An optional `agents/agent/hook_bus.HookBus` observing the loop's
+        #: lifecycle (LOOP_EVENTS). None -- the default -- fires nothing, and a
+        #: bus with no handlers registered for an event is itself a no-op, so
+        #: both the unwired and the empty-bus cases cost a dict build at most.
+        self.hook_bus = hook_bus
         self.backend.reset()
         self.opdag.checkpoint("start")
         if self.record_provenance:
@@ -276,6 +296,24 @@ class HarnessSession:
             return []
         return _provenance.orphan_ops(prov)
 
+    # --- lifecycle hooks (opt-in) -----------------------------------------
+    def _fire(self, event: str, context: Dict[str, Any]) -> None:
+        """Fire one LOOP_EVENTS hook. A no-op when no bus is attached.
+
+        Observation only: the returned FireReport (including any `block`) is
+        deliberately ignored -- see LOOP_EVENTS. Error-isolated twice over: the
+        bus already isolates a raising handler, and this swallows anything the
+        bus itself throws (e.g. an event it does not know), because a listener
+        must never be able to break the transaction it is watching.
+        """
+        bus = self.hook_bus
+        if bus is None:
+            return
+        try:
+            bus.fire(event, context)
+        except Exception:  # noqa: BLE001 - an observer cannot break the loop
+            pass
+
     # --- op-admissibility preflight (opt-in) ------------------------------
     def _gate_preflight(self, ops: List[Op], run_id: str) -> Optional[ApplyOpsResult]:
         """Judge the whole batch against the op catalog BEFORE executing any op.
@@ -345,8 +383,13 @@ class HarnessSession:
         if refusal is not None:
             return refusal
         for index, op in enumerate(ops):
+            self._fire("iteration_start", {"run_id": run_id, "index": index,
+                                           "op": op.to_dict()})
             res = self.backend.apply(op)
             if not res.ok:
+                self._fire("iteration_end", {
+                    "run_id": run_id, "index": index, "op": op.to_dict(),
+                    "ok": False, "reason": "backend-rejected"})
                 diags += res.diagnostics
                 self.tracer.event("rejected", run_id, {
                     "op": op.to_dict(),
@@ -363,6 +406,9 @@ class HarnessSession:
                                       diags, rejected=op.to_dict())
             self.opdag.append(op)
             diags += self.backend.regenerate()
+            self._fire("plan_accepted", {
+                "run_id": run_id, "index": index, "op": op.to_dict(),
+                "digest": self.backend.state_digest()})
             self.tracer.event("op_applied", run_id, {
                 "op": op.to_dict(),
                 "index": len(self.opdag) - 1,
@@ -374,6 +420,10 @@ class HarnessSession:
                 # it must run per-op -- an ERROR rolls that op back.
                 report = VerifyReport(report.diagnostics + self.run_fleet())
             diags += report.diagnostics
+            self._fire("verify_verdict", {
+                "run_id": run_id, "index": index, "op": op.to_dict(),
+                "ok": report.ok,
+                "diagnostics": [d.to_dict() for d in report.diagnostics]})
             self.tracer.event("verify_result", run_id, {
                 "ok": report.ok,
                 "diagnostics": [d.to_dict() for d in report.diagnostics],
@@ -386,6 +436,13 @@ class HarnessSession:
                 })
                 self._step_reward(run_id, index, op, 0.0, "verify-failed")
                 self._rollback_last()
+                # Fired AFTER the rollback: the op is only fully resolved once
+                # the state is back to last-good, and a listener reading the
+                # digest mid-rollback would read a state that never shipped.
+                self._fire("iteration_end", {
+                    "run_id": run_id, "index": index, "op": op.to_dict(),
+                    "ok": False, "reason": "verify-failed",
+                    "digest": self.backend.state_digest()})
                 self.tracer.event("run_end", run_id, {
                     "ok": False, "applied": applied,
                     "digest": self.backend.state_digest(),
@@ -402,6 +459,10 @@ class HarnessSession:
             self.opdag.checkpoint(label)
             self.tracer.event("checkpoint", run_id, {
                 "label": label, "index": len(self.opdag)})
+            self._fire("iteration_end", {
+                "run_id": run_id, "index": index, "op": op.to_dict(),
+                "ok": True, "reason": "applied+verified", "label": label,
+                "digest": self.backend.state_digest()})
         # The advisory fleet runs ONCE per accepted batch, against the final
         # state: it verifies the model, not each intermediate op, and running it
         # per-op would only repeat the same findings N times. (When the fleet is
