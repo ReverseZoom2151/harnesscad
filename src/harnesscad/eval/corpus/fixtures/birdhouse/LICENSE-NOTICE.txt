@@ -1,0 +1,5 @@
+The birdhouse sources in this directory are vendored from
+curated-code-cad (github.com/Irev-Dev/curated-code-cad),
+Copyright (c) 2020 Kurt Hutten, and are redistributed under
+the MIT License.
+See MANIFEST.json for per-file provenance and SHA-256 sums.

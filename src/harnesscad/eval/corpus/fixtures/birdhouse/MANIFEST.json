@@ -1,0 +1,81 @@
+{
+  "source_repo": "https://github.com/Irev-Dev/curated-code-cad",
+  "source_path": "resources/cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse",
+  "license": "MIT",
+  "attribution": "curated-code-cad, Copyright (c) 2020 Kurt Hutten. MIT License.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "build123d",
+      "role": "n_version",
+      "vendored": "sources/build123d.py",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/build123d.py",
+      "sha256": "ffde1450684b70efd2041c56177d097539ef03b36f0604c92794971b4d679375",
+      "bytes": 920,
+      "format": "py"
+    },
+    {
+      "name": "CadQuery",
+      "role": "n_version",
+      "vendored": "sources/CadQuery.py",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/CadQuery.py",
+      "sha256": "9be21d901287a4e7cc051ec709b9cf38a228e43d8267a6cf20e2fb80072171a2",
+      "bytes": 1057,
+      "format": "py"
+    },
+    {
+      "name": "CascadeStudio",
+      "role": "n_version",
+      "vendored": "sources/CascadeStudio.js",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/CascadeStudio.js",
+      "sha256": "722bef355edf0c1b4fbc46f57cc7a31d70c0d95df4cdeca8dd70ccec134cb0ed",
+      "bytes": 1487,
+      "format": "js"
+    },
+    {
+      "name": "DeclaraCAD",
+      "role": "n_version",
+      "vendored": "sources/DeclaraCAD.enaml",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/DeclaraCAD.enaml",
+      "sha256": "1d3058ba61fa6a4bb824e52a103491e37eca44388d5fdcefa53f7db01e7f219e",
+      "bytes": 2298,
+      "format": "enaml"
+    },
+    {
+      "name": "FreeCad",
+      "role": "n_version",
+      "vendored": "sources/FreeCad.py",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/FreeCad.py",
+      "sha256": "09f8039eb29580810e3640355c5a7b2010dfa1d8309641474b71788d9ca3274a",
+      "bytes": 5285,
+      "format": "py"
+    },
+    {
+      "name": "JSCAD",
+      "role": "n_version",
+      "vendored": "sources/JSCAD.js",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/JSCAD.js",
+      "sha256": "99f6316c44180fbb8fec32791c572cce960335b125df116dd85d6eec59f71f1c",
+      "bytes": 2938,
+      "format": "js"
+    },
+    {
+      "name": "OpenSCAD",
+      "role": "n_version",
+      "vendored": "sources/OpenSCAD.scad",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/OpenSCAD.scad",
+      "sha256": "088668a961e3003e4499b2b24f32d312d6b30ba5f6f4a6437c20b111592ce3eb",
+      "bytes": 1068,
+      "format": "scad"
+    },
+    {
+      "name": "sdfx",
+      "role": "n_version",
+      "vendored": "sources/sdfx.go",
+      "resource": "cad_repos/curated-code-cad-main/curated-code-cad-main/birdhouse/sdfx.go",
+      "sha256": "4c074853e4d984176bc9ee3ca009e4e6d36cc4aff07aa4f34a26509918658299",
+      "bytes": 2860,
+      "format": "go"
+    }
+  ]
+}
