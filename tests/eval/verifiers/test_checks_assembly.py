@@ -99,17 +99,25 @@ class TestResidualDofMath(unittest.TestCase):
 
 
 class TestUnknownAndBadMates(unittest.TestCase):
-    def test_unknown_mate_kind_warns_and_is_excluded(self):
+    def test_unknown_mate_kind_is_an_error_not_a_silent_exclusion(self):
         model = AssemblyModel(
             parts=["a", "b"],
             mates=[Mate(kind="wobble", a="a", b="b")],
         )
-        # Unknown kind removes no DOF: 6*2 - 0 = 12.
+        # An unknown kind has no DOF rule, so it removes nothing from the count:
+        # 6*2 - 0 = 12. That number is not a measurement -- it is what the count
+        # degrades to when a mate cannot be interpreted, and it is biased
+        # 'under-constrained' by exactly the DOF the unknown mate would remove.
         self.assertEqual(model.residual_dof(), 12)
         report = AssemblyCheck().check_model(model)
         self.assertIn("unknown-mate", _codes(report))
-        # It is only a WARNING, not fatal.
-        self.assertEqual(_by_severity(report, Severity.ERROR), [])
+        # It is an ERROR that flips report.ok: the verifier cannot honestly
+        # report a mobility number built on a mate the taxonomy cannot account
+        # for, so it refuses rather than passing with a caveat.
+        self.assertEqual(
+            [d.code for d in _by_severity(report, Severity.ERROR)],
+            ["unknown-mate"])
+        self.assertFalse(report.ok)
 
     def test_dangling_part_reference_warns(self):
         model = AssemblyModel(
