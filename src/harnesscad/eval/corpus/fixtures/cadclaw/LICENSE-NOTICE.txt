@@ -1,0 +1,5 @@
+The BOM fixtures and rule file in this directory are vendored
+from CADCLAW (github.com/sunnyday-technologies/CADCLAW),
+Copyright (c) 2026 Sunnyday Technologies, and are
+redistributed under the MIT License.
+See MANIFEST.json for per-file provenance and SHA-256 sums.

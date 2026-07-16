@@ -1,0 +1,72 @@
+{
+  "source_repo": "https://github.com/sunnyday-technologies/CADCLAW",
+  "source_path": "resources/cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete",
+  "license": "MIT",
+  "attribution": "CADCLAW, Copyright (c) 2026 Sunnyday Technologies. MIT License.",
+  "snapshot_date": "2026-07-16",
+  "entries": [
+    {
+      "name": "bom_good",
+      "role": "known_good",
+      "vendored": "bom/bom_good.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_good.json",
+      "sha256": "fda91d8762f0fd9f07d28226c993508f9517f99dbe224eb86d709adc05a68893",
+      "bytes": 3678,
+      "format": "json"
+    },
+    {
+      "name": "bom_stale_connectors",
+      "role": "known_bad",
+      "vendored": "bom/bom_stale_connectors.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_stale_connectors.json",
+      "sha256": "f080a8a90526118a4e2cb27fb1f26922221074e9ee0ac14a11ad886542dc73cf",
+      "bytes": 570,
+      "format": "json"
+    },
+    {
+      "name": "bom_stale_inserts",
+      "role": "known_bad",
+      "vendored": "bom/bom_stale_inserts.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_stale_inserts.json",
+      "sha256": "17a7b12fdb5ea0c4b934d85a0bdb86824aa80e91c762978515cf6e4e3a10b3bc",
+      "bytes": 925,
+      "format": "json"
+    },
+    {
+      "name": "bom_stale_motor_mounts",
+      "role": "known_bad",
+      "vendored": "bom/bom_stale_motor_mounts.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_stale_motor_mounts.json",
+      "sha256": "8f7e5c4750761203f3f02882506a3a2c0d4971a2b5f446e4bf72be5ee9ce9e7e",
+      "bytes": 197,
+      "format": "json"
+    },
+    {
+      "name": "bom_wrong_belts",
+      "role": "known_bad",
+      "vendored": "bom/bom_wrong_belts.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_wrong_belts.json",
+      "sha256": "d05b56ddd53edf03458f25235102ef0a0c899a43a50031f2a9b26e4323fae208",
+      "bytes": 286,
+      "format": "json"
+    },
+    {
+      "name": "bom_wrong_wheels",
+      "role": "known_bad",
+      "vendored": "bom/bom_wrong_wheels.json",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/bom_wrong_wheels.json",
+      "sha256": "0b17d863642522268f4fbc57b0ccc10de5eeb1e932a693adc62e68bab77b27ec",
+      "bytes": 146,
+      "format": "json"
+    },
+    {
+      "name": "cadclaw_m3",
+      "role": "rule_file",
+      "vendored": "cadclaw_m3.yaml",
+      "resource": "cad_repos/CADCLAW-main/CADCLAW-main/tests/fixtures/m3_crete/cadclaw_m3.yaml",
+      "sha256": "d7bee0964dc9de10ad9e998c8bb587f4ca7e58d7372781473b7a442ce387b160",
+      "bytes": 3185,
+      "format": "yaml"
+    }
+  ]
+}
