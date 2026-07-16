@@ -134,11 +134,19 @@ class TestOrphans(unittest.TestCase):
 
         Assert the invariant instead: orphans are exactly the modules no other
         product module imports, computed from the live import graph.
+
+        "Imports" means every way a module can actually be reached: a static
+        import between indexed modules, a registry's runtime `importlib` dispatch,
+        and a package ``__init__`` hub importing its own submodules. That last
+        term is not a courtesy -- the index skips ``__init__.py``, so a hub-wired
+        module looked unreachable while its package imported it on line one.
         """
         orph = set(registry.orphans())
         graph = registry.import_graph()
         imported = {t for targets in graph.values() for t in targets}
         for targets in registry.dynamic_edges().values():
+            imported.update(targets)
+        for targets in registry.package_init_edges().values():
             imported.update(targets)
         indexed = {e.dotted for e in registry.index()}
         self.assertEqual(orph, indexed - imported - set(registry.ROOTS))
@@ -159,6 +167,39 @@ class TestOrphans(unittest.TestCase):
         self.assertTrue(imported)
         for d in registry.orphans():
             self.assertNotIn(d, imported)
+
+    def test_package_init_hub_imports_are_credited(self):
+        """A module its own package imports on line one is not an orphan.
+
+        The index skips ``__init__.py`` (a package is not a capability), and the
+        skip used to drop the EDGES with it. So the fixture loaders -- deliberately
+        wired with real ``import`` statements, with a source comment saying the
+        AST scan would therefore see them -- all reported as dead. The tempting
+        fix was a ROOTS entry each, which would have been a lie: ROOTS means
+        "nothing imports it because it IS the entry point", and these are imported.
+        """
+        edges = registry.package_init_edges()
+        hub = "harnesscad.eval.corpus.fixtures"
+        self.assertIn(hub, edges, "the fixtures hub imports its loaders for real")
+        orph = set(registry.orphans())
+        for loader in edges[hub]:
+            self.assertNotIn(loader, orph, f"{loader} is imported by {hub}")
+
+    def test_vendored_data_is_not_indexed_as_a_capability(self):
+        """A .py file outside an importable package is DATA, not a module.
+
+        The birdhouse fixture is the same part vendored in eight languages. The
+        index claimed the three ``.py`` ones as harnesscad capabilities -- minting
+        dotted paths that cannot be imported, since no ``__init__.py`` exists
+        anywhere in that chain -- and ignored the ``.scad``/``.js``/``.go`` five.
+        Whether a fixture counts as product code cannot depend on its extension.
+        """
+        indexed = {e.dotted for e in registry.index()}
+        for dotted in indexed:
+            self.assertNotIn(
+                ".fixtures.birdhouse.sources.", dotted,
+                f"{dotted} is vendored fixture data, not a capability",
+            )
 
 
 class TestOrphanDetectorSeesDynamicDispatch(unittest.TestCase):

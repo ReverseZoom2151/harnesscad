@@ -58,6 +58,7 @@ __all__ = [
     "stats",
     "orphans",
     "import_graph",
+    "package_init_edges",
     "main",
 ]
 
@@ -290,9 +291,25 @@ class ModuleEntry:
 # ---------------------------------------------------------------------------
 
 def _iter_source_files() -> List[str]:
+    """The .py files that are harnesscad MODULES. Not every .py file is one.
+
+    Two exclusions, both load-bearing:
+
+    * ``__init__.py`` -- a package is not a capability, so it earns no row. Its
+      import edges are not lost with it; :func:`package_init_edges` reads them.
+    * any ``.py`` in a directory with no ``__init__.py`` -- it is not importable
+      as part of this package, so it is DATA that happens to be Python. The
+      birdhouse fixture is the case that proved it: the same part vendored in
+      eight languages, of which the index claimed the three ``.py`` ones as
+      harnesscad capabilities (inventing dotted paths that cannot be imported)
+      and ignored the ``.scad``/``.js``/``.go`` five. Indexing by file extension
+      is not a capability judgement.
+    """
     out: List[str] = []
     for dirpath, dirnames, filenames in os.walk(ROOT):
         dirnames[:] = sorted(d for d in dirnames if d != "__pycache__")
+        if "__init__.py" not in filenames and os.path.abspath(dirpath) != os.path.abspath(ROOT):
+            continue
         for fn in sorted(filenames):
             if not fn.endswith(".py"):
                 continue
@@ -674,14 +691,54 @@ def dynamic_edges() -> Dict[str, List[str]]:
     return out
 
 
+def package_init_edges() -> Dict[str, List[str]]:
+    """package ``__init__`` -> the indexed modules it imports with a real `import`.
+
+    :func:`_iter_source_files` skips ``__init__.py`` on purpose: a package is not
+    a capability, so it earns no index row. But the skip silently threw away the
+    edges too, and a package hub that re-exports its submodules imports them for
+    real -- ``from harnesscad.eval.corpus.fixtures import brepnet_steps`` is an
+    ordinary static import, not an `importlib` lookup. The AST simply never got
+    read, so every hub-wired module still reported as an orphan and the fix looked
+    like a :data:`ROOTS` entry. It is not: ROOTS means "imported by nothing because
+    it IS the entry point", and claiming that of a module its own package imports
+    would be a second cried wolf on top of the first.
+
+    So: scan the ``__init__.py`` files for product imports and credit those edges,
+    keeping them a SEPARATE, printable source rather than folding them into
+    :func:`import_graph` -- whose contract is edges between INDEXED modules, and
+    an ``__init__`` has no row to be an edge from.
+    """
+    known = set(_by_dotted())
+    out: Dict[str, List[str]] = {}
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        dirnames[:] = sorted(d for d in dirnames if d != "__pycache__")
+        if "__init__.py" not in filenames:
+            continue
+        path = os.path.join(dirpath, "__init__.py")
+        dotted = _dotted_for(path).rsplit(".__init__", 1)[0]
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                tree = ast.parse(fh.read(), filename=path)
+        except (OSError, SyntaxError, ValueError):
+            continue
+        targets = sorted(
+            t for t in _product_imports(tree, dotted) if t in known and t != dotted
+        )
+        if targets:
+            out[dotted] = targets
+    return dict(sorted(out.items()))
+
+
 def orphans(dynamic: bool = True) -> List[str]:
     """Indexed modules NOTHING can reach -- statically or by runtime dispatch.
 
     ``dynamic=True`` (the default, and the honest one) additionally credits the
     layer registries with the modules they `importlib`-load from the capability
-    index, and treats :data:`ROOTS` as reachable. ``dynamic=False`` is the old,
-    AST-only view, kept so the difference between the two is auditable and so the
-    size of the lie is a number anyone can print.
+    index, credits package ``__init__`` hubs with the modules they import for real
+    (see :func:`package_init_edges`), and treats :data:`ROOTS` as reachable.
+    ``dynamic=False`` is the old, AST-only view, kept so the difference between the
+    two is auditable and so the size of the lie is a number anyone can print.
     """
     graph = import_graph()
     imported = set()
@@ -689,6 +746,8 @@ def orphans(dynamic: bool = True) -> List[str]:
         imported.update(targets)
     if dynamic:
         for targets in dynamic_edges().values():
+            imported.update(targets)
+        for targets in package_init_edges().values():
             imported.update(targets)
         imported.update(ROOTS)
     return sorted(d for d in graph if d not in imported)
