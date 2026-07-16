@@ -160,6 +160,32 @@ def _route(llm: LLM) -> LLM:
         return llm
 
 
+def _scope_refuse(brief: str) -> None:
+    """Refuse an out-of-scope brief BEFORE any agent runs.
+
+    domain/spec/safety_scope.py is a brief-time scope gate (weapons,
+    medical/life-support, automotive control, mains AC, high-power battery)
+    whose own docs specify it is enforced *before* any agent runs. This is that
+    enforcement point: the first thing `build` does with the brief.
+
+    Refuses ONLY on the gate's explicit `blocked` verdict. Everything else is a
+    pass-through by construction -- an in-scope brief, the module being absent,
+    or the gate itself raising -- so no in-scope build can be stopped by this
+    hook, and a scope-gate failure can never take the pipeline down with it.
+    """
+    try:
+        from harnesscad.domain.spec.safety_scope import check_safety_scope
+        verdict = check_safety_scope(brief)
+    except Exception as exc:  # noqa: BLE001 - absent/broken gate must not block
+        _LOG.warning("safety scope gate unavailable; brief not scope-checked (%s)",
+                     exc)
+        return
+    if getattr(verdict, "blocked", False):
+        raise BuildError(
+            verdict.message
+            or f"brief is out of scope (category {verdict.category!r})")
+
+
 def _resolve_llm(llm: Optional[LLM], model: Optional[str]) -> LLM:
     """Pick the LLM to plan with: the injected one, or a lazy LiteLLM client.
 
@@ -321,6 +347,11 @@ def build(
     if strategy not in STRATEGIES:
         raise BuildError(
             f"unknown strategy {strategy!r}; expected one of {STRATEGIES!r}")
+    # PRE-PIPELINE SCOPE GATE on the BRIEF, before any agent runs (the
+    # integration domain/spec/safety_scope.py's docstring asks for). Refuses
+    # ONLY on that module's explicit blocked verdict; every other outcome --
+    # in-scope brief, module absent, gate crash -- passes straight through.
+    _scope_refuse(brief)
     resolved_llm = _resolve_llm(llm, model)
     # ROUTING ON THE DEFAULT PATH. When we built the client ourselves, wrap it in
     # `routing.RoutingLLM` (classify -> sequential fallback -> cost/usage tally)
