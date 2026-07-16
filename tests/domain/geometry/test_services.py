@@ -212,5 +212,149 @@ class TestGeometryIsCorrect(unittest.TestCase):
         self.assertIn("marching_cubes", frep.MESHERS)
 
 
+class TestNewlyPortedGeometryIsReachable(unittest.TestCase):
+    """The six ported modules dispatch through the surface and behave as billed."""
+
+    def test_repair_toolkit_welds_and_reports_closedness(self):
+        # a unit tetrahedron with one vertex duplicated 1e-9 away
+        verts = [(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0),
+                 (0.0, 0.0, 1.0), (1e-9, 0.0, 0.0)]
+        tris = [(0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)]
+        res = services.call("mesh.repair.weld", verts, tris, 1e-6)
+        self.assertTrue(res["ok"])                      # never-raise dict contract
+        self.assertEqual(res["merged_count"], 1)
+        self.assertEqual(len(res["vertices"]), 4)
+        # the tetrahedron is closed: 6 edges, each in exactly 2 of the 4 faces
+        self.assertTrue(services.call("mesh.is_closed", verts[:4], tris)["closed"])
+        self.assertTrue(services.call("mesh.is_manifold", verts[:4], tris)["manifold"])
+
+    def test_repair_toolkit_carries_no_boolean_and_no_offset(self):
+        # mesh_boolean / mesh_offset were deferred: the surface must not imply them.
+        published = set(services.names())
+        self.assertNotIn("mesh.boolean", published)
+        self.assertNotIn("mesh.offset", published)
+
+    def test_isotropic_remesh_shortens_edges_toward_the_target(self):
+        # a flat 2x2 patch whose diagonal is 2*sqrt(2); remesh to 0.8
+        verts = [(0.0, 0.0, 0.0), (2.0, 0.0, 0.0), (2.0, 2.0, 0.0), (0.0, 2.0, 0.0)]
+        out = services.call("mesh.remesh.isotropic", verts, [(0, 1, 2), (0, 2, 3)],
+                            0.8, iterations=3)
+        self.assertTrue(all(len(f) == 3 for f in out["faces"]))
+        self.assertGreater(len(out["faces"]), 2)        # it actually refined
+        # boundary preservation: the four corners survive at their exact positions
+        for c in verts:
+            self.assertTrue(any(all(abs(p[i] - c[i]) < 1e-9 for i in range(3))
+                                for p in out["vertices"]),
+                            "boundary corners must be preserved")
+
+    def test_sewing_two_squares_shares_exactly_one_edge(self):
+        from harnesscad.domain.geometry.topology.sew import SewFace
+        a = SewFace(boundary=((0.0, 0.0, 0.0), (1.0, 0.0, 0.0),
+                              (1.0, 1.0, 0.0), (0.0, 1.0, 0.0)))
+        b = SewFace(boundary=((1.0, 0.0, 0.0), (2.0, 0.0, 0.0),
+                              (2.0, 1.0, 0.0), (1.0, 1.0, 0.0)))
+        res = services.call("topology.sew", [a, b], 1e-6)
+        # the two shared corners merge, and the one shared edge merges with them
+        self.assertEqual(res.vertex_merges, 2)
+        self.assertEqual(res.edge_merges, 1)
+        self.assertEqual(len(res.shells), 1)            # now edge-connected
+        # an open 2-face strip: 6 of its 7 edges are free, and it is not closed
+        self.assertEqual(len(res.free_edges), 6)
+        self.assertFalse(res.shells[0].is_closed)
+        # the invariant the module promises to hold on return
+        self.assertEqual(services.call("topology.sew.tolerance_monotonic", res), [])
+
+    def test_sewing_tolerance_is_monotone_and_healing_does_not_mutate(self):
+        from harnesscad.domain.geometry.topology.sew import SewFace
+        faces = [SewFace(boundary=((0.0, 0.0, 0.0), (1.0, 0.0, 0.0),
+                                   (1.0, 1.0, 0.0), (0.0, 1.0, 0.0)))]
+        res = services.call("topology.sew", faces, 1e-6)
+        before = [v.tol for v in res.vertices]
+        healed, report = services.call("topology.sew.heal", res, 1e-6)
+        self.assertEqual([v.tol for v in res.vertices], before)   # input untouched
+        self.assertEqual(report.faces_removed, 0)                 # nothing degenerate
+        self.assertEqual(services.call("topology.sew.tolerance_monotonic", healed), [])
+
+    def test_nurbs_offset_is_exact_on_a_circle_and_measures_the_rest(self):
+        from harnesscad.domain.geometry.parametric import offset_nurbs as onb
+        res = services.call("curve.nurbs.offset", onb.make_circle_curve((0, 0, 0), 5.0),
+                            2.0)
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["analytic"], "circle")     # detected, not refitted
+        self.assertEqual(res["actual_max_deviation"], 0.0)
+        # kerf's convention: d > 0 grows the radius, so r = 5 + 2 = 7
+        from harnesscad.domain.geometry.parametric.nurbs_curve import curve_point
+        c = res["curve"]
+        for t in (0.0, 0.13, 0.5, 0.77):
+            p = curve_point(c[0], c[1], c[2], c[3], t)
+            self.assertAlmostEqual(math.hypot(p[0], p[1]), 7.0, places=6)
+
+    def test_nurbs_plane_offset_is_exact_and_a_square_loop_offsets_inward(self):
+        # a plane translates along its normal: exact, zero deviation
+        plane = ((((0.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
+                  ((0.0, 1.0, 0.0), (1.0, 1.0, 0.0))),
+                 ((1.0, 1.0), (1.0, 1.0)), 1, 1, (0, 0, 1, 1), (0, 0, 1, 1))
+        res = services.call("surface.nurbs.offset", plane, 0.5)
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["analytic"], "plane")
+        self.assertEqual(res["actual_max_deviation"], 0.0)
+        # a 4x4 square loop offset by 1 becomes the 2x2 square: perimeter 8
+        from harnesscad.domain.geometry.parametric import offset_nurbs as onb
+        loop = [onb.make_line_curve((0, 0, 0), (4, 0, 0)),
+                onb.make_line_curve((4, 0, 0), (4, 4, 0)),
+                onb.make_line_curve((4, 4, 0), (0, 4, 0)),
+                onb.make_line_curve((0, 4, 0), (0, 0, 0))]
+        out = services.call("curve.nurbs.offset_loop", loop, 1.0)
+        self.assertTrue(out["ok"])
+        self.assertAlmostEqual(out["perimeter"], 8.0, places=6)
+
+    def test_fillet_feasibility_is_a_predicate_and_builds_nothing(self):
+        from harnesscad.domain.geometry.features.fillet_feasibility import (
+            EdgePreflight, PlanarFace)
+        # the convex 90-degree edge of a 5x5x10 corner
+        edge = EdgePreflight(points=((0, 0, 0), (0, 0, 10)))
+        a = PlanarFace(origin=(0, 0, 0), normal=(-1, 0, 0),
+                       boundary=((0, 0, 0), (0, 5, 0), (0, 5, 10), (0, 0, 10)))
+        b = PlanarFace(origin=(0, 0, 0), normal=(0, -1, 0),
+                       boundary=((0, 0, 0), (5, 0, 0), (5, 0, 10), (0, 0, 10)))
+        ok = services.call("feature.fillet.feasibility", edge, a, b, 1.0)
+        self.assertTrue(ok.feasible)
+        self.assertEqual(ok.case, "planar+planar")
+        self.assertEqual(ok.convexity, "convex")
+        self.assertAlmostEqual(ok.dihedral_deg, 90.0, places=6)
+        # the supports are 5 wide, so the ball cannot exceed that
+        self.assertAlmostEqual(ok.max_feasible_radius, 5.0, places=6)
+        # a radius past every bound is refused with a reason, not an exception
+        bad = services.call("feature.fillet.feasibility", edge, a, b, 500.0)
+        self.assertFalse(bad.feasible)
+        self.assertTrue(bad.reason)
+        self.assertTrue(bad.reason_code)
+        # PREDICATE ONLY: the verdict carries no geometry -- no fillet was built
+        self.assertFalse(hasattr(ok, "solid"))
+        self.assertFalse(hasattr(ok, "faces"))
+        self.assertNotIn("surface", ok.to_dict())
+        self.assertEqual(set(ok.to_dict()),
+                         {"feasible", "reason_code", "reason", "case", "convexity",
+                          "dihedral_deg", "max_feasible_radius", "limits"})
+        self.assertIn("planar", services.call("feature.fillet.supported_contract"))
+
+    def test_topology_optimiser_hits_its_volume_fraction_and_trades_off(self):
+        res = services.call("volume.topology_optimize", 10, 5, 0.5, max_iter=8)
+        self.assertTrue(res["ok"])
+        self.assertEqual(len(res["density"]), 10 * 5)
+        # the volume constraint is the OC update's job: it must be met
+        self.assertAlmostEqual(res["volume_fraction"], 0.5, delta=0.02)
+        self.assertTrue(all(0.0 <= d <= 1.0 for d in res["density"]))
+        # more material can only make a compliance-minimal design stiffer
+        front = services.call("volume.topology_optimize.pareto", 8, 4, [0.3, 0.7],
+                              max_iter=8)["front"]
+        self.assertLess(front[1]["compliance"], front[0]["compliance"])
+
+    def test_the_optimiser_refuses_instead_of_raising(self):
+        bad = services.call("volume.topology_optimize", 8, 4, 1.5)
+        self.assertFalse(bad["ok"])
+        self.assertIn("volfrac", bad["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()
