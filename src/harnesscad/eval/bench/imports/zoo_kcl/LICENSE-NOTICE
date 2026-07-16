@@ -1,0 +1,11 @@
+kcl_samples_manifest.json in this directory is vendored verbatim from the Zoo
+modeling-app project, public/kcl-samples/manifest.json.
+
+Source: modeling-app (resources/cad_repos/modeling-app-main/modeling-app-main)
+License: The MIT License (MIT), Copyright (c) 2023 The Zoo Authors
+
+Redistribution permitted under the MIT License; the full license text is in
+the source repository's LICENSE file. The KCL sample SOURCES themselves are
+deliberately NOT vendored -- they are referenced by resources path only, and
+MANIFEST.json records each one's resources-relative path, SHA-256 and byte
+count so the reference is verifiable when the resources checkout is present.

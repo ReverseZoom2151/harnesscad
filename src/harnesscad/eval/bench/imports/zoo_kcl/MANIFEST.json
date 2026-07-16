@@ -1,0 +1,917 @@
+{
+  "source_repo": "modeling-app (Zoo)",
+  "source_path": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples",
+  "license": "MIT",
+  "attribution": "The Zoo Authors, modeling-app (The MIT License (MIT), Copyright (c) 2023 The Zoo Authors); KCL sources referenced by path only",
+  "entries": [
+    {
+      "name": "manifest.json",
+      "role": "sample_manifest",
+      "vendored": "kcl_samples_manifest.json",
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/manifest.json",
+      "sha256": "168f441f686eda6531d7717b3872ed93d71e5aa16b2fd88316f97b811abaea4b",
+      "bytes": 44205,
+      "format": "json"
+    },
+    {
+      "name": "angle-gauge",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/angle-gauge/main.kcl",
+      "sha256": "58f8a227c7a7ffc0af5bf895f258da8e9c2f6ddc834e40da77d2ecaebfbb9e7a",
+      "bytes": 3226,
+      "format": "kcl"
+    },
+    {
+      "name": "artificial-heart",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/artificial-heart/main.kcl",
+      "sha256": "26aab1cdd58a880b02ad0d273167d5c01881acfbcd4f3feefaf7687634494a4e",
+      "bytes": 303,
+      "format": "kcl"
+    },
+    {
+      "name": "axial-fan",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/axial-fan/main.kcl",
+      "sha256": "69cca2d8d6f879dc0baf79c4b65e3178313777575237a0f18b02a8150010fbf7",
+      "bytes": 395,
+      "format": "kcl"
+    },
+    {
+      "name": "ball-bearing",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/ball-bearing/main.kcl",
+      "sha256": "6600557a685f8dd0a76414b4c73a01c9cfa3dd445be9a78573c8e45385e0957d",
+      "bytes": 5269,
+      "format": "kcl"
+    },
+    {
+      "name": "bench",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bench/main.kcl",
+      "sha256": "b88323f08ac6da58ed30710e6dd0115296fcf9a341464174a124e837a6474ac6",
+      "bytes": 16285,
+      "format": "kcl"
+    },
+    {
+      "name": "bench-for-kids",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bench-for-kids/main.kcl",
+      "sha256": "1dab5bb9b0c812e9520173c678028280d0dc967388c8fad5cb938d8264347dce",
+      "bytes": 5033,
+      "format": "kcl"
+    },
+    {
+      "name": "bike-hub-washer",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bike-hub-washer/main.kcl",
+      "sha256": "3f79e8a8484eea229461fb9c4235d5982b1b1d4d81f84a8d709a3e2ec698a6ba",
+      "bytes": 2669,
+      "format": "kcl"
+    },
+    {
+      "name": "blend-tutorial",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/blend-tutorial/main.kcl",
+      "sha256": "1f98ea361a14123e8a246d7824bdbb0d6c5e3e8c7fdefb825518ca0666401904",
+      "bytes": 1804,
+      "format": "kcl"
+    },
+    {
+      "name": "bone-plate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bone-plate/main.kcl",
+      "sha256": "a39aeba122f9b4dd609ba9c1b2c7acdb19dc6e9eebc42a640290937a84f85b9d",
+      "bytes": 5934,
+      "format": "kcl"
+    },
+    {
+      "name": "bottle",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bottle/main.kcl",
+      "sha256": "02ee048d8b8f82beaba4f51b027690970facaaae63fbad6743af251ea2b33f72",
+      "bytes": 3722,
+      "format": "kcl"
+    },
+    {
+      "name": "box",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/box/main.kcl",
+      "sha256": "25e115394927733f3756d24a10ffd27ba7c4e94fee00fefba7ec93b6d9f4d793",
+      "bytes": 1623,
+      "format": "kcl"
+    },
+    {
+      "name": "bracket",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bracket/main.kcl",
+      "sha256": "8f075f1e6fdf69e33913607dda6a31b73c546a224ac49ddac23c20b2bc921e2f",
+      "bytes": 5873,
+      "format": "kcl"
+    },
+    {
+      "name": "bracket-with-slot",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/bracket-with-slot/main.kcl",
+      "sha256": "500782242691b01525a68a3027983f9cad869adb6d88648b11c147d128f0a582",
+      "bytes": 8831,
+      "format": "kcl"
+    },
+    {
+      "name": "c-shape-solid",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/c-shape-solid/main.kcl",
+      "sha256": "bb89f666f6a7c9ffc9ea378c14f66d3587ddff90435fde396a7d525fc33db5de",
+      "bytes": 2423,
+      "format": "kcl"
+    },
+    {
+      "name": "car-wheel-assembly",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/car-wheel-assembly/main.kcl",
+      "sha256": "259f3f7fb1f08c5bce08f66d329b11393b1618c7fa3dd1e6752aab3c1efc313b",
+      "bytes": 502,
+      "format": "kcl"
+    },
+    {
+      "name": "ceiling-fan",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/ceiling-fan/main.kcl",
+      "sha256": "8f7b15ee7931ced1bf31941c0a6044052c5bd3e4481896d3f057a55e0598e96e",
+      "bytes": 9462,
+      "format": "kcl"
+    },
+    {
+      "name": "coilover-assembly",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/coilover-assembly/main.kcl",
+      "sha256": "e267639d4431e720d9b180c9e22bd2b3be1fd26eced249b9cb6c8ce9955c5ac8",
+      "bytes": 643,
+      "format": "kcl"
+    },
+    {
+      "name": "cold-plate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/cold-plate/main.kcl",
+      "sha256": "34534bdf0f7688a6c1d217a80831ce36aa20c4cee77cd786a621eff4207a6747",
+      "bytes": 19293,
+      "format": "kcl"
+    },
+    {
+      "name": "color-cube",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/color-cube/main.kcl",
+      "sha256": "2f36975b42804647d95967981e4bc3372e0fff276c07ba62f5ad574c6265c0e6",
+      "bytes": 3292,
+      "format": "kcl"
+    },
+    {
+      "name": "cone",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/cone/main.kcl",
+      "sha256": "15dda16030409c21dfb11bf521e51bb33ad3600dbdc83d0e4f3f4c6d4996b914",
+      "bytes": 942,
+      "format": "kcl"
+    },
+    {
+      "name": "counterdrilled-weldment",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/counterdrilled-weldment/main.kcl",
+      "sha256": "283612a315d5050d0f9a9d8672d068fae1ddcafcec8eac49a620cd2765c20dbe",
+      "bytes": 13476,
+      "format": "kcl"
+    },
+    {
+      "name": "countersunk-plate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/countersunk-plate/main.kcl",
+      "sha256": "a326b2f24bc62e3b8dd1c33fcc429c1a2eb4d09db57d155245b742527bf86406",
+      "bytes": 4663,
+      "format": "kcl"
+    },
+    {
+      "name": "crash-box",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/crash-box/main.kcl",
+      "sha256": "b99c350db4ced499d4f002d3575b9ac26ed950a24f9d51c6a4427939123516bb",
+      "bytes": 5899,
+      "format": "kcl"
+    },
+    {
+      "name": "curtain-wall-anchor-plate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/curtain-wall-anchor-plate/main.kcl",
+      "sha256": "040b379e9202b261f14fce6fae536411764bd1a9023b90ff19f57e5aaceb473e",
+      "bytes": 11694,
+      "format": "kcl"
+    },
+    {
+      "name": "cycloidal-gear",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/cycloidal-gear/main.kcl",
+      "sha256": "922ffd29533b52d3e53b42b1389abea821abed23cf3eb16edae3e30811dbc5b1",
+      "bytes": 4438,
+      "format": "kcl"
+    },
+    {
+      "name": "cylinder",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/cylinder/main.kcl",
+      "sha256": "6a3f8e6d99a5cffc5e2e715106ff3effbdc8e6a9456e02b17afda1b74ade52a6",
+      "bytes": 570,
+      "format": "kcl"
+    },
+    {
+      "name": "desk-edge-stopper",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/desk-edge-stopper/main.kcl",
+      "sha256": "0b65db056de87e595e69d55f18a8d8a9b87e49f8b157e687ec88f487a8092664",
+      "bytes": 6246,
+      "format": "kcl"
+    },
+    {
+      "name": "dining-table",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/dining-table/main.kcl",
+      "sha256": "01992f30a8ab9574dafd9299b083de894da2ab720d9319b2619c594bc6640b5d",
+      "bytes": 6389,
+      "format": "kcl"
+    },
+    {
+      "name": "dodecahedron",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/dodecahedron/main.kcl",
+      "sha256": "e1018f3400a0808f8b42b059f3c76f37c51e35d3d4d2ddd0603099860040cd6b",
+      "bytes": 4339,
+      "format": "kcl"
+    },
+    {
+      "name": "double-hook",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/double-hook/main.kcl",
+      "sha256": "7570c5d81802be66b98553180050ebd7cf73b125d4d9c29ec749abc69299fd86",
+      "bytes": 4466,
+      "format": "kcl"
+    },
+    {
+      "name": "enclosure",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/enclosure/main.kcl",
+      "sha256": "ccd8c3713ae579adf8bca589e5cdad285100d89b0b0465db3d7f8beb9685d57d",
+      "bytes": 13291,
+      "format": "kcl"
+    },
+    {
+      "name": "engine-valve",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/engine-valve/main.kcl",
+      "sha256": "cbef5df5a3dfd9010f0a8181b8a9f948428694f64004463cd2248341de2cbc04",
+      "bytes": 5076,
+      "format": "kcl"
+    },
+    {
+      "name": "exhaust-manifold",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/exhaust-manifold/main.kcl",
+      "sha256": "d88ef879e13d0619e4052785d9f5ac092d3132f072e96d16394d8cbf2b68e80f",
+      "bytes": 14519,
+      "format": "kcl"
+    },
+    {
+      "name": "field-monitor-stand",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/field-monitor-stand/main.kcl",
+      "sha256": "6f9532df8bd0894328181f9bb376ade1db2f2add1f6bb3f6d1ca8d21ec1b4602",
+      "bytes": 4668,
+      "format": "kcl"
+    },
+    {
+      "name": "flange",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/flange/main.kcl",
+      "sha256": "6fdbe43192fcfecb6c47a76c98c441207c58fa8a58573f7f784aa1ba23d1650f",
+      "bytes": 7005,
+      "format": "kcl"
+    },
+    {
+      "name": "flat-bladed-impeller",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/flat-bladed-impeller/main.kcl",
+      "sha256": "ee6ffd22af0db635505e682a59fd4fd51038a577cd0a2a4663a95e6e4a07eed6",
+      "bytes": 4240,
+      "format": "kcl"
+    },
+    {
+      "name": "fun-stacker-toy",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/fun-stacker-toy/main.kcl",
+      "sha256": "d89e03f9c2c8bf38ab7d970622be952370767aa9cbb38f279e0b87adc95ee5a7",
+      "bytes": 4992,
+      "format": "kcl"
+    },
+    {
+      "name": "gallows-bracket",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gallows-bracket/main.kcl",
+      "sha256": "557e129ec6037068107440b06bf31c096c172bb4eefb2baae6f62cd47586b487",
+      "bytes": 23147,
+      "format": "kcl"
+    },
+    {
+      "name": "gas-impeller",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gas-impeller/main.kcl",
+      "sha256": "e25f980f9f11e1a3085b0d2e266a7a3c101f801467e395b43c10a6594200dfe5",
+      "bytes": 8353,
+      "format": "kcl"
+    },
+    {
+      "name": "gdt-tutorial",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gdt-tutorial/main.kcl",
+      "sha256": "a02e8472d5142abaad3f3283019f3896b431f8fa571d7b2cae2421e12b5970c9",
+      "bytes": 2258,
+      "format": "kcl"
+    },
+    {
+      "name": "gear-rack",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gear-rack/main.kcl",
+      "sha256": "4d4535f060238658d1f602a2c0f2d93d9827a128e0afb412b4083a4a50fcb0e9",
+      "bytes": 4024,
+      "format": "kcl"
+    },
+    {
+      "name": "gingerbread-man",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gingerbread-man/main.kcl",
+      "sha256": "397e3a1e83bbc6c6463fe348411811b320e95816b1cd40d03531b3967d113209",
+      "bytes": 16147,
+      "format": "kcl"
+    },
+    {
+      "name": "gingerbread-man-cookie-cutter",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gingerbread-man-cookie-cutter/main.kcl",
+      "sha256": "acc8d81509a3d2af120327b32d7fae5b14e8cf624d40c5fddd75e5ae151a517c",
+      "bytes": 2325,
+      "format": "kcl"
+    },
+    {
+      "name": "golf-tee",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/golf-tee/main.kcl",
+      "sha256": "00c91be9adf245764503c8860a00d404f873331bb9fdc8f1cb25a240cb71ad0a",
+      "bytes": 2077,
+      "format": "kcl"
+    },
+    {
+      "name": "gridfinity-baseplate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gridfinity-baseplate/main.kcl",
+      "sha256": "7dc7cf15d833f225ccdfffb08346aff4cc672a13de61798d6a1109c11fec2c78",
+      "bytes": 3486,
+      "format": "kcl"
+    },
+    {
+      "name": "gridfinity-bins",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gridfinity-bins/main.kcl",
+      "sha256": "55d8786f3ea27bd001be3ee4fd6d6c9216b0d72be7b4ba01b282be054c1d7b54",
+      "bytes": 9170,
+      "format": "kcl"
+    },
+    {
+      "name": "gridfinity-bins-stacking-lip",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/gridfinity-bins-stacking-lip/main.kcl",
+      "sha256": "8e16b26292de000e5d1374cfdbfc5888fbec94d49f5107826259debc0fc18de2",
+      "bytes": 18417,
+      "format": "kcl"
+    },
+    {
+      "name": "hammer",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/hammer/main.kcl",
+      "sha256": "150486ec7b912444115c192d69a8c8199e888c0df2e38a332499247d3a93318a",
+      "bytes": 8955,
+      "format": "kcl"
+    },
+    {
+      "name": "helium-tank",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/helium-tank/main.kcl",
+      "sha256": "099f570cfcd3357a532d8cc6d16e84fe959b0dce51176fdd87c0f8c8021399df",
+      "bytes": 11385,
+      "format": "kcl"
+    },
+    {
+      "name": "hex-nut",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/hex-nut/main.kcl",
+      "sha256": "1388bdc28d56e811d6f2097369f6895587c9957ebf2f64cb0d27a3ce46d70fb2",
+      "bytes": 2318,
+      "format": "kcl"
+    },
+    {
+      "name": "hex-nut-with-chamfer",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/hex-nut-with-chamfer/main.kcl",
+      "sha256": "776c9a07de9212f5469e2538081e53879ef69c4b2c4fed08eaa0e6bcb83de6ac",
+      "bytes": 3614,
+      "format": "kcl"
+    },
+    {
+      "name": "i-beam",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/i-beam/main.kcl",
+      "sha256": "8847e8a1b67655ba62110d068a5ef70355482f704ce919736b07e76554667891",
+      "bytes": 6267,
+      "format": "kcl"
+    },
+    {
+      "name": "inner-thread",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/inner-thread/main.kcl",
+      "sha256": "007a20db8d7e72aae8d59eefe543afc67b83511c3e67ba361e956018d189168a",
+      "bytes": 2234,
+      "format": "kcl"
+    },
+    {
+      "name": "lattice-cubic",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/lattice-cubic/main.kcl",
+      "sha256": "a263847c77fa61a24375b1ec732c96c6fa34d8b70c5c4f3987cca1fde5f3d818",
+      "bytes": 3521,
+      "format": "kcl"
+    },
+    {
+      "name": "lego",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/lego/main.kcl",
+      "sha256": "a29dda175d7f11cfa3dea3d54c35d795645d2ba80523ae7252ccc46832224028",
+      "bytes": 4323,
+      "format": "kcl"
+    },
+    {
+      "name": "linear-shelf-system",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/linear-shelf-system/main.kcl",
+      "sha256": "0c1852c51f6b078b1f21e5e3c9b19bcb0a3bcca3a4f0e2028bc1b4d27a2303ea",
+      "bytes": 6525,
+      "format": "kcl"
+    },
+    {
+      "name": "liquid-impeller",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/liquid-impeller/main.kcl",
+      "sha256": "0c881a7a631d83352a7a62b51fa6be0c7ca4f430dd533ad71fa8cc1541a462fb",
+      "bytes": 4295,
+      "format": "kcl"
+    },
+    {
+      "name": "m4-hex-socket-countersunk-head-screw",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/m4-hex-socket-countersunk-head-screw/main.kcl",
+      "sha256": "4cd4d76a385a0cbd214581d4136492de60ac285a57ce53ae8e4e7232ad1dc486",
+      "bytes": 4202,
+      "format": "kcl"
+    },
+    {
+      "name": "m4-insert",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/m4-insert/main.kcl",
+      "sha256": "f6e7d9cbe3a38ba4fcc9093965313639ab3acc7fa9223e5d59c4f089c98871ab",
+      "bytes": 3913,
+      "format": "kcl"
+    },
+    {
+      "name": "modular-shelf-grid",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/modular-shelf-grid/main.kcl",
+      "sha256": "7c4af18e7eee66b3611bf9ea882a744a3f146e4ddcbc69e40cc6f8bf57508098",
+      "bytes": 4760,
+      "format": "kcl"
+    },
+    {
+      "name": "multi-axis-robot",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/multi-axis-robot/main.kcl",
+      "sha256": "5cd66c414209af68319d4e45c34b99930596593d994fb21448081d907255a315",
+      "bytes": 462,
+      "format": "kcl"
+    },
+    {
+      "name": "parametric-shelf-unit",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/parametric-shelf-unit/main.kcl",
+      "sha256": "ebb803c5e1da8b6420f017ceb41bfcd4f65743a0cfc8e3ea11f755548da39f21",
+      "bytes": 4723,
+      "format": "kcl"
+    },
+    {
+      "name": "pipe",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/pipe/main.kcl",
+      "sha256": "94d497bc80496a6c788bb2db3bbc6e625f34152c93825948a2eb0ef52f1435ee",
+      "bytes": 903,
+      "format": "kcl"
+    },
+    {
+      "name": "pipe-elbow-90deg",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/pipe-elbow-90deg/main.kcl",
+      "sha256": "8a458edff5ad8c08d70261ed3ee176a184026cd11442da550c2b6714ac8d841b",
+      "bytes": 4114,
+      "format": "kcl"
+    },
+    {
+      "name": "pipe-straight",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/pipe-straight/main.kcl",
+      "sha256": "328e79512b74ab81f4b53d9bed1b016446c158b6d3ec8fbb96b4e5a26492d55e",
+      "bytes": 2868,
+      "format": "kcl"
+    },
+    {
+      "name": "planetary-gearset",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/planetary-gearset/main.kcl",
+      "sha256": "def9449124b4514ec06f6cd0f1ceb78ec56730b6e734ccbc2635a50e4f8b70dc",
+      "bytes": 1273,
+      "format": "kcl"
+    },
+    {
+      "name": "rack-blanking-panel",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/rack-blanking-panel/main.kcl",
+      "sha256": "7fb6dd9769563de1743f4d13aaca6e2f9e5f3784dcd071385206332981f1a3a4",
+      "bytes": 5339,
+      "format": "kcl"
+    },
+    {
+      "name": "radial-flow-centrifugal-impeller",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/radial-flow-centrifugal-impeller/main.kcl",
+      "sha256": "3d6230ec851ae0b1f8d47e51fbd9869f7f7313f1a1a5fad9472ddb4c5efad0a3",
+      "bytes": 3594,
+      "format": "kcl"
+    },
+    {
+      "name": "rectangle-table",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/rectangle-table/main.kcl",
+      "sha256": "0db52a8b8e8a6b991ec5657ab2431f07bc6d8e613ea1fbc5f50620dee151b929",
+      "bytes": 2156,
+      "format": "kcl"
+    },
+    {
+      "name": "round-table",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/round-table/main.kcl",
+      "sha256": "5262876b92149113b35b0101662087813f6d2caee04e81ff0c5bb1895f7395d6",
+      "bytes": 1392,
+      "format": "kcl"
+    },
+    {
+      "name": "router-template-cross-bar",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/router-template-cross-bar/main.kcl",
+      "sha256": "5e4c9ef06e30738d12fdda16e41cacdb6c9d6554a07bc8d8a36a45b0c01dbc69",
+      "bytes": 6779,
+      "format": "kcl"
+    },
+    {
+      "name": "router-template-slate",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/router-template-slate/main.kcl",
+      "sha256": "5fcbda03ec337a2661ea794a338b47de656904f6382e53cbb591546c62fc634a",
+      "bytes": 4347,
+      "format": "kcl"
+    },
+    {
+      "name": "saturn-v",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/saturn-v/main.kcl",
+      "sha256": "d9bba56b33b0409e504c6a58ffae33bdb7db46e8bd288c8d2b97d664860d3dd8",
+      "bytes": 15943,
+      "format": "kcl"
+    },
+    {
+      "name": "scrub-daddy-holder",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/scrub-daddy-holder/main.kcl",
+      "sha256": "363e587682f633a53938f7324ad4a555959359cf7c8d59401bbabebe5343a7a3",
+      "bytes": 3273,
+      "format": "kcl"
+    },
+    {
+      "name": "shaft-grommet",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/shaft-grommet/main.kcl",
+      "sha256": "4a6148010b2bf5c24569e7bf0f6f770265c1e56d8555f46d2a53d2fe28a009b1",
+      "bytes": 1963,
+      "format": "kcl"
+    },
+    {
+      "name": "sheet-metal-bracket",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/sheet-metal-bracket/main.kcl",
+      "sha256": "14bee4080f9ee8d49d62963fd822d26187ddcbdb477e8e8ee0d6fad631b3795e",
+      "bytes": 10712,
+      "format": "kcl"
+    },
+    {
+      "name": "single-impeller-blade",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/single-impeller-blade/main.kcl",
+      "sha256": "fb65d61ccc0db3f4bc014859c7b973caf3fda6a512264d39ce6dccef742540bf",
+      "bytes": 1769,
+      "format": "kcl"
+    },
+    {
+      "name": "snowman",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/snowman/main.kcl",
+      "sha256": "2197b21655a7ba96601ba6c981daa45b3d5f05c9b59138c8d4e2440c2572056c",
+      "bytes": 8707,
+      "format": "kcl"
+    },
+    {
+      "name": "socket-head-cap-screw",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/socket-head-cap-screw/main.kcl",
+      "sha256": "018b7c93bb3234e258666d83f9b8733554c0bbf8a99bf7bd90637a312f07e47d",
+      "bytes": 2284,
+      "format": "kcl"
+    },
+    {
+      "name": "sphere",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/sphere/main.kcl",
+      "sha256": "f1477b41f5a48807102fbb8013493db06ee75a3decef077314ffac604aa8d069",
+      "bytes": 732,
+      "format": "kcl"
+    },
+    {
+      "name": "spinning-highrise-tower",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/spinning-highrise-tower/main.kcl",
+      "sha256": "f745a8bba6bb55f2acf23939ff647bf1fa006201099eb373b5f0f4f6fb277574",
+      "bytes": 7372,
+      "format": "kcl"
+    },
+    {
+      "name": "split-washer-spring-version",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/split-washer-spring-version/main.kcl",
+      "sha256": "1dabde14fc12159b10964ab96b6cdc6316e6a66dacb3658f3a05cf537ae3a5fe",
+      "bytes": 3930,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-car",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-car/main.kcl",
+      "sha256": "9e97f5144b31eaa5b78627e5ba4022dbb0733b4b960af63a227ae57b9868a413",
+      "bytes": 13679,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-cybertruck",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-cybertruck/main.kcl",
+      "sha256": "fb0e02702b5cf8232df04e9f24ae454213b49a7de1fc357fec2bbce2e7ac1f5a",
+      "bytes": 14358,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-dump-truck",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-dump-truck/main.kcl",
+      "sha256": "2f52d4b9df6da9e6de8179a42c41a0811f9a84afa268e63f4f8082a11f257ba3",
+      "bytes": 15470,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-firetruck",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-firetruck/main.kcl",
+      "sha256": "e44b05c5ec0a0aab2e2473306a90dc54cbd31ed0c84c854abf175c330dea5d5f",
+      "bytes": 16141,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-mini-bus",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-mini-bus/main.kcl",
+      "sha256": "ba2a9bff69834a3b9c20d0f29541c771b7400331dbbe1cccf02b05d577ff8a20",
+      "bytes": 14428,
+      "format": "kcl"
+    },
+    {
+      "name": "stylized-pickup-truck",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/stylized-pickup-truck/main.kcl",
+      "sha256": "3a0d0667cc146e46f119c673e806c7ad6e93821a31b9a6597f8cc3c53ce4f5c0",
+      "bytes": 15960,
+      "format": "kcl"
+    },
+    {
+      "name": "surgical-drill-guide",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/surgical-drill-guide/main.kcl",
+      "sha256": "0b2d39e5df2fec55250376f5c024d4b00d9282fcccd3d0a5d65a0b0d24ab9a07",
+      "bytes": 13614,
+      "format": "kcl"
+    },
+    {
+      "name": "teapot",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/teapot/main.kcl",
+      "sha256": "6f5a0e1ebf5b12781c3e41d6efa75a46c3a39b97ad2ae879539e1193e928bc66",
+      "bytes": 6019,
+      "format": "kcl"
+    },
+    {
+      "name": "thermal-block-insert",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/thermal-block-insert/main.kcl",
+      "sha256": "eca9a1f7c80915bc7de78b5e7b6538c7cfc8d3e2d519df057b1c2d93cc6b8a42",
+      "bytes": 10472,
+      "format": "kcl"
+    },
+    {
+      "name": "torus",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/torus/main.kcl",
+      "sha256": "cce22b647eb5c91cbfd3660075dcf358421eee8aad520756f1c95292cb694b53",
+      "bytes": 587,
+      "format": "kcl"
+    },
+    {
+      "name": "tube-manifold",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/tube-manifold/main.kcl",
+      "sha256": "8428694a69fa9c1058fed220a2d9d8a676ebd3fc51eb1e5919a7656d66a26fd7",
+      "bytes": 9386,
+      "format": "kcl"
+    },
+    {
+      "name": "usb-c",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/usb-c/main.kcl",
+      "sha256": "66a0144d40f41cc56ee3588bfa4262e2b7f4720d4b2f7db5b6c49a66a2c4fdc1",
+      "bytes": 6070,
+      "format": "kcl"
+    },
+    {
+      "name": "utility-sink",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/utility-sink/main.kcl",
+      "sha256": "5f2d9e739af9a8257418cdfe10324c0e9a79d56879100fbf4e072796b9044ea1",
+      "bytes": 26888,
+      "format": "kcl"
+    },
+    {
+      "name": "v-block",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/v-block/main.kcl",
+      "sha256": "fc36a7fa479f5438d7603fd1a17a44afebf00a894c155f72d9a2b19468dd4768",
+      "bytes": 3180,
+      "format": "kcl"
+    },
+    {
+      "name": "washer",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/washer/main.kcl",
+      "sha256": "1e0a20081182eaac9147293d7377f00a209f29c9ea4b1f1157490f647e219b71",
+      "bytes": 1223,
+      "format": "kcl"
+    },
+    {
+      "name": "wedge",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/wedge/main.kcl",
+      "sha256": "8ce3022471fa7e95a9b2f23608aef04e364fc9efb95c61c75a578a8e2f855695",
+      "bytes": 847,
+      "format": "kcl"
+    },
+    {
+      "name": "wheel-hub",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/wheel-hub/main.kcl",
+      "sha256": "e0492585aa4c7ef4b84ce63c8902e2feae4e32890308a0eccf133b435cf83c81",
+      "bytes": 13137,
+      "format": "kcl"
+    },
+    {
+      "name": "zoo-logo",
+      "role": "kcl_source",
+      "vendored": null,
+      "resource": "cad_repos/modeling-app-main/modeling-app-main/public/kcl-samples/zoo-logo/main.kcl",
+      "sha256": "f0900257155414aa0d3842300c1eef78a2894daa93716f1e3b7c8c79e7611d1f",
+      "bytes": 15715,
+      "format": "kcl"
+    }
+  ]
+}
