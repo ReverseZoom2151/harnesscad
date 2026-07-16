@@ -32,7 +32,7 @@ from __future__ import annotations
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 from harnesscad.agents.agent.planner import Planner
 from harnesscad.agents.agent.trace_reward import (
@@ -66,6 +66,10 @@ CONTEXT_BUDGET_TOKENS = 100_000
 #: session continuity without any edit to the CLI (it just sets/exports this).
 #: An explicit ``memory_path=`` argument to ``build`` wins over it.
 MEMORY_PATH_ENV = "HARNESSCAD_MEMORY"
+#: Opt-in multi-model cascade for the DEFAULT client (agents/llm/
+#: resilient_router.py). Comma-separated model names in priority order; unset
+#: -- the default -- means no cascade and the single-model path is unchanged.
+RESILIENT_MODELS_ENV = "HARNESSCAD_RESILIENT_MODELS"
 
 _LOG = logging.getLogger(__name__)
 
@@ -131,6 +135,65 @@ def _make_backend(backend: str):
             return (StubBackend(), "stub",
                     f"onshape backend unavailable ({exc}); fell back to stub")
     return StubBackend(), "stub", None
+
+
+class _ResilientLLM(LLM):
+    """An `LLM` backed by a `resilient_router.ResilientRouter` model cascade.
+
+    Each configured model becomes one provider callable over its own lazy
+    LiteLLM client, so the cascade costs nothing until a call is made and no
+    provider SDK is imported for a model never reached. `complete` routes; a
+    model that fails with a billing/quota/auth/rate-limit error is benched for
+    the cooldown and the next model answers.
+
+    `stream` deliberately does NOT route: the router's contract is a single
+    return value it can inspect for emptiness, and a generator would be judged
+    "non-empty" before the first token is produced -- the failure a cascade
+    exists to catch would happen after the router had already committed. So
+    streaming stays on the primary model, which is the pre-router behaviour.
+    """
+
+    def __init__(self, models: Sequence[str]) -> None:
+        from harnesscad.agents.llm.resilient_router import ResilientRouter
+
+        self._clients: List[LLM] = [_LazyLiteLLM(m) for m in models]
+        self._primary = self._clients[0]
+        self._router = ResilientRouter([
+            (model, _provider_fn(client))
+            for model, client in zip(models, self._clients)
+        ])
+        self.models = tuple(models)
+        #: Which model answered the last `complete`, for traces/tests.
+        self.last_provider: Optional[str] = None
+
+    def complete(self, messages, tools=None, response_schema=None, **opts):
+        result = self._router.call(messages, tools=tools,
+                                   response_schema=response_schema,
+                                   purpose="plan", **opts)
+        self.last_provider = result.provider
+        return result.value
+
+    def stream(self, messages, tools=None, response_schema=None, **opts):
+        return self._primary.stream(
+            messages, tools=tools, response_schema=response_schema, **opts)
+
+
+def _provider_fn(client: LLM):
+    """Adapt an `LLM` to the router's plain-callable provider contract."""
+    def call(messages, **kwargs):
+        return client.complete(messages, **kwargs)
+    return call
+
+
+def _resilient_models() -> List[str]:
+    """The model cascade from $HARNESSCAD_RESILIENT_MODELS (empty = disabled).
+
+    Comma-separated, in priority order, e.g.
+    ``HARNESSCAD_RESILIENT_MODELS="claude-sonnet-4-5,gpt-4o"``. Unset -- the
+    default -- returns [] and no cascade is built.
+    """
+    raw = os.environ.get(RESILIENT_MODELS_ENV) or ""
+    return [m.strip() for m in raw.split(",") if m.strip()]
 
 
 def _route(llm: LLM) -> LLM:
@@ -203,6 +266,16 @@ def _resolve_llm(llm: Optional[LLM], model: Optional[str]) -> LLM:
             + " or ".join(_API_KEY_ENV_VARS)
             + " in the environment, or pass an `llm=` implementing llm.base.LLM."
         )
+    # OPT-IN CASCADE. Only ever applied to the client this module builds -- an
+    # injected `llm` is the caller's contract and returned untouched above.
+    # Unset env var (the default) leaves the single-model path exactly as it was.
+    models = _resilient_models()
+    if models:
+        try:
+            return _ResilientLLM(models)
+        except Exception as exc:  # noqa: BLE001 - a cascade is an enhancement
+            _LOG.warning("resilient router unavailable; using the single-model "
+                         "client (%s)", exc)
     return _LazyLiteLLM(model or DEFAULT_MODEL)
 
 
