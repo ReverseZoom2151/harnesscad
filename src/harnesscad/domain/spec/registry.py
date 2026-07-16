@@ -880,6 +880,14 @@ UNADAPTED_REASONS: Dict[str, str] = {
         "splits a compiled contract into a visible half handed to the generator "
         "and a hidden half kept only for scoring -- reached inside the PDD "
         "evaluation pipeline (`harnesscad pdd`), never a front-door route",
+    "harnesscad.domain.spec.design_patch":
+        "the versioned design-artifact / design-patch handshake (OpenCAD's "
+        "`caid-design-artifact-v1` / `caid-design-patch-v1`): it carries an "
+        "already-built parametric model's feature tree and named parameters out "
+        "to an external simulator and applies the structured, compare-and-swap "
+        "guarded parameter corrections that come back -- a downstream edit "
+        "transport for the correction loop that consumes a spec, never a brief "
+        "reader that produces one",
     "harnesscad.domain.spec.design_brief":
         "an alternative note-taking brief IR (the text-to-cad skill template) with "
         "documented default resolution; the harness's brief front door is "
@@ -894,6 +902,13 @@ UNADAPTED_REASONS: Dict[str, str] = {
         "a checked, importable model of Zoo/KittyCAD's KCL lexical grammar, keyword "
         "set and AST node vocabulary -- reference data for a Zoo-backend author "
         "(`harnesscad.io.adapters.zoo_api`), not a brief-to-spec route",
+    "harnesscad.domain.spec.kcl_productions":
+        "the syntactic layer over `kcl_grammar`: KCL's production-rule table and "
+        "precedence block transliterated from Zoo modeling-app's `kcl.grammar`, "
+        "plus a recursive-descent structural checker that lints KCL source into "
+        "typed diagnostics -- a checker a Zoo-backend author "
+        "(`harnesscad.io.adapters.zoo_api`) runs over KCL it emits, not a route "
+        "that reads a brief",
     "harnesscad.domain.spec.representation_completeness":
         "a schema/scoring utility that ranks CAD data-representation formats by "
         "which engineering-semantic layers they preserve -- an analysis metric "
