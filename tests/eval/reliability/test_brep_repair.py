@@ -16,7 +16,24 @@ from harnesscad.core.cisp.ops import (
 )
 from harnesscad.core.state.opdag import OpDAG
 from harnesscad.eval.verifiers.verify import Diagnostic, Severity
-from harnesscad.eval.reliability.brep_repair import RepairAdvisor, RepairResult, RepairSuggestion, repair_solid
+from harnesscad.eval.reliability.brep_repair import (
+    BASELINE_MAX_TOLERANCE,
+    BASELINE_PRECISION,
+    CONNECT_TOLERANCE,
+    FIX_PRECISION,
+    FIX_TOLERANCE,
+    LadderRung,
+    RepairAdvisor,
+    RepairResult,
+    RepairSuggestion,
+    SEWING_TOLERANCE,
+    _apply_face_recipe,
+    _sew_shape,
+    _shape_is_valid,
+    default_ladder,
+    heal_shape_ladder,
+    repair_solid,
+)
 from harnesscad.eval.reliability.guardrails import ErrorRecovery
 
 
@@ -213,6 +230,117 @@ class TestRepairSolidWithCadquery(unittest.TestCase):
         result = repair_solid(b)
         self.assertIsInstance(result, RepairResult)
         self.assertTrue(b.query("validity")["is_valid"])
+
+
+# ======================================================================
+# Tolerance ladder (Brepler)
+# ======================================================================
+class TestToleranceLadderShape(unittest.TestCase):
+    """The ladder's structure, checked without a kernel."""
+
+    def test_rung_zero_is_the_historical_single_pass(self):
+        # The default-safety invariant: rung 0 must be byte-for-byte the old
+        # fixed-precision behaviour, so a shape that healed before still heals
+        # identically and never escalates.
+        rung = default_ladder()[0]
+        self.assertEqual(rung.precision, BASELINE_PRECISION)
+        self.assertEqual(rung.max_tolerance, BASELINE_MAX_TOLERANCE)
+        self.assertFalse(rung.face_recipe)
+        self.assertFalse(rung.sew)
+
+    def test_default_ladder_is_deterministic(self):
+        self.assertEqual(default_ladder(), default_ladder())
+
+    def test_plain_band_escalates_monotonically_in_precision(self):
+        plain = [r for r in default_ladder() if not r.face_recipe and not r.sew]
+        precisions = [r.precision for r in plain]
+        self.assertEqual(precisions, sorted(precisions))
+        self.assertEqual(len(set(precisions)), len(precisions))
+
+    def test_ladder_covers_the_brepler_connect_band(self):
+        precisions = {r.precision for r in default_ladder()}
+        for tol in CONNECT_TOLERANCE:
+            self.assertIn(tol, precisions)
+
+    def test_strategy_rungs_are_last_resorts(self):
+        rungs = default_ladder()
+        first_strategy = min(i for i, r in enumerate(rungs)
+                             if r.face_recipe or r.sew)
+        # every rung before the first strategy rung is plain...
+        self.assertTrue(all(not r.face_recipe and not r.sew
+                            for r in rungs[:first_strategy]))
+        # ...and sewing happens exactly once, at the very end.
+        self.assertEqual(sum(1 for r in rungs if r.sew), 1)
+        self.assertTrue(rungs[-1].sew)
+        self.assertEqual(rungs[-1].max_tolerance, SEWING_TOLERANCE)
+
+    def test_repair_solid_accepts_a_custom_ladder_without_a_kernel(self):
+        # The ladder argument must thread through the graceful-degradation path.
+        result = repair_solid(_FakeValidBackend(),
+                              ladder=[LadderRung("x", 1e-3, 1e-3)])
+        self.assertIsInstance(result, RepairResult)
+        self.assertFalse(result.healed)
+
+
+@unittest.skipUnless(HAVE_CQ, "cadquery/OCCT not installed")
+class TestToleranceLadderWithCadquery(unittest.TestCase):
+    """Real kernel properties of the ladder rungs."""
+
+    def _box(self):
+        import cadquery as cq
+        return cq.Workplane("XY").box(20, 10, 5).val()
+
+    def test_valid_solid_stops_at_rung_zero(self):
+        import cadquery as cq
+        healed, actions = heal_shape_ladder(cq, self._box())
+        self.assertEqual(actions[0], "rung:%s" % default_ladder()[0].name)
+        self.assertFalse(any("escalated" in a for a in actions))
+        self.assertAlmostEqual(healed.Volume(), 1000.0, places=5)
+
+    def test_sew_rung_rebuilds_a_solid_from_loose_faces(self):
+        import cadquery as cq
+        box = self._box()
+        # A bare compound of the box's six faces contains no solid at all.
+        compound = cq.Compound.makeCompound(box.Faces())
+        self.assertEqual(len(compound.Solids()), 0)
+
+        sewn, fired = _sew_shape(compound.wrapped, SEWING_TOLERANCE)
+        self.assertTrue(fired)
+        sewn_shape = cq.Shape.cast(sewn)
+        self.assertEqual(len(sewn_shape.Solids()), 1)
+        self.assertAlmostEqual(sewn_shape.Volume(), 1000.0, places=5)
+        self.assertTrue(_shape_is_valid(sewn))
+
+    def test_sew_rung_reports_not_fired_on_unclosable_faces(self):
+        # A single face can never sew into a closed shell; the rung must report
+        # not-fired and hand the caller back its input rather than a broken shape.
+        import cadquery as cq
+        one_face = self._box().Faces()[0]
+        sewn, fired = _sew_shape(one_face.wrapped, SEWING_TOLERANCE)
+        self.assertFalse(fired)
+        self.assertIs(sewn, one_face.wrapped)
+
+    def test_face_recipe_preserves_a_curved_solid(self):
+        import cadquery as cq
+        cyl = cq.Workplane("XY").circle(4).extrude(10).val()
+        rung = LadderRung("t", FIX_PRECISION, FIX_TOLERANCE, face_recipe=True)
+        fixed, fired = _apply_face_recipe(cyl.wrapped, rung)
+        self.assertTrue(fired)
+        fixed_shape = cq.Shape.cast(fixed)
+        # The recipe must heal, never mangle: volume and validity are preserved.
+        self.assertAlmostEqual(fixed_shape.Volume(), cyl.Volume(), places=3)
+        self.assertTrue(_shape_is_valid(fixed))
+
+    def test_ladder_never_narrows_what_a_single_pass_healed(self):
+        # Pinning the ladder to rung 0 alone must reproduce the default result
+        # for a valid solid — evidence that escalation only ever adds outcomes.
+        import cadquery as cq
+        box = self._box()
+        baseline_only = [default_ladder()[0]]
+        pinned, _ = heal_shape_ladder(cq, box, baseline_only)
+        full, _ = heal_shape_ladder(cq, box)
+        self.assertAlmostEqual(pinned.Volume(), full.Volume(), places=6)
+        self.assertEqual(len(pinned.Faces()), len(full.Faces()))
 
 
 if __name__ == "__main__":

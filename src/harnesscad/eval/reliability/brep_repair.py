@@ -10,7 +10,8 @@ geometry") it offers two complementary capabilities:
    fix face orientation, sew unshared edges and drop degeneracies, then reports
    exactly what changed (before/after validity + a topology diff). It is lazy and
    cadquery-guarded: with no OCCT, no solid, or nothing to fix it returns a clean
-   no-op result with a note and NEVER raises.
+   no-op result with a note and NEVER raises. The heal is an escalating TOLERANCE
+   LADDER (see below), not a single fixed-precision pass.
 
 2. DIAGNOSTIC-TO-REPAIR ADVISOR — :class:`RepairAdvisor` deterministically maps
    the diagnostic *codes* the verifiers emit (over-constrained, invalid-brep,
@@ -20,18 +21,53 @@ geometry") it offers two complementary capabilities:
    the agent, and it composes :class:`guardrails.ErrorRecovery` so each suggestion
    also carries its rung on the detect -> handle -> recover ladder.
 
+TOLERANCE LADDER (attribution)
+-----------------------------
+The escalation ladder, the ShapeFix_Wire/ShapeFix_Face flag recipe and the
+sewing rung are REIMPLEMENTED (no copied text) from the facts documented in
+``resources/cad_repos/Brepler-main/Brepler-main/network/post/utils.py`` — the
+B-repLer post-processing stage that turns network-predicted surfaces into a
+valid OCCT solid. That repository ships no LICENSE file, so nothing is vendored
+from it; what is reused here are *facts about OCCT behaviour* (numeric
+tolerances and which ShapeFix flags must be on/off), expressed in original code.
+The specific facts taken:
+
+  * CONNECT tolerance ladder ``2e-3 .. 8e-2`` for connecting/fixing generated
+    topology; FIX precision/tolerance ``1e-2``; SEWING tolerance ``1e-1``;
+    small-edge removal tolerance ``1e-3``.
+  * The ShapeFix_Face recipe: FixOrientation / FixMissingSeam / FixWire ON, and
+    — the non-obvious part — FixIntersectingWires, FixLoopWires,
+    FixPeriodicDegenerated and FixSmallAreaWire OFF, with
+    AutoCorrectPrecisionMode OFF so the requested tolerance is actually used.
+  * The ShapeFix_Wire recipe: ModifyTopology + ModifyGeometry ON, FixShifted and
+    ClosedWire ON, FixSmall/FixGaps3d enabled at the rung tolerance.
+
+Corroboration: AutoBrep independently reports that the sew tolerance for
+*generated* (as opposed to authored) geometry is ``1e-2``, not ``1e-6``. That is
+the point of the ladder: a single 1e-6 pass is the wrong precision for exactly
+the geometry a text-to-CAD harness produces.
+
+DEFAULT-SAFE: the ladder's first rung is byte-for-byte the historical behaviour
+(ShapeFix_Shape at precision 1e-6 / max tolerance 1e-2 + UnifySameDomain), and
+escalation happens ONLY when a rung leaves the shape invalid. A shape that
+healed (or was already valid) before still stops at rung 0, so the ladder can
+only ever widen what heals, never narrow it. Every rung restarts from the
+ORIGINAL shape, so a failed rung cannot compound damage into the next one.
+
 Absolute imports; OCCT touched only inside cadquery-guarded paths; degrades
 gracefully everywhere.
 """
 
 from __future__ import annotations
 
+import argparse
+import sys
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from harnesscad.core.cisp.ops import Constrain, Op
 from harnesscad.eval.reliability.guardrails import ErrorRecovery
-from harnesscad.eval.verifiers.verify import Diagnostic
+from harnesscad.eval.verifiers.verify import Diagnostic, Severity
 
 
 # ======================================================================
@@ -99,43 +135,327 @@ def _describe_shape(shape) -> dict:
     return d
 
 
-def _heal_shape(cq, shape):
-    """Run OCCT ShapeFix (+ ShapeUpgrade) over one cq Shape.
+# ----------------------------------------------------------------------
+# Tolerance ladder (facts reimplemented from Brepler network/post/utils.py)
+# ----------------------------------------------------------------------
+#: The historical single-pass parameters. Rung 0 reproduces these exactly, so
+#: the ladder is a superset of the old behaviour.
+BASELINE_PRECISION = 1e-6
+BASELINE_MAX_TOLERANCE = 1e-2
 
-    Returns ``(healed_shape, actions)``. ``healed_shape`` is a new cq Shape;
-    ``actions`` names the healing passes that ran. Raises only on a hard OCCT
-    failure, which the caller turns into a graceful no-op.
+#: Brepler CONNECT_TOLERANCE: the escalating band over which generated topology
+#: is connected/fixed. Authored CAD needs the low end; network- or LLM-generated
+#: geometry routinely needs 1e-2 and up.
+CONNECT_TOLERANCE: Tuple[float, ...] = (2e-3, 6e-3, 1e-2, 1.5e-2, 2e-2, 2.5e-2,
+                                        5e-2, 8e-2)
+#: Brepler FIX_PRECISION / FIX_TOLERANCE — the precision at which the explicit
+#: ShapeFix_Face/ShapeFix_Wire flag recipe is run.
+FIX_PRECISION = 1e-2
+FIX_TOLERANCE = 1e-2
+#: Brepler SEWING_TOLERANCE — deliberately an order of magnitude looser than the
+#: fix tolerance; sewing is the last resort before giving up on a shell.
+SEWING_TOLERANCE = 1e-1
+#: Brepler REMOVE_EDGE_TOLERANCE — edges shorter than this are dropped, not fixed.
+REMOVE_EDGE_TOLERANCE = 1e-3
+
+
+@dataclass(frozen=True)
+class LadderRung:
+    """One rung of the escalating repair ladder.
+
+    ``precision`` / ``max_tolerance`` are handed to the OCCT fixers. ``face_recipe``
+    runs the explicit per-face ShapeFix_Face + ShapeFix_Wire flag recipe before the
+    shape-level fix; ``sew`` additionally sews the faces into a shell (and, when a
+    single shell results, into a solid) at ``max_tolerance``.
     """
-    actions: List[str] = []
+
+    name: str
+    precision: float
+    max_tolerance: float
+    face_recipe: bool = False
+    sew: bool = False
+
+
+def default_ladder() -> List[LadderRung]:
+    """The default escalation ladder, cheapest and tightest rung first.
+
+    Rung 0 is the historical fixed pass. Rungs 1..8 escalate ShapeFix_Shape over
+    Brepler's CONNECT_TOLERANCE band. Rung 9 adds the explicit face/wire flag
+    recipe at FIX_TOLERANCE. Rung 10 is the sewing last resort at SEWING_TOLERANCE.
+    """
+    rungs = [LadderRung("shapefix@1e-06", BASELINE_PRECISION, BASELINE_MAX_TOLERANCE)]
+    for tol in CONNECT_TOLERANCE:
+        rungs.append(LadderRung("shapefix@%.1e" % tol, tol, tol))
+    rungs.append(LadderRung("face-recipe@%.1e" % FIX_TOLERANCE, FIX_PRECISION,
+                            FIX_TOLERANCE, face_recipe=True))
+    rungs.append(LadderRung("sew@%.1e" % SEWING_TOLERANCE, FIX_PRECISION,
+                            SEWING_TOLERANCE, face_recipe=True, sew=True))
+    return rungs
+
+
+def _shape_is_valid(wrapped) -> bool:
+    """BRepCheck_Analyzer verdict for a raw OCCT shape (never raises)."""
+    try:
+        from OCP.BRepCheck import BRepCheck_Analyzer
+        return bool(BRepCheck_Analyzer(wrapped).IsValid())
+    except Exception:  # noqa: BLE001 - no analyzer -> cannot claim validity
+        return False
+
+
+def _set_tolerance(wrapped, tol: float):
+    """ShapeFix_ShapeTolerance.SetTolerance over a whole shape (best-effort).
+
+    Brepler sets an explicit tolerance on the shape before/after every sew so the
+    downstream fixers agree with the sewer about what "coincident" means.
+    """
+    try:
+        from OCP.ShapeFix import ShapeFix_ShapeTolerance
+        ShapeFix_ShapeTolerance().SetTolerance(wrapped, tol)
+    except Exception:  # noqa: BLE001 - tolerance forcing is best-effort
+        pass
+    return wrapped
+
+
+def _apply_face_recipe(wrapped, rung: LadderRung) -> Tuple[object, bool]:
+    """Run the ShapeFix_Face/ShapeFix_Wire flag recipe over every face.
+
+    Returns ``(shape, fired)``. Faces are replaced in place through a
+    BRepTools_ReShape context, so a face the fixer cannot improve is simply left
+    alone. Never raises: any OCCT failure yields ``(wrapped, False)``.
+
+    The flag choices (notably DISABLING FixIntersectingWires and
+    FixPeriodicDegenerated, and turning AutoCorrectPrecisionMode off so the rung
+    tolerance is honoured) are Brepler's; see the module docstring.
+    """
+    try:
+        from OCP.BRepTools import BRepTools_ReShape
+        from OCP.ShapeFix import ShapeFix_Face, ShapeFix_Wire
+        from OCP.TopAbs import TopAbs_FACE, TopAbs_WIRE
+        from OCP.TopExp import TopExp_Explorer
+        from OCP.TopoDS import TopoDS
+    except Exception:  # noqa: BLE001 - OCP build without these -> skip the rung
+        return wrapped, False
+
+    tol = rung.max_tolerance
+    reshape = BRepTools_ReShape()
+    fired = False
+
+    explorer = TopExp_Explorer(wrapped, TopAbs_FACE)
+    while explorer.More():
+        face = TopoDS.Face_s(explorer.Current())
+        explorer.Next()
+        try:
+            # -- per-wire pass: drop sub-1e-3 edges, close 3d gaps at rung tol --
+            wire_exp = TopExp_Explorer(face, TopAbs_WIRE)
+            while wire_exp.More():
+                wire = TopoDS.Wire_s(wire_exp.Current())
+                wire_exp.Next()
+                try:
+                    wf = ShapeFix_Wire(wire, face, tol)
+                    wf.ModifyTopologyMode = True
+                    wf.ModifyGeometryMode = True
+                    wf.SetPrecision(tol)
+                    wf.SetMaxTolerance(tol)
+                    wf.FixSmall(False, REMOVE_EDGE_TOLERANCE)
+                    wf.FixGaps3d()
+                    fixed_wire = wf.Wire()
+                    # Brepler's guard: a single-edge wire that gap-fixing still
+                    # leaves open is unsalvageable — leave it rather than force it.
+                    if fixed_wire.Closed() or fixed_wire.NbChildren() > 1:
+                        reshape.Replace(wire, fixed_wire)
+                        fired = True
+                except Exception:  # noqa: BLE001 - one bad wire must not stop the pass
+                    continue
+
+            # -- per-face pass: the flag recipe --
+            ff = ShapeFix_Face(face)
+            ff.AutoCorrectPrecisionMode = False
+            ff.SetPrecision(rung.precision)
+            ff.SetMaxTolerance(tol)
+            ff.FixOrientationMode = True
+            ff.FixMissingSeamMode = True
+            ff.FixWireMode = True
+            ff.FixLoopWiresMode = False
+            ff.FixIntersectingWiresMode = False
+            ff.FixPeriodicDegeneratedMode = False
+            ff.FixSmallAreaWireMode = False
+            wire_tool = ff.FixWireTool()
+            wire_tool.ModifyGeometryMode = True
+            wire_tool.FixShiftedMode = True
+            wire_tool.ClosedWireMode = True
+            wire_tool.SetPrecision(rung.precision)
+            wire_tool.SetMaxTolerance(tol)
+            ff.Perform()
+            fixed_face = ff.Face()
+            if fixed_face is not None and not fixed_face.IsNull():
+                reshape.Replace(face, fixed_face)
+                fired = True
+        except Exception:  # noqa: BLE001 - one bad face must not stop the pass
+            continue
+
+    if not fired:
+        return wrapped, False
+    try:
+        return reshape.Apply(wrapped), True
+    except Exception:  # noqa: BLE001
+        return wrapped, False
+
+
+def _sew_shape(wrapped, tol: float) -> Tuple[object, bool]:
+    """Sew the shape's faces into a shell (and a solid when exactly one results).
+
+    Returns ``(shape, fired)``. This is Brepler's ``get_solid`` reduced to the
+    heal case: sew at ``tol``, force the tolerance onto the sewn shell, fix the
+    shell if the analyzer rejects it, then make a solid. A sew that yields a
+    compound (i.e. the faces did not close up even at this tolerance) is reported
+    as not fired, so the caller keeps the pre-sew shape.
+    """
+    try:
+        from OCP.BRepBuilderAPI import (BRepBuilderAPI_MakeSolid,
+                                        BRepBuilderAPI_Sewing)
+        from OCP.ShapeFix import ShapeFix_Shell
+        from OCP.TopAbs import TopAbs_SHELL
+        from OCP.TopExp import TopExp_Explorer
+        from OCP.TopoDS import TopoDS
+    except Exception:  # noqa: BLE001
+        return wrapped, False
+
+    try:
+        sewing = BRepBuilderAPI_Sewing()
+        sewing.SetTolerance(tol)
+        sewing.Add(wrapped)
+        sewing.Perform()
+        sewn = sewing.SewedShape()
+        if sewn is None or sewn.IsNull():
+            return wrapped, False
+        _set_tolerance(sewn, tol)
+
+        shells = []
+        explorer = TopExp_Explorer(sewn, TopAbs_SHELL)
+        while explorer.More():
+            shells.append(TopoDS.Shell_s(explorer.Current()))
+            explorer.Next()
+        if len(shells) != 1:
+            # Zero shells (nothing closed) or several (Brepler returns None on a
+            # COMPOUND): the sew did not produce the single closed shell we want.
+            return wrapped, False
+
+        shell = shells[0]
+        if not _shape_is_valid(shell):
+            fixer = ShapeFix_Shell(shell)
+            fixer.SetPrecision(tol)
+            fixer.FixFaceMode = True
+            fixer.FixOrientationMode = True
+            fixer.Perform()
+            shell = fixer.Shell()
+            _set_tolerance(shell, tol)
+
+        maker = BRepBuilderAPI_MakeSolid()
+        maker.Add(shell)
+        maker.Build()
+        if not maker.IsDone():
+            return wrapped, False
+        return maker.Solid(), True
+    except Exception:  # noqa: BLE001 - sewing is the last resort; never raise
+        return wrapped, False
+
+
+def _run_rung(wrapped, rung: LadderRung) -> Tuple[object, List[str]]:
+    """Apply one ladder rung to a raw OCCT shape. Returns ``(shape, actions)``."""
     from OCP.ShapeFix import ShapeFix_Shape
 
-    fixer = ShapeFix_Shape(shape.wrapped)
+    actions: List[str] = []
+    current = wrapped
+
+    if rung.face_recipe:
+        current, fired = _apply_face_recipe(current, rung)
+        if fired:
+            actions.append("ShapeFix_Face+ShapeFix_Wire recipe @%g" % rung.max_tolerance)
+
+    if rung.sew:
+        current = _set_tolerance(current, rung.max_tolerance)
+        current, fired = _sew_shape(current, rung.max_tolerance)
+        if fired:
+            actions.append("BRepBuilderAPI_Sewing @%g" % rung.max_tolerance)
+
+    fixer = ShapeFix_Shape(current)
     try:
-        fixer.SetPrecision(1e-6)
-        fixer.SetMaxTolerance(1e-2)
+        fixer.SetPrecision(rung.precision)
+        fixer.SetMaxTolerance(rung.max_tolerance)
     except Exception:  # noqa: BLE001 - precision setters are best-effort
         pass
     fixer.Perform()
-    fixed_wrapped = fixer.Shape()
-    actions.append("ShapeFix_Shape")
+    current = fixer.Shape()
+    actions.append("ShapeFix_Shape @%g/%g" % (rung.precision, rung.max_tolerance))
 
     # ShapeUpgrade: unify coplanar faces / co-linear edges left after the fix,
     # removing the unshared-edge slivers that make a solid non-manifold. Guarded
     # independently so an OCP build lacking it still yields the ShapeFix result.
     try:
         from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
-        unifier = ShapeUpgrade_UnifySameDomain(fixed_wrapped, True, True, True)
+        unifier = ShapeUpgrade_UnifySameDomain(current, True, True, True)
         unifier.Build()
-        fixed_wrapped = unifier.Shape()
+        current = unifier.Shape()
         actions.append("ShapeUpgrade_UnifySameDomain")
     except Exception:  # noqa: BLE001 - upgrade is optional
         pass
 
-    return cq.Shape.cast(fixed_wrapped), actions
+    return current, actions
 
 
-def repair_solid(backend) -> RepairResult:
-    """Heal the backend's current B-rep with OCCT ShapeFix / ShapeUpgrade.
+def heal_shape_ladder(cq, shape, ladder: Optional[Sequence[LadderRung]] = None):
+    """Heal one cq Shape by escalating through ``ladder`` until it is valid.
+
+    Returns ``(healed_shape, actions)``. Rungs are tried in order, each starting
+    from the ORIGINAL shape; the first rung whose result passes BRepCheck_Analyzer
+    wins. If no rung produces a valid shape, the FIRST rung's result is returned
+    — that is the historical behaviour, so a shape the ladder cannot save is left
+    exactly as the old single-pass code left it.
+
+    ``actions`` names the passes of the winning rung, prefixed by the rung name.
+    Raises only on a hard OCCT failure, which the caller turns into a no-op.
+    """
+    rungs = list(ladder) if ladder is not None else default_ladder()
+    if not rungs:
+        rungs = default_ladder()
+
+    original = shape.wrapped
+    first_result = None
+    first_actions: List[str] = []
+
+    for index, rung in enumerate(rungs):
+        try:
+            fixed, actions = _run_rung(original, rung)
+        except Exception:  # noqa: BLE001 - a rung that throws is simply skipped
+            if index == 0:
+                raise
+            continue
+        if index == 0:
+            first_result, first_actions = fixed, actions
+        if _shape_is_valid(fixed):
+            named = ["rung:%s" % rung.name] + actions
+            if index > 0:
+                named.append("escalated %d rung(s) past the 1e-06 baseline" % index)
+            return cq.Shape.cast(fixed), named
+
+    if first_result is None:  # pragma: no cover - rung 0 raises before this
+        raise RuntimeError("repair ladder produced no result")
+    return cq.Shape.cast(first_result), (["rung:%s" % rungs[0].name] + first_actions
+                                         + ["ladder exhausted; shape still invalid"])
+
+
+def _heal_shape(cq, shape, ladder: Optional[Sequence[LadderRung]] = None):
+    """Backwards-compatible alias for :func:`heal_shape_ladder`."""
+    return heal_shape_ladder(cq, shape, ladder)
+
+
+def repair_solid(backend, ladder: Optional[Sequence[LadderRung]] = None) -> RepairResult:
+    """Heal the backend's current B-rep with the OCCT ShapeFix tolerance ladder.
+
+    ``ladder`` overrides the rungs (see :func:`default_ladder`); pass a
+    single-rung list to pin one precision. The default ladder starts at the
+    historical 1e-6/1e-2 pass and only escalates when that leaves the shape
+    invalid, so this argument is never needed to preserve old behaviour.
 
     Contract:
       * No OCCT installed, no solid present, or a backend that exposes no OCCT
@@ -180,7 +500,7 @@ def repair_solid(backend) -> RepairResult:
             if shape is None:
                 healed_solids.append(wp)
                 continue
-            fixed, acts = _heal_shape(cq, shape)
+            fixed, acts = heal_shape_ladder(cq, shape, ladder)
             healed_solids.append(wp.newObject([fixed]))
             for a in acts:
                 if a not in actions:
@@ -226,7 +546,7 @@ def repair_solid(backend) -> RepairResult:
         after_validity=after,
         diff={"before": before_desc, "after": after_desc,
               "became_valid": became_valid},
-        note="healed geometry via OCCT ShapeFix/ShapeUpgrade")
+        note="healed geometry via the OCCT ShapeFix tolerance ladder")
 
 
 def _workplane_shape(cq, wp):
@@ -574,3 +894,132 @@ class RepairAdvisor:
             ],
             recovery=_recovery("regen-fail", "log", "reflect-diagnose"),
             where=getattr(diag, "where", None))
+
+
+# ======================================================================
+# CLI
+# ======================================================================
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    """CLI entry point. ``--selfcheck`` proves the ladder's real properties:
+    the default-safety invariant, monotone escalation, and (when OCCT is
+    installed) that the sew rung actually rebuilds a solid from loose faces."""
+    parser = argparse.ArgumentParser(
+        prog="python -m harnesscad.eval.reliability.brep_repair",
+        description="B-rep repair: OCCT ShapeFix tolerance ladder + repair advisor.",
+    )
+    parser.add_argument(
+        "--selfcheck", action="store_true",
+        help="run deterministic checks over the ladder and advisor; exit 0 on success.")
+    args = parser.parse_args(list(argv) if argv is not None else None)
+
+    if not args.selfcheck:
+        parser.print_help()
+        return 0
+
+    failures: List[str] = []
+    checks = 0
+
+    def check(label: str, condition: bool) -> None:
+        nonlocal checks
+        checks += 1
+        if not condition:
+            failures.append(label)
+
+    rungs = default_ladder()
+
+    # 1. DEFAULT-SAFETY: rung 0 is exactly the historical single pass.
+    check("rung 0 is the 1e-6/1e-2 baseline",
+          rungs[0].precision == BASELINE_PRECISION
+          and rungs[0].max_tolerance == BASELINE_MAX_TOLERANCE
+          and not rungs[0].face_recipe and not rungs[0].sew)
+
+    # 2. Escalation is monotone in precision across the plain ShapeFix band: each
+    #    rung asks the fixer to treat a strictly larger deviation as "needs
+    #    fixing" than the rung before it.
+    plain = [r for r in rungs if not r.face_recipe and not r.sew]
+    precisions = [r.precision for r in plain]
+    check("ShapeFix band escalates monotonically in precision",
+          all(a < b for a, b in zip(precisions, precisions[1:])))
+
+    # 3. Strategy rungs (face recipe, sewing) come only AFTER the whole plain
+    #    band: they are last resorts, not shortcuts.
+    strategy_start = min(i for i, r in enumerate(rungs) if r.face_recipe or r.sew)
+    check("strategy rungs come after the plain band",
+          strategy_start == len(plain))
+
+    # 4. The ladder spans the Brepler CONNECT band and ends at the sewing rung.
+    check("ladder covers the CONNECT band",
+          all(t in precisions for t in CONNECT_TOLERANCE))
+    check("last rung sews at SEWING_TOLERANCE",
+          rungs[-1].sew and rungs[-1].max_tolerance == SEWING_TOLERANCE)
+    check("only the last rung sews",
+          sum(1 for r in rungs if r.sew) == 1)
+
+    # 4. Determinism: the ladder is a pure function of nothing.
+    check("default_ladder is deterministic", default_ladder() == rungs)
+
+    # 5. The advisor stays pure and total.
+    advisor = RepairAdvisor()
+    diags = [Diagnostic(Severity.ERROR, "invalid-brep", "m"),
+             Diagnostic(Severity.ERROR, "totally-unknown-code", "m")]
+    first = [s.to_dict() for s in advisor.suggest(diags)]
+    check("advisor is deterministic",
+          first == [s.to_dict() for s in advisor.suggest(diags)])
+    check("advisor never returns an empty suggestion",
+          all(s["candidate_ops"] for s in first))
+
+    if not _cadquery_available():
+        if failures:
+            print("SELFCHECK FAILED: %s" % ", ".join(failures), file=sys.stderr)
+            return 1
+        print("PASS: brep_repair selfcheck (%d checks; OCCT absent, kernel rungs "
+              "skipped)" % checks)
+        return 0
+
+    import cadquery as cq
+
+    # 6. REAL KERNEL PROPERTY: a valid solid heals at rung 0 and never escalates.
+    box = cq.Workplane("XY").box(20, 10, 5).val()
+    healed, actions = heal_shape_ladder(cq, box)
+    check("valid solid heals at rung 0",
+          actions and actions[0] == "rung:%s" % rungs[0].name)
+    check("valid solid does not escalate",
+          not any("escalated" in a for a in actions))
+    check("valid solid keeps its volume",
+          abs(healed.Volume() - 1000.0) < 1e-6)
+
+    # 7. REAL KERNEL PROPERTY: the sew rung rebuilds a solid from loose faces.
+    #    A bare compound of a box's 6 faces has no solid; sewing at the Brepler
+    #    tolerance must close it into one whose volume is the box's.
+    faces = box.Faces()
+    compound = cq.Compound.makeCompound(faces).wrapped
+    sewn, fired = _sew_shape(compound, SEWING_TOLERANCE)
+    check("sew rung fires on loose faces", fired)
+    if fired:
+        sewn_shape = cq.Shape.cast(sewn)
+        check("sew rung yields exactly one solid", len(sewn_shape.Solids()) == 1)
+        check("sewn solid has the original volume",
+              abs(sewn_shape.Volume() - 1000.0) < 1e-6)
+
+    # 8. REAL KERNEL PROPERTY: the face/wire recipe is volume-preserving on a
+    #    curved (periodic-surface) solid — the recipe must heal, never mangle.
+    cyl = cq.Workplane("XY").circle(4).extrude(10).val()
+    recipe_rung = LadderRung("t", FIX_PRECISION, FIX_TOLERANCE, face_recipe=True)
+    fixed, fired = _apply_face_recipe(cyl.wrapped, recipe_rung)
+    check("face recipe fires on a cylinder", fired)
+    if fired:
+        fixed_shape = cq.Shape.cast(fixed)
+        check("face recipe preserves cylinder volume",
+              abs(fixed_shape.Volume() - cyl.Volume()) < 1e-3)
+        check("face recipe leaves the cylinder valid", _shape_is_valid(fixed))
+
+    if failures:
+        print("SELFCHECK FAILED: %s" % ", ".join(failures), file=sys.stderr)
+        return 1
+    print("PASS: brep_repair selfcheck (%d checks; ladder default-safety, monotone "
+          "escalation, real OCCT sew + face-recipe rungs)" % checks)
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())
