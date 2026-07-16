@@ -1,0 +1,134 @@
+{
+  "source_repo": "AgentSCAD",
+  "source_path": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks",
+  "license": "MIT",
+  "attribution": "AgentSCAD (MIT License, Copyright (c) 2026 AgentSCAD)",
+  "entries": [
+    {
+      "name": "simple_flat_bracket",
+      "role": "task",
+      "vendored": "simple/flat_bracket.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/simple/flat_bracket.json",
+      "sha256": "458a9d57e0bba3859a10a150156ba5dc2298ff3491920c784a2b90bdff798291",
+      "bytes": 358,
+      "format": "json"
+    },
+    {
+      "name": "simple_knob",
+      "role": "task",
+      "vendored": "simple/knob.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/simple/knob.json",
+      "sha256": "a1c39bc8af957969efec526c0f8d8e88e0c44075efe51044d4417d236d6c3008",
+      "bytes": 340,
+      "format": "json"
+    },
+    {
+      "name": "simple_mounting_plate",
+      "role": "task",
+      "vendored": "simple/mounting_plate.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/simple/mounting_plate.json",
+      "sha256": "0d8e296704c62634d56b0d130af42267f06a96a41e0c25255af23a58713ce446",
+      "bytes": 398,
+      "format": "json"
+    },
+    {
+      "name": "simple_spacer",
+      "role": "task",
+      "vendored": "simple/spacer.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/simple/spacer.json",
+      "sha256": "b71358e6d58cfb9cbaa2255d2e9d74223e615cc9b2cd0ebc9c880bfc6548aff1",
+      "bytes": 339,
+      "format": "json"
+    },
+    {
+      "name": "simple_washer",
+      "role": "task",
+      "vendored": "simple/washer.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/simple/washer.json",
+      "sha256": "cab8bedc831b1310ac3d72a58710adb8304152d0318fe0c453ee503bae9e51ba",
+      "bytes": 337,
+      "format": "json"
+    },
+    {
+      "name": "medium_electronics_enclosure",
+      "role": "task",
+      "vendored": "medium/electronics_enclosure.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/electronics_enclosure.json",
+      "sha256": "c1bd1f6898d2c8e9d920c8714987970a94207104bb4eaa6cdf7289aec24f7891",
+      "bytes": 426,
+      "format": "json"
+    },
+    {
+      "name": "medium_hinge_bracket",
+      "role": "task",
+      "vendored": "medium/hinge_bracket.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/hinge_bracket.json",
+      "sha256": "2269f99055728ceba8342018bf62ba4aac7686885ac12037d04d029f4cde7cee",
+      "bytes": 467,
+      "format": "json"
+    },
+    {
+      "name": "medium_l_bracket_ribs",
+      "role": "task",
+      "vendored": "medium/l_bracket_ribs.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/l_bracket_ribs.json",
+      "sha256": "52b43ad7c8f12a536e85b383890b5b9bc45fd5c57a20deb0f197b3d0426c8614",
+      "bytes": 524,
+      "format": "json"
+    },
+    {
+      "name": "medium_pipe_clamp",
+      "role": "task",
+      "vendored": "medium/pipe_clamp.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/pipe_clamp.json",
+      "sha256": "93091b26ef9a57b3aca37adf07f5e67e480c527e86b62f2f256c85e5a3c062bb",
+      "bytes": 422,
+      "format": "json"
+    },
+    {
+      "name": "medium_ribbed_mount",
+      "role": "task",
+      "vendored": "medium/ribbed_mount.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/ribbed_mount.json",
+      "sha256": "20b36fd753b678776e81a9289aee3779f175c28119390ffe344fc02a4a1e02b3",
+      "bytes": 447,
+      "format": "json"
+    },
+    {
+      "name": "medium_vented_enclosure",
+      "role": "task",
+      "vendored": "medium/vented_enclosure.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/medium/vented_enclosure.json",
+      "sha256": "67b78b354cf19effa701a51367fb5916a124f9de4a45524df222e93041c08dd7",
+      "bytes": 463,
+      "format": "json"
+    },
+    {
+      "name": "hard_gear_knob",
+      "role": "task",
+      "vendored": "hard/gear_knob.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/hard/gear_knob.json",
+      "sha256": "f7dd7eccd64b98f5c9eb9364f17865ea7e7e4aa5573f9a8fe008af983bc7754a",
+      "bytes": 429,
+      "format": "json"
+    },
+    {
+      "name": "hard_multi_hole_manifold",
+      "role": "task",
+      "vendored": "hard/multi_hole_manifold.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/hard/multi_hole_manifold.json",
+      "sha256": "d0c8ad23d5f977c181e1372c31891d03a06a1118383b775269822949f9460f9c",
+      "bytes": 533,
+      "format": "json"
+    },
+    {
+      "name": "hard_snap_fit_enclosure",
+      "role": "task",
+      "vendored": "hard/snap_fit_enclosure.json",
+      "resource": "cad_repos/AgentSCAD-main/AgentSCAD-main/benchmarks/hard/snap_fit_enclosure.json",
+      "sha256": "d429baef113a8c154cd84d0ed727d63e46cc367ec56398e87344943f9b292066",
+      "bytes": 530,
+      "format": "json"
+    }
+  ]
+}

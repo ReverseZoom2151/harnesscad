@@ -1,0 +1,10 @@
+The JSON task files in this directory are vendored verbatim from the
+AgentSCAD project, benchmarks/{simple,medium,hard}/ directories.
+
+Source: AgentSCAD (resources/cad_repos/AgentSCAD-main/AgentSCAD-main)
+License: MIT License, Copyright (c) 2026 AgentSCAD
+
+Redistribution permitted under the MIT License; the full license text is in
+the source repository's LICENSE file. Provenance (resources-relative source
+path, SHA-256, byte count) for every vendored file is recorded in
+MANIFEST.json alongside this notice.
