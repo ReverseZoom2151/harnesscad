@@ -1,13 +1,13 @@
-"""Sketch2CAD (SIGGRAPH Asia 2020) evaluation metrics for predicted op maps.
+"""Evaluation metrics for predicted operation maps.
 
-The four Sketch2CAD regression networks are scored with three distinct,
+The four regression networks are scored with three distinct,
 non-obvious objectives, all of which double as evaluation metrics for any
-predictor of the same maps (learned or hand-written).  They are reimplemented
+predictor of the same maps (learned or hand-written).  They are implemented
 here, stdlib-only and deterministic:
 
-  * :func:`face_heatmap_error` — plain MSE / MAE against the ground-truth
+  * :func:`face_heatmap_error` -- plain MSE / MAE against the ground-truth
     stitching-face heat map (``fh_loss`` / ``real_fh_loss``).
-  * :func:`masked_curve_error` — the *stroke-masked* curve regression used by
+  * :func:`masked_curve_error` -- the *stroke-masked* curve regression used by
     addSub / extrusion / sweep: the prediction is first multiplied by the stroke
     mask ``1 - user_stroke`` (only pixels away from the drawn stroke count), and
     the error is a weighted mean with the same mask as weights.  Predictions on
@@ -46,7 +46,7 @@ def _pair(a: Sequence[float], b: Sequence[float]) -> int:
 
 @dataclass(frozen=True)
 class ErrorPair:
-    """L2 (mse) and L1 ("real") error, the pair every Sketch2CAD loss reports."""
+    """L2 (mse) and L1 ("real") error, the pair every such loss reports."""
     mse: float
     mae: float
 

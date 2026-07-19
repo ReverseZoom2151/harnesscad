@@ -1,35 +1,29 @@
-"""HNC-CAD's 25-frame discrete extrude-orientation codebook (Xu et al., ICML 2023).
+"""25-frame discrete extrude-orientation codebook.
 
-This is an *implementation-level* detail of "Hierarchical Neural Coding for
-Controllable CAD Model Generation" that the paper review missed. The paper (and
-:mod:`reconstruction.hnc_spl_tree`) describe the S-P-L code tree and the 6-bit
-coordinate quantization, but say nothing about how the *orientation* of the
-extrude sketch-plane is encoded. The reference data pipeline
-(``data_process/utils.py::process_model``, plus the module-level ``ROT`` table)
-reveals a distinctive scheme that differs sharply from the rest of the
-DeepCAD family:
+The companion module :mod:`reconstruction.hnc_spl_tree` describes the S-P-L code
+tree and the 6-bit coordinate quantization, but says nothing about how the
+*orientation* of the extrude sketch-plane is encoded. This module fixes that,
+with a scheme that differs sharply from the fixed-row command schemes:
 
-**The DeepCAD family encodes a sketch-plane rotation as continuous angles**
+**The fixed-row schemes encode a sketch-plane rotation as continuous angles**
 (:mod:`reconstruction.deepcad_command_spec` / :mod:`reconstruction.deepcad_sketch_plane`
 store ``(theta, phi, gamma)`` ZYZ Euler angles, each quantized to 256 levels),
-or, in SkexGen (:mod:`reconstruction.skexgen_extrude_tokens`), as nine
+or (:mod:`reconstruction.skexgen_extrude_tokens`) as nine
 independently-rounded 3x3 matrix components.
 
-**HNC-CAD does neither.** It reads the sketch plane's three axis vectors
+**This codebook does neither.** It reads the sketch plane's three axis vectors
 ``t_x, t_y, t_z`` (each a 3-vector), rounds-then-clips every component into
 ``{-1, 0, 1}`` and concatenates them into a length-9 pattern. That pattern is
 then required to *exactly match* one of **exactly 25** canonical patterns
-observed across the DeepCAD dataset (the ``ROT`` table). Orientation therefore
+observed across the corpus. Orientation therefore
 collapses to a single categorical index in ``[0, 25)`` -- one extra token, no
-per-axis quantization at all. The reference code enforces this with
-``assert (ROT == ext_R).all(axis=1).sum() == 1``: an orientation that does not
-clip onto a known frame is rejected, so this table also doubles as a validator
+per-axis quantization at all. An orientation that does not clip onto a known
+frame is rejected, so this table also doubles as a validator
 for in-distribution extrude orientations.
 
 Note the 25 patterns are *not* the 24 proper axis-aligned rotations and are not
 orthonormal -- e.g. frame 0's x-axis is ``(-1, -1, 0)`` (norm sqrt(2)). They are
-the empirical set of clipped axis triples, reproduced here faithfully so an index
-round-trips bit-for-bit with the reference pipeline.
+the empirical set of clipped axis triples, so an index round-trips bit-for-bit.
 
 Pure stdlib, deterministic. No numpy, no learned components.
 """
@@ -41,7 +35,7 @@ from typing import List, Sequence, Tuple
 Vec3 = Tuple[int, int, int]
 Frame9 = Tuple[int, int, int, int, int, int, int, int, int]
 
-# The reference ``ROT`` table: 25 canonical clipped-orientation patterns. Each
+# The rotation table: 25 canonical clipped-orientation patterns. Each
 # row is ``(t_x[0..2], t_y[0..2], t_z[0..2])`` with entries in {-1, 0, 1}.
 ROTATION_FRAMES: Tuple[Frame9, ...] = (
     (-1, -1, 0, 0, 0, 1, -1, 1, 0),
@@ -81,15 +75,15 @@ assert len(_FRAME_TO_INDEX) == 25, "ROTATION_FRAMES must be distinct"
 
 
 def _rint(value: float) -> int:
-    """Round-half-to-even (matches ``numpy.rint`` used by the reference)."""
-    # Python's built-in round() is banker's rounding, exactly numpy.rint.
+    """Round-half-to-even."""
+    # Python's built-in round() is banker's rounding, which is what we want.
     return int(round(float(value)))
 
 
 def clip_axis(axis: Sequence[float]) -> Vec3:
     """Round-then-clip one 3-vector axis into ``{-1, 0, 1}`` component-wise.
 
-    Faithful to ``np.clip(np.rint(axis).astype(int), -1, 1)``.
+    Equivalent to rounding each component then clipping to ``[-1, 1]``.
     """
     if len(axis) != 3:
         raise ValueError("axis must have length 3")
@@ -117,15 +111,13 @@ def quantize_orientation(t_x: Sequence[float], t_y: Sequence[float],
                          t_z: Sequence[float]) -> int:
     """Map a sketch-plane frame ``(t_x, t_y, t_z)`` to its codebook index.
 
-    Reproduces ``process_model``'s ``ext_R_idx`` computation. Raises
-    :class:`ValueError` if the clipped orientation is not one of the 25 known
-    frames (the reference's ``assert ... .sum() == 1`` -- an out-of-distribution
-    orientation).
+    Raises :class:`ValueError` if the clipped orientation is not one of the 25
+    known frames (an out-of-distribution orientation).
     """
     pattern = clip_orientation(t_x, t_y, t_z)
     idx = _FRAME_TO_INDEX.get(pattern)
     if idx is None:
-        raise ValueError(f"orientation {pattern} is not a known HNC frame")
+        raise ValueError(f"orientation {pattern} is not a known frame")
     return idx
 
 

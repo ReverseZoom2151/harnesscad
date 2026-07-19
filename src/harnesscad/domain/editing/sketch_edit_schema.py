@@ -1,6 +1,5 @@
-"""Multimodal refinement schema for sketch refinement (McCarthy, Vaduguru et al., 2025).
+"""Multimodal refinement schema for computer-aided designs.
 
-From *Multimodal Refinement of Computer-aided Designs* , Sec. 2.1-2.2.
 This module encodes the deterministic grammar as immutable data:
 
 State grammar::

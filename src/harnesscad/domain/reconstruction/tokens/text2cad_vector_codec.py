@@ -1,17 +1,15 @@
-"""Text2CAD's exact CAD-sequence <-> vector codec (``CadSeqProc/cad_sequence.py``).
+"""Chained CAD-sequence <-> vector codec.
 
-Reference implementation: ``CADSequence.to_vec`` / ``CADSequence.from_vec`` of the
-released Text2CAD code (Khan et al., NeurIPS 2024), together with the ``to_vec`` /
-``from_vec`` of ``SketchSequence``, ``FaceSequence``, ``LoopSequence``,
-``ExtrudeSequence``, ``Line``, ``Arc``, ``Circle`` and the helpers ``split_array`` /
-``merge_end_tokens_from_loop`` in ``CadSeqProc/utility/utils.py``.
+Covers the whole-model serialisation together with the sketch, face, loop,
+extrude, line, arc and circle levels, plus the array-splitting and loop-merging
+helpers that decoding needs.
 
 Why this is not ``reconstruction.text2cad2_sequence_tokens``
 -----------------------------------------------------------
-That module models the token *vocabulary* as presented in the paper (Table 3): the
+That module models the token *vocabulary* only: the
 same 11 reserved ids and the same 8-bit +11 coordinate offset, but it serialises each
 curve with **all** of its points (line -> start & end, arc -> start, mid & end, circle
--> centre & top-most point). The released code does something materially different and
+-> centre & top-most point). This codec does something materially different and
 load-bearing for anyone reading the real ``cad_vec`` arrays:
 
 * loops are **closed and chained** -- a curve emits only the coordinates that are not
@@ -36,7 +34,7 @@ load-bearing for anyone reading the real ``cad_vec`` arrays:
   pair a token belongs to, padding = ``max + 1``).
 
 Everything here operates on already-quantised integers (see
-``reconstruction.deepcad2_numericalize`` -- Text2CAD reuses DeepCAD's quantisation
+``reconstruction.deepcad2_numericalize`` -- this codec reuses those quantisation
 maps unchanged, so they are not repeated). Pure stdlib, deterministic; the codec
 round-trips.
 

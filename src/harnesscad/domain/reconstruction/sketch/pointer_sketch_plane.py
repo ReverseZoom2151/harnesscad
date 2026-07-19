@@ -28,7 +28,7 @@ from dataclasses import dataclass
 
 Vec3 = tuple[float, float, float]
 
-# Table 14: <dr> symbol -> (primary direction, auxiliary direction).
+# <dr> symbol -> (primary direction, auxiliary direction).
 DIRECTION_MAP: dict[str, tuple[Vec3, Vec3]] = {
     "X+": ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0)),
     "X-": ((-1.0, 0.0, 0.0), (0.0, 0.0, 1.0)),
@@ -110,7 +110,7 @@ def build_frame(
     rotation_deg: float = 0.0,
     scale: float = 1.0,
 ) -> SketchFrame:
-    """Construct the ``UVW`` sketch frame (Sec. 10.2 steps 1-4).
+    """Construct the ``UVW`` sketch frame (steps 1-4 above).
 
     ``face_normal`` is the selected face's normal; ``direction_symbol`` is the
     ``<dr>`` label; ``rotation_deg`` is the counter-clockwise in-plane roll about

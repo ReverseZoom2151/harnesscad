@@ -1,13 +1,12 @@
 """Type-pair degrees-of-freedom table and the autoconstrain validity mask.
 
-``reconstruction/sketchgraphs_taxonomy.py`` (paper 165) records a *nominal* DOF
-figure per constraint type -- "coincident removes 2".  That number is only true
-for one pairing.  Coincident between two points removes 2, between a line and a
-point removes 1, and between two circles removes 3, because what a constraint
-actually pins down depends on the types of the primitives it joins.  The
-reference implementation carries this as a two-level table
-(``sketchgraphs/data/dof.py``: ``EDGE_DOF_REMOVED[constraint][(t1, t2)]``) and
-uses it for two distinct jobs, both reimplemented here.
+``reconstruction/sketchgraphs_taxonomy.py`` records a *nominal* DOF figure per
+constraint type -- "coincident removes 2".  That number is only true for one
+pairing.  Coincident between two points removes 2, between a line and a point
+removes 1, and between two circles removes 3, because what a constraint actually
+pins down depends on the types of the primitives it joins.  This module carries
+the finer accounting as a two-level table
+(``EDGE_DOF_REMOVED[constraint][(t1, t2)]``) and uses it for two distinct jobs.
 
 1. **DOF accounting over a construction sequence.**  Each node op *adds* its
    primitive's DOF; each edge op *removes* the tabulated amount for its type
@@ -30,13 +29,12 @@ uses it for two distinct jobs, both reimplemented here.
    not propose a *radius* between two lines.  The set of type pairs a constraint
    appears under in the table *is* its applicability domain, so inverting the
    table by type pair yields, for free, the legal constraint set for any pair of
-   primitives (:func:`valid_constraints`).  The reference packs this into a
+   primitives (:func:`valid_constraints`).  This is packed into a
    lower-triangular mask over ``(node i, node j<=i)`` in a flat layout with row
    offsets ``i * (i + 1) // 2`` (:func:`mask_offset`); node 0 is the external
    origin node and is left fully permissive.  :func:`constraint_mask` builds that
-   mask as booleans (``True`` = allowed), with the same layout and the same
-   conventions, so it can drive a logit mask (allowed -> 0, disallowed -> -inf)
-   or a plain rejection filter.
+   mask as booleans (``True`` = allowed), so it can drive a logit mask
+   (allowed -> 0, disallowed -> -inf) or a plain rejection filter.
 
 Public API
 ----------

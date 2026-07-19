@@ -1,28 +1,27 @@
-"""DeepCAD loop / profile assembly from a command sequence (Wu et al., 2021).
+"""Loop / profile assembly from a command sequence.
 
-DeepCAD's sketch representation nests as ``profile -> loops -> curves`` (paper
-Sec. 3.1.1). This module is the deterministic parser that turns a flat DeepCAD
-command sequence (see :mod:`reconstruction.deepcad_command_spec`) back into that
-structure, reconstructing absolute 2D coordinates and applying the paper's exact
-canonical orderings:
+The sketch representation nests as ``profile -> loops -> curves``. This module is
+the deterministic parser that turns a flat command sequence (see
+:mod:`reconstruction.deepcad_command_spec`) back into that structure,
+reconstructing absolute 2D coordinates and applying the canonical orderings:
 
   * A **loop** ``Qi = [SOL, C1, ..., Cn]`` always starts with the indicator command
     ``SOL`` followed by its curve commands.
-  * "we exclude the curve's starting position from its parameter list; each curve
-    always starts from the ending point of its predecessor in the loop" -- so a
+  * A curve's starting position is excluded from its parameter list; each curve
+    starts from the ending point of its predecessor in the loop, so a
     closed loop chains: ``start(C1) = end(Cn)`` and ``start(Ci) = end(Ci-1)``. This
     module rebuilds each curve's ``(start, end)`` from the stored endpoints.
-  * "We list all the curves on the loop in counter-clockwise order, beginning with
-    the curve whose starting point is at the most bottom-left" -- :func:`canonical_loop`
+  * The curves of a loop are listed in counter-clockwise order, beginning with
+    the curve whose starting point is the most bottom-left -- :func:`canonical_loop`
     rotates the cyclic curve list to begin at the bottom-left-most vertex.
-  * "the loops in a profile are sorted according to the bottom-left corners of their
-    bounding boxes" -- :func:`sort_loops` orders loops by their bbox corner.
+  * The loops in a profile are sorted by the bottom-left corners of their
+    bounding boxes -- :func:`sort_loops` orders loops by their bbox corner.
 
 A profile is the run of loops that precedes an extrusion (``Ext``) command;
 :func:`split_profiles` groups a whole model into ``(profile, ext_command)`` pairs.
 
 Pure and deterministic, stdlib only. Curves are the ``Command`` objects of the
-DeepCAD spec; circles are treated as standalone single-curve loops.
+command spec; circles are treated as standalone single-curve loops.
 """
 
 from __future__ import annotations

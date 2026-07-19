@@ -1,15 +1,15 @@
 """Pointer-accuracy and topological-soundness metrics for Pointer-CAD.
 
 Pointer-CAD is trained so that a predicted pointer is *correct* whenever it lands on
-any of the geometrically-equivalent ground-truth candidates (paper Sec. 4.1.1: "the
-ground-truth pointer is defined as a subset" P; Sec. 10.3 lists the coplanar-face /
-collinear-edge special cases that make P a set rather than a single entity). Standard
+any of the geometrically-equivalent ground-truth candidates: the ground-truth
+pointer is defined as a subset P, since coplanar-face / collinear-edge special
+cases make P a set rather than a single entity. Standard
 top-1 accuracy would unfairly penalise a model that picks a different-but-equivalent
 face/edge, so this module scores a prediction as a hit iff it is a member of the
 valid-candidate set.
 
-It also provides the paper's robustness signals in their deterministic, countable
-form (Sec. 9.1): the **Invalidity Ratio** IR = (N_test - N_build) / N_test and a
+It also provides robustness signals in their deterministic, countable
+form: the **Invalidity Ratio** IR = (N_test - N_build) / N_test and a
 **dangling-pointer ratio** (the fraction of pointers in a sequence that fail to
 resolve). The learned similarity search (cosine over 128-d embeddings) is external;
 we expose a pure-Python cosine matcher so a predicted embedding can be resolved to a
@@ -53,7 +53,7 @@ def pointer_accuracy(
     predictions: list[int],
     valid_sets: list[set[int] | frozenset[int] | tuple[int, ...]],
 ) -> PointerAccuracy:
-    """Score a batch: each prediction is a hit iff it is in its valid set (Sec. 4.1.1)."""
+    """Score a batch: each prediction is a hit iff it is in its valid set."""
     if len(predictions) != len(valid_sets):
         raise PointerMetricError("predictions and valid_sets length mismatch")
     hits = sum(1 for p, vs in zip(predictions, valid_sets) if pointer_hit(p, vs))
@@ -76,7 +76,7 @@ def match_pointer(
     predicted_embedding: list[float],
     candidate_embeddings: list[list[float]],
 ) -> int:
-    """Resolve a predicted 128-d vector to the highest-cosine candidate (Sec. 11.2).
+    """Resolve a predicted 128-d vector to the highest-cosine candidate.
 
     Returns the index of the best-matching candidate; ties break to the lowest index
     for determinism.
@@ -94,7 +94,7 @@ def match_pointer(
 
 
 def invalidity_ratio(n_test: int, n_build: int) -> float:
-    """IR = (N_test - N_build) / N_test (Sec. 9.1, Eq. 2).
+    """IR = (N_test - N_build) / N_test.
 
     ``n_build`` is the count of generated representations that build into a non-zero
     volume solid without post-processing; anything malformed is invalid.
@@ -126,7 +126,7 @@ class DanglingReport:
 def dangling_pointer_ratio(cmds: list[PointerCommand], index: EntityIndex) -> DanglingReport:
     """Fraction of pointers across ``cmds`` that fail to resolve against ``index``.
 
-    This is the pointer-level analogue of the paper's dangling-edge signal: every
+    This is the pointer-level analogue of the dangling-edge signal: every
     pointer that indexes a non-existent entity is a topological fault.
     """
     total = 0

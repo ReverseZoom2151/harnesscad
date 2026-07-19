@@ -1,11 +1,10 @@
-"""Deterministic visual-hull carving from silhouette masks (GaussianCAD init).
+"""Deterministic visual-hull carving from silhouette masks.
 
-GaussianCAD initialises its 3D Gaussians from the **visual hull** built from the
-masked orthographic views (Sec. 3.4 / Fig. 2): "we initialize the 3D Gaussians by
-constructing the visual hull using the masked views and corresponding camera
-parameters." The subsequent Gaussian optimisation is learned, but constructing
-the visual hull itself is classical, deterministic space carving — a voxel is
-kept iff its projection falls inside the foreground mask of **every** view.
+3D Gaussians can be initialised from the **visual hull** built from the masked
+orthographic views and their corresponding camera parameters. The subsequent
+Gaussian optimisation is learned, but constructing the visual hull itself is
+classical, deterministic space carving -- a voxel is kept iff its projection
+falls inside the foreground mask of **every** view.
 
 This module implements space carving over a regular voxel grid for a set of
 silhouettes, where each silhouette is a binary foreground mask sampled on a 2D

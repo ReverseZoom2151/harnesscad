@@ -1,13 +1,13 @@
-"""Dimension Accuracy (DA) metric for PHT-CAD (Niu et al. 2025, Sec. 3.3, Eq. 1-4).
+"""Dimension Accuracy (DA) metric for parametric primitive analysis.
 
-DA is PHT-CAD's new *dimension-based* evaluation metric: it measures how well a
+DA is a *dimension-based* evaluation metric: it measures how well a
 predicted dimensional annotation aligns with its ground-truth annotation, jointly
 across three validation functions (a prediction counts only if all three hold):
 
-    T(P, P_hat) = 1[ type(P_hat) == type(P) ]                                (Eq. 1)
-    V(P, P_hat) = 1[ | V_hat - V | <= tau_v ]                                (Eq. 2)
-    E(P, P_hat) = 1[ sum_k 1[ |E_hat_k - E_k| <= tau_e ] == N_i ]            (Eq. 3)
-    DA          = (1/M) sum_i T * V * E                                      (Eq. 4)
+    T(P, P_hat) = 1[ type(P_hat) == type(P) ]
+    V(P, P_hat) = 1[ | V_hat - V | <= tau_v ]
+    E(P, P_hat) = 1[ sum_k 1[ |E_hat_k - E_k| <= tau_e ] == N_i ]
+    DA          = (1/M) sum_i T * V * E
 
 where ``type`` is the dimension type (length / diameter / radius / angle),
 ``V`` is the numeric dimension value, and ``E`` are the coordinates of the
@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# Recognised dimension types (paper: "length, diameter, radius, or angle").
+# Recognised dimension types: length, diameter, radius, or angle.
 DIMENSION_TYPES = ("length", "diameter", "radius", "angle")
 
 

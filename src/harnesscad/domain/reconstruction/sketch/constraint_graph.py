@@ -1,9 +1,9 @@
-"""SketchGraphs geometric constraint graph (Seff et al., NeurIPS 2020, Sec. 3.2).
+"""Geometric constraint graph for a CAD sketch.
 
 A CAD sketch is represented as a *geometric constraint graph* ``G = (V, E)``: nodes
 ``V`` are primitives, edges ``E`` are the designer-imposed constraints between them.
-The paper stresses several structural properties that make this a *multi-hypergraph*
-rather than a plain graph, all of which this module models faithfully:
+Several structural properties make this a *multi-hypergraph* rather than a plain
+graph, all of which this module models faithfully:
 
   * **Loops** -- a constraint acting on a single primitive (e.g. a radius/scale
     constraint) is an edge connecting a node to itself (member arity 1).
@@ -13,23 +13,23 @@ rather than a plain graph, all of which this module models faithfully:
   * **Multi-edges** -- multiple constraints may share the same member nodes.
   * **Sub-primitive nodes** -- constraints are often applied to a *specific point*
     on a primitive (an endpoint or centre). To represent these unambiguously the
-    paper adds the sub-primitive as its own node, joined to its parent by a
-    dedicated sub-primitive edge. This module represents that with
+    sub-primitive becomes its own node, joined to its parent by a dedicated
+    sub-primitive edge. This module represents that with
     :meth:`SketchGraph.add_subprimitive`, which links a child point node to its
     parent and marks the connecting edge as structural (not a designer constraint).
 
-Beyond construction, the module offers the relational analyses the paper reports:
-node degree, adjacency, multi-edge / loop / hyperedge detection, and an
-approximate DOF budget (``total primitive DOF`` vs. ``DOF removed by constraints``,
-Sec. 3.2 / Fig. 4). The DOF accounting draws primitive and constraint weights from
+Beyond construction, the module offers the usual relational analyses: node degree,
+adjacency, multi-edge / loop / hyperedge detection, and an approximate DOF budget
+(``total primitive DOF`` vs. ``DOF removed by constraints``). The DOF accounting
+draws primitive and constraint weights from
 :mod:`reconstruction.sketchgraphs_taxonomy`; sub-primitive point nodes contribute
 their own 2 DOF and each sub-primitive edge removes 2 (pinning the point onto its
-parent), consistent with the paper's endpoint modelling.
+parent), consistent with the endpoint modelling used here.
 
 This is deliberately distinct from the root-level ``constraints.ConstraintGraph``:
 that class is a rank-style DOF *solver* over the ``cisp.ops`` abstract model (4
 primitive / 8 constraint types, no arcs, no sub-primitive nodes, no hyperedges).
-Here we model the *relational structure* SketchGraphs actually stores -- the full
+Here we model the full *relational structure* -- the complete
 primitive/constraint taxonomy, loops, hyperedges and sub-primitive nodes -- and
 expose it for graph-level analysis and sequence extraction.
 
@@ -52,8 +52,8 @@ _SUBPRIM_DOF = 2
 class PrimitiveNode:
     """A node in the constraint graph.
 
-    ``ptype`` is a SketchGraphs primitive type (or ``'point'`` for a sub-primitive
-    endpoint/centre node). ``is_construction`` mirrors the paper's ``isConstruction``
+    ``ptype`` is a primitive type (or ``'point'`` for a sub-primitive
+    endpoint/centre node). ``is_construction`` mirrors the ``isConstruction``
     boolean (True -> reference-only geometry, not physically realized). ``parent``
     is set for sub-primitive nodes and names the primitive they belong to.
     ``dof`` overrides the taxonomy DOF (used for splines with variable DOF).
@@ -72,7 +72,7 @@ class ConstraintEdge:
     """A constraint edge over one or more member nodes.
 
     ``members`` is the ordered tuple of node ids the constraint acts on. ``ctype``
-    is a SketchGraphs constraint type. ``is_structural`` marks a sub-primitive edge
+    is a constraint type. ``is_structural`` marks a sub-primitive edge
     (a graph-internal link, not a designer constraint). ``value`` carries the
     numeric quantity of a dimensional constraint (length/angle).
     """
@@ -90,7 +90,7 @@ class ConstraintEdge:
 
 @dataclass
 class DofBudget:
-    """Approximate DOF accounting for a sketch (Sec. 3.2 / Fig. 4).
+    """Approximate DOF accounting for a sketch.
 
     ``primitive_dof`` is the total DOF of all primitive nodes; ``removed_dof`` is
     the DOF removed by constraints that carry a fixed weight (``mirror`` /
@@ -140,8 +140,8 @@ class SketchGraph:
         """Add a sub-primitive point node (an endpoint/centre) linked to ``parent``.
 
         Adds the node *and* the structural sub-primitive edge joining it to its
-        parent primitive, exactly as the paper includes sub-primitives as separate
-        nodes to disambiguate point-level constraints.
+        parent primitive; sub-primitives are separate nodes so that point-level
+        constraints are unambiguous.
         """
         if parent not in self._nodes:
             raise KeyError(f"unknown parent primitive '{parent}'")
@@ -167,9 +167,8 @@ class SketchGraph:
     ) -> int:
         """Add a constraint edge over ``members``; returns its edge index.
 
-        The member count is validated against the constraint's Appendix-B schemata
-        (member arities), so a 2-node ``mirror`` or a 3-node ``coincident`` is
-        rejected.
+        The member count is validated against the constraint's declared member
+        arities, so a 2-node ``mirror`` or a 3-node ``coincident`` is rejected.
         """
         if ctype not in tax.CONSTRAINT_SPECS:
             raise ValueError(f"unknown constraint type '{ctype}'")
@@ -265,7 +264,7 @@ class SketchGraph:
         return tax.primitive_dof(node.ptype)
 
     def dof_budget(self) -> DofBudget:
-        """Approximate DOF accounting for the sketch (Sec. 3.2 / Fig. 4).
+        """Approximate DOF accounting for the sketch.
 
         Sums primitive DOF and subtracts the DOF removed by fixed-weight
         constraints (sub-primitive structural edges remove ``2`` each; ``mirror``

@@ -1,47 +1,35 @@
-"""Cross-family CSG vocabulary superset -- RapCAD / AngelCAD / OpenJSCAD / replicad.
+"""Cross-family CSG vocabulary superset over several OpenSCAD-sibling dialects.
 
 The harness already has a full OpenSCAD front end (:mod:`...ast.openscad`).  But
 OpenSCAD is only one dialect of the same underlying idea: a Constructive Solid
 Geometry program built from booleans, transforms, primitives and the two set
 operators that are *not* plain booleans -- convex ``hull`` and ``minkowski`` sum.
-Four sibling projects speak the same idea in different words:
+Four sibling families speak the same idea in different words:
 
-*   **RapCAD** -- an OpenSCAD-*inspired* (not OpenSCAD-compatible) language by
-    Giles Bathgate.  It shares the CSG keyword core, but it is a different
-    language in both directions, and the difference is structural rather than a
-    handful of extra builtins:
+*   the ``rapcad`` family -- a rational-numeric OpenSCAD-family dialect.  It
+    shares the CSG keyword core, but it is a different language in both
+    directions, and the difference is structural rather than a handful of extra
+    builtins:
 
     - it *adds* ``return``, ``const``, ``param``, ``import <p> as name;``, the
       ``::`` namespace operator, the operators ``^ ** .* ./ ~ ~= |x| PM``,
       interval literals ``N[a,b]`` / ``N PM e``, quaternion literals
       ``<w,x,y,z>``, unit-suffixed numbers (``5mm``, ``2in``) and an
       exact-rational numeric tower -- see
-      :mod:`harnesscad.domain.programs.rapcad_language` for these, with
-      citations;
+      :mod:`harnesscad.domain.programs.rapcad_language` for these;
     - it *lacks* OpenSCAD features a port may wrongly assume: ``each``, list
       comprehensions, ``intersection_for``, function literals, ``lookup`` and
-      ``search`` (verified absent from RapCAD ``src/parser.y``, ``src/lexer.l``
-      and ``src/function/``; ``doc/feature_matrix.asciidoc:107,119`` agrees for
-      the last two);
-    - console output is ``echo`` plus RapCAD's own ``write`` / ``writeln``
-      (``src/module/writelnmodule.cpp:22``).
-
-    Two frequently-repeated claims about RapCAD are false and were removed from
-    this docstring: there is **no** ``assign`` module (RapCAD dropped it --
-    ``doc/feature_matrix.asciidoc:18`` records "Assign module | RapCAD No |
-    OpenSCAD Yes"; it has assignment-in-``for``/``if``/instance instead, lines
-    15-17), and there is **no** ``pull`` keyword anywhere in ``src/``.
-    Note also that ``doc/feature_matrix.asciidoc:99`` ("concat | No") is itself
-    stale: ``concat`` *is* a RapCAD builtin
-    (``src/function/concatfunction.cpp:24``, registered at
-    ``src/builtincreator.cpp:147``), so the matrix is not a reliable oracle.
-*   **AngelCAD** -- a C++/AngelScript CAD language; solids are objects and booleans
-    are the ``+ - *`` operators over ``solid`` values, primitives are
-    ``box``/``cone``/``sphere``.
-*   **OpenJSCAD / JSCAD** -- a JavaScript API: ``union``/``subtract``/``intersect``,
+      ``search``;
+    - console output is ``echo`` plus that dialect's own ``write`` / ``writeln``.
+      It has no ``assign`` module (assignment lives in ``for``/``if``/instance
+      headers instead) and no ``pull`` keyword, but it does have ``concat``.
+*   the ``angelcad`` family -- a C++/scripting CAD language; solids are objects
+    and booleans are the ``+ - *`` operators over ``solid`` values, primitives
+    are ``box``/``cone``/``sphere``.
+*   the ``openjscad`` family -- a JavaScript API: ``union``/``subtract``/``intersect``,
     ``hull``/``hullChain``, primitives ``cube``/``cuboid``/``sphere``.
-*   **replicad** -- a JavaScript B-rep API over OpenCascade: booleans are the
-    methods ``fuse``/``cut``/``intersect`` on a shape.
+*   the ``replicad`` family -- a JavaScript B-rep API over a B-rep kernel:
+    booleans are the methods ``fuse``/``cut``/``intersect`` on a shape.
 
 This module is the **union of their vocabularies**, canonicalised: one
 :class:`CsgOp` enum names each concept once, and :data:`DIALECTS` records how every
@@ -54,7 +42,7 @@ family spells it (a family that lacks a concept simply has no entry).  That give
 
 Where an operation is portable and geometric rather than merely a keyword, it is
 implemented for real, deterministically, in stdlib: :func:`convex_hull_2d`
-(Andrew's monotone chain) and :func:`minkowski_sum_2d` (the convex Minkowski sum,
+(monotone chain) and :func:`minkowski_sum_2d` (the convex Minkowski sum,
 the hull of the pairwise vertex sums).  These are the two operators every family in
 this list exposes and that a boolean-only kernel cannot express.
 
@@ -141,7 +129,7 @@ DIALECTS: Dict[CsgOp, Dict[str, Tuple[str, ...]]] = {
     },
     CsgOp.MINKOWSKI: {
         "openscad": ("minkowski",), "rapcad": ("minkowski",),
-        "openjscad": ("expand",),  # JSCAD's expand is a Minkowski-with-a-disc
+        "openjscad": ("expand",),  # expand is a Minkowski-with-a-disc
     },
     CsgOp.TRANSLATE: {
         "openscad": ("translate",), "rapcad": ("translate",),
@@ -187,8 +175,7 @@ DIALECTS: Dict[CsgOp, Dict[str, Tuple[str, ...]]] = {
         "openjscad": ("cylinder",), "replicad": ("makeCylinder",),
     },
     CsgOp.CONE: {
-        # RapCAD has a first-class cone primitive that OpenSCAD lacks
-        # (src/module/conemodule.cpp:26; doc/feature_matrix.asciidoc:54).
+        # this dialect has a first-class cone primitive that OpenSCAD lacks
         "rapcad": ("cone",),
         "angelcad": ("cone",),
         "openjscad": ("cylinderElliptic",),
@@ -334,7 +321,7 @@ def _cross(o: Point, a: Point, b: Point) -> float:
 
 
 def convex_hull_2d(points: Sequence[Point]) -> List[Point]:
-    """Convex hull of 2D points (Andrew's monotone chain), CCW, no repeated last.
+    """Convex hull of 2D points (monotone chain), CCW, no repeated last.
 
     Deterministic: points are sorted; collinear points on the hull edges are
     dropped.  Returns the hull vertices in counter-clockwise order.  Fewer than 3

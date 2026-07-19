@@ -1,7 +1,6 @@
-"""Parameterised sub-sketch *concept* templates (Yang & Pan, "Discovering Design
-Concepts for CAD Sketches", NeurIPS 2022).
+"""Parameterised sub-sketch *concept* templates.
 
-The paper's central object is a **concept**: a reusable, *parameterised* modular
+The central object is a **concept**: a reusable, *parameterised* modular
 template over a sub-sketch. A concept is not a fixed piece of geometry -- it is a
 structure of primitives and constraints in which the numeric attributes are left
 *free* (slots), so a single concept explains many concrete sub-sketches once its
@@ -13,15 +12,13 @@ into a larger sketch:
     concept **slot** (the free parameters);
   * **constraints** -- relations among the members, and among members and the
     concept's *external inputs*;
-  * **input references** (``in_arity``) -- the paper's ``ref_in_argument_num``:
-    primitives owned by the *enclosing* context that this concept constrains
-    against but does not own;
-  * **output references** (``out_refs``) -- the paper's ``ref_out_argument_num``:
-    the ordered subset of owned members exported as the concept's interface, i.e.
-    the handles a parent may constrain against.
+  * **input references** (``in_arity``) -- primitives owned by the *enclosing*
+    context that this concept constrains against but does not own;
+  * **output references** (``out_refs``) -- the ordered subset of owned members
+    exported as the concept's interface, i.e. the handles a parent may constrain
+    against.
 
-Concepts are **hierarchical** (the paper's abstraction levels,
-``max_abstruction_decompose_query``): a concept may instantiate other concepts as
+Concepts are **hierarchical** (nested abstraction levels): a concept may instantiate other concepts as
 sub-instances (:class:`SubInstance`), binding their slots to its own slots and
 their inputs to its own members / inputs. Flattening those hierarchies lives in
 :mod:`library.sketchconcept_library`; this module provides the representation,
@@ -30,9 +27,9 @@ primitives and constraints) and a **canonical signature** used for library
 deduplication (two concepts that differ only in member naming, member ordering or
 slot naming get the same signature).
 
-Everything here is deterministic and pure stdlib. The trained network of the paper
-(which *proposes* the concepts) is external; what is reimplemented is the concept
-algebra it operates on.
+Everything here is deterministic and pure stdlib. Any learned model that
+*proposes* concepts is external; what lives here is the concept algebra such a
+model operates on.
 """
 
 from __future__ import annotations
@@ -45,7 +42,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 # Flat sketch data model (shared by the whole sketchconcept_* family)
 # ---------------------------------------------------------------------------
 
-#: primitive types and their parameter names (SketchGraphs' four types)
+#: primitive types and their parameter names (the four supported types)
 PRIMITIVE_PARAMS: Dict[str, Tuple[str, ...]] = {
     "line": ("x1", "y1", "x2", "y2"),
     "circle": ("x", "y", "r"),

@@ -1,8 +1,8 @@
-"""Topological validity checker for CMT-generated B-Reps (the "Valid" metric).
+"""Topological validity checker for generated B-Reps (the "Valid" metric).
 
-CMT reports a *Valid ratio*: the fraction of generated models free of "broken
-topology" -- the paper names "unbounded open regions" and "self-intersecting
-edges" as the failure modes the cascade + topology predictor suppress. The
+A *Valid ratio* reports the fraction of generated models free of broken
+topology -- "unbounded open regions" and "self-intersecting edges" are the
+failure modes the cascade + topology predictor suppress. The
 checker here operates on the edge-surface adjacency matrix ``R`` produced by
 ``cmt_topology_predictor`` (optionally with edge geometry) and flags:
 
@@ -106,10 +106,10 @@ def quantized_is_valid(adjacency: tuple[tuple[bool, ...], ...],
                        edges: tuple[tuple[Point, Point], ...],
                        bits: int = 4,
                        lo: float = 0.0, hi: float = 1.0) -> bool:
-    """Validity after quantizing vertex coordinates to ``bits`` (paper: 4-bit).
+    """Validity after quantizing vertex coordinates to ``bits`` (typically 4).
 
     Quantization can collapse distinct vertices, turning valid edges degenerate;
-    this reproduces the paper's stricter quantized Valid check.
+    this applies the stricter quantized Valid check.
     """
     def q(point: Point) -> Point:
         return tuple(quantize(v, bits, lo, hi) for v in point)

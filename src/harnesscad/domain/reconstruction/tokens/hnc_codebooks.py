@@ -1,23 +1,23 @@
-"""Nearest-codebook neural-code assignment for HNC-CAD (Xu et al., ICML 2023).
+"""Nearest-codebook neural-code assignment for hierarchical CAD codebooks.
 
-The learned VQ-VAE of HNC-CAD extracts three discrete codebooks (Loop, Profile,
+The learned VQ-VAE extracts three discrete codebooks (Loop, Profile,
 Solid). *Training* the codebook is not deterministic, but the **code assignment given
-a fixed codebook is** -- it is a plain nearest-neighbour lookup (paper Eq. 5):
+a fixed codebook is** -- it is a plain nearest-neighbour lookup:
 
     c <- b_k,  where  k = argmin_i || E(TE) - b_i ||_2
 
-after the encoder outputs are **average-pooled** over the sequence (paper Sec. 4,
-"Vector Quantization"). This module implements that deterministic quantization core:
+after the encoder outputs are **average-pooled** over the sequence during vector
+quantization. This module implements that deterministic quantization core:
 
 * :func:`average_pool` -- mean of a set of encoder token vectors (E(TE)).
 * :class:`Codebook` -- a fixed set of code vectors with nearest-neighbour
   :meth:`assign` (Euclidean, deterministic tie-break to the lowest index) and batch
   assignment.
 * :class:`SPLCodebooks` -- the three independent Loop/Profile/Solid codebooks.
-* codebook health, matching the paper's training bookkeeping (which is deterministic
+* codebook health, matching the training bookkeeping (which is deterministic
   *given* the assignments): :func:`utilization`, :func:`underutilized_codes`
-  (the Jukebox re-init rule: a code with fewer than 7 mapped samples, Sec. 6.1), and
-  :func:`compression_ratio` (unique-data / codebook-size, Sec. 6.1: ~60x loop, 17x
+  (the codebook re-initialisation rule: a code with fewer than 7 mapped samples), and
+  :func:`compression_ratio` (unique-data / codebook-size, typically ~60x loop, 17x
   profile, 29x solid).
 
 The transformer that *generates* code trees is out of scope; consuming a fixed
@@ -31,13 +31,13 @@ from dataclasses import dataclass
 
 Vector = tuple[float, ...]
 
-# Jukebox under-utilization threshold used by the paper (Sec. 6.1): a code mapped by
-# fewer than this many samples is re-initialized.
+# Under-utilization threshold: a code mapped by fewer than this many samples is
+# re-initialized.
 REINIT_THRESHOLD = 7
 
 
 def average_pool(vectors: list[Vector]) -> Vector:
-    """Mean over a list of equal-length encoder token vectors (the paper's avg-pool).
+    """Mean over a list of equal-length encoder token vectors (the average-pool step).
 
     Returns E(TE) -- the pooled representation quantized by the codebook.
     """
@@ -75,7 +75,7 @@ class Codebook:
         return len(self.codes[0])
 
     def assign(self, vec: Vector) -> int:
-        """Nearest-neighbour code index for ``vec`` (Eq. 5), ties -> lowest index."""
+        """Nearest-neighbour code index for ``vec``, ties -> lowest index."""
         if len(vec) != self.dim:
             raise ValueError(f"vector dim {len(vec)} != codebook dim {self.dim}")
         best_k, best_d = 0, _sq_dist(vec, self.codes[0])
@@ -96,7 +96,7 @@ class Codebook:
 
 @dataclass(frozen=True)
 class SPLCodebooks:
-    """The three independent HNC codebooks for the S-P-L levels."""
+    """The three independent codebooks for the S-P-L levels."""
 
     loop: Codebook
     profile: Codebook
@@ -157,7 +157,7 @@ def codebook_perplexity(assignments: list[int], size: int) -> float:
 
 
 def compression_ratio(n_unique_data: int, codebook_size: int) -> float:
-    """Compression ratio = unique-data / codebook-size (paper Sec. 6.1)."""
+    """Compression ratio = unique-data / codebook-size."""
     if codebook_size <= 0:
         raise ValueError("codebook size must be positive")
     return n_unique_data / codebook_size

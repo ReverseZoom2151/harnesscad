@@ -1,26 +1,24 @@
 """Split-and-remerge legolization: voxel grid -> standard-brick layout.
 
-Distilled from Pun, Deng, Liu et al., *Generating Physically Stable and
-Buildable LEGO Designs from Text* (LEGOGPT), Section 3 ("Mesh-to-LEGO") and
-appendix A ("StableText2Lego Details").
+The mesh-to-LEGO conversion step.
 
-The companion generic-brick modules ("...Buildable Brick Structures from Text",
-``brick_*.py``) generate bricks *directly* from text and never convert a
-voxel occupancy grid into a brick layout.  This module fills that gap with the
-paper's *legolization* step: given a solid voxelization (occupied cells on a
-grid), tile every layer with parts drawn from the standard LEGO library.
+The sibling generic-brick modules (``brick_*.py``) generate bricks *directly*
+from text and never convert a voxel occupancy grid into a brick layout.  This
+module fills that gap with the *legolization* step: given a solid voxelization
+(occupied cells on a grid), tile every layer with parts drawn from the standard
+LEGO library.
 
-The paper's variant of split-and-remerge does **not** initialize with 1x1
-bricks and randomly merge; instead it "directly places bricks to fill all the
+This variant of split-and-remerge does **not** initialize with 1x1
+bricks and randomly merge; instead it directly places bricks to fill all the
 voxels, prioritizing 1) larger bricks and 2) bricks that connect multiple other
-bricks" (appendix A).  We reproduce that priority exactly:
+bricks.  That priority is applied exactly:
 
 * bricks are 1 unit tall, so every z-layer is tiled independently;
 * within a layer, cells are covered greedily, preferring the largest-area
   library footprint that fits, breaking ties toward the footprint that spans
   the most distinct bricks on the layer below (maximizing interlock);
 * seeded permutation of equal-priority candidates yields multiple distinct but
-  shape-preserving layouts for the same object (the paper's data augmentation).
+  shape-preserving layouts for the same object (data augmentation).
 
 Everything is stdlib-only and deterministic given a seed.  No stability or
 collision analysis lives here -- the output is a plain list of library bricks.
@@ -136,7 +134,7 @@ def legolize(voxels: Iterable[Cell], seed: Optional[int] = None) -> List[Brick]:
 
 def legolize_variants(voxels: Iterable[Cell],
                       seeds: Sequence[int]) -> List[List[Brick]]:
-    """Generate one layout per seed (the paper's structural augmentation)."""
+    """Generate one layout per seed (structural augmentation)."""
     voxset = list(voxels)
     return [legolize(voxset, seed=s) for s in seeds]
 

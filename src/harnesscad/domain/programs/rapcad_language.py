@@ -299,7 +299,7 @@ class Interval:
 
     # -- arithmetic -------------------------------------------------------- #
     def __neg__(self) -> "Interval":
-        """Unary minus swaps and negates the ends (intervalvalue.cpp:40-44)."""
+        """Unary minus swaps and negates the ends."""
         return Interval(-self.upper, -self.lower)
 
     def __pos__(self) -> "Interval":
@@ -333,7 +333,7 @@ class Interval:
         return Interval(min(vals), max(vals))
 
     def contains(self, value) -> bool:
-        """Is ``value`` inside the closed range? (Not a RapCAD operator.)"""
+        """Is ``value`` inside the closed range? (Not a dialect operator.)"""
         return self.lower <= Fraction(value) <= self.upper
 
 
@@ -342,12 +342,12 @@ class Interval:
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Quaternion:
-    """A RapCAD ``<w, x, y, z>`` literal; ``*`` is the Hamilton product.
+    """A ``<w, x, y, z>`` literal; ``*`` is the Hamilton product.
 
-    RapCAD spells a quaternion with angle brackets (``src/parser.y:305-306``)
-    and internally calls it a "complex" value. Its ``*`` is not componentwise:
-    it is the Hamilton product (``src/complexvalue.cpp:107-119``), so it is
-    associative but **not** commutative -- the property the selfcheck proves.
+    The dialect spells a quaternion with angle brackets and internally calls it
+    a "complex" value. Its ``*`` is not componentwise: it is the Hamilton
+    product, so it is associative but **not** commutative -- the property the
+    selfcheck proves.
     """
 
     w: Fraction
@@ -384,14 +384,13 @@ class Quaternion:
 
 
 def ang(angle_degrees, axis: Sequence) -> Quaternion:
-    """RapCAD's ``ang(angle, axis)`` axis-angle constructor.
+    """The ``ang(angle, axis)`` axis-angle constructor.
 
     ``w = cos(angle/2)``, ``(x,y,z) = axis * sin(angle/2)``, with the angle in
-    **degrees** (``src/function/angfunction.cpp:34-48``). RapCAD evaluates the
-    half-angle with ``r_right_cos``/``r_right_sin``, which round exactly at
-    multiples of 90 degrees (``src/rmath.cpp:221-235``); that is reproduced here
-    so that right-angle rotations -- and the identity ``ang(0, axis)`` ->
-    ``<1,0,0,0>`` -- come out exact rather than 1e-17 off.
+    **degrees**. The dialect evaluates the half-angle with right-angle-exact
+    sine and cosine, which round exactly at multiples of 90 degrees; that is
+    reproduced here so that right-angle rotations -- and the identity
+    ``ang(0, axis)`` -> ``<1,0,0,0>`` -- come out exact rather than 1e-17 off.
     """
     half = Fraction(angle_degrees) / 2
     if half.denominator == 1 and int(half) % 90 == 0:
@@ -563,8 +562,8 @@ def _selfcheck() -> int:
     check("ang(180, z) is exactly <0,0,0,1>", ang(180, (0, 0, 1)), k)
     # Composing two 90-degree turns gives the 180-degree one. The half-angle is
     # 45 degrees, which is irrational, so this holds only to the working
-    # precision -- as it does in RapCAD, whose exact-rounding path also applies
-    # only at right angles (src/rmath.cpp:221-235). Assert it numerically.
+    # precision -- as it does in the dialect, whose exact-rounding path also
+    # applies only at right angles. Assert it numerically.
     composed = ang(90, (0, 0, 1)) * ang(90, (0, 0, 1))
     half_turn = ang(180, (0, 0, 1))
     drift = max(abs(float(getattr(composed, c) - getattr(half_turn, c)))

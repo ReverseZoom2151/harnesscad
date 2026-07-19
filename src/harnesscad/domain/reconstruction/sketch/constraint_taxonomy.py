@@ -1,11 +1,9 @@
-"""SketchGraphs primitive & constraint taxonomy (Seff et al., "SketchGraphs: A
-Large-Scale Dataset for Modeling Relational Geometry in Computer-Aided Design",
-NeurIPS 2020 workshop).
+"""Sketch primitive & constraint taxonomy.
 
-This is the *taxonomy* layer that the SketchGraphs relational representation is
-built on. Two catalogs are provided, both taken directly from the paper:
+This is the *taxonomy* layer that a relational sketch representation is built
+on. Two catalogs are provided:
 
-Primitives (Appendix A "Primitive Parameters" + Table 1 frequencies)
+Primitives (parameters + observed corpus frequencies)
     Each primitive type carries a fixed number of degrees of freedom (DOF) and an
     observed dataset frequency::
 
@@ -18,9 +16,9 @@ Primitives (Appendix A "Primitive Parameters" + Table 1 frequencies)
 
     Note this is a strict superset of the DOF table in :mod:`cisp.ops`
     (``PRIMITIVE_DOF`` there only has point/line/circle/rectangle) -- it adds the
-    arc, ellipse and spline the paper actually models.
+    arc, ellipse and spline as well.
 
-Constraints (Appendix B "Constraint Parameters" schemata + Table 1 frequencies)
+Constraints (parameter schemata + observed corpus frequencies)
     Every constraint type is described by one or more *schemata* -- ordered tuples
     of parameter names. Parameters named ``local0``, ``local1``, ``local2`` are
     references to primitives (the edge's member nodes); the rest are numeric /
@@ -29,7 +27,7 @@ Constraints (Appendix B "Constraint Parameters" schemata + Table 1 frequencies)
     *member arity*, which fixes whether the constraint is a self-loop (arity 1), a
     plain edge (arity 2) or a hyperedge (arity >= 3) in the constraint graph.
 
-The paper's Appendix-B schemata::
+The constraint schemata::
 
     (local0)                                              Horizontal, Vertical
     (local0, local1)                                      Coincident, Horizontal,
@@ -67,11 +65,11 @@ LOCAL_PREFIX = "local"
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class PrimitiveSpec:
-    """One primitive type in the SketchGraphs taxonomy.
+    """One primitive type in the taxonomy.
 
     ``dof`` is the number of degrees of freedom the primitive contributes to the
     sketch (``None`` for spline, whose DOF depend on its control-point count).
-    ``frequency_pct`` is the observed dataset frequency from Table 1.
+    ``frequency_pct`` is the observed corpus frequency.
     """
 
     name: str
@@ -113,12 +111,12 @@ def primitive_dof(name: str) -> int:
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class ConstraintSpec:
-    """One constraint type in the SketchGraphs taxonomy.
+    """One constraint type in the taxonomy.
 
-    ``schemas`` is a tuple of parameter-name tuples (Appendix B). ``dof_removed``
+    ``schemas`` is a tuple of parameter-name tuples. ``dof_removed``
     is the nominal DOF a single application removes (``None`` for the variable
-    ``mirror`` and the external ``projected``). ``frequency_pct`` is the Table-1
-    frequency (``None`` when the type is not among the reported most-common set).
+    ``mirror`` and the external ``projected``). ``frequency_pct`` is the observed
+    corpus frequency (``None`` when the type is not among the most-common set).
     """
 
     name: str
@@ -170,7 +168,7 @@ class ConstraintSpec:
         return tuple(seen)
 
 
-# Appendix-B schemata + nominal DOF removed + Table-1 frequencies.
+# Parameter schemata + nominal DOF removed + corpus frequencies.
 CONSTRAINT_SPECS: Dict[str, ConstraintSpec] = {
     "coincident": ConstraintSpec(
         "coincident", (("local0", "local1"),), 2, 42.17),
@@ -194,7 +192,7 @@ CONSTRAINT_SPECS: Dict[str, ConstraintSpec] = {
         "perpendicular", (("local0", "local1"),), 1, 3.24),
     "tangent": ConstraintSpec(
         "tangent", (("local0", "local1"),), 1, 2.94),
-    # Types present in the schemata (Appendix B) but not in Table 1's top set.
+    # Types present in the schemata but not in the reported top set.
     "midpoint": ConstraintSpec(
         "midpoint", (("local0", "local1"),), 2, None),
     "equal": ConstraintSpec(
@@ -243,14 +241,14 @@ def classify_edge(n_members: int) -> str:
 
 
 def constraints_by_frequency() -> Tuple[ConstraintSpec, ...]:
-    """The Table-1 constraint types ordered by descending frequency."""
+    """The constraint types with a known frequency, ordered by descending frequency."""
     ranked = [s for s in CONSTRAINT_SPECS.values() if s.frequency_pct is not None]
     ranked.sort(key=lambda s: s.frequency_pct, reverse=True)  # type: ignore[arg-type]
     return tuple(ranked)
 
 
 def primitives_by_frequency() -> Tuple[PrimitiveSpec, ...]:
-    """The Table-1 primitive types ordered by descending frequency."""
+    """The primitive types ordered by descending frequency."""
     ranked = list(PRIMITIVE_SPECS.values())
     ranked.sort(key=lambda s: s.frequency_pct, reverse=True)
     return tuple(ranked)

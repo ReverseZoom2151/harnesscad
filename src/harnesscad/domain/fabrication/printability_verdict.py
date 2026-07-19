@@ -82,7 +82,7 @@ class Measurements:
 
 @dataclass(frozen=True)
 class Issue:
-    """A printability issue (forgent3d's issue record)."""
+    """A printability issue record."""
 
     code: str
     severity: str
@@ -100,7 +100,7 @@ class FitResult:
 
 
 def check_fit(size_mm: Sequence[float], profile: PrinterProfile) -> FitResult:
-    """Check whether the model fits the usable build volume (forgent3d ``_fit``).
+    """Check whether the model fits the usable build volume.
 
     Usable per axis = build volume minus twice the margin. ``fits`` requires the
     model to fit axis-aligned; ``rotated_fits`` allows any axis permutation
@@ -117,11 +117,11 @@ def check_fit(size_mm: Sequence[float], profile: PrinterProfile) -> FitResult:
 
 
 def classify_issues(m: Measurements, profile: PrinterProfile) -> List[Issue]:
-    """Turn measured metrics into forgent3d's issue codes.
+    """Turn measured metrics into issue codes.
 
     Returns issues worst-first is not guaranteed; callers score with
     :func:`score_issues`. When nothing is wrong, a single ``PRINT_OK`` info issue
-    is returned (matching forgent3d).
+    is returned.
     """
     issues: List[Issue] = []
     axes = ("x", "y", "z")
@@ -195,7 +195,7 @@ def classify_issues(m: Measurements, profile: PrinterProfile) -> List[Issue]:
 
 
 def score_issues(issues: Sequence[Issue]) -> Tuple[bool, int]:
-    """forgent3d's verdict: ``(printable, score)``.
+    """The verdict: ``(printable, score)``.
 
     ``score = 100 - sum(penalty)`` clamped to [0, 100]; ``printable`` iff no
     error-severity issue is present.
@@ -207,7 +207,7 @@ def score_issues(issues: Sequence[Issue]) -> Tuple[bool, int]:
 
 
 def printability_verdict(m: Measurements, profile: PrinterProfile = PrinterProfile()) -> Dict[str, object]:
-    """End-to-end: classify issues, score, and return forgent3d's contract dict."""
+    """End-to-end: classify issues, score, and return the contract dict."""
     issues = classify_issues(m, profile)
     printable, score = score_issues(issues)
     return {

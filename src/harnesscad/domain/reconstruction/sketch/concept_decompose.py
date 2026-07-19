@@ -1,10 +1,8 @@
-"""Decomposing a sketch into a **composition of concept instances** (Yang & Pan,
-"Discovering Design Concepts for CAD Sketches", NeurIPS 2022).
+"""Decomposing a sketch into a **composition of concept instances**.
 
-Given a concept library, the paper's decoder explains a sketch as a set of concept
-instances plus their parameter bindings and cross-references. This module is the
-deterministic, search-based counterpart of that step: no network, an explicit
-sub-structure matcher.
+Given a concept library, a sketch can be explained as a set of concept instances
+plus their parameter bindings and cross-references. This module does that
+deterministically by search: no network, an explicit sub-structure matcher.
 
 **Matching.** A *flat* concept matches a sketch under an injective assignment of
 its members to sketch primitives such that

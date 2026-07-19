@@ -1,27 +1,24 @@
 """Approved OpenSCAD library policy: manifest, include validation, license gate.
 
-Source: ``resources/cad_repos/AgentSCAD-main`` (``skills/scad-library-policy/
-manifest.json`` + its three deterministic scripts and the scad-library-policy
-SKILL.md). AgentSCAD keeps its library policy *out of prompts and route
-logic*: a single manifest is the source of truth for which OpenSCAD libraries
-generated code may ``include``/``use``, pinned to exact upstream commits, with
+A library-policy layer keeps the policy *out of prompts and route logic*: a
+single manifest is the source of truth for which OpenSCAD libraries generated
+code may ``include``/``use``, pinned to exact upstream commits, with
 per-library license gates (permissive / weak-copyleft / GPL opt-in) and
 detection files that decide availability on a workstation. Generated SCAD is
 then validated: an include path that is not approved, or approved but not
 locally resolvable, is a hard error -- the model must not invent include paths.
 
-This was missed by the integration-campaign pass over AgentSCAD (which took
-the cost-aware progressive-escalation pipeline). The harness gained OpenSCAD
-customizer parsing (``cadam_scad_customizer``) and multi-language diagnostics
-(``cadhub_diagnostics``) from other repos, but nothing polices the *library
-supply chain* of generated OpenSCAD. This module ports that policy layer:
+The harness gained OpenSCAD customizer parsing (``cadam_scad_customizer``) and
+multi-language diagnostics (``cadhub_diagnostics``) elsewhere, but nothing
+policed the *library supply chain* of generated OpenSCAD. This module provides
+that policy layer:
 
-* :class:`LibrarySpec` / :class:`PolicyManifest` -- the manifest model, with
-  AgentSCAD's actual six-library manifest embedded as
+* :class:`LibrarySpec` / :class:`PolicyManifest` -- the manifest model, with a
+  concrete six-library manifest embedded as
   :data:`DEFAULT_MANIFEST` (repos, pinned commits, licenses, gates).
 * :func:`extract_includes` -- ``include <...>`` / ``use <...>`` extraction.
 * :func:`validate_includes` -- the unapproved / approved-but-unavailable
-  split, exactly the semantics of ``validate_scad_includes.py``.
+  split.
 * :func:`detect_available` -- detection-file availability over caller-supplied
   search roots (injectable ``exists`` predicate; no filesystem surprises).
 * :func:`install_plan` -- the license-gated install plan:
@@ -135,8 +132,8 @@ class PolicyManifest:
         return None
 
 
-#: AgentSCAD's shipped manifest (skills/scad-library-policy/manifest.json),
-#: pinned commits included. Data, not code: nothing is fetched or executed.
+#: The shipped manifest, pinned commits included. Data, not code: nothing is
+#: fetched or executed.
 DEFAULT_MANIFEST = PolicyManifest.from_dict({
     "managed_library_dir_env": "AGENTSCAD_OPENSCAD_LIBRARY_DIR",
     "default_managed_library_dir": "~/.agentscad/openscad-libraries",
@@ -277,8 +274,8 @@ def validate_includes(scad_source: str,
                       ) -> List[IncludeIssue]:
     """Validate every include/use in ``scad_source`` against the policy.
 
-    Semantics of AgentSCAD's ``validate_scad_includes.py``: a path that no
-    approved library authorises is ``unapproved``; a path that is approved but
+    A path that no approved library authorises is ``unapproved``; a path that
+    is approved but
     not in ``available_paths`` is ``unavailable``. When ``available_paths`` is
     ``None``, availability is not checked (approve-only mode).
     """
@@ -360,7 +357,7 @@ def install_plan(manifest: PolicyManifest = DEFAULT_MANIFEST,
                  include_optional: bool = False) -> List[InstallAction]:
     """The deterministic install plan (plan only: nothing is fetched).
 
-    Rules from ``install_scad_libraries.py`` + the SKILL.md license gate:
+    Rules for the license gate:
 
     * only pinned entries (repo AND commit) can be planned;
     * ``default_install`` entries are planned unless gated;
@@ -471,7 +468,7 @@ def _selfcheck() -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Approved OpenSCAD library policy (AgentSCAD)")
+        description="Approved OpenSCAD library policy")
     parser.add_argument("--selfcheck", action="store_true")
     args = parser.parse_args(argv)
     if args.selfcheck:

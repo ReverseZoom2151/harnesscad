@@ -1,13 +1,13 @@
-"""Reference-plane finding for OpenECAD sketches (Yuan et al., 2024, Algorithm 2).
+"""Reference-plane finding for dependency-based sketch planes.
 
-DeepCAD defines every sketch plane from an origin and direction vectors. OpenECAD
-adds *dependency-based* planes: a new sketch's reference plane may be an existing
-face of a previously created extrude (``add_sketchplane_ref``), which the paper
-argues is more human-like and editable (Sec. 4.2). Algorithm 2 is the
-deterministic geometric procedure that, given a desired target plane, searches the
-existing extrude features for a face that coincides with it.
+The baseline encoding defines every sketch plane from an origin and direction
+vectors. On top of that we support *dependency-based* planes: a new sketch's
+reference plane may be an existing face of a previously created extrude
+(``add_sketchplane_ref``), which is more human-like and editable. What follows is
+the deterministic geometric procedure that, given a desired target plane, searches
+the existing extrude features for a face that coincides with it.
 
-Faithful transcription of Algorithm 2:
+The procedure:
 
 * ``t`` is the target plane's normal; for each existing extrude ``E`` with sketch
   normal ``n``:
@@ -18,8 +18,8 @@ Faithful transcription of Algorithm 2:
     that lies on the target plane yields a **side face** reference -> found;
   * else ``E`` doesn't contain the reference plane.
 
-Returns the first match, mirroring the algorithm's early ``return``. Pure and
-deterministic; the coordinates live in absolute space as OpenECAD requires.
+Returns the first match, exiting early. Pure and deterministic; the coordinates
+live in absolute space.
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ def is_perpendicular(a, b, tol: float = DEFAULT_TOL) -> bool:
 
 @dataclass(frozen=True)
 class ExtrudeFeature:
-    """An existing extrude, as much of it as Algorithm 2 needs.
+    """An existing extrude, as much of it as the search needs.
 
     ``normal`` is its base sketch plane's unit normal, ``origin`` a point on that
     base plane, ``extent`` the extrusion length along ``normal``, and ``lines``
@@ -110,7 +110,7 @@ def _point_on_plane(point, target_point, target_normal, tol) -> bool:
 def find_reference_plane(target_normal, target_point,
                          extrudes: list[ExtrudeFeature],
                          tol: float = DEFAULT_TOL) -> RefPlaneResult:
-    """Search *extrudes* for a face coinciding with the target plane (Algorithm 2).
+    """Search *extrudes* for a face coinciding with the target plane.
 
     Returns the first matching :class:`RefPlaneResult`, or ``found=False``.
     """

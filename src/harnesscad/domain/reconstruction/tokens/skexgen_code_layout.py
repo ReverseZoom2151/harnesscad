@@ -1,8 +1,8 @@
-"""SkexGen disentangled-codebook layout (topology | geometry | extrude).
+"""Disentangled-codebook layout (topology | geometry | extrude).
 
-SkexGen's headline idea is that a CAD model is summarised by a *short sequence
+The headline idea is that a CAD model is summarised by a *short sequence
 of discrete codes* drawn from three separate codebooks, one per disentangled
-branch (``extract_code.py`` / ``train_code.py`` / ``sample.py``)::
+branch::
 
     code sequence (length 10)
     +-------------------+-----------+-------------------+
@@ -16,8 +16,8 @@ branch (``extract_code.py`` / ``train_code.py`` / ``sample.py``)::
   coordinates);
 * the **extrude** codes come from the VQ over the 19-token extrude stream.
 
-Swapping one branch's codes while holding the others fixed is what produces the
-paper's controlled interpolation / "same topology, new geometry" edits, so the
+Swapping one branch's codes while holding the others fixed is what produces
+controlled interpolation / "same topology, new geometry" edits, so the
 split and the recombination are worth having as a deterministic utility.
 
 A sampled code row is *rejected* before decoding if any topology code falls
@@ -27,7 +27,7 @@ that no branch owns.  ``is_valid_code`` reproduces that filter.
 
 The VQ nearest-code assignment itself lives in
 ``reconstruction/hnc_code_assignment``; this module is about the *layout* of the
-code sequence, which is SkexGen-specific.
+code sequence.
 
 Deterministic, stdlib only.
 """
@@ -115,7 +115,7 @@ def is_valid_code(code: Sequence[int]) -> bool:
 
 
 def filter_valid(codes: Iterable[Sequence[int]]) -> List[List[int]]:
-    """Drop sampled code rows the codebooks cannot decode (SkexGen ``sample.py``)."""
+    """Drop sampled code rows the codebooks cannot decode."""
     return [[int(c) for c in code] for code in codes if is_valid_code(code)]
 
 

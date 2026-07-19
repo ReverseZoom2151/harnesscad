@@ -1,19 +1,19 @@
-"""Parametric Mean Squared Error (P-MSE) loss for PHT-CAD (Niu et al. 2025, Sec. 4.2).
+"""Parametric Mean Squared Error (P-MSE) loss for parametric primitive analysis.
 
 Standard VLMs optimise a cross-entropy (CE) loss over token likelihoods, which
 does not penalise *numerical* deviation between a predicted geometric parameter
 and its ground truth -- fatal for fine-grained parametric primitive analysis.
-PHT-CAD adds a P-MSE loss over the numeric outputs of its four dedicated
-regression heads and combines it with CE by a weighted sum:
+A P-MSE loss is added over the numeric outputs of the four dedicated
+regression heads and combined with CE by a weighted sum:
 
-    L_CE    = - sum_i t_i * log(t_hat_i)                       (Eq. 5)
-    L_P-MSE = (1/N) sum_i | f_theta_i(h_i) - p_i |^2           (Eq. 6)
-    L       = lambda_CE * L_CE  +  lambda_P-MSE * L_P-MSE      (Eq. 7)
+    L_CE    = - sum_i t_i * log(t_hat_i)
+    L_P-MSE = (1/N) sum_i | f_theta_i(h_i) - p_i |^2
+    L       = lambda_CE * L_CE  +  lambda_P-MSE * L_P-MSE
 
 This module computes all three deterministically in pure Python. ``cross_entropy``
 takes a ground-truth distribution and a predicted distribution; ``p_mse`` takes
 regressed parameters and their targets; ``total_loss`` forms the weighted sum.
-The ablation (paper Tab. 5) shows P-MSE lowers ParamMSE and ImgMSE; this is the
+Ablation shows P-MSE lowers ParamMSE and ImgMSE; this is the
 train-time objective behind that gain.
 """
 

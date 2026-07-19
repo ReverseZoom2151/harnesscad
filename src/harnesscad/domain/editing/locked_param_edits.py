@@ -1,8 +1,6 @@
-"""Locked-parameter edit-script protocol and iteration gate .
+"""Locked-parameter edit-script protocol and iteration gate.
 
-Mined from **the optimizer** (``lib/types.ts`` EditScript/EditAction,
-``app/api/iterate/route.ts`` applyEditScript and the iteration loop). Studio's
-optimizer step lets a model *propose* parameter edits but never lets it
+The optimizer step lets a model *propose* parameter edits but never lets it
 *apply* them: the proposal is a typed edit script, and a deterministic
 applicator enforces the constraints the model might ignore --
 

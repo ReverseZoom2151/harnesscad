@@ -1,38 +1,15 @@
-"""DeepCAD / SkexGen parameter quantization ranges and codecs.
+"""Parameter quantization ranges and codecs for two CAD sequence tokenizers.
 
 Both DeepCAD and SkexGen turn a continuous CAD construction sequence into a
 sequence of *discrete tokens* so a transformer can model it. The mapping from a
 float parameter to a token id is the single most consequential piece of glue in
 those pipelines: it fixes the vocabulary size, the achievable precision, and the
 failure mode when a value leaves the modelled range. This module reproduces both
-codecs as cited constants plus exact reimplementations, so the harness can reason
+codecs as constants plus exact reimplementations, so the harness can reason
 about token-space precision without importing either project (or numpy/torch).
 
-Sources (constants and numeric behaviour transcribed as *facts*; no code copied):
-
-* DeepCAD -- Rundi Wu, Chang Xiao, Changxi Zheng, "DeepCAD: A Deep Generative
-  Network for Computer-Aided Design Models" (ICCV 2021).
-  Repo: ChrisWu1997/DeepCAD, **MIT License, Copyright (c) 2022 Rundi Wu**
-  (verified at ``DeepCAD-master/LICENSE``). Constants read from
-  ``cadlib/macro.py``; codec behaviour read from ``cadlib/extrude.py``
-  (``CoordSystem.numericalize``/``denumericalize``, ``Extrude.numericalize``/
-  ``denumericalize``, ``CADSequence.normalize``), ``cadlib/curves.py``
-  (``Line/Arc/Circle.numericalize``, ``Arc.to_vector``) and ``cadlib/sketch.py``
-  (``Profile.normalize``/``denormalize``).
-
-* SkexGen -- Xiang Xu, Karl D.D. Willis, Joseph G. Lambourne, Chin-Yi Cheng,
-  Pradeep Kumar Jayaraman, Yasutaka Furukawa, "SkexGen: Autoregressive Generation
-  of CAD Construction Sequences with Disentangled Codebooks" (ICML 2022).
-  Repo: samxuxiang/SkexGen, **MIT License, Copyright (c) 2022 Xiang Xu**
-  (verified at ``SkexGen-main/LICENSE``). Range constants read from
-  ``utils/utils.py`` (and duplicated in ``dataset.py``); codec behaviour from
-  ``utils/utils.py::quantize``/``dequantize_verts`` and
-  ``utils/geometry/geom_utils.py::quantize_verts``/``dequantize_verts``. The
-  6-bit setting is the one the repo README uses throughout (``--bit 6``).
-
-Both licenses are MIT, so vendoring would have been permitted; this module still
-reimplements rather than copies, because the two codecs are only a few lines each
-and the interesting content is the *behaviour*, which is documented below.
+The constants and numeric behaviour are transcribed as *facts*; no code is
+copied, and the interesting content is the *behaviour*, documented below.
 
 Five behaviours here are easy to get wrong and are what the selfcheck pins down:
 
@@ -67,11 +44,11 @@ Five behaviours here are easy to get wrong and are what the selfcheck pins down:
    the binary-exact ranges (SKETCH_R, RADIUS_R, EXTRUDE_R, OFFSET_R), but *not*
    for ``SCALE_R = 1.4``: ``1.4*63/1.4`` evaluates to ``62.99999999999999``, so
    the largest scale quantizes to token **62** and token 63 is unreachable for
-   that field. This was verified against a numpy replay of the upstream
-   ``quantize``; it is a property of SkexGen, not of this reimplementation. A
+   that field. This was verified against a numpy replay of the original
+   ``quantize``; it is a property of that codec, not of this reimplementation. A
    rounding codec would not have this failure.
 
-Note also a docstring/code discrepancy present in both repos: the quantizer
+Note also a docstring/code discrepancy present in both codecs: the quantizer
 docstrings say the output range is ``[0, n_bits**2 - 1]`` while every code path
 uses ``2**n_bits - 1``. The code is authoritative (and is what this module
 reproduces); at ``n_bits = 6`` the two readings differ (35 vs 63).
@@ -130,17 +107,17 @@ __all__ = [
 
 
 # --------------------------------------------------------------------------
-# DeepCAD constants -- cadlib/macro.py
+# DeepCAD constants
 # --------------------------------------------------------------------------
 
 #: Argument vocabulary size: every quantized argument is one of 256 tokens.
 ARGS_DIM = 256
 
-#: Scale factor applied during normalization "to prevent overflow during
-#: augmentation" (macro.py:34). Shapes fill only 75% of the available extent.
+#: Scale factor applied during normalization to prevent overflow during
+#: augmentation. Shapes fill only 75% of the available extent.
 NORM_FACTOR = 0.75
 
-#: Fill value for arguments a command does not use (macro.py:16).
+#: Fill value for arguments a command does not use.
 PAD_VAL = -1
 
 N_ARGS_SKETCH = 5      # x, y, alpha, f, r
@@ -199,7 +176,6 @@ class FieldSpec:
 
 
 #: The 16 argument slots, in vector order, with the codec each one actually uses.
-#: Sourced from cadlib/curves.py, cadlib/extrude.py and cadlib/sketch.py.
 DEEPCAD_FIELDS: Tuple[FieldSpec, ...] = (
     FieldSpec("x", "grid", 0.0, 255.0, "cadlib/curves.py Line/Arc/Circle.numericalize",
               "sketch-plane pixel coordinate, already normalized by Profile.normalize"),
@@ -240,10 +216,10 @@ DEEPCAD_FIELDS: Tuple[FieldSpec, ...] = (
 
 
 # --------------------------------------------------------------------------
-# SkexGen constants -- utils/utils.py (duplicated in dataset.py)
+# SkexGen constants
 # --------------------------------------------------------------------------
 
-#: Bit width the SkexGen README uses for every pipeline stage (``--bit 6``),
+#: Bit width the SkexGen pipeline uses at every stage (``--bit 6``),
 #: i.e. 64 tokens per quantized field -- a quarter of DeepCAD's ARGS_DIM.
 SKEXGEN_BIT = 6
 
@@ -503,7 +479,7 @@ def _selfcheck() -> int:
 
     n = ARGS_DIM
 
-    # -- Constants are internally consistent with macro.py's own arithmetic.
+    # -- Constants are internally consistent with their own arithmetic.
     check(N_ARGS_EXT == N_ARGS_PLANE + N_ARGS_TRANS + N_ARGS_EXT_PARAM == 11,
           "N_ARGS_EXT derives from its parts")
     check(N_ARGS == 16, "argument vector is 16-dim")
@@ -511,7 +487,7 @@ def _selfcheck() -> int:
     check([f.name for f in DEEPCAD_FIELDS][:5]
           == ["x", "y", "alpha", "f", "r"], "sketch args come first, in order")
     check(len(ALL_COMMANDS) == 6 and ALL_COMMANDS.index("Ext") == 5,
-          "command vocabulary matches macro.py")
+          "command vocabulary matches the constant table")
     check(len(EXTRUDE_OPERATIONS) == 4 and len(EXTENT_TYPE) == 3,
           "categorical arg cardinalities")
 

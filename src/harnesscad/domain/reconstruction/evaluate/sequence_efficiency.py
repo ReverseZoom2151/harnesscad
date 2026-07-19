@@ -1,15 +1,16 @@
-"""GraphBrep efficiency / compactness metric (paper Sec. 4.2.3).
+"""Graph-B-Rep efficiency / compactness metric.
 
-GraphBrep's headline claim is *efficiency*: an explicit graph topology replaces
-BrepGen's tree/fixed-edge representation, shrinking the edge-generation sequence
-length and thus the (quadratic) self-attention cost.
+The headline property is *efficiency*: an explicit graph topology replaces a
+tree/fixed-edge representation, shrinking the edge-generation sequence length
+and thus the (quadratic) self-attention cost.
 
-BrepGen assigns every surface a *fixed* maximum edge count, so its edge sequence
-length is ``n_faces_max * max_edges_per_face`` -- e.g. DeepCAD ``30 * 20 = 600``
-at training and ``30 * 30 = 900`` at inference; ABC ``50 * 30 = 1500`` at
-training. GraphBrep instead handles only the *actual* edges, giving sequence
-lengths of ``120`` (DeepCAD) and ``150`` (ABC). Because attention scales as
-``O(L^2)``, the compute saving is quadratic in that reduction.
+A fixed-edge scheme assigns every surface a *fixed* maximum edge count, so its
+edge sequence length is ``n_faces_max * max_edges_per_face`` -- e.g. ``30 * 20 =
+600`` at training and ``30 * 30 = 900`` at inference on one reference corpus;
+``50 * 30 = 1500`` at training on a larger one. The graph scheme instead handles
+only the *actual* edges, giving sequence lengths of ``120`` and ``150``
+respectively. Because attention scales as ``O(L^2)``, the compute saving is
+quadratic in that reduction.
 
 This module turns those relationships into deterministic metrics: sequence-length
 reduction, quadratic attention-cost reduction, redundancy ratio, and a per-model

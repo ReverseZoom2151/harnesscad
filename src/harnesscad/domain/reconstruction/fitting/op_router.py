@@ -20,7 +20,7 @@ are deterministic bookkeeping and are implemented here:
     ones to ignore);
   * :func:`select_branch_outputs` -- pull just the routed branch's maps out of a
     combined-graph output dict, exactly what a caller of the merged network does;
-  * :func:`required_parameters` — what the downstream geometric decoder must
+  * :func:`required_parameters` -- what the downstream geometric decoder must
     produce for that operation to be applicable.
 
 Operation ids follow the sub-network enumeration order used by the merged graph

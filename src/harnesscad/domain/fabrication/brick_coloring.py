@@ -1,15 +1,12 @@
 """Uniform brick-color assignment against a LEGO(R) color palette.
 
-Distilled from Pun, Deng, Liu et al., *Generating Physically Stable and
-Buildable LEGO Designs from Text* (LEGOGPT), Section 4.3 ("Uniform Brick Color
-Assignment", Eqns 5-7).
+Uniform brick color assignment.
 
-The paper's texturing pipeline needs a *learned* mesh texturer (FlashTex) that
+A full texturing pipeline needs a *learned* mesh texturer that
 is out of scope here, but the **color-quantization** half is fully
 deterministic and LEGO-specific, and no generic ``brick_*`` module covers it:
 
-* each occupied voxel's color ``C(v)`` is the mean of its visible-face colors
-  (Eqn 7);
+* each occupied voxel's color ``C(v)`` is the mean of its visible-face colors;
 * each brick's color ``C(b)`` is the mean over its constituent voxels;
 * the brick is then snapped to the *closest color in the standard LEGO color
   set* so it can be built from real parts.
@@ -60,7 +57,7 @@ def _mean_rgb(colors: Sequence[RGB]) -> RGB:
 
 
 def voxel_color(face_colors: Sequence[RGB]) -> RGB:
-    """C(v): mean of a voxel's visible-face colors (Eqn 7)."""
+    """C(v): mean of a voxel's visible-face colors."""
     return _mean_rgb(face_colors)
 
 

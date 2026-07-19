@@ -1,15 +1,12 @@
 """Separable 3D discrete wavelet transform for TSDF shape grids.
 
-From *Make-A-Shape: a Ten-Million-scale 3D Shape Model* (Hui, Sanghi, Rampini
-et al., 2024).  The paper's central deterministic contribution is a
-**wavelet-tree representation**: a shape is encoded as a truncated signed
-distance field (TSDF) on a regular grid, then decomposed with a wavelet
-transform into a coarse coefficient subband ``C0`` and a set of multiscale
-detail coefficient subbands (Sec. 4, Figs. 4-6).  The learned diffusion
+The central deterministic idea is a **wavelet-tree representation**: a shape is
+encoded as a truncated signed distance field (TSDF) on a regular grid, then
+decomposed with a wavelet transform into a coarse coefficient subband ``C0``
+and a set of multiscale detail coefficient subbands.  A learned diffusion
 *generator* is out of scope, but the transform itself is pure, deterministic
-linear algebra and is *bijective*: the paper notes the representation "is
-lossless and can be bijectively converted to a TSDF through inverse wavelet
-transforms" (p. 6).
+linear algebra and is *bijective*: the representation is lossless and can be
+bijectively converted back to a TSDF through inverse wavelet transforms.
 
 This module implements that transform from scratch, stdlib-only:
 

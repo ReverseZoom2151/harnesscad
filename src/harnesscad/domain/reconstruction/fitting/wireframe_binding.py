@@ -1,8 +1,8 @@
-"""img2cadsvg_binding -- bind dense line proposals to sparse endpoint proposals.
+"""Bind dense line proposals to sparse endpoint proposals.
 
-Img2CAD builds an initial wireframe by *binding* the dense line-segment proposals
+An initial wireframe is built by *binding* the dense line-segment proposals
 ``L_hat_n`` produced from the HAT field to the sparse **endpoint proposals**
-``P_hat_m`` (paper, Sec. IV):
+``P_hat_m``:
 
     "Specifically, in ``L_hat_n`` we find the nearest endpoint proposals
     ``P_hat_m`` for the two endpoints of the line segment proposal ... denoted as
@@ -118,7 +118,7 @@ def bind_and_select(
 def collinearity_quality(bound: BoundSegment) -> float:
     """A monotone quality score in ``(0, 1]``: higher = lower binding cost.
 
-    ``1 / (1 + delta)``; the paper states smaller ``delta`` = higher quality /
+    ``1 / (1 + delta)``; a smaller ``delta`` means higher quality /
     higher likelihood of collinearity.
     """
     return 1.0 / (1.0 + bound.delta)

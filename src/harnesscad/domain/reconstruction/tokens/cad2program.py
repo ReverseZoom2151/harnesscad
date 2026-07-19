@@ -1,8 +1,8 @@
-"""cad2program_command_template — fixed-slot command template + quantization.
+"""cad2program_command_template -- fixed-slot command template + quantization.
 
-CAD2PROGRAM (Wang et al., AAAI 2025, Sec. 3.1 / 4.3) contrasts its free-text
+This text-output scheme contrasts its free-text
 shape program with the *domain-specific command template* used by prior sequence
-models (DeepCAD, PlankAssembly, ...).  A command template aggregates all common
+models.  A command template aggregates all common
 parameters into a fixed-length slot vector, and every continuous value is
 *quantized* into discrete tokens by a domain tokenizer:
 
@@ -10,20 +10,20 @@ parameters into a fixed-length slot vector, and every continuous value is
   * the rotation angle -> one of **4 bins** (0/90/180/270 degrees);
   * the model ID -> a special token.
 
-The paper's key argument for text output is that this quantization introduces an
+The key argument for text output is that this quantization introduces an
 *inherent quantization error* that a text representation avoids.  Both the
 quantizer and the resulting error are deterministic, so this module implements:
 
-  * :func:`quantize_value` / :func:`dequantize_value` — the uniform binning and
+  * :func:`quantize_value` / :func:`dequantize_value` -- the uniform binning and
     its bin-center inverse;
-  * :func:`encode_command` / :func:`decode_command` — the fixed-slot vector for a
+  * :func:`encode_command` / :func:`decode_command` -- the fixed-slot vector for a
     single primitive (model ID slot + 6 quantized common params + angle bin);
-  * :func:`quantization_error` — the max absolute round-trip error a template
+  * :func:`quantization_error` -- the max absolute round-trip error a template
     incurs on a shape program, which is exactly what the text representation
     drives to zero.
 
-This is the *baseline* the paper measures against; the VLM predicting the tokens
-is external.  Pure stdlib, deterministic.
+This is the *baseline* the text scheme is measured against; the model predicting
+the tokens is external.  Pure stdlib, deterministic.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from harnesscad.domain.reconstruction.translate.shape_program import (
     Bbox, PrimitiveInstance, ShapeProgram,
 )
 
-# Paper's defaults (Sec. 4.3, first variant).
+# Defaults for the first template variant.
 DEFAULT_RESOLUTION = 3.0      # mm per bin
 DEFAULT_N_BINS = 1500         # position/size bins
 DEFAULT_ANGLE_BINS = 4        # rotation bins (0/90/180/270)
@@ -95,8 +95,8 @@ def encode_command(inst: PrimitiveInstance,
                    angle_bins: int = DEFAULT_ANGLE_BINS) -> Command:
     """Encode one primitive's common parameters into a fixed-slot command.
 
-    Model-specific parameters (``P_i``) have no slot in this template — the very
-    limitation the paper cites — so they are dropped here.
+    Model-specific parameters (``P_i``) have no slot in this template -- the very
+    limitation of the fixed-slot design -- so they are dropped here.
     """
     b = inst.bbox
     bins = tuple(quantize_value(getattr(b, f), resolution, n_bins)
@@ -126,7 +126,7 @@ def quantization_error(program: ShapeProgram,
                        n_bins: int = DEFAULT_N_BINS) -> float:
     """Maximum absolute round-trip error over all common params of a program.
 
-    This is the error the fixed-slot command template incurs and that the paper's
+    This is the error the fixed-slot command template incurs and that the
     text representation avoids (returns 0 exactly when every value already lies on
     a bin center within the representable range).
     """

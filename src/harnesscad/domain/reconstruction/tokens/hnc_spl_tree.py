@@ -1,30 +1,29 @@
-"""Solid-Profile-Loop (S-P-L) hierarchical tree for HNC-CAD (Xu et al., ICML 2023).
+"""Solid-Profile-Loop (S-P-L) hierarchical tree for a hierarchical CAD codebook scheme.
 
-"Hierarchical Neural Coding for Controllable CAD Model Generation" represents the
-high-level design concept of a sketch-and-extrude CAD model as a *three-level tree*
-(paper Sec. 3, Fig. 3): (S)olid -> (P)rofile -> (L)oop. The distinctive idea -- and
+Hierarchical neural coding represents the
+high-level design concept of a sketch-and-extrude CAD model as a *three-level tree*:
+(S)olid -> (P)rofile -> (L)oop. The distinctive idea -- and
 what sets it apart from a flat command list or the raw curve-at-every-level tree of
 :mod:`reconstruction.geofusion_hierarchy` -- is that the two upper levels are
 **bounding-box abstractions** of the arrangement of the level below, not the raw
 geometry:
 
-* **Loop (L)** -- the leaf. A series of x-y coordinates separated by ``<SEP>`` tokens
-  (paper Eq. 1). The *curve type is identified by the number of points* (Willis et
-  al. 2021a): a line = 2 points (start, end), an arc = 3 points (start, mid, end), a
+* **Loop (L)** -- the leaf. A series of x-y coordinates separated by ``<SEP>`` tokens.
+  The *curve type is identified by the number of points*: a line = 2 points (start, end), an arc = 3 points (start, mid, end), a
   circle = 4 equally-spaced points. Curves are sorted so the initial curve is the one
   with the smallest starting-point coordinate, followed by its connected curve in
   counter-clockwise order.
 
 * **Profile (P)** -- above the leaf. A series of 2D bounding-box parameters
-  ``(x, y, w, h)`` of the loops within the sketch plane (paper Eq. 2), where
+  ``(x, y, w, h)`` of the loops within the sketch plane, where
   ``(x, y)`` is the bottom-left corner and ``(w, h)`` the size. Ordered by sorting the
   bottom-left corners of all boxes in ascending order.
 
 * **Solid (S)** -- the root. A series of 3D bounding-box parameters
-  ``(x, y, z, w, h, d)`` capturing the arrangement of the extruded profiles (paper
-  Eq. 3), ordered by sorting the bottom-left corners ascending.
+  ``(x, y, z, w, h, d)`` capturing the arrangement of the extruded profiles,
+  ordered by sorting the bottom-left corners ascending.
 
-Numeric fields are 6-bit quantized (paper Sec. 4): a coordinate is one of 64 levels
+Numeric fields are 6-bit quantized: a coordinate is one of 64 levels
 and ``<SEP>`` occupies one extra dimension, giving a 65-D one-hot token.
 
 This module is the fully deterministic, network-agnostic core of that representation:
@@ -43,13 +42,13 @@ from dataclasses import dataclass
 QUANT_BITS = 6
 QUANT_LEVELS = 1 << QUANT_BITS   # 64 coordinate levels
 SEP_TOKEN = QUANT_LEVELS         # index 64 -> the <SEP> separator dimension
-TOKEN_DIM = QUANT_LEVELS + 1     # 65-D one-hot (paper Sec. 4)
+TOKEN_DIM = QUANT_LEVELS + 1     # 65-D one-hot
 
 
 def quantize6(value: float) -> int:
     """6-bit uniform quantization of ``value in [0, 1]`` into ``[0, 63]``.
 
-    Values outside the unit interval are clamped, matching the paper's fixed 6-bit
+    Values outside the unit interval are clamped, matching the fixed 6-bit
     coordinate tokenization.
     """
     if value <= 0.0:
@@ -85,7 +84,7 @@ _NPOINTS_BY_TYPE = {LINE: 2, ARC: 3, CIRCLE: 4}
 
 
 def curve_type(n_points: int) -> str:
-    """Identify a curve's type from its number of points (Willis et al. 2021a).
+    """Identify a curve's type from its number of points.
 
     line = 2 (start, end); arc = 3 (start, mid, end); circle = 4 (equally spaced).
     """
@@ -128,14 +127,14 @@ class Curve:
 
 @dataclass(frozen=True)
 class Loop:
-    """A closed path of connected curves (Eq. 1)."""
+    """A closed path of connected curves."""
 
     curves: tuple[Curve, ...]
 
 
 @dataclass(frozen=True)
 class ProfileBBox:
-    """One profile node: the 2D bounding boxes of its loops (Eq. 2).
+    """One profile node: the 2D bounding boxes of its loops.
 
     ``boxes`` is a tuple of ``(x, y, w, h)`` with ``(x, y)`` the bottom-left corner.
     """
@@ -145,7 +144,7 @@ class ProfileBBox:
 
 @dataclass(frozen=True)
 class SolidNode:
-    """The solid root: the 3D bounding boxes of its extruded profiles (Eq. 3).
+    """The solid root: the 3D bounding boxes of its extruded profiles.
 
     ``boxes`` is a tuple of ``(x, y, z, w, h, d)`` with ``(x, y, z)`` the bottom-left
     corner and ``(w, h, d)`` the dimension.
@@ -180,7 +179,7 @@ def _min_point_index(curves: tuple[Curve, ...]) -> int:
 def sort_loop_curves(loop: Loop) -> Loop:
     """Reorder a loop's connected curves to begin at the smallest starting point.
 
-    Following the paper: the initial curve is the one with the smallest starting-
+    The initial curve is the one with the smallest starting-
     point coordinate, and the sequence then follows the connected (counter-clockwise)
     chain. A closed chain is simply rotated so it starts at that curve; a single
     curve (e.g. a circle) is returned unchanged.
@@ -194,7 +193,7 @@ def sort_loop_curves(loop: Loop) -> Loop:
 
 
 def loop_token_indices(loop: Loop) -> tuple[int, ...]:
-    """Serialize a loop to 6-bit token indices with ``<SEP>`` between curves (Eq. 1).
+    """Serialize a loop to 6-bit token indices with ``<SEP>`` between curves.
 
     Each point contributes its quantized x then y; a ``<SEP>`` (index 64) separates
     consecutive curves. The loop is canonicalized first via :func:`sort_loop_curves`.
@@ -222,10 +221,10 @@ def loop_bbox(loop: Loop) -> tuple[float, float, float, float]:
 
 
 def profile_from_loops(loops: tuple[Loop, ...]) -> ProfileBBox:
-    """Build a profile node from its loops (Eq. 2): the 2D boxes sorted ascending.
+    """Build a profile node from its loops: the 2D boxes sorted ascending.
 
     The boxes are sorted by their bottom-left corner ``(x, y)`` in ascending order,
-    matching the paper's canonical profile ordering.
+    matching the canonical profile ordering.
     """
     boxes = sorted(loop_bbox(lp) for lp in loops)
     return ProfileBBox(tuple(boxes))
@@ -235,7 +234,7 @@ def solid_from_profiles(
     profiles: tuple[ProfileBBox, ...],
     extrusions: tuple[tuple[float, float], ...],
 ) -> SolidNode:
-    """Build the solid node (Eq. 3) from profiles and their ``(z, depth)`` extrusions.
+    """Build the solid node from profiles and their ``(z, depth)`` extrusions.
 
     Each profile's overall 2D extent (the union of its loop boxes) is combined with
     the extrusion base ``z`` and ``depth`` to form a 3D box ``(x, y, z, w, h, d)``.

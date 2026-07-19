@@ -1,9 +1,9 @@
-"""Exact GenCAD/DeepCAD loop + profile canonical ordering (``cadlib/sketch.py``).
+"""Exact loop + profile canonical ordering for sketches.
 
-The GenCAD reference implementation canonicalises every sketch *before* it is
-vectorised, so that one geometry always maps to one command sequence. The exact
-procedure (``SketchBase.reorder`` for ``Loop`` and ``Profile``) has three steps the
-paper-level modules do not carry:
+Every sketch is canonicalised *before* it is vectorised, so that one geometry
+always maps to one command sequence. The full procedure -- loop reordering
+followed by profile reordering -- has three steps the coarser modules do not
+carry:
 
 1. **Endpoint-orientation repair.** Curves arrive from the raw JSON with arbitrary
    start/end order. The first curve is reversed if it *starts* where the second one
@@ -17,7 +17,7 @@ paper-level modules do not carry:
    reversed*. Loops whose first or last curve is a circle are exempt (a lone circle
    has no meaningful winding in this encoding).
 
-``Profile.reorder`` then sorts loops by the ``(x, y)`` of their bounding-box minimum,
+Profile reordering then sorts loops by the ``(x, y)`` of their bounding-box minimum,
 placing the outer-most (left/bottom-most) loop first.
 
 This differs from ``reconstruction.deepcad_profile_assembly.canonical_loop``, which
@@ -44,7 +44,7 @@ LINE = "Line"
 ARC = "Arc"
 CIRCLE = "Circle"
 
-ROUND_DIGITS = 6  # the reference compares start points at 6-decimal precision
+ROUND_DIGITS = 6  # start points are compared at 6-decimal precision
 
 
 @dataclass(frozen=True)
@@ -68,14 +68,14 @@ class Curve:
 
 
 def circle(center: Vec2, radius: float) -> Curve:
-    """Build a circle curve with GenCAD's implicit left/right start/end points."""
+    """Build a circle curve with the implicit left/right start/end points."""
     return Curve(kind=CIRCLE, start=circle_start_point(center, radius),
                  end=circle_end_point(center, radius),
                  center=center, radius=radius)
 
 
 def reverse_curve(c: Curve) -> Curve:
-    """Swap start and end (a circle is unaffected -- ``Circle.reverse`` is a no-op)."""
+    """Swap start and end (a circle is unaffected -- reversing it is a no-op)."""
     if c.kind == CIRCLE:
         return c
     return replace(c, start=c.end, end=c.start)
@@ -115,7 +115,7 @@ def loop_bbox(curves: Sequence[Curve]) -> Tuple[float, float, float, float]:
 
 
 def loop_bbox_size(curves: Sequence[Curve]) -> float:
-    """GenCAD ``SketchBase.bbox_size``: max |bbox corner - start_point| over x and y.
+    """Bounding-box size: max |bbox corner - start_point| over x and y.
 
     The sketch "size" is measured *relative to the loop's start point*, not as the
     box diagonal or width -- this is the ``s`` slot of the Ext command.
@@ -134,7 +134,7 @@ def _close(a: Vec2, b: Vec2, tol: float = 1e-8) -> bool:
 
 
 def repair_orientation(curves: Sequence[Curve]) -> List[Curve]:
-    """Step 1: make consecutive curves chain end -> start (GenCAD's reverse fixes)."""
+    """Step 1: make consecutive curves chain end -> start via reversal fixes."""
     out = list(curves)
     if len(out) <= 1:
         return out
@@ -158,7 +158,7 @@ def leftmost_index(curves: Sequence[Curve]) -> int:
 
 
 def is_counter_clockwise(curves: Sequence[Curve]) -> bool:
-    """GenCAD's winding test: ``cross(dir_out(last), dir_in(first)) > 0``."""
+    """Winding test: ``cross(dir_out(last), dir_in(first)) > 0``."""
     start_vec = curve_direction(curves[0], from_start=True)
     end_vec = curve_direction(curves[-1], from_start=False)
     cross = end_vec[0] * start_vec[1] - end_vec[1] * start_vec[0]
@@ -166,7 +166,7 @@ def is_counter_clockwise(curves: Sequence[Curve]) -> bool:
 
 
 def reorder_loop(curves: Sequence[Curve]) -> List[Curve]:
-    """Full ``Loop.reorder``: orientation repair, left-most rotation, CCW enforcement."""
+    """Full loop reordering: orientation repair, left-most rotation, CCW enforcement."""
     out = repair_orientation(curves)
     if len(out) <= 1:
         return out
@@ -174,7 +174,7 @@ def reorder_loop(curves: Sequence[Curve]) -> List[Curve]:
     pivot = leftmost_index(out)
     out = out[pivot:] + out[:pivot]
 
-    # A loop bounded by a circle is left as-is (the reference's hard-coded guard).
+    # A loop bounded by a circle is left as-is (hard-coded guard).
     if out[0].kind == CIRCLE or out[-1].kind == CIRCLE:
         return out
 
@@ -185,7 +185,7 @@ def reorder_loop(curves: Sequence[Curve]) -> List[Curve]:
 
 
 def reorder_profile(loops: Sequence[Sequence[Curve]]) -> List[List[Curve]]:
-    """``Profile.reorder``: sort loops by their bbox minimum, ``x`` first then ``y``."""
+    """Profile reordering: sort loops by their bbox minimum, ``x`` first then ``y``."""
     if len(loops) <= 1:
         return [list(lp) for lp in loops]
     keyed = []

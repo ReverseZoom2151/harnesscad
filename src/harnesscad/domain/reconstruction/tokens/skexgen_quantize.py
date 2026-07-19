@@ -1,18 +1,19 @@
-"""SkexGen sketch token format (ICML 2022, Xu et al.).
+"""Flat sketch token format.
 
-SkexGen encodes a sketch-and-extrude CAD model as *three parallel token
+This scheme encodes a sketch-and-extrude CAD model as *three parallel token
 streams* plus an extrude stream, which is a different representation from the
-DeepCAD command/argument matrix already in the harness
-(``reconstruction/deepcad2_vector_layout``) and from the GenCAD quantisation
-(``reconstruction/gencad2_sketch_quantize``).
+fixed-row command/argument matrix already in the harness
+(``reconstruction/deepcad2_vector_layout``) and from the 8-bit quantisation
+scheme (``reconstruction/gencad2_sketch_quantize``).
 
 Differences worth stating explicitly:
 
-* DeepCAD: fixed 17-column rows ``(command, 16 args)``, args quantised to 256
-  levels, one row per curve.
-* GenCAD: same row layout, 8-bit args, separate sketch/shape normalisation.
-* SkexGen: *variable-length flat* token streams.  Sketch geometry is quantised
-  to ``2**bit`` levels per axis (bit = 6 in the paper -> 64 levels) and then
+* the 16-slot fixed-row layout: fixed 17-column rows ``(command, 16 args)``,
+  args quantised to 256 levels, one row per curve.
+* the 8-bit quantisation scheme: same row layout, 8-bit args, separate
+  sketch/shape normalisation.
+* this scheme: *variable-length flat* token streams.  Sketch geometry is
+  quantised to ``2**bit`` levels per axis (bit = 6 -> 64 levels) and then
   flattened to a single **pixel** token ``y * 2**bit + x``.  A curve is a
   variable number of pixel tokens (line = 1, arc = 2, circle = 4) terminated by
   a CURVE_END token; loops, faces and the sketch each get their own end token.
@@ -22,7 +23,7 @@ Differences worth stating explicitly:
   (a "curve-gen" style loop encoding).
 
 Token values (as they appear in the merged stream fed to the transformer, i.e.
-after the ``EXTRA_PAD`` shift used by ``utils/utils.py``)::
+after the ``EXTRA_PAD`` shift)::
 
     0                 padding / end-of-model
     1                 end of one sketch-extrude pair (SE_END)
@@ -31,7 +32,7 @@ after the ``EXTRA_PAD`` shift used by ``utils/utils.py``)::
     4                 end of curve
     5 .. 5+2**(2b)-1  pixel token (5 + y * 2**b + x)
 
-The raw (unshifted) streams produced by ``process_obj_se`` use the pads
+The raw (unshifted) streams use the pads
 ``PIX_PAD = 4``, ``COORD_PAD = 4``, ``CMD_PAD = 3``; the ``+1`` EXTRA_PAD is
 applied when the streams are merged.  Both forms are produced here.
 
@@ -44,7 +45,7 @@ from typing import Dict, List, Sequence, Tuple
 
 Vec2 = Tuple[float, float]
 
-# --- SkexGen constants (utils/utils.py) -------------------------------------
+# --- constants ---------------------------------------------------------------
 BIT = 6                 # quantisation bits per sketch axis
 SKETCH_R = 1.0          # sketch coords are normalised to [-1, 1]
 EXTRUDE_R = 1.0
@@ -84,10 +85,10 @@ CURVE_CMD = {"line": CMD_LINE, "arc": CMD_ARC, "circle": CMD_CIRCLE}
 # --- quantisation -----------------------------------------------------------
 def quantize(value: float, bit: int = BIT, min_range: float = -SKETCH_R,
              max_range: float = SKETCH_R) -> int:
-    """SkexGen ``quantize``: affine map to ``[0, 2**bit - 1]``, clipped.
+    """Quantisation: affine map to ``[0, 2**bit - 1]``, clipped.
 
-    Matches numpy's ``astype('int32')`` truncation after clipping (values are
-    non-negative post-clip, so truncation == floor).
+    Truncates after clipping (values are non-negative post-clip, so
+    truncation == floor).
     """
     levels = 2 ** bit - 1
     q = (value - min_range) * levels / (max_range - min_range)
@@ -100,7 +101,7 @@ def quantize(value: float, bit: int = BIT, min_range: float = -SKETCH_R,
 
 def dequantize(level: float, bit: int = BIT, min_range: float = -SKETCH_R,
                max_range: float = SKETCH_R) -> float:
-    """Inverse of :func:`quantize` (SkexGen ``dequantize_verts``)."""
+    """Inverse of :func:`quantize`."""
     levels = 2 ** bit - 1
     return level * (max_range - min_range) / levels + min_range
 
@@ -115,7 +116,7 @@ def dequantize_point(level: Sequence[int], bit: int = BIT) -> Vec2:
 
 # --- pixel token <-> xy ------------------------------------------------------
 def pixel_from_xy(x: int, y: int, bit: int = BIT) -> int:
-    """Flatten a quantised ``(x, y)`` to SkexGen's raster ``pixel`` index."""
+    """Flatten a quantised ``(x, y)`` to the raster ``pixel`` index."""
     n = 2 ** bit
     if not (0 <= x < n and 0 <= y < n):
         raise ValueError("xy out of range for bit=%d: %r" % (bit, (x, y)))
@@ -179,14 +180,14 @@ def sketch_vertices(sketch: Sequence[Sequence[Sequence[Dict]]]) -> List[Vec2]:
 
 
 def center_vertices(vertices: Sequence[Vec2]) -> Vec2:
-    """Bounding-box centre (SkexGen ``center_vertices``)."""
+    """Bounding-box centre."""
     xs = [v[0] for v in vertices]
     ys = [v[1] for v in vertices]
     return (0.5 * (min(xs) + max(xs)), 0.5 * (min(ys) + max(ys)))
 
 
 def normalize_scale(vertices: Sequence[Vec2]) -> float:
-    """Half the bbox diagonal (SkexGen ``normalize_vertices_scale``)."""
+    """Half the bbox diagonal."""
     xs = [v[0] for v in vertices]
     ys = [v[1] for v in vertices]
     ex = max(xs) - min(xs)
@@ -203,15 +204,14 @@ def sketch_center_scale(sketch: Sequence[Sequence[Sequence[Dict]]]) -> Tuple[Vec
 
 # --- encoding ---------------------------------------------------------------
 def encode_sketch(sketch: Sequence[Sequence[Sequence[Dict]]], bit: int = BIT) -> Dict:
-    """SkexGen ``convert_code``: sketch -> (xy, pix, cmd) streams.
+    """Sketch -> (xy, pix, cmd) streams.
 
     ``sketch`` is a list of faces; a face is a list of loops (outer first); a
     loop is a list of curve dicts, already in canonical order (see
     ``reconstruction/skexgen_canonical_order``).
 
     Returns the *padded raw* streams (``+COORD_PAD`` / ``+PIX_PAD`` /
-    ``+CMD_PAD``) exactly as ``process_obj_se`` stores them, plus the sketch
-    ``center`` and ``scale``.
+    ``+CMD_PAD``) as stored on disk, plus the sketch ``center`` and ``scale``.
     """
     center, scale = sketch_center_scale(sketch)
     if scale <= 0.0:
@@ -277,7 +277,7 @@ def merge_se(pix_streams: Sequence[Sequence[int]],
 
 
 def strip_padding(tokens: Sequence[int]) -> List[int]:
-    """Everything before the first ``PAD`` token (SkexGen removes padding so)."""
+    """Everything before the first ``PAD`` token."""
     out: List[int] = []
     for t in tokens:
         if t == PAD:
@@ -289,8 +289,7 @@ def strip_padding(tokens: Sequence[int]) -> List[int]:
 def split_on(tokens: Sequence[int], sentinel: int) -> List[List[int]]:
     """Split *inclusive* of the sentinel; the trailing empty group is dropped.
 
-    Mirrors ``np.split(x, np.where(x == s)[0] + 1)[:-1]`` and requires the
-    sequence to end with the sentinel.
+    Requires the sequence to end with the sentinel.
     """
     groups: List[List[int]] = []
     cur: List[int] = []

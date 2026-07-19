@@ -63,7 +63,7 @@ def _dist(a, b):
 
 
 # --------------------------------------------------------------------------
-# exact 3D circle through three points (faceformer find_circle_center)
+# exact 3D circle through three points
 # --------------------------------------------------------------------------
 
 def circle_from_three_points(
@@ -71,7 +71,7 @@ def circle_from_three_points(
 ) -> Tuple[Vec3, float, Vec3]:
     """Return ``(center, radius, unit_normal)`` of the circle through p1,p2,p3.
 
-    Uses faceformer's closed-form identity.  Raises ``ValueError`` if the three
+    Uses a closed-form identity.  Raises ``ValueError`` if the three
     points are collinear (degenerate circle).
     """
     p1 = tuple(float(c) for c in p1)

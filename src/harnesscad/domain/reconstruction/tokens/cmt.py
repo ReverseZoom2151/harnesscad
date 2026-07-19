@@ -95,5 +95,5 @@ def dequantize(level: int, bits: int, lo: float = 0.0, hi: float = 1.0) -> float
 
 def quantize_token(token: tuple[float, ...], bits: int,
                    lo: float = 0.0, hi: float = 1.0) -> tuple[int, ...]:
-    """Quantize every component of a token (the 4-bit Valid check)."""
+    """Quantize every component of a token (the 4-bit validity check)."""
     return tuple(quantize(v, bits, lo, hi) for v in token)

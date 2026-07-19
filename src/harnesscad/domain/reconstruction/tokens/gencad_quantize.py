@@ -19,7 +19,7 @@ with the profile's *start point* at the raster centre::
     scale = (size / 2 * NORM_FACTOR - 1) / bbox_size          bbox_size measured
     p'    = (p - start_point) * scale + (size / 2, size / 2)   from the start point
 
-Parameter quantisation (``numericalize`` / ``denumericalize``), all to ``n = 256``::
+Parameter quantisation, all to ``n = 256``::
 
     sketch coordinate  q = clip(round(p), 0, n-1)          (already in raster space)
     radius             q = clip(round(r), 1, n-1)          (a radius is never 0)
@@ -39,16 +39,16 @@ from typing import Sequence, Tuple
 Vec2 = Tuple[float, float]
 Vec3 = Tuple[float, float, float]
 
-NORM_FACTOR = 0.75    # GenCAD macro.NORM_FACTOR
-ARGS_DIM = 256        # GenCAD macro.ARGS_DIM
+NORM_FACTOR = 0.75    # sketch normalisation factor
+ARGS_DIM = 256        # number of quantisation levels per parameter
 SKETCH_DIM = 256      # default raster size for a normalised sketch
 
 
 # --- shape-level normalisation ----------------------------------------------
 def shape_normalize_scale(bbox: Sequence[Sequence[float]], size: float = 1.0) -> float:
-    """``CADSequence.normalize``: ``size * NORM_FACTOR / max(|bbox|)``.
+    """Shape-level scale: ``size * NORM_FACTOR / max(|bbox|)``.
 
-    ``bbox`` is any iterable of 3D points (the reference passes ``[max_point,
+    ``bbox`` is any iterable of 3D points (typically ``[max_point,
     min_point]``); the divisor is the largest absolute *coordinate*, so the shape ends
     up inside the ``[-0.75, 0.75]`` cube for ``size = 1``.
     """
@@ -59,20 +59,20 @@ def shape_normalize_scale(bbox: Sequence[Sequence[float]], size: float = 1.0) ->
 
 
 def normalize_shape_point(point: Vec3, scale: float) -> Vec3:
-    """Apply the shape scale to a 3D point (the reference translates by 0.0)."""
+    """Apply the shape scale to a 3D point (translation is 0.0)."""
     return (point[0] * scale, point[1] * scale, point[2] * scale)
 
 
 # --- sketch-level normalisation ---------------------------------------------
 def sketch_normalize_scale(bbox_size: float, size: int = SKETCH_DIM) -> float:
-    """``(size / 2 * NORM_FACTOR - 1) / bbox_size`` (``SketchBase.normalize``)."""
+    """Sketch-level scale: ``(size / 2 * NORM_FACTOR - 1) / bbox_size``."""
     if bbox_size <= 0.0:
         raise ValueError("bbox_size must be positive")
     return (size / 2 * NORM_FACTOR - 1) / bbox_size
 
 
 def sketch_denormalize_scale(bbox_size: float, size: int = SKETCH_DIM) -> float:
-    """Inverse of :func:`sketch_normalize_scale` (``SketchBase.denormalize``)."""
+    """Inverse of :func:`sketch_normalize_scale`."""
     return bbox_size / (size / 2 * NORM_FACTOR - 1)
 
 
@@ -101,7 +101,7 @@ def normalize_sketch_length(length: float, bbox_size: float,
 
 def bbox_size_from_bbox(bbox: Tuple[float, float, float, float],
                         start_point: Vec2) -> float:
-    """``SketchBase.bbox_size``: max |box corner - start point| across x and y."""
+    """Sketch bbox size: max |box corner - start point| across x and y."""
     min_x, min_y, max_x, max_y = bbox
     sx, sy = start_point
     return max(abs(max_x - sx), abs(max_y - sy), abs(min_x - sx), abs(min_y - sy))
@@ -157,7 +157,7 @@ def dequantize_sketch_size(level: int, n: int = ARGS_DIM) -> float:
 
 
 def check_extent_range(extent: float) -> float:
-    """The reference asserts ``-2 <= extent <= 2`` before quantising an extrude."""
+    """Assert ``-2 <= extent <= 2`` before quantising an extrude."""
     if not -2.0 <= extent <= 2.0:
         raise ValueError("extent out of quantisable range [-2, 2]: {}".format(extent))
     return extent
@@ -165,7 +165,7 @@ def check_extent_range(extent: float) -> float:
 
 def quantize_coord_system(origin: Vec3, theta: float, phi: float, gamma: float,
                           n: int = ARGS_DIM) -> Tuple[int, int, int, int, int, int]:
-    """``CoordSystem.numericalize``: origin as unit values, angles as angles."""
+    """Coordinate system: origin as unit values, angles as angles."""
     return (quantize_unit(origin[0], n), quantize_unit(origin[1], n),
             quantize_unit(origin[2], n), quantize_angle(theta, n),
             quantize_angle(phi, n), quantize_angle(gamma, n))
@@ -173,7 +173,7 @@ def quantize_coord_system(origin: Vec3, theta: float, phi: float, gamma: float,
 
 def dequantize_coord_system(levels: Sequence[int],
                             n: int = ARGS_DIM) -> Tuple[Vec3, float, float, float]:
-    """``CoordSystem.denumericalize``: inverse of :func:`quantize_coord_system`."""
+    """Inverse of :func:`quantize_coord_system`."""
     if len(levels) != 6:
         raise ValueError("expected 6 levels (ox, oy, oz, theta, phi, gamma)")
     origin = (dequantize_unit(levels[0], n), dequantize_unit(levels[1], n),

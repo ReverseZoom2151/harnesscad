@@ -1,24 +1,21 @@
 """FDM overhang detection, build-orientation search, and stability descriptors.
 
-Deterministic Design-for-Additive-Manufacturing (DFAM) rules distilled from
-**AgentsCAD** (George, Keefe, Pak, Barati Farimani, 2026). The paper's LLM reasoning
-is out of scope, but its geometry layer is a "deterministic floor" of rule-based
-checks (their Sec. 4.2.1) that this module reimplements from face descriptors:
+Deterministic Design-for-Additive-Manufacturing (DFAM) rules forming a
+"deterministic floor" of rule-based checks computed from face descriptors:
 
-* **Overhang detection** (Sec. 1, 4.2.2). A downward-facing surface tilted beyond ~45
-  degrees from vertical cannot print without support. AgentsCAD flags a face when
+* **Overhang detection**. A downward-facing surface tilted beyond ~45
+  degrees from vertical cannot print without support. A face is flagged when
   ``theta = arccos(n_face . z_plane) <= 0`` after resolving sign; concretely a face is
   an overhang when the angle between its outward normal and the build direction
   ``+z`` exceeds ``90 + threshold`` degrees (the normal points downward-and-out).
   :func:`overhang_faces` returns the flagged faces and their severity.
 
-* **Orientation search** (Sec. 4.2.2, "a scripted orientation sub-phase evaluates up
-  to four candidate rotations and commits to the best one"). :func:`best_orientation`
-  scores candidate build directions by total overhang area and picks the minimiser --
-  the deterministic ``check_orientation_overhangs`` / ``lay_face_to_build_surface``
-  grounding tool, without the LLM.
+* **Orientation search**. A scripted orientation sub-phase evaluates a set of
+  candidate rotations and commits to the best one: :func:`best_orientation`
+  scores candidate build directions by total overhang area and picks the
+  minimiser, deterministically and without any model in the loop.
 
-* **Stability descriptors** (Sec. 4.1). Per-face ``radius_of_gyration`` (footprint
+* **Stability descriptors**. Per-face ``radius_of_gyration`` (footprint
   size) and ``elongation_index`` (how needle-like the footprint is) plus a part-level
   base-area / bounding-box aspect proxy used to reason about print stability.
 
@@ -110,7 +107,7 @@ def is_overhang(normal: Sequence[float], build_dir: Sequence[float] = (0.0, 0.0,
 def overhang_faces(faces: Iterable, build_dir: Sequence[float] = (0.0, 0.0, 1.0),
                    threshold_deg: float = DEFAULT_OVERHANG_THRESHOLD_DEG,
                    *, bed_tol_deg: float = 1.0) -> tuple[FaceOverhang, ...]:
-    """Flag every actionable overhang face (AgentsCAD deterministic floor)."""
+    """Flag every actionable overhang face (the deterministic floor)."""
     out: list[FaceOverhang] = []
     for idx, face in enumerate(faces):
         normal = _get(face, "normal")
@@ -137,7 +134,7 @@ def total_overhang_area(faces: Iterable, build_dir: Sequence[float] = (0.0, 0.0,
 def best_orientation(faces: Sequence,
                      candidates: Sequence[Sequence[float]] = _AXIS_DIRECTIONS,
                      threshold_deg: float = DEFAULT_OVERHANG_THRESHOLD_DEG) -> tuple[tuple[float, float, float], float]:
-    """Pick the build direction minimising total overhang area (AgentsCAD orientation).
+    """Pick the build direction minimising total overhang area.
 
     Returns ``(best_direction, overhang_area)``. Ties are broken by candidate order so
     the result is deterministic.
@@ -156,7 +153,7 @@ def best_orientation(faces: Sequence,
 
 
 def radius_of_gyration(area: float, second_moment: float) -> float:
-    """Footprint radius of gyration ``sqrt(I / A)`` (AgentsCAD stability proxy)."""
+    """Footprint radius of gyration ``sqrt(I / A)`` (stability proxy)."""
     if area <= 0.0:
         raise ValueError("area must be positive")
     if second_moment < 0.0:
@@ -165,7 +162,7 @@ def radius_of_gyration(area: float, second_moment: float) -> float:
 
 
 def elongation_index(i_major: float, i_minor: float) -> float:
-    """How needle-like a footprint is: ``sqrt(I_major / I_minor) >= 1`` (AgentsCAD).
+    """How needle-like a footprint is: ``sqrt(I_major / I_minor) >= 1``.
 
     An index of 1 is a rotationally symmetric footprint; large values are lopsided,
     unstable prints.

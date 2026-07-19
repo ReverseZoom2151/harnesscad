@@ -1,11 +1,11 @@
-"""Simplified Fusion 360 Gallery ("Sim-Gallery") DSL and its vectorized CAD-
-sequence representation (Li & Sha, *Image2CADSeq*, 2024).
+"""Simplified gallery ("Sim-Gallery") DSL and its vectorized CAD-sequence
+representation.
 
-Image2CADSeq reverse-engineers a **CAD sequence** from a product image. The
-deterministic, network-agnostic core of the paper is a compact operation-based
-representation that is distinct from DeepCAD and CADParser:
+The pipeline reverse-engineers a **CAD sequence** from a product image. The
+deterministic, network-agnostic core is a compact operation-based
+representation that is distinct from the flat 16-slot and 19-slot schemes:
 
-* **Seven operation types** ``t in {0..6}`` (paper Sec. 4.2, variable ``t``)::
+* **Seven operation types** ``t in {0..6}`` (variable ``t``)::
 
       0  add_sketch(I)              choose a canonical sketch plane
       1  add_line(x, y)             line to an endpoint
@@ -15,31 +15,31 @@ representation that is distinct from DeepCAD and CADParser:
       5  SOP                        start-of-program marker (non-CAD)
       6  EOP                        end-of-program / padding marker (non-CAD)
 
-  This differs from DeepCAD's six types (SOL/Line/Arc/Circle/Ext/EOS) both in
+  This differs from the six-type scheme (SOL/Line/Arc/Circle/Ext/EOS) both in
   vocabulary (explicit ``add_sketch`` plane op, SOP/EOP rather than SOL/EOS) and
   in the extrude op (a single signed depth + boolean, not an 11-slot plane
   transform).
 
-* **A 7-dimensional operation vector** ``[t, I, x, y, alpha, r, d]`` (paper's
+* **A 7-dimensional operation vector** ``[t, I, x, y, alpha, r, d]`` (the
   reduced form; the three auxiliary variables ``[I]`` profile-index, ``O``
   boolean, ``s`` scale are held at defaults 0, 3, 10). The whole program is a
   fixed ``Nc x 7`` **feature matrix**, padded with ``EOP`` to a maximum length
-  (paper: ``Nc = 10``).
+  (``Nc = 10``).
 
-* **Start-point elision** — the start point of a ``Line``/``Arc`` is *not*
+* **Start-point elision** -- the start point of a ``Line``/``Arc`` is *not*
   stored; it is inherited from the endpoint of the preceding curve (origin
   ``(0, 0)`` for the first curve). Only the endpoint is kept, making the
-  representation more compact (paper Sec. 4.2, points 3-4).
+  representation more compact.
 
-* **Arc-centre reconstruction** — the Gallery ``add_arc`` DSL call needs a
+* **Arc-centre reconstruction** -- the ``add_arc`` DSL call needs a
   *centre* point, but the vector stores the *endpoint* + sweep angle. Parsing
   recovers the centre from (start, end, sweep) by circle geometry.
 
-* **Quantisation** — continuous values are confined to a subset of ``[-1, 1]``
+* **Quantisation** -- continuous values are confined to a subset of ``[-1, 1]``
   and divided into 256 equal segments (8-bit ``0..255``); the sweep angle is
   multiplied by 180 on interpretation; unused slots hold the sentinel ``-1``.
 
-Pure and deterministic; the learned image encoder / TEVAE are out of scope.
+Pure and deterministic; the learned image encoder and autoencoder are out of scope.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 
-# --- operation vocabulary (paper variable t) -------------------------------
+# --- operation vocabulary (variable t) -------------------------------------
 ADD_SKETCH = 0
 ADD_LINE = 1
 ADD_ARC = 2
@@ -67,10 +67,10 @@ OP_NAMES: dict[int, str] = {
 }
 N_OP_TYPES = 7
 
-# The three canonical sketch planes (paper variable I in {0, 1, 2}).
+# The three canonical sketch planes (variable I in {0, 1, 2}).
 PLANES: tuple[str, ...] = ("XY", "XZ", "YZ")
 
-# Boolean operations (paper variable O in {0, 1, 2, 3}).
+# Boolean operations (variable O in {0, 1, 2, 3}).
 BOOLEANS: tuple[str, ...] = ("join", "cut", "intersect", "add")
 
 # 7-dimensional operation-vector slot layout.
@@ -80,14 +80,14 @@ VEC_LEN = len(SLOTS)  # == 7
 
 UNUSED = -1.0
 
-# Fixed maximum CAD-program length (paper: Nc = 10).
+# Fixed maximum CAD-program length (Nc = 10).
 NC_DEFAULT = 10
 
 # Quantisation: 256 equal segments -> 8-bit integers 0..255.
 N_QUANT_LEVELS = 256
 UNUSED_LEVEL = -1  # integer sentinel for unused slots after quantisation
 
-# Default auxiliary variables (paper Sec. 4.2): [I]=0, O=3 ("add"), s=10.
+# Default auxiliary variables: [I]=0, O=3 ("add"), s=10.
 DEFAULT_PROFILE_INDEX = 0
 DEFAULT_BOOLEAN = 3
 DEFAULT_SCALE = 10
@@ -182,7 +182,7 @@ def dequantize(level: int, low: float, high: float,
     return low + level * (high - low) / (levels - 1)
 
 
-# Per-slot continuous ranges (paper Sec. 4.2 (a)).
+# Per-slot continuous ranges.
 _SLOT_RANGE: dict[str, tuple[float, float]] = {
     "x": (-1.0, 1.0),
     "y": (-1.0, 1.0),
@@ -218,7 +218,7 @@ def dequantize_vector7(levels: tuple[int, ...]) -> tuple[float, ...]:
 
 
 def sweep_degrees(alpha: float) -> float:
-    """Physical sweep angle in degrees: ``alpha * 180`` (paper Sec. 4.2 (c))."""
+    """Physical sweep angle in degrees: ``alpha * 180``."""
     return alpha * 180.0
 
 
@@ -227,7 +227,7 @@ def build_feature_matrix(ops: list[GalleryOp], nc: int = NC_DEFAULT) -> tuple[tu
     """Build the quantised ``Nc x 7`` feature matrix ``P``.
 
     The sequence is wrapped as ``[SOP, ops..., EOP]`` and padded with additional
-    ``EOP`` rows to length ``nc`` (paper's maximum-program-length treatment).
+    ``EOP`` rows to length ``nc`` (the maximum-program-length treatment).
     """
     rows: list[GalleryOp] = [GalleryOp(SOP)] + list(ops) + [GalleryOp(EOP)]
     if len(rows) > nc:
@@ -248,7 +248,7 @@ def arc_center(start: tuple[float, float], end: tuple[float, float],
 
     The centre lies on the perpendicular bisector of the chord, at distance
     ``(|chord|/2) / tan(sweep/2)`` from its midpoint; the sign of the sweep
-    angle selects the side (paper Sec. 4.2 (ii)).
+    angle selects the side.
     """
     theta = math.radians(sweep_deg)
     if abs(math.sin(theta / 2.0)) < 1e-12:
@@ -331,7 +331,7 @@ def _fmt(value: float) -> str:
 
 
 def op_to_dsl(op: GalleryOp) -> str:
-    """Render a single symbolic op as a Sim-Gallery DSL call (paper Table 2)."""
+    """Render a single symbolic op as a Sim-Gallery DSL call."""
     if op.type == ADD_SKETCH:
         return f'add_sketch("{PLANES[op.plane]}")'
     if op.type == ADD_LINE:

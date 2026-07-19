@@ -1,9 +1,9 @@
-"""Earth Mover's Distance reconstruction metric (GaussianCAD Eq. 21).
+"""Earth Mover's Distance reconstruction metric.
 
-GaussianCAD evaluates reconstruction fidelity with three point-cloud metrics:
+Reconstruction fidelity is evaluated with three point-cloud metrics:
 Chamfer Distance (CD), Hausdorff Distance (HD) and Earth Mover's Distance (EMD).
 CD and HD are already implemented in ``geometry.dreamcad_metrics``; this module
-adds the missing EMD, defined (Eq. 21) as the minimum-cost bijection between two
+adds the missing EMD, defined as the minimum-cost bijection between two
 equal-cardinality point sets::
 
     EMD(A, B) = min_{phi: A -> B bijection}  sum_{a in A} || a - phi(a) ||
@@ -94,7 +94,7 @@ def earth_movers_distance(cloud_a: Sequence[Point],
     """Total EMD (Eq. 21): min-cost bijection sum over equal-size clouds.
 
     The two clouds must be non-empty and have the same number of points (EMD as
-    the paper defines it is a bijection). Returns the summed transport cost.
+    it is defined as a bijection). Returns the summed transport cost.
     """
     if not cloud_a or not cloud_b:
         raise ValueError("both clouds must be non-empty")

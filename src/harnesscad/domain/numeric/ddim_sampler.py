@@ -1,11 +1,11 @@
-"""Deterministic DDIM sampling + diffuse-denoise from the latent diffusion model .
+"""Deterministic DDIM sampling and diffuse-denoise for a latent diffusion model.
 
-the model's main experiments use 1000-step DDPM synthesis, but Section 5.5 highlights
-that switching to **DDIM**  produces high-quality shapes in a
-handful of steps ("25-step DDIM samples, 0.89s per shape") for interactive use.
+A latent shape diffusion model is typically trained for 1000-step DDPM
+synthesis, but switching to **DDIM** produces high-quality shapes in a handful
+of steps, cheap enough for interactive use.
 The DDIM reverse update is *deterministic* (the eta=0 case): given a schedule and
 a noise-prediction ``eps(x_t, t)``, every step is a closed-form combination with
-no injected noise. The sampler also uses a **diffuse-denoise** procedure (SDEdit-style):
+no injected noise. The sampler also uses a **diffuse-denoise** procedure:
 encode a shape, run the forward diffusion only ``tau < T`` steps so only local
 details are destroyed, then denoise back from ``tau`` -- yielding controlled
 variations of the original.

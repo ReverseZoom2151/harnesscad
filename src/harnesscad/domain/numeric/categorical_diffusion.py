@@ -1,9 +1,9 @@
-"""Categorical (multinomial) discrete diffusion from the model, Sec. 3.2.
+"""Categorical (multinomial) discrete diffusion.
 
-the model  reviews the *conventional* discrete-diffusion baseline it
-later improves upon: the Multinomial / structured discrete diffusion of
-established discrete-diffusion formulations. This baseline is the
-``the model (Cat.)`` ablation in the paper. Unlike the learned denoiser, the
+This module implements the *conventional* discrete-diffusion baseline:
+multinomial / structured discrete diffusion over a categorical state space.
+It serves as the categorical ablation against which richer schemes are
+compared. Unlike the learned denoiser, the
 categorical *forward* process, its cumulative marginal, and the true posterior
 ``q(x_{t-1} | x_t, x_0)`` are fully deterministic given a transition schedule,
 and all reduce to small matrix algebra over the probability simplex.

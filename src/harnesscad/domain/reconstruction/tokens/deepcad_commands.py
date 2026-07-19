@@ -19,22 +19,22 @@ Command types (exactly six)::
           b, u                        boolean type, extrude type
     EOS   end of the whole sequence  (no parameters)
 
-The paper's exact 16-slot parameter vector ordering (Sec. 3.1.2)::
+The exact 16-slot parameter vector ordering::
 
     pi = [x, y, alpha, f, r, theta, phi, gamma, px, py, pz, s, e1, e2, b, u]
 
 Every command stacks *its* parameters into this common 16-vector; slots a command
-does not use hold the sentinel ``-1`` (paper: "Unused parameters ... are simply set
-to be -1"). The full sequence is padded with the empty command ``EOS`` to the fixed
-length ``Nc = 60`` (the maximal command-sequence length in the DeepCAD dataset).
+does not use hold the sentinel ``-1``. The full sequence is padded with the empty
+command ``EOS`` to the fixed length ``Nc = 60`` (the maximal command-sequence
+length in the reference dataset).
 
 Continuous parameters are normalised into a 2x2x2 cube and quantised to **256
 levels** (8-bit); the one-hot width is ``2**8 + 1 = 257`` (the extra index encodes
-the -1 sentinel), matching the paper exactly.
+the -1 sentinel), matching the specification exactly.
 
-This differs from :mod:`reconstruction.cadparser_schema` (CADParser's *19*-slot,
-12-type B-Rep-workflow variant) and from ``bench/contrastcad_recon_accuracy``'s
-differently-named 16-slot vector: this is the DeepCAD-canonical spec with the exact
+This differs from :mod:`reconstruction.cadparser_schema` (a *19*-slot, 12-type
+B-Rep-workflow variant) and from ``bench/contrastcad_recon_accuracy``'s
+differently-named 16-slot vector: this is the canonical spec with the exact
 six types and the exact slot ordering above. Pure and deterministic; the learned
 encoder/decoder are out of scope.
 """
@@ -43,7 +43,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# --- command vocabulary (exactly six types, Table 1) -----------------------
+# --- command vocabulary (exactly six types) -----------------------
 SOL = "SOL"      # start of a loop
 LINE = "Line"
 ARC = "Arc"
@@ -60,7 +60,7 @@ N_COMMAND_TYPES = len(COMMAND_TYPES)  # == 6
 _NO_PARAM = frozenset({SOL, EOS})
 
 
-# --- exact 16-slot parameter layout (paper Sec. 3.1.2) ---------------------
+# --- exact 16-slot parameter layout ----------------------------------------
 PARAM_SLOTS: tuple[str, ...] = (
     "x", "y", "alpha", "f", "r",              # curve params            (0..4)
     "theta", "phi", "gamma",                  # sketch-plane orientation (5..7)
@@ -74,7 +74,7 @@ PARAM_LEN = len(PARAM_SLOTS)  # == 16
 
 UNUSED = -1.0
 
-# Which named slots each command type populates (Table 1).
+# Which named slots each command type populates.
 _COMMAND_PARAMS: dict[str, tuple[str, ...]] = {
     LINE: ("x", "y"),
     ARC: ("x", "y", "alpha", "f"),
@@ -82,7 +82,7 @@ _COMMAND_PARAMS: dict[str, tuple[str, ...]] = {
     EXT: ("theta", "phi", "gamma", "px", "py", "pz", "s", "e1", "e2", "b", "u"),
 }
 
-# Fixed sequence length (paper: Nc = 60, the maximal length in the dataset).
+# Fixed sequence length (Nc = 60, the maximal length in the dataset).
 NC_DEFAULT = 60
 
 
@@ -97,7 +97,7 @@ def param_names(command_type: str) -> tuple[str, ...]:
 
 @dataclass(frozen=True)
 class Command:
-    """A single DeepCAD command ``Ci = (ti, pi)``.
+    """A single CAD command ``Ci = (ti, pi)``.
 
     ``params`` maps a subset of :data:`PARAM_SLOTS` names to values; unlisted slots
     become the sentinel ``-1`` when packed into the fixed 16-vector.
@@ -149,7 +149,7 @@ def from_vector(command_type: str, vector: tuple[float, ...]) -> Command:
 def pad_sequence(commands: list[Command], nc: int = NC_DEFAULT) -> tuple[Command, ...]:
     """Pad a command list with the empty ``EOS`` command to fixed length ``Nc``.
 
-    Paper: the sequence is padded with the empty command ``EOS`` until the length
+    The sequence is padded with the empty command ``EOS`` until the length
     reaches ``Nc``. Raises when the content itself exceeds ``nc``.
     """
     seq = list(commands)
@@ -163,7 +163,7 @@ def vector_representation(commands: list[Command], nc: int = NC_DEFAULT):
     """Vector <-> CAD-operation conversion: return ``(types, param_matrix)``.
 
     ``types`` is the per-step command-type index; ``param_matrix`` is an
-    ``nc x 16`` tuple-of-tuples of packed parameters. This is DeepCAD's
+    ``nc x 16`` tuple-of-tuples of packed parameters. This is the
     network-friendly regularised representation of a whole model.
     """
     seq = pad_sequence(commands, nc)
@@ -188,7 +188,7 @@ def commands_from_vectors(types, param_matrix) -> list[Command]:
 
 # --- one-hot / quantisation (feeds the learned embeddings) -----------------
 def command_onehot(command_type: str) -> tuple[int, ...]:
-    """Six-way command-type one-hot (paper's indicator vector ``c_i``)."""
+    """Six-way command-type one-hot (the indicator vector ``c_i``)."""
     vector = [0] * N_COMMAND_TYPES
     vector[COMMAND_INDEX[command_type]] = 1
     return tuple(vector)
@@ -217,7 +217,7 @@ def param_index(value: float, n_levels: int = N_QUANT_LEVELS,
     """Map a param value (or -1 sentinel) to its 0..256 embedding index.
 
     Sentinel ``-1`` maps to index 0; a quantised level ``q`` maps to ``q + 1``
-    (paper: one-hot dimension ``2**8 + 1 = 257``).
+    (one-hot dimension ``2**8 + 1 = 257``).
     """
     if value == UNUSED:
         return _UNUSED_INDEX

@@ -1,26 +1,23 @@
 """DBU-quantised planar layout with a deterministic design-rule checker (DRC).
 
-Ported from **Vibe_Layout** (``src/klayout_harness/{cad,context,feedback}.py``),
-a KLayout harness that authors GDS mask layouts (electrode arrays, Hall bars,
+This authors GDS-style mask layouts (electrode arrays, Hall bars,
 micro-channels, nano-gap arrays, split-ring resonators) and validates them
-against fabrication rules. Vibe_Layout drives the real KLayout ``pya``/``klayout.db``
-backend; this module reimplements the two durable, kernel-free pieces:
+against fabrication rules, without a mask-layout kernel. Two durable,
+kernel-free pieces:
 
 1. A **DBU-quantised layout representation** (``PlanarLayout``): rectangles on
    named layers, addressed in micrometres but stored as integer database units
-   (DBU) so geometry is exact and reproducible. Vibe's ``DesignContext.dbu`` and
-   ``maps_exactly_to_dbu`` become :func:`to_dbu` and :func:`maps_exactly`.
+   (DBU) so geometry is exact and reproducible. :func:`to_dbu` and
+   :func:`maps_exactly` handle the quantisation.
 
-2. A **design-rule checker** (:func:`run_drc`) reproducing Vibe's
-   ``FeedbackHarness.validate_recording`` findings -- positive closed area,
-   minimum feature width, minimum spacing between same-layer boxes (rectilinear
-   separation), plus a same-layer overlap ("electrical short") check and an
-   off-grid (non-exact-DBU) check. Each violation is a structured
+2. A **design-rule checker** (:func:`run_drc`) producing findings -- positive
+   closed area, minimum feature width, minimum spacing between same-layer boxes
+   (rectilinear separation), plus a same-layer overlap ("electrical short")
+   check and an off-grid (non-exact-DBU) check. Each violation is a structured
    :class:`Finding` with a stable ``rule_id``.
 
-Vibe's placement helpers (``add_centered_box_um`` / ``add_frame_um``) are kept
-because they are the deterministic primitives its parametric device cells are
-built from.
+The placement helpers (``add_centered_box_um`` / ``add_frame_um``) are the
+deterministic primitives parametric device cells are built from.
 
 This is the *checking* counterpart to :mod:`harnesscad.domain.fabrication.nesting`
 (which *produces* a packing); together they cover placed-layout validation and
@@ -126,7 +123,7 @@ def box_spacing_dbu(a: Rect, b: Rect) -> int:
     """Rectilinear (Chebyshev-of-gaps) separation between two boxes in DBU.
 
     0 if they touch or overlap; otherwise the larger of the x-gap and y-gap
-    (mirrors Vibe's ``_box_spacing`` -- the closest a blade/edge can approach).
+    (the closest a blade/edge can approach).
     """
     a, b = a.normalized(), b.normalized()
     dx = max(b.x1 - a.x2, a.x1 - b.x2, 0)
@@ -176,7 +173,7 @@ class PlanarLayout:
     def add_frame_um(
         self, layer: str, width_um: float, height_um: float, stroke_um: float
     ) -> List[Rect]:
-        """A hollow rectangular frame as four border strips (Vibe's add_frame_um)."""
+        """A hollow rectangular frame as four border strips."""
         hw, hh = width_um / 2.0, height_um / 2.0
         strips = [
             self.add_box_um(layer, -hw, -hh, hw, -hh + stroke_um),  # bottom

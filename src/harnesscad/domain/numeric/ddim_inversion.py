@@ -14,7 +14,7 @@ of the diffusion model in three deterministic stages:
 
    where ``x0_pred = (z_hat_{t-1} - sqrt(1 - alpha_{t-1}) eps) / sqrt(alpha_{t-1})``
    and ``eps = eps_theta(z_hat_{t-1}, t-1)``. This is the standard deterministic
-   DDIM inversion recurrence (Song et al., 2021, used by the paper). It steps the
+   DDIM inversion recurrence. It steps the
    timestep *upwards* (adding structure-preserving noise), the mirror image of the
    downward DDIM reverse step in :mod:`numeric.lion_ddim_sampler` -- which
    implements only the denoising direction, never inversion.

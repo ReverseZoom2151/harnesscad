@@ -1,16 +1,15 @@
-"""Safe parametric-expression evaluator and parameter table (OpenCAD-style).
+"""Safe parametric-expression evaluator and parameter table.
 
-OpenCAD's feature tree (``opencad_tree/expression.py`` + the two-pass binding
-resolution in ``opencad_tree/service.py``) drives every feature parameter from a
-*named parameter table* whose entries may be either literal numbers or math
-expressions referencing other parameters (``"thickness * 2 + clearance"``).  The
-upstream evaluator walks a Python ``ast`` and whitelists a small operator/function
-set, so no attribute access, comprehension, subscript, lambda or arbitrary call
-can ever be executed; the service then resolves bindings in two passes so that an
-expression can consume values produced by earlier bindings.
+A feature tree drives every feature parameter from a *named parameter table*
+whose entries may be either literal numbers or math expressions referencing
+other parameters (``"thickness * 2 + clearance"``).  A safe evaluator walks a
+Python ``ast`` and whitelists a small operator/function set, so no attribute
+access, comprehension, subscript, lambda or arbitrary call can ever be
+executed; bindings are then resolved in two passes so that an expression can
+consume values produced by earlier bindings.
 
-This module reimplements that idea as a self-contained, deterministic engine and
-adds the piece the upstream code leaves implicit: a *parameter table* that
+This module implements that idea as a self-contained, deterministic engine and
+adds the piece such designs usually leave implicit: a *parameter table* that
 
 * extracts the free symbols of every expression (``extract_symbols``),
 * builds the parameter dependency graph and evaluates the table in topological

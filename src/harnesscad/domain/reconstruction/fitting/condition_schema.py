@@ -1,10 +1,11 @@
-"""Deterministic multi-modal condition-encoding schema (DreamCAD, Sec. 4.3).
+"""Deterministic multi-modal condition-encoding schema.
 
-DreamCAD conditions generation on text, images, or point clouds, and encodes
+Generation is conditioned on text, images, or point clouds, encoding
 each active voxel with a fixed feature layout ``f_i = [p(v_i); n(v_i);
 c(v_i); s(v_i)]`` (visual features, per-view normals, voxel centre, signed
-distance).  The learned encoders (DINOv2, PointNet++, flow transformers) are
-research-heavy and out of scope, but the *schema* -- the deterministic,
+distance).  The learned encoders (large vision backbones, point-cloud encoders,
+flow transformers) are research-heavy and out of scope, but the *schema* -- the
+deterministic,
 fixed-length, normalised feature layout and the modality tag -- is buildable
 and testable.
 
@@ -15,7 +16,7 @@ This module provides:
     plus a fixed-width feature block, with deterministic encoders:
       - text  -> hashing-trick bag-of-words (stable across runs),
       - points -> normalised occupancy + centroid + extent statistics,
-      - voxel-feature -> the paper's [p; n; c; s] concatenation.
+      - voxel-feature -> the [p; n; c; s] concatenation.
 
 Encoders are deterministic (a fixed hash seed, no wall clock, no RNG state)
 and always return an L2-normalised vector of the schema's declared length.
@@ -87,7 +88,7 @@ class ConditionSchema:
     def encode_points(self, points, *, grid=4):
         """Normalised occupancy grid + centroid + extent for a point cloud.
 
-        Points are normalised to [-0.5, 0.5]^3 (as in the paper) before
+        Points are normalised to [-0.5, 0.5]^3 before
         binning into a ``grid^3`` occupancy histogram; the tail of the block
         carries the centroid (3) and extent (3).  Requires
         ``feature_dim >= grid**3 + 6``.
@@ -119,7 +120,7 @@ class ConditionSchema:
         return self._wrap(Modality.POINT, block)
 
     def encode_voxel_feature(self, visual, normal, center, sdf):
-        """Assemble the paper's f_i = [p(v_i); n(v_i); c(v_i); s(v_i)].
+        """Assemble f_i = [p(v_i); n(v_i); c(v_i); s(v_i)].
 
         ``visual`` and ``normal`` are arbitrary-length sequences; ``center``
         is a length-3 tuple; ``sdf`` is a scalar.  The concatenation is padded

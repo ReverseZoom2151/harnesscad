@@ -1,15 +1,14 @@
 """Zero-Order-Hold (ZOH) discretization of a continuous diagonal SSM.
 
-the state-space model (Li et al., AAAI 2025) reviews the State Space Model (SSM) that
-underlies Mamba: a continuous system that maps a 1-D signal ``X(t)`` to ``Y(t)``
-through a hidden state ``H(t)`` via the ODE (paper "Preliminary")::
+A State Space Model (SSM) is a continuous system that maps a 1-D signal ``X(t)``
+to ``Y(t)`` through a hidden state ``H(t)`` via the ODE::
 
     H'(t) = A . H(t) + B . X(t)
     Y(t)  = C . H(t)
 
 To run this on a discrete parametric-CAD token sequence the continuous
 parameters ``(A, B)`` are discretized with the **Zero-Order-Hold (ZOH)** method
-using a per-step time-scale ``delta`` (paper Eq. 1-4)::
+using a per-step time-scale ``delta``::
 
     Abar = exp(delta A)                                  (Eq. 1)
     Bbar = (delta A)^-1 (exp(delta A) - I) . (delta B)   (Eq. 2)

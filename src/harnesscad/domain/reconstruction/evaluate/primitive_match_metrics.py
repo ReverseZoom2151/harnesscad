@@ -1,8 +1,8 @@
-"""cad2program_metrics — reconstruction / retrieval / parameter accuracy metrics.
+"""Reconstruction / retrieval / parameter accuracy metrics.
 
-Evaluation protocol of CAD2PROGRAM (Wang et al., AAAI 2025, Sec. 4.1).  Given a
-predicted assembly of primitive instances and a ground-truth assembly, the paper
-reports three accuracies, all of which are deterministic set/geometry operations:
+Evaluation protocol for primitive-assembly programs.  Given a
+predicted assembly of primitive instances and a ground-truth assembly, three
+accuracies are reported, all deterministic set/geometry operations:
 
   * **3D reconstruction** (common parameters): match predicted primitives to
     ground truth with **Hungarian matching** on the 3D bounding boxes, count a
@@ -16,7 +16,7 @@ reports three accuracies, all of which are deterministic set/geometry operations
 
 The boxes are the 7-parameter :class:`~reconstruction.cad2program_shape_program.
 Bbox` (center position, size, z-rotation).  IoU is computed for axis-aligned
-boxes (the paper's cabinet primitives use ``angle_z = 0``); a box with a non-zero
+boxes (cabinet primitives use ``angle_z = 0``); a box with a non-zero
 angle that is a multiple of 90 degrees is normalized by swapping its x/y extents,
 and any other angle mismatch makes the pair non-overlapping (conservative).
 
@@ -195,7 +195,7 @@ def match_primitives(pred, gt, iou_threshold: float = 0.5) -> MatchResult:
     """Hungarian-match predicted to ground-truth primitives by 3D-box IoU.
 
     A matched pair counts as a true positive only when its IoU exceeds
-    ``iou_threshold`` (the paper uses 0.5).  Every predicted/gt box is matched at
+    ``iou_threshold`` (0.5 by default).  Every predicted/gt box is matched at
     most once.
     """
     preds, gts = _instances(pred), _instances(gt)
@@ -228,8 +228,7 @@ def model_retrieval_accuracy(pred, gt, iou_threshold: float = 0.5
     """Fraction of true-positive matches whose model ID is correct.
 
     Retrieval is scored only over primitives whose box was correctly recovered
-    (IoU above threshold), following the paper's "correctly retrieved models"
-    denominator.
+    (IoU above threshold), using the "correctly retrieved models" denominator.
     """
     preds, gts = _instances(pred), _instances(gt)
     res = match_primitives(pred, gt, iou_threshold)
@@ -250,10 +249,10 @@ def parameter_estimation_accuracy(pred, gt, iou_threshold: float = 0.5
     """All-or-nothing model-specific parameter accuracy over retrieved models.
 
     A prediction is correct iff its model ID matches (correctly retrieved) *and*
-    every model-specific ``key=value`` equals the ground truth (Sec. 4.1: "a
-    successful estimation means that all parameters are correct").  Primitives
+    every model-specific ``key=value`` equals the ground truth: a successful
+    estimation means that all parameters are correct.  Primitives
     that have no model-specific parameters in the ground truth still count as a
-    trivially-correct estimation, matching the paper's per-primitive accounting.
+    trivially-correct estimation, matching the per-primitive accounting.
     """
     preds, gts = _instances(pred), _instances(gt)
     res = match_primitives(pred, gt, iou_threshold)

@@ -1,8 +1,8 @@
-"""SkexGen canonical sketch ordering (``sort_faces`` / ``sort_loops`` / ``sort_curves``).
+"""Canonical sketch ordering (``sort_faces`` / ``sort_loops`` / ``sort_curves``).
 
-Before tokenisation SkexGen puts a sketch into a *canonical* order so that one
+Before tokenisation a sketch is put into a *canonical* order so that one
 geometry maps to exactly one token sequence (this is what makes the "unique %"
-metric meaningful and what the topology codebook learns):
+metric meaningful and what a topology codebook can learn):
 
 1. **faces** are sorted by their bounding box's ``(x_min, y_min)``, increasing;
 2. **loops** inside a face: the outer loop stays first, the inner loops are
@@ -14,14 +14,13 @@ metric meaningful and what the topology codebook learns):
    increasing-x direction.  Finally, flip curves so every curve's end is the
    next curve's start.
 
-Note the bbox SkexGen uses for an arc is the bbox of ``(start, mid, end)``, not
-the true arc extremes; this is reproduced faithfully so that the ordering agrees
-token-for-token with the reference implementation.
+Note the bbox used for an arc is the bbox of ``(start, mid, end)``, not the true
+arc extremes; this approximation is deliberate and kept stable so the ordering is
+reproducible token-for-token.
 
-This differs from ``reconstruction/gencad2_loop_reorder`` (GenCAD/DeepCAD),
-which starts from the leftmost *point* and enforces counter-clockwise winding.
-SkexGen enforces neither winding nor a start point --- only bbox order plus
-connectivity.
+This differs from ``reconstruction/gencad2_loop_reorder``, which starts from the
+leftmost *point* and enforces counter-clockwise winding. The ordering here
+enforces neither winding nor a start point -- only bbox order plus connectivity.
 
 Deterministic, stdlib only.
 """
@@ -39,19 +38,19 @@ TOL_DIGITS = 9
 
 
 def point_key(point: Sequence[float]) -> Tuple[float, float]:
-    """Vertex identity (SkexGen rounds obj vertices to 9 decimals)."""
+    """Vertex identity (vertices are rounded to 9 decimals)."""
     return (round(float(point[0]), TOL_DIGITS), round(float(point[1]), TOL_DIGITS))
 
 
 def circle_rim_points(center: Vec2, radius: float) -> Tuple[Vec2, Vec2, Vec2, Vec2]:
-    """SkexGen's 4 rim points of a circle: top, bottom, right, left."""
+    """The 4 rim points of a circle: top, bottom, right, left."""
     cx, cy = center
     return ((cx, cy + radius), (cx, cy - radius),
             (cx + radius, cy), (cx - radius, cy))
 
 
 def curve_bbox(curve: Curve) -> Tuple[float, float, float, float]:
-    """``(x_min, x_max, y_min, y_max)`` exactly as SkexGen computes it."""
+    """``(x_min, x_max, y_min, y_max)`` over the curve's defining points."""
     t = curve["type"]
     if t == "line":
         pts = [curve["start"], curve["end"]]
@@ -88,7 +87,7 @@ def face_bbox(face: Face) -> Tuple[float, float, float, float]:
 
 
 def _sort_by_min_corner(items, bbox_fn):
-    """Stable sort by ``(x_min, y_min)`` (numpy ``lexsort`` on the min corner)."""
+    """Stable sort by ``(x_min, y_min)`` -- a lexicographic sort on the min corner."""
     keyed = [(bbox_fn(x)[0], bbox_fn(x)[2], i, x) for i, x in enumerate(items)]
     keyed.sort(key=lambda t: (t[0], t[1], t[2]))
     return [t[3] for t in keyed]
@@ -189,7 +188,7 @@ def _orient_chain(curves: Loop) -> Loop:
 
 
 def canonicalize_sketch(sketch: Sketch) -> Sketch:
-    """Full SkexGen canonicalisation: faces, then loops, then curves."""
+    """Full canonicalisation: faces, then loops, then curves."""
     out: Sketch = []
     for face in sort_faces(sketch):
         out.append([sort_curves(loop) for loop in sort_loops(face)])

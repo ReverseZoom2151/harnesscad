@@ -1,8 +1,8 @@
-"""Deterministic Dual-Teacher DMD distillation schedule .
+"""Deterministic dual-teacher DMD distillation schedule.
 
-The schedule distils a slow many-step multi-view (MV) diffusion teacher into a fast
-4-step, 4-view student using Distribution Matching Distillation (DMD, Yin et al.
-2024) extended with a **dual teacher**: an MV teacher (view consistency) and a
+The schedule distils a slow many-step multi-view (MV) diffusion teacher into a
+fast 4-step, 4-view student using Distribution Matching Distillation (DMD),
+extended with a **dual teacher**: an MV teacher (view consistency) and a
 single-view (SV) teacher (photo-realism). The learned generator / score networks
 are out of scope, but several pieces of the distillation recipe are pure,
 deterministic bookkeeping that this module implements:

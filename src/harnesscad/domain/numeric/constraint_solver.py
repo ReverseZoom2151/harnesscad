@@ -60,7 +60,7 @@ __all__ = [
 EPS = 1e-9
 
 
-# ── entities ────────────────────────────────────────────────────────
+# -- entities --------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -139,7 +139,7 @@ class Sketch:
         self.constraints.append(constraint)
 
 
-# ── codec ───────────────────────────────────────────────────────────
+# -- codec -----------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -193,7 +193,7 @@ class Codec:
         return out
 
 
-# ── residuals ───────────────────────────────────────────────────────
+# -- residuals -------------------------------------------------------
 
 
 def _dir(line: Line) -> Tuple[float, float]:
@@ -363,7 +363,7 @@ def _constraint_infos(
     return infos
 
 
-# ── linear algebra (stdlib) ─────────────────────────────────────────
+# -- linear algebra (stdlib) -----------------------------------------
 
 
 def jacobian(sketch: Sketch, step: float = 1e-6) -> List[List[float]]:
@@ -452,7 +452,7 @@ def _solve_linear(
     return x
 
 
-# ── diagnostics ─────────────────────────────────────────────────────
+# -- diagnostics -----------------------------------------------------
 
 
 class SolveStatus:
@@ -531,7 +531,7 @@ def diagnose(sketch: Sketch, tolerance: float = 1e-6) -> Diagnostics:
     )
 
 
-# ── solve ───────────────────────────────────────────────────────────
+# -- solve -----------------------------------------------------------
 
 
 @dataclass

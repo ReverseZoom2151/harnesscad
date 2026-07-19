@@ -1,6 +1,6 @@
-"""Efficient Hybrid Parametrization (EHP) for PHT-CAD (Niu et al. 2025, Sec. 4.1).
+"""Efficient Hybrid Parametrization (EHP) for 2D engineering drawings.
 
-PHT-CAD represents a 2D engineering drawing with four *atomic components* --
+EHP represents a 2D engineering drawing with four *atomic components* --
 point, line, circle, arc -- under a compact, hybrid parametrization that merges
 the point-based and implicit strategies while eliminating redundant fields:
 
@@ -19,7 +19,7 @@ AND explicit key points):
   3. All coordinates are normalised into the range ``[0, 1000)`` so spatial scale
      is consistent across images of differing resolution.
 
-This module is PHT-CAD's canonical primitive record. It provides construction
+This module is the canonical primitive record. It provides construction
 with validation, direction/geometry inference, coordinate normalisation, a flat
 token vector (the target the regression heads predict), and a *parametrization
 efficiency* metric quantifying how many scalar fields EHP saves versus the

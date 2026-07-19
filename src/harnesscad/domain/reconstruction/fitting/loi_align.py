@@ -1,12 +1,12 @@
-"""img2cadsvg_loi_align -- Joint-Decoupled Line-of-Interest Aligning (JD LOIAlign).
+"""Joint-Decoupled Line-of-Interest Aligning (JD LOIAlign).
 
-After binding (see :mod:`reconstruction.img2cadsvg_binding`), Img2CAD refines the
-wireframe with **Line-of-Interest (LOI) Pooling** and the **Joint-Decoupled
-Line-of-Interest Aligning (JD LOIAlign)** module (paper, Sec. IV), which
-"filters out false positive proposals through interest point alignment" and
-"captures the co-occurrence between the endpoint proposals and the HAT field".
+After binding (see the wireframe-binding module), the wireframe is refined with
+**Line-of-Interest (LOI) Pooling** and the **Joint-Decoupled Line-of-Interest
+Aligning (JD LOIAlign)** step, which filters out false-positive proposals
+through interest-point alignment and captures the co-occurrence between the
+endpoint proposals and the HAT field.
 
-The deterministic geometry the paper specifies:
+The deterministic geometry involved:
 
 * the sampling function ``Psi_t(X) = (1 - t) * x1 + t * x2`` with ``t in [0, 1]``
   maps a background point to a point on the segment;
@@ -69,7 +69,7 @@ def decoupled_groups(
 ) -> DecoupledGroups:
     """Build the joint-decoupled sampling sets.
 
-    Per the paper the model maintains: (1) the two endpoints ``y1, y2``;
+    The model maintains: (1) the two endpoints ``y1, y2``;
     (2) the centre ``Psi_t(X)`` of ``x1`` and its bound proposal ``x1'``;
     (3) the centre ``Psi_t(Y)`` of ``y1`` and its bound proposal ``y1'``.  The
     centres use ``t = 0.5`` (the midpoint) as the decoupling reference.

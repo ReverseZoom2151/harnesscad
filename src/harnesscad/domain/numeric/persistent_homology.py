@@ -1,6 +1,6 @@
 """Sublevel-set persistent homology (0-dim) on a scalar/SDF grid.
 
-Sec. 3, "Filtration process": given
+Filtration process: given
 the signed distance field ``S`` sampled on a grid, define the nested filtration
 ``K_i = { sigma in K | S(sigma) <= s_i }`` by sweeping a threshold ``s_i``
 upward.  Topological features are *born* and *die* along the sweep, producing a

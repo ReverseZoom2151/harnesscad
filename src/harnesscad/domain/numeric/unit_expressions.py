@@ -1,12 +1,12 @@
-"""Unit-aware length/angle expression evaluator (CodeToCAD-style ``LengthExp``).
+"""Unit-aware length/angle expression evaluator.
 
-CodeToCAD lets a user write dimensions as strings -- ``"2mm + 1m"``, ``"6in + 2ft"``,
-``"90deg + 0.5rad"`` -- and normalises them to SI base units (metres, radians).  The
-upstream implementation does this with a regex substitution followed by ``eval``,
-which is neither safe nor able to type-check the arithmetic (it happily returns
-``m**2`` for ``1mm * 1in``).
+A scripting CAD front end lets a user write dimensions as strings --
+``"2mm + 1m"``, ``"6in + 2ft"``, ``"90deg + 0.5rad"`` -- and normalises them to
+SI base units (metres, radians).  A naive implementation does this with a regex
+substitution followed by ``eval``, which is neither safe nor able to type-check
+the arithmetic (it happily returns ``m**2`` for ``1mm * 1in``).
 
-This module reimplements the idea properly and deterministically:
+This module implements the idea properly and deterministically:
 
 * a tokeniser that recognises decimal numbers, imperial fractions (``"1/2in"``),
   mixed numbers (``"1-1/2in"``), percentages (``"50%"``), unit suffixes and the

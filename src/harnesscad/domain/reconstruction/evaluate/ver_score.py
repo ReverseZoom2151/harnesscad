@@ -1,12 +1,9 @@
-"""Ver-score: vertex-based text-to-CAD consistency for GeoCAD (Zhang et al. 2025).
+"""Ver-score: vertex-based text-to-CAD consistency metric.
 
-GeoCAD proposes a *vertex-based score* (Ver-score) to evaluate whether generated
-**simple** local parts follow the user's geometric instruction (paper Sec. 4.1 #3,
-appendix D):
-
-    "to compute Ver-score, we extract vertex coordinates from the generated local
-     parts and analyze their geometric attributes to determine whether they align
-     with the given geometric instructions."
+A *vertex-based score* (Ver-score) evaluates whether generated **simple** local
+parts follow the user's geometric instruction: vertex coordinates are extracted
+from the generated local parts and their geometric attributes analysed to
+determine whether they align with the given geometric instructions.
 
 This is the deterministic local-edit *controllability* metric. It re-captions a
 generated local part via the same vertex-based captioner used to build the training

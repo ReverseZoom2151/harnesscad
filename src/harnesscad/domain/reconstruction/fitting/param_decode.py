@@ -393,8 +393,8 @@ def decode_operation(
     ``op_spec`` is an ``OperationSpec`` from
     :mod:`reconstruction.s2cadsig_op_router`.  ``maps`` must carry
     ``face_heatmap``, ``context_normal``, ``context_depth``, the operation's
-    guiding-curve map under its own name, optionally ``user_stroke``, and — when
-    the op needs an offset — ``offset_distance``/``offset_direction``/
+    guiding-curve map under its own name, optionally ``user_stroke``, and -- when
+    the op needs an offset -- ``offset_distance``/``offset_direction``/
     ``offset_sign``.
     """
     needed = ["face_heatmap", "context_normal", "context_depth", op_spec.guiding_curve]

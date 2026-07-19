@@ -1,12 +1,10 @@
 """2-D rectangular part nesting for sheet fabrication (skyline bin-packing).
 
-Ported from **Kerf** (``packages/kerf-cad-core/llm_docs/nesting.md``), whose
-``nest_parts`` / ``nest_report`` tools pack rectangular blanks onto stock sheets
-for laser cutting, waterjet, plasma, sheet-metal blanking, and flat-pattern
-nesting. Kerf ships the capability inside a TypeScript/Python multi-domain CAD
-platform; this module reimplements the deterministic geometry core -- a skyline
+The ``nest_parts`` / ``nest_report`` entry points pack rectangular blanks onto
+stock sheets for laser cutting, waterjet, plasma, sheet-metal blanking, and
+flat-pattern nesting. The deterministic geometry core -- a skyline
 (bottom-left) packer with a kerf gap, a border margin and optional 90-degree
-rotation -- in stdlib Python.
+rotation -- is implemented in stdlib Python.
 
 The algorithm is a *skyline* heuristic: each sheet keeps a piecewise-constant
 "skyline" of segments ``(x, width, height)`` describing the top profile of what

@@ -1,21 +1,16 @@
-"""LEGO(R) brick library and the LEGOGPT plain-text design format.
+"""LEGO(R) brick library and a plain-text design format.
 
-Distilled from Pun, Deng, Liu et al., *Generating Physically Stable and
-Buildable LEGO Designs from Text* (LEGOGPT, CMU 2025), Sections 3-4 and the
-appendix training details.
-
-This module captures the parts of that paper that are *LEGO-specific* and that
-the sibling generic-brick modules (``brick_*.py`` from the companion paper
-"...Buildable Brick Structures from Text") do **not** cover:
+This module captures the pieces that are *LEGO-specific* and that
+the sibling generic-brick modules (``brick_*.py``) do **not** cover:
 
 * the fixed inventory of eight commonly-available standard bricks
   (1x1, 1x2, 1x4, 1x6, 1x8, 2x2, 2x4, 2x6), all one unit tall;
-* the compact custom serialization the paper introduces to *replace* LDraw --
+* a compact serialization that replaces a heavyweight parts-library format --
   one line per brick ``"{h}x{w} ({x},{y},{z})"`` -- where the **order of h and
   w encodes the brick's orientation about the vertical axis** (a 2x4 and a 4x2
   are the same physical part, rotated 90 degrees);
 * raster-scan ordering of the brick list, bottom-to-top (z, then y, then x);
-* the finite-state validity check on the token format used at inference to
+* the finite-state validity check on the token format used to
   constrain sampling to well-formed bricks (first token a digit, then ``x``,
   and so on), plus the in-library / in-bounds checks.
 
@@ -31,10 +26,10 @@ from dataclasses import dataclass
 from typing import Dict, FrozenSet, List, Sequence, Tuple
 
 # --------------------------------------------------------------------------- #
-# Standard brick library (Section 3, "Mesh-to-LEGO")
+# Standard brick library (mesh-to-LEGO)
 # --------------------------------------------------------------------------- #
 # Each part is an unordered footprint {a, b} in studs; every brick is 1 unit
-# tall.  The paper uses eight commonly-available bricks.
+# tall.  The inventory is eight commonly-available bricks.
 STANDARD_FOOTPRINTS: Tuple[Tuple[int, int], ...] = (
     (1, 1),
     (1, 2),
@@ -57,9 +52,8 @@ LIBRARY: FrozenSet[Tuple[int, int]] = frozenset(
     _canonical(a, b) for a, b in STANDARD_FOOTPRINTS
 )
 
-# Allowed *oriented* dimension tokens for the fine-tuning format (appendix
-# "Training details"): both orders of every non-square part, one order for
-# squares.
+# Allowed *oriented* dimension tokens for the text format: both orders of
+# every non-square part, one order for squares.
 ALLOWED_ORIENTED: FrozenSet[Tuple[int, int]] = frozenset(
     {(a, b) for a, b in STANDARD_FOOTPRINTS}
     | {(b, a) for a, b in STANDARD_FOOTPRINTS}
@@ -116,15 +110,15 @@ class Brick:
 
 
 # --------------------------------------------------------------------------- #
-# LEGOGPT text codec  (Section 4.1)
+# Brick text codec
 # --------------------------------------------------------------------------- #
 def brick_to_line(b: Brick) -> str:
-    """Serialize one brick to the paper's format ``"{h}x{w} ({x},{y},{z})"``."""
+    """Serialize one brick to the format ``"{h}x{w} ({x},{y},{z})"``."""
     return "{h}x{w} ({x},{y},{z})".format(h=b.h, w=b.w, x=b.x, y=b.y, z=b.z)
 
 
 class BrickFormatError(ValueError):
-    """Raised when a line does not match the LEGOGPT brick format."""
+    """Raised when a line does not match the brick text format."""
 
 
 def _parse_int(token: str) -> int:
@@ -158,7 +152,7 @@ def line_to_brick(line: str) -> Brick:
 
 
 def serialize(bricks: Sequence[Brick]) -> str:
-    """Serialize a design to newline-separated LEGOGPT lines."""
+    """Serialize a design to newline-separated brick lines."""
     return "\n".join(brick_to_line(b) for b in bricks)
 
 
@@ -172,7 +166,7 @@ def parse(text: str) -> List[Brick]:
 
 
 # --------------------------------------------------------------------------- #
-# Raster-scan ordering (Section 4.1: bottom-to-top)
+# Raster-scan ordering (bottom-to-top)
 # --------------------------------------------------------------------------- #
 def raster_scan_sorted(bricks: Sequence[Brick]) -> List[Brick]:
     """Order bricks bottom-to-top in raster-scan order (z, then y, then x)."""
@@ -184,11 +178,11 @@ def is_raster_ordered(bricks: Sequence[Brick]) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# Format finite-state validity check (appendix "Inference Details")
+# Format finite-state validity check
 # --------------------------------------------------------------------------- #
-# The paper constrains sampling so each output brick is well-formed: first a
-# digit, then 'x', then a digit, a space, '(', digits, commas, ')'.  We expose
-# the same check as a deterministic scanner over the exact character grammar,
+# Sampling is constrained so each output brick is well-formed: first a
+# digit, then 'x', then a digit, a space, '(', digits, commas, ')'.  The check
+# is exposed as a deterministic scanner over the exact character grammar,
 # independent of the semantic library/bounds checks above.
 def is_wellformed_line(line: str) -> bool:
     """True iff *line* matches the strict brick token grammar."""

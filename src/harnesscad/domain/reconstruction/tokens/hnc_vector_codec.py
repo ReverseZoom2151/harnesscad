@@ -1,15 +1,14 @@
-"""HNC-CAD's flat CAD command/parameter vectorization (Xu et al., ICML 2023).
+"""Flat CAD command/parameter vectorization.
 
-The paper review (:mod:`reconstruction.hnc_spl_tree`) captured the hierarchical
-S-P-L *code tree* and the 6-bit coordinate quantization. It did **not** capture
-the separate *flat* command/parameter sequence that HNC-CAD's reference pipeline
-emits (``data_process/utils.py::convert_cad`` / ``process_model``) to feed the CAD
-reconstruction stage. That flat encoding differs from the rest of the DeepCAD
-family (:mod:`reconstruction.deepcad_command_spec`,
+The companion module :mod:`reconstruction.hnc_spl_tree` captures the hierarchical
+S-P-L *code tree* and the 6-bit coordinate quantization. It does **not** capture
+the separate *flat* command/parameter sequence that feeds the CAD
+reconstruction stage. That flat encoding differs from the fixed-row schemes
+(:mod:`reconstruction.deepcad_command_spec`,
 :mod:`reconstruction.skexgen_token_format`) in four correctness-relevant ways:
 
 1. **Vocabulary of six integer commands with structural end-tokens promoted to
-   command *types*** (not the DeepCAD ``SOL``/``EOS`` pair)::
+   command *types*** (not a single ``SOL``/``EOS`` pair)::
 
        1 = SKETCH_END   2 = FACE_END   3 = LOOP_END
        4 = LINE         5 = ARC        6 = CIRCLE
@@ -17,9 +16,9 @@ family (:mod:`reconstruction.deepcad_command_spec`,
    Loop / face / sketch closure are three distinct commands, encoding the S-P-L
    hierarchy directly in the flat stream.
 
-2. **Implicit-endpoint (start-only) curve encoding.** DeepCAD stores each curve's
-   *end* point and implies the start from the previous curve. HNC stores the
-   *new leading* points and implies the endpoint from the *next* curve's start
+2. **Implicit-endpoint (start-only) curve encoding.** The fixed-row scheme stores
+   each curve's *end* point and implies the start from the previous curve. This
+   scheme stores the *new leading* points and implies the endpoint from the *next* curve's start
    (the loop is pre-chained so curve[i].end == curve[i+1].start):
 
        * LINE   -> start point only            (2 numbers)
@@ -27,10 +26,10 @@ family (:mod:`reconstruction.deepcad_command_spec`,
        * CIRCLE -> 4 cardinal points N,S,E,W   (8 numbers)
 
    Every curve pads to a fixed **8-slot** parameter vector with the ``-1``
-   sentinel (DeepCAD's vector is 16-slot).
+   sentinel (the fixed-row vector is 16-slot).
 
 3. **Circle as four axis cardinal points** ``(cx, cy+r), (cx, cy-r), (cx+r, cy),
-   (cx-r, cy)`` -- not DeepCAD's ``(cx, cy, r)``.
+   (cx-r, cy)`` -- not ``(cx, cy, r)``.
 
 4. **An 11-slot extrude vector** ``[center(3), scale(1), ext_v(2), t_orig(3),
    rot_idx(1), op(1)]`` where ``rot_idx`` is the 25-way categorical orientation
@@ -64,12 +63,12 @@ CIRCLE = 6
 PARAM_WIDTH = 8          # fixed parameter-vector width for curve commands
 SENTINEL = -1
 
-SKETCH_R = 1.0           # coordinate range used by the reference
+SKETCH_R = 1.0           # coordinate range
 
-# extrude boolean operation codes (process_model)
-OP_ADD = 1               # JoinFeatureOperation / NewBodyFeatureOperation
-OP_CUT = 2               # CutFeatureOperation
-OP_INTERSECT = 3         # IntersectFeatureOperation
+# extrude boolean operation codes
+OP_ADD = 1               # join / new-body
+OP_CUT = 2               # cut
+OP_INTERSECT = 3         # intersect
 
 _SET_OP_MAP = {
     "JoinFeatureOperation": OP_ADD,
@@ -80,25 +79,24 @@ _SET_OP_MAP = {
 
 
 def set_op_code(set_op: str) -> int:
-    """Map a Fusion set-operation string to HNC's ``1/2/3`` extrude op code."""
+    """Map a set-operation string to the ``1/2/3`` extrude op code."""
     try:
         return _SET_OP_MAP[set_op]
     except KeyError:
         raise ValueError(f"unknown set operation {set_op!r}")
 
 
-# --- quantization (faithful to data_process/utils.py::quantize) -------------
+# --- quantization ------------------------------------------------------------
 def quantize(value: float, n_bits: int = 8, min_range: float = -1.0,
              max_range: float = 1.0) -> int:
     """Quantize a scalar in ``[min_range, max_range]`` to ``[0, 2**n_bits - 1]``.
 
-    Reproduces the reference exactly, including the final clip. Note the
-    reference *docstring* claims ``[0, n_bits**2 - 1]`` but the code uses
-    ``2**n_bits - 1`` -- this follows the code (255 for 8-bit).
+    Includes the final clip. Note the level count is ``2**n_bits - 1``
+    (255 for 8-bit), not ``n_bits**2 - 1``.
     """
     range_quantize = (1 << n_bits) - 1
     q = (value - min_range) * range_quantize / (max_range - min_range)
-    q = int(math.floor(q))  # numpy astype('int32') truncates toward zero; q>=0 here
+    q = int(math.floor(q))  # truncation toward zero; q >= 0 here so floor == trunc
     if q < 0:
         q = 0
     elif q > range_quantize:
@@ -121,7 +119,7 @@ def _bbox(vertices: Sequence[Sequence[float]]) -> Tuple[Vec2, Vec2]:
 
 
 def center_of(vertices: Sequence[Sequence[float]]) -> Vec2:
-    """Bounding-box centre ``0.5*(min+max)`` (center_vertices)."""
+    """Bounding-box centre ``0.5*(min+max)``."""
     (xmin, ymin), (xmax, ymax) = _bbox(vertices)
     return (0.5 * (xmin + xmax), 0.5 * (ymin + ymax))
 
@@ -129,8 +127,7 @@ def center_of(vertices: Sequence[Sequence[float]]) -> Vec2:
 def normalize_diagonal(vertices: Sequence[Sequence[float]]) -> float:
     """Loop-level scale: half the bounding-box diagonal.
 
-    ``0.5*sqrt(w**2 + h**2)`` (normalize_vertices_scale). Assumes ``vertices``
-    already centred.
+    ``0.5*sqrt(w**2 + h**2)``. Assumes ``vertices`` already centred.
     """
     (xmin, ymin), (xmax, ymax) = _bbox(vertices)
     w, h = xmax - xmin, ymax - ymin
@@ -140,17 +137,17 @@ def normalize_diagonal(vertices: Sequence[Sequence[float]]) -> float:
 def normalize_max_extent(vertices: Sequence[Sequence[float]]) -> float:
     """CAD-sequence-level scale: half the largest extent.
 
-    ``max(w, h) / (2*SKETCH_R)`` (normalize_vertices_scale2). Assumes centred.
+    ``max(w, h) / (2*SKETCH_R)``. Assumes centred.
     """
     (xmin, ymin), (xmax, ymax) = _bbox(vertices)
     w, h = xmax - xmin, ymax - ymin
     return max(w, h) / (2 * SKETCH_R)
 
 
-# --- circle cardinal points (faithful to geometry/circle.py) ----------------
+# --- circle cardinal points -------------------------------------------------
 def circle_cardinal_points(center: Sequence[float], radius: float
                            ) -> Tuple[Vec2, Vec2, Vec2, Vec2]:
-    """The four axis cardinal points in HNC order: N, S, E, W."""
+    """The four axis cardinal points in order: N, S, E, W."""
     cx, cy = center[0], center[1]
     return ((cx, cy + radius), (cx, cy - radius),
             (cx + radius, cy), (cx - radius, cy))
@@ -162,7 +159,7 @@ def _pad(values: List[int]) -> List[int]:
     return values + [SENTINEL] * (PARAM_WIDTH - len(values))
 
 
-# --- curve encoding (implicit-endpoint / start-only, parse_curve3) ----------
+# --- curve encoding (implicit-endpoint / start-only) ------------------------
 def encode_line(start: Sequence[float], center: Vec2, scale: float,
                 n_bits: int = 8) -> Tuple[int, List[int]]:
     s = quantize_point(_norm_pt(start, center, scale), n_bits)
@@ -190,7 +187,7 @@ def _norm_pt(point: Sequence[float], center: Vec2, scale: float) -> Vec2:
     return ((point[0] - center[0]) / scale, (point[1] - center[1]) / scale)
 
 
-# --- full flat sketch encoding (convert_cad) --------------------------------
+# --- full flat sketch encoding ----------------------------------------------
 def encode_sketch(faces: Sequence[Sequence[Sequence[dict]]], center: Vec2,
                   scale: float, n_bits: int = 8
                   ) -> Tuple[List[int], List[List[int]]]:
@@ -203,8 +200,8 @@ def encode_sketch(faces: Sequence[Sequence[Sequence[dict]]], center: Vec2,
         {"type": "arc",    "start": (x, y), "mid": (x, y)}
         {"type": "circle", "center": (x, y), "radius": r}
 
-    Emits LOOP_END / FACE_END / SKETCH_END structural tokens exactly as
-    ``convert_cad`` does (a trailing sketch-end after the last face).
+    Emits LOOP_END / FACE_END / SKETCH_END structural tokens, with a trailing
+    sketch-end after the last face.
     """
     cmds: List[int] = []
     params: List[List[int]] = []
@@ -233,7 +230,7 @@ def encode_sketch(faces: Sequence[Sequence[Sequence[dict]]], center: Vec2,
     return cmds, params
 
 
-# --- extrude vector packing (process_model) ---------------------------------
+# --- extrude vector packing -------------------------------------------------
 def encode_extrude(center: Sequence[float], scale: float,
                    ext_values: Sequence[float], t_orig: Sequence[float],
                    t_x: Sequence[float], t_y: Sequence[float],

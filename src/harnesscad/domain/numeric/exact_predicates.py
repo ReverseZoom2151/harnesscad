@@ -1,15 +1,15 @@
-"""Robust adaptive geometric orientation predicates (Manifold kernel substrate).
+"""Robust adaptive geometric orientation predicates.
 
-Manifold's mesh boolean is built on *exact-sign* geometric predicates: the
+A mesh boolean is built on *exact-sign* geometric predicates: the
 combinatorial decisions (which side of a plane a vertex lies on, whether a
 point is inside a circumscribed sphere) must be sign-correct even when the
 floating-point determinant rounds to a value of the wrong sign, otherwise the
-half-edge arrangement produced by the boolean becomes non-manifold.  The kernel
-ships Shewchuk-style adaptive ``orient2d``/``orient3d``/``incircle``/
+half-edge arrangement produced by the boolean becomes non-manifold.  A robust
+kernel therefore provides adaptive ``orient2d``/``orient3d``/``incircle``/
 ``insphere`` for exactly this reason.
 
-This module reimplements those four predicates in stdlib Python with a
-guaranteed-correct sign.  The strategy is the two-tier one Shewchuk pioneered:
+This module implements those four predicates in stdlib Python with a
+guaranteed-correct sign.  The strategy is the standard two-tier one:
 
 * a fast floating-point evaluation of the determinant with a conservative
   a-priori error bound;  when the magnitude of the float result comfortably

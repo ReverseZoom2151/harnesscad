@@ -1,10 +1,10 @@
-"""Hierarchical Sketch-Extrusion tree for GeoFusion-CAD (Zhou et al.).
+"""Hierarchical Sketch-Extrusion tree representation.
 
-GeoFusion-CAD's central *deterministic* contribution (Sec. 3, Sec. A.4) is a
+The central *deterministic* idea here is a
 **hierarchical tree representation** of a parametric Sketch-Extrusion (SE) CAD
-program. Unlike the *flat* DeepCAD command list (see
-:mod:`reconstruction.deepcad_command_spec`) or the *B-Rep surface-edge adjacency*
-of CMT (:mod:`reconstruction.cmt_topology_validity`), GeoFusion encodes the CAD
+program. Unlike a *flat* command list (see
+:mod:`reconstruction.deepcad_command_spec`) or a *B-Rep surface-edge adjacency*
+scheme (:mod:`reconstruction.cmt_topology_validity`), this encodes the CAD
 program as an explicit nested tree ``T = {v_i, e_ij}`` whose nodes are CAD
 entities and whose edges are parent->child topological dependencies::
 
@@ -15,10 +15,10 @@ entities and whose edges are parent->child topological dependencies::
       |    |    |    +- curve (line / arc / circle)
       +- extrusion       (the operation applied to the sketch)
 
-The paper serializes each tree into a **depth-first command sequence**
+Each tree serializes into a **depth-first command sequence**
 ``C = [t_1, ..., t_n]`` in which dedicated *end tokens* preserve the hierarchical
-closure required for reversible serialization (Sec. A.4). The reserved control
-IDs follow Table S1 exactly::
+closure required for reversible serialization. The reserved control
+IDs are exactly::
 
     pad=0  cls=1  esolid=2  esketch=3  eface=4  eloop=5  ec=6  ee=7
 
@@ -30,15 +30,15 @@ representation:
 * :class:`Curve`, :class:`Loop`, :class:`Face`, :class:`Sketch`,
   :class:`Extrusion`, :class:`SePair`, :class:`Solid` -- the typed tree;
 * :func:`serialize` -- depth-first traversal to a token sequence with the
-  Table S1 end tokens (top-down, matching "Noise is injected following the
-  top-down traversal of the CAD hierarchy");
+  hierarchical end tokens (top-down, so noise is injected following the
+  top-down traversal of the CAD hierarchy);
 * :func:`deserialize` -- the exact inverse, rebuilding the tree from the token
-  sequence (the paper's "reversible serialization");
+  sequence (the reversible serialization);
 * :func:`quantize` / :func:`dequantize` -- the 8-bit ``[11, 266]`` mapping;
 * structural helpers (:func:`tree_depth`, :func:`count_nodes`,
   :func:`type_paths`) used by the structure-consistency metric.
 
-Everything is stdlib-only, pure and deterministic. The learned G-Mamba encoder
+Everything is stdlib-only, pure and deterministic. The learned sequence encoder
 and diffusion denoiser are out of scope.
 """
 
@@ -46,7 +46,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# --- Table S1 reserved control tokens ---------------------------------------
+# --- reserved control tokens ------------------------------------------------
 PAD = 0
 CLS = 1
 ESOLID = 2
@@ -65,8 +65,8 @@ QUANT_LEVELS = QUANT_HI - QUANT_LO  # 255 -> 256 distinct integer codes
 def quantize(value: float) -> int:
     """8-bit uniform quantization of ``value in [0, 1]`` into ``[11, 266]``.
 
-    Values outside ``[0, 1]`` are clamped, matching the paper's fixed-range
-    tokenization (Sec. A.1.3).
+    Values outside ``[0, 1]`` are clamped, matching the fixed-range
+    tokenization.
     """
     if value <= 0.0:
         return QUANT_LO
@@ -88,8 +88,8 @@ def dequantize(code: int) -> float:
 @dataclass(frozen=True)
 class Curve:
     """A sketch primitive. ``kind`` in {'line', 'arc', 'circle'}; ``params`` are
-    already-quantized integer coordinates in ``[11, 266]`` (their meaning follows
-    Table S1: line=(x1,y1,x2,y2), arc=(x1,y1,xm,ym,x2,y2), circle=(cx,cy,r))."""
+    already-quantized integer coordinates in ``[11, 266]`` (their meaning is
+    line=(x1,y1,x2,y2), arc=(x1,y1,xm,ym,x2,y2), circle=(cx,cy,r))."""
     kind: str
     params: tuple[int, ...]
 
@@ -111,7 +111,7 @@ class Sketch:
 
 @dataclass(frozen=True)
 class Extrusion:
-    """Ten SE extrusion parameters (Sec. 3.2 / A.1.2), pre-quantized:
+    """Ten SE extrusion parameters, pre-quantized:
     ``(theta, phi, gamma, tx, ty, tz, sigma, dplus, dminus, beta)``. ``beta`` is
     the boolean-operation categorical token in ``{7, 8, 9, 10}``."""
     params: tuple[int, ...]
@@ -144,7 +144,7 @@ _CURVE_KINDS = ("line", "arc", "circle")
 
 def serialize(solid: Solid) -> tuple[Token, ...]:
     """Depth-first (top-down) serialization of a :class:`Solid` tree into a
-    token sequence with Table S1 hierarchical end tokens.
+    token sequence with the hierarchical end tokens.
 
     Order per SE pair: emit the sketch subtree (curves closed by ``ec``, loops by
     ``eloop``, faces by ``eface``, the sketch by ``esketch``), then the extrusion
