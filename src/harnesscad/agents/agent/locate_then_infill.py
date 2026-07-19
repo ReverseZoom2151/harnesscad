@@ -1,7 +1,6 @@
-"""Locate-then-infill edit-plan construction, mined from CAD-Editor
-(ICML 2025, arXiv:2502.03997).
+"""Locate-then-infill edit-plan construction.
 
-CAD-Editor frames text-based CAD editing as *locate-then-infill*: rather than
+Text-based CAD editing uses *locate-then-infill*: rather than
 regenerate the whole model, it (1) locates the span of the source CAD sequence
 the edit touches and (2) masks that span, leaving the generator to infill only
 the masked region against the surrounding context. This localises the change,
@@ -9,7 +8,7 @@ so the untouched majority of the model is preserved verbatim -- the same reason
 the harness prefers op-DAG deltas to whole re-synthesis.
 
 The generation model is out of scope; the plan *construction* is deterministic
-and is what this module extracts:
+and is what this module implements:
 
 * :func:`locate_span` -- find the contiguous token span to edit, either by an
   explicit index range or by matching an anchor subsequence,

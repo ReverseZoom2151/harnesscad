@@ -1,7 +1,6 @@
-"""Driver/Navigator pair-programming loop controller, mined from PairCoder++
-(ACL 2026 Findings / arXiv:2607.01883).
+"""Driver/Navigator pair-programming loop controller.
 
-PairCoder grounds code-artifact review in the toolchain: a *Driver* writes the
+The controller grounds code-artifact review in the toolchain: a *Driver* writes the
 program, a *Navigator* reviews it against verification evidence (does it parse /
 compile / execute / render?) and either accepts (``[NOERROR]``) or asks for a
 concrete fix; roles switch when errors persist, and if no round is accepted the
@@ -12,7 +11,7 @@ flow -- role-switching policy, prompt construction, candidate bookkeeping, and
 quality selection. This module extracts that control flow as a reusable
 controller: the caller injects a ``generate`` callable (the Driver) and a
 ``review`` callable (the Navigator), optionally a ``check`` verifier, and the
-controller runs the paper's Algorithm 1 over them. No model calls live here, so
+controller runs its role-switching policy over them. No model calls live here, so
 the loop is unit-testable with plain Python stand-ins.
 
 Design note vs the harness: this is a *sibling* to :mod:`harnesscad.core.harness`
@@ -139,7 +138,7 @@ def select_best(rounds: List[Round]) -> int:
     """Index of the argmax-Quality round: ``(check_ok, score, recency)``.
 
     Quality prefers a passing check, then a higher continuous score, then the
-    later round (recency), exactly as PairCoder's Algorithm 1 line 19.
+    later round (recency).
     """
     if not rounds:
         raise ValueError("no rounds to select from")
@@ -168,7 +167,7 @@ def run_pair_loop(
     ``check(artifact) -> (ok, evidence, score)`` is the optional toolchain
     verifier whose evidence is shown to the Navigator. Roles are abstract seats:
     a switch flips which persona prompt each callable is handed, matching the
-    paper's "the finder of the bug takes the keyboard".
+    rule that the finder of a bug takes the keyboard.
 
     Returns the accepted artifact, or -- if none is accepted within
     ``max_iters`` -- the argmax-Quality candidate. Deterministic given

@@ -1,14 +1,13 @@
-"""Progressive assembly-trace plan structuring, mined from Shape-of-Thought
-(ICML 2026, arXiv:2601.21081).
+"""Progressive assembly-trace plan structuring.
 
-Shape-of-Thought turns one-shot object generation into a visible *assembly
-trace*: the object is built as an ordered sequence of part-addition steps, each
+One-shot object generation becomes a visible *assembly trace*: the object is
+built as an ordered sequence of part-addition steps, each
 paired with a textual construction rationale, so the structure is inspectable
 step by step. The learned part is the rendering; the *trace structure* and its
 structure-aware checks (T2S-CompBench: component numeracy, structural topology,
 trace stability, rationale alignment) are deterministic.
 
-This module extracts the deterministic scaffold:
+This module provides the deterministic scaffold:
 
 * :class:`AssemblyStep` / :class:`AssemblyTrace` -- an ordered, monotone plan
   where each step adds one or more named parts and carries a rationale,

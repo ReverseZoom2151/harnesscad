@@ -1,6 +1,6 @@
-"""Compiler-review refine loop (CRM), mined from cad-judge (arXiv:2508.04002).
+"""Compiler-review refine loop (CRM).
 
-CRM is cad-judge's inference-time plug-in: it wraps a text-to-CAD generator in a
+CRM wraps a text-to-CAD generator in a
 ``generate -> compile-review -> refine`` loop. The compiler classifies each
 failure (format / geometry / extrusion / boolean), renders a feedback message,
 and the generator is re-prompted with that diagnostic appended. Unlike a VLM
