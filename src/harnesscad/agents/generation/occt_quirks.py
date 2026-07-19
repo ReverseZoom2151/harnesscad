@@ -81,10 +81,19 @@ OCCT_QUIRKS: Tuple[Quirk, ...] = (
         trigger="Any cut/fuse/intersect where inputs share faces, edges, or "
                 "near-tangent geometry.",
         workaround="Call SetFuzzyValue(tol) on EVERY boolean builder before "
-                   "Build(); cadquery does this on cut, fuse, and intersect "
-                   "without exception.",
-        source="cadquery-master cadquery/occ_impl/shapes.py "
-               "(SetFuzzyValue on all boolean builders)",
+                   "Build(). Do NOT assume the binding does it for you: "
+                   "cadquery makes fuzzy OPT-IN and defaults it OFF. The "
+                   "Shape methods take tol=None and guard `if tol:` "
+                   "(shapes.py:1417-1464); the free functions take tol=0.0, "
+                   "and 0.0 is falsy, so _set_builder_options skips it too "
+                   "(shapes.py:6764-6771). Exact-tolerance booleans are the "
+                   "default on both paths.",
+        source="cadquery-master cadquery/occ_impl/shapes.py:1417-1464 "
+               "(Shape.cut/fuse/intersect) and :6764-6771 "
+               "(_set_builder_options). Corrected 2026-07-19: this row "
+               "previously claimed cadquery sets a fuzzy value on every "
+               "boolean 'without exception', which is false and inverted the "
+               "risk -- the knob exists and is off unless you pass it.",
     ),
     Quirk(
         id="revolve-zero-degrees",
