@@ -9248,7 +9248,7 @@
       "layer": "domain",
       "name": "sketch_edit_schema",
       "package": "editing",
-      "summary": "Multimodal refinement schema for sketch refinement (McCarthy, Vaduguru et al., 2025).",
+      "summary": "Multimodal refinement schema for computer-aided designs.",
       "symbols": [
         "Curve",
         "DeletePoint",
@@ -9498,7 +9498,7 @@
       "layer": "domain",
       "name": "brick_library",
       "package": "fabrication",
-      "summary": "LEGO(R) brick library and the LEGOGPT plain-text design format.",
+      "summary": "LEGO(R) brick library and a plain-text design format.",
       "symbols": [
         "Brick",
         "BrickFormatError",
@@ -9621,7 +9621,7 @@
       "layer": "domain",
       "name": "feature_taxonomy",
       "package": "fabrication",
-      "summary": "Manufacturing-feature taxonomy / ontology (Khan et al., \"Leveraging Vision-",
+      "summary": "Manufacturing-feature taxonomy / ontology.",
       "symbols": [
         "attributes_of",
         "category_of",
@@ -14931,7 +14931,7 @@
       "layer": "domain",
       "name": "categorical_diffusion",
       "package": "numeric",
-      "summary": "Categorical (multinomial) discrete diffusion from the model, Sec. 3.2.",
+      "summary": "Categorical (multinomial) discrete diffusion.",
       "symbols": [
         "absorbing_transition_matrix",
         "argmax_decode",
@@ -15048,7 +15048,7 @@
       "layer": "domain",
       "name": "ddim_sampler",
       "package": "numeric",
-      "summary": "Deterministic DDIM sampling + diffuse-denoise from the latent diffusion model .",
+      "summary": "Deterministic DDIM sampling and diffuse-denoise for a latent diffusion model.",
       "symbols": [
         "HasAlphaBar",
         "ddim_sample",
@@ -15093,7 +15093,7 @@
       "layer": "domain",
       "name": "dmd_distillation",
       "package": "numeric",
-      "summary": "Deterministic Dual-Teacher DMD distillation schedule .",
+      "summary": "Deterministic dual-teacher DMD distillation schedule.",
       "symbols": [
         "compounding_collapse_indicator",
         "dmd_gradient",
@@ -18137,7 +18137,7 @@
       "layer": "domain",
       "name": "dimension_accuracy",
       "package": "reconstruction",
-      "summary": "Dimension Accuracy (DA) metric for PHT-CAD (Niu et al. 2025, Sec. 3.3, Eq. 1-4).",
+      "summary": "Dimension Accuracy (DA) metric for parametric primitive analysis.",
       "symbols": [
         "DAResult",
         "Dimension",
@@ -18150,6 +18150,7 @@
       "tags": [
         "benchmark",
         "drawings",
+        "parametric",
         "reconstruction"
       ]
     },
@@ -18212,7 +18213,7 @@
       "layer": "domain",
       "name": "op_map_metrics",
       "package": "reconstruction",
-      "summary": "Sketch2CAD (SIGGRAPH Asia 2020) evaluation metrics for predicted op maps.",
+      "summary": "Evaluation metrics for predicted operation maps.",
       "symbols": [
         "ClassScore",
         "ErrorPair",
@@ -18227,10 +18228,7 @@
       ],
       "tags": [
         "benchmark",
-        "graph",
-        "reconstruction",
-        "sketch",
-        "vision"
+        "reconstruction"
       ]
     },
     {
@@ -18239,7 +18237,7 @@
       "layer": "domain",
       "name": "pmse_loss",
       "package": "reconstruction",
-      "summary": "Parametric Mean Squared Error (P-MSE) loss for PHT-CAD (Niu et al. 2025, Sec. 4.2).",
+      "summary": "Parametric Mean Squared Error (P-MSE) loss for parametric primitive analysis.",
       "symbols": [
         "LossBreakdown",
         "combined_loss",
@@ -18259,7 +18257,7 @@
       "layer": "domain",
       "name": "pointcloud_emd",
       "package": "reconstruction",
-      "summary": "Earth Mover's Distance reconstruction metric (GaussianCAD Eq. 21).",
+      "summary": "Earth Mover's Distance reconstruction metric.",
       "symbols": [
         "cost_matrix",
         "earth_movers_distance",
@@ -18313,7 +18311,7 @@
       "layer": "domain",
       "name": "primitive_match_metrics",
       "package": "reconstruction",
-      "summary": "cad2program_metrics \u2014 reconstruction / retrieval / parameter accuracy metrics.",
+      "summary": "Reconstruction / retrieval / parameter accuracy metrics.",
       "symbols": [
         "MatchResult",
         "box_iou_3d",
@@ -18341,7 +18339,7 @@
       "layer": "domain",
       "name": "sequence_efficiency",
       "package": "reconstruction",
-      "summary": "GraphBrep efficiency / compactness metric (paper Sec. 4.2.3).",
+      "summary": "Graph-B-Rep efficiency / compactness metric.",
       "symbols": [
         "EfficiencyReport",
         "attention_cost",
@@ -18355,7 +18353,6 @@
       ],
       "tags": [
         "benchmark",
-        "brep",
         "graph",
         "reconstruction"
       ]
@@ -18369,7 +18366,7 @@
       "layer": "domain",
       "name": "topology_validity",
       "package": "reconstruction",
-      "summary": "Topological validity checker for CMT-generated B-Reps (the \"Valid\" metric).",
+      "summary": "Topological validity checker for generated B-Reps (the \"Valid\" metric).",
       "symbols": [
         "ValidityDiagnostic",
         "check_adjacency",
@@ -18395,7 +18392,7 @@
       "layer": "domain",
       "name": "ver_score",
       "package": "reconstruction",
-      "summary": "Ver-score: vertex-based text-to-CAD consistency for GeoCAD (Zhang et al. 2025).",
+      "summary": "Ver-score: vertex-based text-to-CAD consistency metric.",
       "symbols": [
         "VerResult",
         "normalise_instruction",
@@ -20365,7 +20362,7 @@
       "layer": "domain",
       "name": "concept_decompose",
       "package": "reconstruction",
-      "summary": "Decomposing a sketch into a **composition of concept instances** (Yang & Pan,",
+      "summary": "Decomposing a sketch into a **composition of concept instances**.",
       "symbols": [
         "Decomposition",
         "Match",
@@ -20423,7 +20420,7 @@
       "layer": "domain",
       "name": "constraint_graph",
       "package": "reconstruction",
-      "summary": "SketchGraphs geometric constraint graph (Seff et al., NeurIPS 2020, Sec. 3.2).",
+      "summary": "Geometric constraint graph for a CAD sketch.",
       "symbols": [
         "ConstraintEdge",
         "DofBudget",
@@ -20962,7 +20959,7 @@
       "layer": "domain",
       "name": "hnc_codebooks",
       "package": "reconstruction",
-      "summary": "Nearest-codebook neural-code assignment for HNC-CAD (Xu et al., ICML 2023).",
+      "summary": "Nearest-codebook neural-code assignment for hierarchical CAD codebooks.",
       "symbols": [
         "Codebook",
         "SPLCodebooks",
@@ -20974,6 +20971,7 @@
         "utilization"
       ],
       "tags": [
+        "curves",
         "reconstruction"
       ]
     },
@@ -20983,7 +20981,7 @@
       "layer": "domain",
       "name": "hnc_rotation_codebook",
       "package": "reconstruction",
-      "summary": "HNC-CAD's 25-frame discrete extrude-orientation codebook (Xu et al., ICML 2023).",
+      "summary": "25-frame discrete extrude-orientation codebook.",
       "symbols": [
         "clip_axis",
         "clip_orientation",
@@ -21063,7 +21061,7 @@
       "layer": "domain",
       "name": "image2cadseq",
       "package": "reconstruction",
-      "summary": "Simplified Fusion 360 Gallery (\"Sim-Gallery\") DSL and its vectorized CAD-",
+      "summary": "Simplified gallery (\"Sim-Gallery\") DSL and its vectorized CAD-sequence",
       "symbols": [
         "GalleryOp",
         "ParsedOp",
@@ -21096,7 +21094,7 @@
       "layer": "domain",
       "name": "pht_cad",
       "package": "reconstruction",
-      "summary": "Efficient Hybrid Parametrization (EHP) for PHT-CAD (Niu et al. 2025, Sec. 4.1).",
+      "summary": "Efficient Hybrid Parametrization (EHP) for 2D engineering drawings.",
       "symbols": [
         "Arc",
         "Circle",
@@ -21113,6 +21111,7 @@
         "to_tokens"
       ],
       "tags": [
+        "drawings",
         "parametric",
         "reconstruction"
       ]
@@ -21254,7 +21253,7 @@
       "layer": "domain",
       "name": "skexgen_code_layout",
       "package": "reconstruction",
-      "summary": "SkexGen disentangled-codebook layout (topology | geometry | extrude).",
+      "summary": "Disentangled-codebook layout (topology | geometry | extrude).",
       "symbols": [
         "branch_histogram",
         "branch_of",
@@ -21354,7 +21353,7 @@
       "layer": "domain",
       "name": "skexgen_quantize",
       "package": "reconstruction",
-      "summary": "SkexGen sketch token format (ICML 2022, Xu et al.).",
+      "summary": "Flat sketch token format.",
       "symbols": [
         "center_vertices",
         "command_vocab_size",
@@ -21419,7 +21418,7 @@
       "layer": "domain",
       "name": "text2cad_vector_codec",
       "package": "reconstruction",
-      "summary": "Text2CAD's exact CAD-sequence <-> vector codec (``CadSeqProc/cad_sequence.py``).",
+      "summary": "Chained CAD-sequence <-> vector codec.",
       "symbols": [
         "CadVecError",
         "CadVectors",
@@ -21724,7 +21723,7 @@
       "layer": "domain",
       "name": "cadmium_sequence",
       "package": "spec",
-      "summary": "CADmium CAD-sequence representation -- parser, normaliser, tokenizer, metric.",
+      "summary": "CAD-sequence representation -- parser, normaliser, tokenizer, metric.",
       "symbols": [
         "CadSequence",
         "CadmiumError",
@@ -22070,7 +22069,7 @@
       "layer": "domain",
       "name": "dialogue_state",
       "package": "spec",
-      "summary": "Dialogue state: ellipsis + reference resolution (Cleopatra, 1985).",
+      "summary": "Dialogue state: ellipsis + reference resolution.",
       "symbols": [
         "DialogueState",
         "Entity",
@@ -22200,7 +22199,7 @@
       "layer": "domain",
       "name": "intent_categories",
       "package": "spec",
-      "summary": "Text-intent -> brick category routing and prompt constraint linting (AlphaCAD).",
+      "summary": "Text-intent -> brick category routing and prompt constraint linting.",
       "symbols": [
         "PromptValidation",
         "map_to_categories",
@@ -22299,7 +22298,7 @@
       "layer": "domain",
       "name": "parse_states",
       "package": "spec",
-      "summary": "Parallel parse-states with confidence-levels (Cleopatra, Samad & Director 1985).",
+      "summary": "Parallel parse-states with confidence-levels.",
       "symbols": [
         "ParseResult",
         "ParseState",
@@ -22340,7 +22339,7 @@
       "layer": "domain",
       "name": "part_metadata_contract",
       "package": "spec",
-      "summary": "aicad part-metadata contract: feature tags, params placement, viewer isolation.",
+      "summary": "Part-metadata contract: feature tags, params placement, viewer isolation.",
       "symbols": [
         "Violation",
         "main",
@@ -22416,7 +22415,7 @@
       "layer": "domain",
       "name": "prompt_spec_extract",
       "package": "spec",
-      "summary": "Target-spec extraction from a free-form CAD prompt (Studio-OSS).",
+      "summary": "Target-spec extraction from a free-form CAD prompt.",
       "symbols": [
         "TargetSpec",
         "extract_target_spec",
@@ -22542,7 +22541,7 @@
       "layer": "domain",
       "name": "representation_completeness",
       "package": "spec",
-      "summary": "CAD data-representation completeness taxonomy (Fan et al., 2026, \"AI+CAD Data",
+      "summary": "CAD data-representation completeness taxonomy.",
       "symbols": [
         "compare_representations",
         "score_representation"
@@ -22736,7 +22735,7 @@
       "layer": "domain",
       "name": "zoo_catalog",
       "package": "spec",
-      "summary": "Deterministic catalogue of Zoo/KittyCAD's KCL stdlib, engine ops and file formats.",
+      "summary": "Deterministic catalogue of the KCL stdlib, engine ops and file formats.",
       "symbols": [
         "can_convert",
         "conversions_from",
@@ -22774,7 +22773,7 @@
       "layer": "domain",
       "name": "zoo_ml_feedback",
       "package": "spec",
-      "summary": "Zoo ML text-to-CAD *response + feedback* model and acceptance metric.",
+      "summary": "Text-to-CAD *response + feedback* model and acceptance metric.",
       "symbols": [
         "AcceptanceStats",
         "ApiCallStatus",
