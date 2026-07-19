@@ -1,25 +1,28 @@
 """Operation-gating contract layer: validate a CISP op stream BEFORE execution.
 
-Derived from cad-cae-copilot (MIT License, Copyright (c) 2026 armpro24-blip).
+The problem this solves: a generator proposes a stream of CISP operations, and
+some of those operations must never run -- they would delete a mounting
+interface, re-cut a certified housing, or drive a parameter outside the range
+its designer signed off on. Discovering that *after* execution is too late, so
+this module judges the whole stream up front against a declarative contract and
+refuses the offending ops with typed, machine-readable reasons.
 
-Implements an operation-admissibility contract built from four schema
-contracts:
+The contract has four parts:
 
-* an allowed-operations catalog -- the per-feature catalog of
-  allowed / forbidden / conditional operations, where a conditional operation
-  carries ``preconditions`` and ``blocked_by_constraints``;
-* protected regions -- per-feature protected regions with
-  ``allowed_operations`` / ``forbidden_operations`` whitelists that override
-  the catalog (an op touching a protected region is refused unless the region
-  explicitly admits it);
-* a parameter-edit preflight contract:
-  value-in-bounds checks against declared ``bounds`` (min / max /
-  discrete_values) and the hard rule that "topology-changing parameters must
-  be refused";
-* a patch-proposal lifecycle whose
-  ``protected_targets_checked`` / ``protected_targets_avoided`` bookkeeping and
-  status vocabulary (``ready_for_validation`` / ``violates_protected_target``
-  / ``blocked``) this gate's report mirrors.
+* an **allowed-operations catalog** -- per feature, which operation types are
+  ``allowed`` / ``forbidden`` / ``conditional``; a conditional rule carries the
+  ``preconditions`` that must hold and the ``blocked_by_constraints`` that must
+  not be active;
+* **protected regions** -- per-feature whitelists (``allowed_operations`` /
+  ``forbidden_operations``) that *override* the catalog, so a feature can be
+  frozen without editing the catalog it appears in;
+* a **parameter-edit preflight** -- a ``modify_parameter`` op is additionally
+  checked against declared bounds (min / max / discrete values) and against the
+  hard rule that a parameter edit must never change topology;
+* a **report vocabulary** -- the whole-stream verdict maps onto the patch
+  lifecycle's status enum (``ready_for_validation`` /
+  ``violates_protected_target`` / ``blocked``) and tracks which protected
+  features were touched and which were left intact.
 
 The JSON Schema shape checks are implemented here in pure Python (the two
 gating schemas are embedded as data below) so a catalog dict can be
@@ -38,8 +41,8 @@ feature, a machine reason code (``forbidden`` / ``unknown_op`` /
 ``protected_region`` / ``value_out_of_bounds`` / ``topology_changing``) and a
 human message.
 
-Preconditions are the schema's free strings; the evaluable subset understood
-here is ``"key"`` (truthy lookup in the caller's context dict) and
+Preconditions are free strings; the evaluable subset understood here is
+``"key"`` (truthy lookup in the caller's context dict) and
 ``"key <cmp> value"`` with ``<cmp>`` one of ``== != >= <= > <``. A
 precondition that cannot be evaluated is conservatively UNMET (default-deny).
 ``blocked_by_constraints`` names are matched against the context's
@@ -53,7 +56,8 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (Callable, Dict, Iterator, List, Mapping, Optional, Sequence,
+                    Tuple, Union)
 
 from harnesscad.core.cisp import ops
 
@@ -140,133 +144,110 @@ _FEATURE_REF_FIELDS: Tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 # Embedded schema structure (data, not executable jsonschema)
 #
-# These two dicts are the gating-relevant JSON Schemas (the allowed-operations
-# catalog and the protected-regions schema), embedded as data minus the
-# $-metadata keys. They drive the stdlib structural checker below.
+# The two gating documents -- the allowed-operations catalog and the protected
+# regions list -- are described here as plain dicts in the JSON Schema subset
+# the checker below understands. Repeated shapes are factored into the small
+# builders first so the documents read as their own field lists.
 # ---------------------------------------------------------------------------
 
-_OPERATION_RULE_SCHEMA: Dict[str, object] = {
-    "type": "object",
-    "required": [
-        "operation_type",
-        "status",
-        "reason",
-        "preconditions",
-        "blocked_by_constraints",
-    ],
-    "additionalProperties": False,
-    "properties": {
-        "operation_type": {"type": "string", "enum": list(OPERATION_TYPES)},
-        "status": {"type": "string", "enum": list(OPERATION_STATUSES)},
-        "reason": {"type": "string", "minLength": 1},
-        "preconditions": {
-            "type": "array",
-            "items": {"type": "string", "minLength": 1},
-        },
-        "blocked_by_constraints": {
-            "type": "array",
-            "items": {"type": "string", "minLength": 1},
-        },
-    },
-}
+_NON_EMPTY_STRING: Dict[str, object] = {"type": "string", "minLength": 1}
+_ANY_STRING: Dict[str, object] = {"type": "string"}
+_BOOLEAN: Dict[str, object] = {"type": "boolean"}
 
-ALLOWED_OPERATIONS_CATALOG_SCHEMA: Dict[str, object] = {
-    "type": "object",
-    "required": [
-        "format_version",
-        "catalog_id",
-        "generated_by",
-        "generated_at_utc",
-        "source_files",
-        "feature_operations",
-        "notes",
-    ],
-    "additionalProperties": False,
-    "properties": {
-        "format_version": {"type": "string", "const": "0.1.0"},
-        "catalog_id": {"type": "string", "minLength": 1},
-        "generated_by": {"type": "string", "minLength": 1},
-        "generated_at_utc": {"type": "string", "minLength": 1},
-        "source_files": {
-            "type": "array",
-            "items": {"type": "string", "minLength": 1},
-        },
-        "feature_operations": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": [
-                    "feature_id",
-                    "feature_type",
-                    "protected",
-                    "interface_roles",
-                    "operations",
-                ],
-                "additionalProperties": False,
-                "properties": {
-                    "feature_id": {"type": "string", "minLength": 1},
-                    "feature_type": {"type": "string", "minLength": 1},
-                    "protected": {"type": "boolean"},
-                    "interface_roles": {
-                        "type": "array",
-                        "items": {"type": "string", "minLength": 1},
-                    },
-                    "operations": {
-                        "type": "array",
-                        "minItems": 1,
-                        "items": _OPERATION_RULE_SCHEMA,
-                    },
-                },
-            },
-        },
-        "notes": {
-            "type": "array",
-            "minItems": 1,
-            "items": {"type": "string", "minLength": 1},
-        },
-    },
-}
 
-PROTECTED_REGIONS_SCHEMA: Dict[str, object] = {
-    "type": "object",
-    "required": ["format_version", "protected_regions"],
-    "additionalProperties": False,
-    "properties": {
-        "format_version": {"type": "string", "const": "0.1.0"},
-        "protected_regions": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": [
-                    "feature_id",
-                    "reason",
-                    "allowed_operations",
-                    "forbidden_operations",
-                ],
-                "additionalProperties": False,
-                "properties": {
-                    "feature_id": {"type": "string", "minLength": 1},
-                    "reason": {"type": "string", "minLength": 1},
-                    "allowed_operations": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    },
-                    "forbidden_operations": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                    },
-                },
-            },
-        },
+def _array_of(item_spec: Mapping[str, object],
+              min_items: Optional[int] = None) -> Dict[str, object]:
+    """An ``array`` spec over ``item_spec``, optionally requiring a minimum."""
+    spec: Dict[str, object] = {"type": "array", "items": dict(item_spec)}
+    if min_items is not None:
+        spec["minItems"] = min_items
+    return spec
+
+
+def _closed_object(required: Sequence[str],
+                   properties: Mapping[str, object]) -> Dict[str, object]:
+    """An object that must carry exactly ``required`` and nothing unexpected."""
+    return {
+        "type": "object",
+        "required": list(required),
+        "additionalProperties": False,
+        "properties": dict(properties),
+    }
+
+
+def _enum_of(values: Sequence[str]) -> Dict[str, object]:
+    return {"type": "string", "enum": list(values)}
+
+
+_FORMAT_VERSION: Dict[str, object] = {"type": "string", "const": "0.1.0"}
+
+_OPERATION_RULE_SCHEMA: Dict[str, object] = _closed_object(
+    required=("operation_type", "status", "reason", "preconditions",
+              "blocked_by_constraints"),
+    properties={
+        "operation_type": _enum_of(OPERATION_TYPES),
+        "status": _enum_of(OPERATION_STATUSES),
+        "reason": _NON_EMPTY_STRING,
+        "preconditions": _array_of(_NON_EMPTY_STRING),
+        "blocked_by_constraints": _array_of(_NON_EMPTY_STRING),
     },
-}
+)
+
+_FEATURE_ENTRY_SCHEMA: Dict[str, object] = _closed_object(
+    required=("feature_id", "feature_type", "protected", "interface_roles",
+              "operations"),
+    properties={
+        "feature_id": _NON_EMPTY_STRING,
+        "feature_type": _NON_EMPTY_STRING,
+        "protected": _BOOLEAN,
+        "interface_roles": _array_of(_NON_EMPTY_STRING),
+        "operations": _array_of(_OPERATION_RULE_SCHEMA, min_items=1),
+    },
+)
+
+ALLOWED_OPERATIONS_CATALOG_SCHEMA: Dict[str, object] = _closed_object(
+    required=("format_version", "catalog_id", "generated_by", "generated_at_utc",
+              "source_files", "feature_operations", "notes"),
+    properties={
+        "format_version": _FORMAT_VERSION,
+        "catalog_id": _NON_EMPTY_STRING,
+        "generated_by": _NON_EMPTY_STRING,
+        "generated_at_utc": _NON_EMPTY_STRING,
+        "source_files": _array_of(_NON_EMPTY_STRING),
+        "feature_operations": _array_of(_FEATURE_ENTRY_SCHEMA),
+        "notes": _array_of(_NON_EMPTY_STRING, min_items=1),
+    },
+)
+
+_PROTECTED_REGION_SCHEMA: Dict[str, object] = _closed_object(
+    required=("feature_id", "reason", "allowed_operations",
+              "forbidden_operations"),
+    properties={
+        "feature_id": _NON_EMPTY_STRING,
+        "reason": _NON_EMPTY_STRING,
+        "allowed_operations": _array_of(_ANY_STRING),
+        "forbidden_operations": _array_of(_ANY_STRING),
+    },
+)
+
+PROTECTED_REGIONS_SCHEMA: Dict[str, object] = _closed_object(
+    required=("format_version", "protected_regions"),
+    properties={
+        "format_version": _FORMAT_VERSION,
+        "protected_regions": _array_of(_PROTECTED_REGION_SCHEMA),
+    },
+)
 
 
 # ---------------------------------------------------------------------------
 # Stdlib structural (schema-shape) validation
+#
+# Each JSON Schema keyword the two documents use becomes one small generator of
+# complaint strings. ``_shape_errors`` runs the applicable ones and recurses;
+# adding a keyword means adding a function, not another branch in a monolith.
 # ---------------------------------------------------------------------------
 
-_TYPE_MAP = {
+_PY_TYPES: Dict[str, object] = {
     "object": dict,
     "array": list,
     "string": str,
@@ -276,62 +257,113 @@ _TYPE_MAP = {
     "null": type(None),
 }
 
+#: JSON types for which a Python ``bool`` must NOT be accepted, even though
+#: ``bool`` subclasses ``int``.
+_BOOL_HOSTILE_TYPES = ("integer", "number")
 
-def _shape_errors(value: object, spec: Mapping[str, object],
-                  path: str, errors: List[str]) -> None:
-    """Recursive shape check of ``value`` against an embedded schema dict.
+_Complaints = Iterator[str]
 
-    Implements the subset of JSON Schema the two gating schemas use: type,
-    const, enum, minLength, minItems, required, properties,
-    additionalProperties: false, items. Appends dotted-path messages.
-    """
-    expected = spec.get("type")
-    if expected is not None:
-        py = _TYPE_MAP.get(str(expected))
-        if py is not None:
-            # bool is an int subclass; keep integer/number honest.
-            if isinstance(value, bool) and expected in ("integer", "number"):
-                errors.append("%s: expected %s, got boolean" % (path, expected))
-                return
-            if not isinstance(value, py):
-                errors.append(
-                    "%s: expected %s, got %s"
-                    % (path, expected, type(value).__name__))
-                return
+
+def _check_type(value: object, spec: Mapping[str, object], path: str) -> _Complaints:
+    """``type``: the value's Python type must match the declared JSON type."""
+    declared = spec.get("type")
+    if declared is None:
+        return
+    python_type = _PY_TYPES.get(str(declared))
+    if python_type is None:
+        return
+    if isinstance(value, bool) and declared in _BOOL_HOSTILE_TYPES:
+        yield "%s: expected %s, got boolean" % (path, declared)
+    elif not isinstance(value, python_type):  # type: ignore[arg-type]
+        yield "%s: expected %s, got %s" % (path, declared, type(value).__name__)
+
+
+def _check_const(value: object, spec: Mapping[str, object], path: str) -> _Complaints:
     if "const" in spec and value != spec["const"]:
-        errors.append("%s: must equal %r" % (path, spec["const"]))
-    if "enum" in spec and value not in spec["enum"]:  # type: ignore[operator]
-        errors.append(
-            "%s: %r not one of %s"
-            % (path, value, ", ".join(map(str, spec["enum"]))))  # type: ignore[arg-type]
-    if isinstance(value, str):
-        min_len = spec.get("minLength")
-        if isinstance(min_len, int) and len(value) < min_len:
-            errors.append("%s: string shorter than minLength %d" % (path, min_len))
+        yield "%s: must equal %r" % (path, spec["const"])
+
+
+def _check_enum(value: object, spec: Mapping[str, object], path: str) -> _Complaints:
+    permitted = spec.get("enum")
+    if isinstance(permitted, list) and value not in permitted:
+        yield "%s: %r not one of %s" % (path, value, ", ".join(map(str, permitted)))
+
+
+def _check_min_length(value: object, spec: Mapping[str, object],
+                      path: str) -> _Complaints:
+    limit = spec.get("minLength")
+    if isinstance(value, str) and isinstance(limit, int) and len(value) < limit:
+        yield "%s: string shorter than minLength %d" % (path, limit)
+
+
+def _check_min_items(value: object, spec: Mapping[str, object],
+                     path: str) -> _Complaints:
+    limit = spec.get("minItems")
+    if isinstance(value, list) and isinstance(limit, int) and len(value) < limit:
+        yield "%s: array shorter than minItems %d" % (path, limit)
+
+
+def _check_required(value: object, spec: Mapping[str, object],
+                    path: str) -> _Complaints:
+    required = spec.get("required")
+    if isinstance(value, dict) and isinstance(required, list):
+        for key in required:
+            if key not in value:
+                yield "%s: missing required field %r" % (path, key)
+
+
+def _check_no_extras(value: object, spec: Mapping[str, object],
+                     path: str) -> _Complaints:
+    """``additionalProperties: false``: an unlisted key is a contract drift."""
+    if not isinstance(value, dict) or spec.get("additionalProperties") is not False:
+        return
+    declared = spec.get("properties")
+    declared = declared if isinstance(declared, Mapping) else {}
+    for key in sorted(value):
+        if key not in declared:
+            yield "%s: unexpected field %r" % (path, key)
+
+
+#: Every non-recursive keyword check, run in this order against every node.
+_KEYWORD_CHECKS: Tuple[Callable[[object, Mapping[str, object], str], _Complaints], ...] = (
+    _check_const,
+    _check_enum,
+    _check_min_length,
+    _check_min_items,
+    _check_required,
+    _check_no_extras,
+)
+
+
+def _shape_errors(value: object, spec: Mapping[str, object], path: str) -> List[str]:
+    """Every way ``value`` fails ``spec``, as dotted-path complaint strings.
+
+    A type mismatch short-circuits: once a node is the wrong kind of thing, the
+    keyword checks below it would only produce noise about a value that was
+    never going to be inspected.
+    """
+    type_errors = list(_check_type(value, spec, path))
+    if type_errors:
+        return type_errors
+
+    errors: List[str] = []
+    for check in _KEYWORD_CHECKS:
+        errors.extend(check(value, spec, path))
+
     if isinstance(value, list):
-        min_items = spec.get("minItems")
-        if isinstance(min_items, int) and len(value) < min_items:
-            errors.append("%s: array shorter than minItems %d" % (path, min_items))
         item_spec = spec.get("items")
         if isinstance(item_spec, Mapping):
-            for i, item in enumerate(value):
-                _shape_errors(item, item_spec, "%s[%d]" % (path, i), errors)
-    if isinstance(value, dict):
-        required = spec.get("required")
-        if isinstance(required, list):
-            for key in required:
-                if key not in value:
-                    errors.append("%s: missing required field %r" % (path, key))
-        props = spec.get("properties")
-        props = props if isinstance(props, Mapping) else {}
-        if spec.get("additionalProperties") is False:
-            for key in sorted(value):
-                if key not in props:
-                    errors.append("%s: unexpected field %r" % (path, key))
-        for key in sorted(props):
-            if key in value:
-                _shape_errors(value[key], props[key],  # type: ignore[index]
-                              "%s.%s" % (path, key), errors)
+            for position, item in enumerate(value):
+                errors.extend(
+                    _shape_errors(item, item_spec, "%s[%d]" % (path, position)))
+    elif isinstance(value, dict):
+        declared = spec.get("properties")
+        if isinstance(declared, Mapping):
+            for key in sorted(declared):
+                if key in value:
+                    errors.extend(_shape_errors(
+                        value[key], declared[key], "%s.%s" % (path, key)))
+    return errors
 
 
 def validate_catalog(catalog: Mapping[str, object]) -> List[str]:
@@ -339,16 +371,12 @@ def validate_catalog(catalog: Mapping[str, object]) -> List[str]:
 
     Returns an empty list when the dict is shape-valid.
     """
-    errors: List[str] = []
-    _shape_errors(catalog, ALLOWED_OPERATIONS_CATALOG_SCHEMA, "catalog", errors)
-    return errors
+    return _shape_errors(catalog, ALLOWED_OPERATIONS_CATALOG_SCHEMA, "catalog")
 
 
 def validate_protected_regions(doc: Mapping[str, object]) -> List[str]:
     """Structural errors of a protected-regions dict against its schema."""
-    errors: List[str] = []
-    _shape_errors(doc, PROTECTED_REGIONS_SCHEMA, "protected_regions", errors)
-    return errors
+    return _shape_errors(doc, PROTECTED_REGIONS_SCHEMA, "protected_regions")
 
 
 # ---------------------------------------------------------------------------
@@ -359,10 +387,9 @@ def validate_protected_regions(doc: Mapping[str, object]) -> List[str]:
 class OperationRule:
     """One admissibility rule for one operation_type on one feature.
 
-    Field names and semantics are exactly the catalog schema's
-    ``feature_operations[].operations[]`` item: a conditional rule carries the
-    ``preconditions`` that must hold and the ``blocked_by_constraints`` that
-    must NOT be active for the operation to proceed.
+    A conditional rule carries the ``preconditions`` that must hold and the
+    ``blocked_by_constraints`` that must NOT be active for the operation to
+    proceed; for an ``allowed`` or ``forbidden`` rule both are ignored.
     """
 
     operation_type: str
@@ -403,14 +430,18 @@ class AllowedOperationsCatalog:
     notes: Tuple[str, ...] = ()
 
     def entry_for(self, feature_ref: str) -> Optional[FeatureOperations]:
-        """Resolve a feature reference: id match, then type match, then '*'."""
+        """Resolve a feature reference: id match, then type match, then '*'.
+
+        Three passes rather than one, because a catalog that names a feature
+        explicitly must win over one that only matches its type, and both must
+        win over the catch-all row -- regardless of the order the rows happen to
+        be written in.
+        """
         if feature_ref:
-            for entry in self.feature_operations:
-                if entry.feature_id == feature_ref:
-                    return entry
-            for entry in self.feature_operations:
-                if entry.feature_type == feature_ref:
-                    return entry
+            for select in (lambda e: e.feature_id, lambda e: e.feature_type):
+                for entry in self.feature_operations:
+                    if select(entry) == feature_ref:
+                        return entry
         for entry in self.feature_operations:
             if WILDCARD_FEATURE in (entry.feature_id, entry.feature_type):
                 return entry
@@ -434,53 +465,69 @@ class ProtectedRegion:
     def refuses(self, operation_type: str) -> bool:
         if operation_type in self.forbidden_operations:
             return True
+        # An empty whitelist means "nothing is singled out", not "nothing is
+        # permitted" -- otherwise a region listing only forbidden ops would
+        # refuse everything.
         return bool(self.allowed_operations) and \
             operation_type not in self.allowed_operations
 
 
+def _string_tuple(raw: object) -> Tuple[str, ...]:
+    """A tuple of strings from a schema array field that may be absent."""
+    if isinstance(raw, (list, tuple)):
+        return tuple(str(item) for item in raw)
+    return ()
+
+
+def _rule_from_dict(raw: Mapping[str, object]) -> OperationRule:
+    return OperationRule(
+        operation_type=str(raw["operation_type"]),
+        status=str(raw["status"]),
+        reason=str(raw["reason"]),
+        preconditions=_string_tuple(raw.get("preconditions")),
+        blocked_by_constraints=_string_tuple(raw.get("blocked_by_constraints")),
+    )
+
+
+def _entry_from_dict(raw: Mapping[str, object]) -> FeatureOperations:
+    return FeatureOperations(
+        feature_id=str(raw["feature_id"]),
+        feature_type=str(raw["feature_type"]),
+        protected=bool(raw["protected"]),
+        interface_roles=_string_tuple(raw.get("interface_roles")),
+        operations=tuple(_rule_from_dict(rule) for rule in raw["operations"]),
+    )
+
+
 def catalog_from_dict(d: Mapping[str, object]) -> AllowedOperationsCatalog:
     """Build the typed catalog from a shape-valid dict (validate first)."""
-    entries = []
-    for fe in d.get("feature_operations", ()):  # type: ignore[union-attr]
-        rules = tuple(
-            OperationRule(
-                operation_type=str(op["operation_type"]),
-                status=str(op["status"]),
-                reason=str(op["reason"]),
-                preconditions=tuple(op.get("preconditions", ())),
-                blocked_by_constraints=tuple(op.get("blocked_by_constraints", ())),
-            )
-            for op in fe["operations"]
-        )
-        entries.append(FeatureOperations(
-            feature_id=str(fe["feature_id"]),
-            feature_type=str(fe["feature_type"]),
-            protected=bool(fe["protected"]),
-            interface_roles=tuple(fe.get("interface_roles", ())),
-            operations=rules,
-        ))
+    entries = d.get("feature_operations")
     return AllowedOperationsCatalog(
         format_version=str(d.get("format_version", "")),
         catalog_id=str(d.get("catalog_id", "")),
         generated_by=str(d.get("generated_by", "")),
         generated_at_utc=str(d.get("generated_at_utc", "")),
-        source_files=tuple(d.get("source_files", ())),  # type: ignore[arg-type]
-        feature_operations=tuple(entries),
-        notes=tuple(d.get("notes", ())),  # type: ignore[arg-type]
+        source_files=_string_tuple(d.get("source_files")),
+        feature_operations=tuple(
+            _entry_from_dict(entry)
+            for entry in (entries if isinstance(entries, (list, tuple)) else ())
+        ),
+        notes=_string_tuple(d.get("notes")),
     )
 
 
 def protected_regions_from_dict(
         d: Mapping[str, object]) -> Tuple[ProtectedRegion, ...]:
     """Build typed protected regions from a shape-valid dict."""
+    raw_regions = d.get("protected_regions")
     return tuple(
         ProtectedRegion(
-            feature_id=str(r["feature_id"]),
-            reason=str(r["reason"]),
-            allowed_operations=tuple(r.get("allowed_operations", ())),
-            forbidden_operations=tuple(r.get("forbidden_operations", ())),
+            feature_id=str(region["feature_id"]),
+            reason=str(region["reason"]),
+            allowed_operations=_string_tuple(region.get("allowed_operations")),
+            forbidden_operations=_string_tuple(region.get("forbidden_operations")),
         )
-        for r in d.get("protected_regions", ())  # type: ignore[union-attr]
+        for region in (raw_regions if isinstance(raw_regions, (list, tuple)) else ())
     )
 
 
@@ -514,11 +561,11 @@ class GateDecision:
 
 @dataclass(frozen=True)
 class GateReport:
-    """Whole-stream result, mirroring patch_proposal bookkeeping.
+    """Whole-stream result, mirroring patch-proposal bookkeeping.
 
     ``protected_targets_checked`` lists every protected feature any op
     touched; ``protected_targets_avoided`` the subset no op violated. The
-    ``patch_status`` maps the outcome onto the patch_proposal status enum.
+    ``patch_status`` maps the outcome onto the patch-proposal status enum.
     """
 
     decisions: Tuple[GateDecision, ...] = ()
@@ -536,7 +583,11 @@ class GateReport:
 
     @property
     def patch_status(self) -> str:
-        """patch_proposal.schema.json status for this gate outcome."""
+        """The patch-proposal status for this gate outcome.
+
+        Violating a protected target is called out separately from an ordinary
+        block, because it is the one failure a caller must never retry blindly.
+        """
         if self.ok:
             return "ready_for_validation"
         if any(r.reason_code == "protected_region" for r in self.refusals):
@@ -556,8 +607,7 @@ def _as_dict(op: Union[ops.Op, Mapping[str, object]]) -> Dict[str, object]:
 
 def op_operation_type(op: Union[ops.Op, Mapping[str, object]]) -> Optional[str]:
     """The catalog operation_type for a CISP op, or None for an unknown tag."""
-    tag = str(_as_dict(op).get("op", ""))
-    return _OP_TYPE_MAP.get(tag)
+    return _OP_TYPE_MAP.get(str(_as_dict(op).get("op", "")))
 
 
 def op_feature_ref(op: Union[ops.Op, Mapping[str, object]],
@@ -569,16 +619,18 @@ def op_feature_ref(op: Union[ops.Op, Mapping[str, object]],
     the reference is resolved through the targeted op, so an edit to a hole's
     diameter is gated against the hole's feature.
     """
-    d = _as_dict(op)
-    if d.get("op") == "set_param" and oplog:
+    fields = _as_dict(op)
+
+    if fields.get("op") == "set_param" and oplog:
         try:
-            idx = int(d.get("target", -1))  # type: ignore[arg-type]
+            target = int(fields.get("target", -1))  # type: ignore[arg-type]
         except (TypeError, ValueError):
-            idx = -1
-        if 0 <= idx < len(oplog):
-            return op_feature_ref(oplog[idx])
+            target = -1
+        if 0 <= target < len(oplog):
+            return op_feature_ref(oplog[target])
+
     for name in _FEATURE_REF_FIELDS:
-        value = d.get(name)
+        value = fields.get(name)
         if isinstance(value, str) and value:
             return value
     return ""
@@ -588,27 +640,54 @@ def op_feature_ref(op: Union[ops.Op, Mapping[str, object]],
 # Precondition / constraint evaluation
 # ---------------------------------------------------------------------------
 
-_COMPARATORS = ("==", "!=", ">=", "<=", ">", "<")
+#: Comparators in match precedence: the two-character forms must be tried
+#: before their single-character prefixes or ">=" would be read as ">".
+_COMPARATORS: Tuple[str, ...] = ("==", "!=", ">=", "<=", ">", "<")
+
+#: Comparators usable on any pair of values, and those needing two real numbers.
+_EQUALITY_TESTS: Dict[str, Callable[[object, object], bool]] = {
+    "==": lambda have, want: bool(have == want),
+    "!=": lambda have, want: bool(have != want),
+}
+_ORDERED_TESTS: Dict[str, Callable[[float, float], bool]] = {
+    ">=": lambda have, want: have >= want,
+    "<=": lambda have, want: have <= want,
+    ">": lambda have, want: have > want,
+    "<": lambda have, want: have < want,
+}
 
 
 def _parse_literal(text: str) -> object:
+    """The right-hand side of a precondition, typed as narrowly as it reads."""
     text = text.strip()
     if len(text) >= 2 and text[0] == text[-1] and text[0] in ("'", '"'):
         return text[1:-1]
-    lowered = text.lower()
-    if lowered == "true":
+    folded = text.lower()
+    if folded == "true":
         return True
-    if lowered == "false":
+    if folded == "false":
         return False
-    try:
-        return int(text)
-    except ValueError:
-        pass
-    try:
-        return float(text)
-    except ValueError:
-        pass
+    for converter in (int, float):
+        try:
+            return converter(text)
+        except ValueError:
+            continue
     return text
+
+
+def _is_real_number(value: object) -> bool:
+    """True for an int/float that is not a bool -- ``bool`` subclasses ``int``."""
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _split_comparison(text: str) -> Optional[Tuple[str, str, str]]:
+    """Split ``"a >= 3"`` into ``("a", ">=", "3")``, or None if there is no
+    comparator anywhere in the string."""
+    for comparator in _COMPARATORS:
+        if comparator in text:
+            key, _, literal = text.partition(comparator)
+            return key.strip(), comparator, literal
+    return None
 
 
 def evaluate_precondition(precondition: str,
@@ -617,116 +696,227 @@ def evaluate_precondition(precondition: str,
 
     Grammar: ``"key"`` (truthy) or ``"key <cmp> value"`` with ``<cmp>`` in
     ``== != >= <= > <``. Returns ``(met, detail)``; anything unparseable or a
-    missing key is conservatively UNMET (default-deny).
+    missing key is conservatively UNMET (default-deny), because a contract we
+    cannot read is not a contract we may assume is satisfied.
     """
     text = precondition.strip()
-    for cmp_op in _COMPARATORS:
-        if cmp_op in text:
-            key, _, raw = text.partition(cmp_op)
-            key = key.strip()
-            if not key:
-                return False, "unparseable precondition %r" % precondition
-            if key not in context:
-                return False, "context has no value for %r" % key
-            have = context[key]
-            want = _parse_literal(raw)
-            if cmp_op == "==":
-                return (have == want,
-                        "%s == %r (actual %r)" % (key, want, have))
-            if cmp_op == "!=":
-                return (have != want,
-                        "%s != %r (actual %r)" % (key, want, have))
-            # Ordered comparison requires two real numbers.
-            if not isinstance(have, (int, float)) or isinstance(have, bool) \
-                    or not isinstance(want, (int, float)):
-                return False, ("non-numeric ordered comparison in %r"
-                               % precondition)
-            met = {
-                ">=": have >= want,
-                "<=": have <= want,
-                ">": have > want,
-                "<": have < want,
-            }[cmp_op]
-            return met, "%s %s %r (actual %r)" % (key, cmp_op, want, have)
-    if not text:
-        return False, "empty precondition"
-    if text not in context:
-        return False, "context has no value for %r" % text
-    return bool(context[text]), "%s is %r" % (text, context[text])
+    comparison = _split_comparison(text)
+
+    if comparison is None:
+        if not text:
+            return False, "empty precondition"
+        if text not in context:
+            return False, "context has no value for %r" % text
+        return bool(context[text]), "%s is %r" % (text, context[text])
+
+    key, comparator, literal = comparison
+    if not key:
+        return False, "unparseable precondition %r" % precondition
+    if key not in context:
+        return False, "context has no value for %r" % key
+
+    have = context[key]
+    want = _parse_literal(literal)
+
+    equality = _EQUALITY_TESTS.get(comparator)
+    if equality is not None:
+        return (equality(have, want),
+                "%s %s %r (actual %r)" % (key, comparator, want, have))
+
+    if not _is_real_number(have) or not _is_real_number(want):
+        return False, "non-numeric ordered comparison in %r" % precondition
+    met = _ORDERED_TESTS[comparator](float(have), float(want))  # type: ignore[arg-type]
+    return met, "%s %s %r (actual %r)" % (key, comparator, want, have)
 
 
 def _active_constraints(context: Mapping[str, object]) -> Tuple[str, ...]:
+    """The context's ``active_constraints``, normalised to a sorted tuple."""
     raw = context.get("active_constraints", ())
     if isinstance(raw, str):
         return (raw,)
     if isinstance(raw, (list, tuple, set, frozenset)):
-        return tuple(sorted(str(c) for c in raw))
+        return tuple(sorted(str(name) for name in raw))
     return ()
-
-
-# ---------------------------------------------------------------------------
-# Parameter-edit preflight (parameter_edit.schema.json semantics)
-# ---------------------------------------------------------------------------
-
-def _parameter_edit_preflight(index: int, d: Mapping[str, object],
-                              feature: str,
-                              context: Mapping[str, object],
-                              ) -> Optional[GateDiagnostic]:
-    """Preflight a modify_parameter op the way parameter_edit's adapter does.
-
-    Two checks travel with the port: ``value_in_bounds`` against a declared
-    ``bounds`` block (min / max / discrete_values, read from the context's
-    ``parameter_bounds`` mapping keyed by parameter name), and the hard rule
-    that topology-changing parameters must be refused (context's
-    ``topology_changing_parameters`` collection).
-    """
-    param = str(d.get("param", ""))
-    op_name = str(d.get("op", ""))
-    topo = context.get("topology_changing_parameters", ())
-    if isinstance(topo, (list, tuple, set, frozenset)) and param in topo:
-        return GateDiagnostic(
-            op_index=index, op_name=op_name, feature=feature,
-            reason_code="topology_changing",
-            message="parameter %r is topology-changing; parameter edits must "
-                    "not change topology (parameter_edit preflight)" % param)
-    bounds_map = context.get("parameter_bounds")
-    if not isinstance(bounds_map, Mapping):
-        return None
-    bounds = bounds_map.get(param)
-    if not isinstance(bounds, Mapping):
-        return None
-    value = d.get("value")
-    discrete = bounds.get("discrete_values")
-    if isinstance(discrete, (list, tuple)) and discrete:
-        if value not in discrete:
-            return GateDiagnostic(
-                op_index=index, op_name=op_name, feature=feature,
-                reason_code="value_out_of_bounds",
-                message="value %r for %r is not one of the declared "
-                        "discrete_values %r" % (value, param, list(discrete)))
-        return None
-    if not isinstance(value, (int, float)) or isinstance(value, bool):
-        return None
-    lo = bounds.get("min")
-    hi = bounds.get("max")
-    if isinstance(lo, (int, float)) and value < lo:
-        return GateDiagnostic(
-            op_index=index, op_name=op_name, feature=feature,
-            reason_code="value_out_of_bounds",
-            message="value %r for %r is below the declared min %r"
-                    % (value, param, lo))
-    if isinstance(hi, (int, float)) and value > hi:
-        return GateDiagnostic(
-            op_index=index, op_name=op_name, feature=feature,
-            reason_code="value_out_of_bounds",
-            message="value %r for %r is above the declared max %r"
-                    % (value, param, hi))
-    return None
 
 
 # ---------------------------------------------------------------------------
 # The gate
 # ---------------------------------------------------------------------------
+
+class _OpJudge:
+    """Judges ops one at a time and remembers what protected features it saw.
+
+    The judgement is a chain of narrowing questions; the first that produces a
+    diagnostic ends the op. Splitting it this way means each rule is one short
+    method that can be read -- and argued about -- on its own.
+    """
+
+    def __init__(self, catalog: AllowedOperationsCatalog,
+                 regions: Mapping[str, ProtectedRegion],
+                 context: Mapping[str, object]) -> None:
+        self._catalog = catalog
+        self._regions = regions
+        self._context = context
+        self._active = _active_constraints(context)
+        self.touched: List[str] = []
+        self.violated: List[str] = []
+
+    # -- bookkeeping ------------------------------------------------------
+    @staticmethod
+    def _remember(bucket: List[str], feature: str) -> None:
+        if feature not in bucket:
+            bucket.append(feature)
+
+    def avoided(self) -> Tuple[str, ...]:
+        return tuple(f for f in self.touched if f not in self.violated)
+
+    # -- individual rules -------------------------------------------------
+    def _protected_region_refusal(self, feature: str,
+                                  op_type: str) -> Optional[Tuple[str, str]]:
+        """``(code, message)`` when a protected region forbids this op."""
+        region = self._regions.get(feature)
+        if region is None:
+            return None
+        self._remember(self.touched, feature)
+        if not region.refuses(op_type):
+            return None
+        self._remember(self.violated, feature)
+        return ("protected_region",
+                "feature %r is a protected region (%s); operation %r is not "
+                "admitted there" % (feature, region.reason, op_type))
+
+    def _parameter_refusal(self, fields: Mapping[str, object]
+                           ) -> Optional[Tuple[str, str]]:
+        """Preflight a ``modify_parameter`` op before the catalog sees it.
+
+        Two rules travel with a parameter edit: the new value must sit inside
+        the parameter's declared bounds, and the parameter must not be one whose
+        edit would change topology -- a parameter edit that re-topologises the
+        model is a different operation wearing a parameter edit's clothes.
+        """
+        param = str(fields.get("param", ""))
+
+        topology_changing = self._context.get("topology_changing_parameters", ())
+        if isinstance(topology_changing, (list, tuple, set, frozenset)) \
+                and param in topology_changing:
+            return ("topology_changing",
+                    "parameter %r is topology-changing; parameter edits must "
+                    "not change topology (parameter_edit preflight)" % param)
+
+        declared = self._context.get("parameter_bounds")
+        if not isinstance(declared, Mapping):
+            return None
+        bounds = declared.get(param)
+        if not isinstance(bounds, Mapping):
+            return None
+
+        value = fields.get("value")
+        discrete = bounds.get("discrete_values")
+        if isinstance(discrete, (list, tuple)) and discrete:
+            if value in discrete:
+                return None
+            return ("value_out_of_bounds",
+                    "value %r for %r is not one of the declared discrete_values "
+                    "%r" % (value, param, list(discrete)))
+
+        if not _is_real_number(value):
+            return None
+        low = bounds.get("min")
+        high = bounds.get("max")
+        if _is_real_number(low) and value < low:  # type: ignore[operator]
+            return ("value_out_of_bounds",
+                    "value %r for %r is below the declared min %r"
+                    % (value, param, low))
+        if _is_real_number(high) and value > high:  # type: ignore[operator]
+            return ("value_out_of_bounds",
+                    "value %r for %r is above the declared max %r"
+                    % (value, param, high))
+        return None
+
+    def _rule_refusal(self, rule: OperationRule, entry: FeatureOperations,
+                      op_type: str) -> Optional[Tuple[str, str]]:
+        """Apply a matched catalog rule: forbidden, or a conditional's terms."""
+        if rule.status == "forbidden":
+            return ("forbidden",
+                    "operation %r on feature %r is forbidden: %s"
+                    % (op_type, entry.feature_id, rule.reason))
+        if rule.status != "conditional":
+            return None
+
+        blocking = [name for name in rule.blocked_by_constraints
+                    if name in self._active]
+        if blocking:
+            return ("blocked_by_constraint",
+                    "operation %r on feature %r is blocked by active "
+                    "constraint(s): %s"
+                    % (op_type, entry.feature_id, ", ".join(blocking)))
+
+        for precondition in rule.preconditions:
+            met, detail = evaluate_precondition(precondition, self._context)
+            if not met:
+                return ("precondition_unmet",
+                        "precondition %r unmet for operation %r on feature %r: "
+                        "%s" % (precondition, op_type, entry.feature_id, detail))
+        return None
+
+    # -- the chain --------------------------------------------------------
+    def judge(self, index: int,
+              op: Union[ops.Op, Mapping[str, object]],
+              op_stream: Sequence[Union[ops.Op, Mapping[str, object]]],
+              ) -> GateDecision:
+        fields = _as_dict(op)
+        op_name = str(fields.get("op", ""))
+        feature = op_feature_ref(op, op_stream)
+
+        def refuse(op_type: str, status: Optional[str],
+                   refusal: Tuple[str, str]) -> GateDecision:
+            code, message = refusal
+            return GateDecision(
+                op_index=index, op_name=op_name, feature=feature,
+                operation_type=op_type, allowed=False, rule_status=status,
+                diagnostic=GateDiagnostic(
+                    op_index=index, op_name=op_name, feature=feature,
+                    reason_code=code, message=message))
+
+        op_type = op_operation_type(op)
+        if op_type is None:
+            return refuse("", None, (
+                "unknown_op",
+                "op tag %r is not a registered CISP operation" % op_name))
+
+        region_refusal = self._protected_region_refusal(feature, op_type)
+        if region_refusal is not None:
+            return refuse(op_type, None, region_refusal)
+
+        if op_type == "modify_parameter":
+            parameter_refusal = self._parameter_refusal(fields)
+            if parameter_refusal is not None:
+                return refuse(op_type, None, parameter_refusal)
+
+        # The catalog is a whitelist: an unmatched feature, or a feature with no
+        # rule for this operation, is denied rather than waved through.
+        entry = self._catalog.entry_for(feature)
+        if entry is None:
+            return refuse(op_type, None, (
+                "unknown_feature",
+                "no catalog entry admits feature %r (and no wildcard entry "
+                "exists); default is deny" % feature))
+
+        rule = entry.rule_for(op_type)
+        if rule is None:
+            return refuse(op_type, None, (
+                "unknown_op",
+                "catalog entry for feature %r lists no rule for operation %r; "
+                "unlisted operations are denied" % (entry.feature_id, op_type)))
+
+        rule_refusal = self._rule_refusal(rule, entry, op_type)
+        if rule_refusal is not None:
+            return refuse(op_type, rule.status, rule_refusal)
+
+        return GateDecision(
+            op_index=index, op_name=op_name, feature=feature,
+            operation_type=op_type, allowed=True, rule_status=rule.status)
+
 
 def gate(op_stream: Sequence[Union[ops.Op, Mapping[str, object]]],
          catalog: Union[AllowedOperationsCatalog, Mapping[str, object]],
@@ -752,7 +942,6 @@ def gate(op_stream: Sequence[Union[ops.Op, Mapping[str, object]]],
     (and no wildcard entry) is refused ``unknown_feature`` -- the catalog is
     a whitelist, so the default is deny.
     """
-    ctx: Mapping[str, object] = context or {}
     if not isinstance(catalog, AllowedOperationsCatalog):
         errors = validate_catalog(catalog)
         if errors:
@@ -761,110 +950,18 @@ def gate(op_stream: Sequence[Union[ops.Op, Mapping[str, object]]],
                 + "; ".join(errors))
         catalog = catalog_from_dict(catalog)
 
-    protected_by_feature: Dict[str, ProtectedRegion] = {
-        r.feature_id: r for r in protected_regions
-    }
-    active = _active_constraints(ctx)
-    decisions: List[GateDecision] = []
-    checked: List[str] = []
-    violated: List[str] = []
+    judge = _OpJudge(
+        catalog=catalog,
+        regions={region.feature_id: region for region in protected_regions},
+        context=context or {},
+    )
+    decisions = tuple(judge.judge(index, op, op_stream)
+                      for index, op in enumerate(op_stream))
 
-    def refuse(index: int, op_name: str, feature: str, op_type: str,
-               status: Optional[str], code: str, message: str) -> None:
-        decisions.append(GateDecision(
-            op_index=index, op_name=op_name, feature=feature,
-            operation_type=op_type, allowed=False, rule_status=status,
-            diagnostic=GateDiagnostic(
-                op_index=index, op_name=op_name, feature=feature,
-                reason_code=code, message=message)))
-
-    for index, op in enumerate(op_stream):
-        d = _as_dict(op)
-        op_name = str(d.get("op", ""))
-        feature = op_feature_ref(op, op_stream)
-        op_type = op_operation_type(op)
-
-        if op_type is None:
-            refuse(index, op_name, feature, "", None, "unknown_op",
-                   "op tag %r is not a registered CISP operation" % op_name)
-            continue
-
-        region = protected_by_feature.get(feature)
-        if region is not None:
-            if feature not in checked:
-                checked.append(feature)
-            if region.refuses(op_type):
-                if feature not in violated:
-                    violated.append(feature)
-                refuse(index, op_name, feature, op_type, None,
-                       "protected_region",
-                       "feature %r is a protected region (%s); operation %r "
-                       "is not admitted there"
-                       % (feature, region.reason, op_type))
-                continue
-
-        if op_type == "modify_parameter":
-            diag = _parameter_edit_preflight(index, d, feature, ctx)
-            if diag is not None:
-                decisions.append(GateDecision(
-                    op_index=index, op_name=op_name, feature=feature,
-                    operation_type=op_type, allowed=False,
-                    rule_status=None, diagnostic=diag))
-                continue
-
-        entry = catalog.entry_for(feature)
-        if entry is None:
-            refuse(index, op_name, feature, op_type, None, "unknown_feature",
-                   "no catalog entry admits feature %r (and no wildcard "
-                   "entry exists); default is deny" % feature)
-            continue
-        rule = entry.rule_for(op_type)
-        if rule is None:
-            refuse(index, op_name, feature, op_type, None, "unknown_op",
-                   "catalog entry for feature %r lists no rule for operation "
-                   "%r; unlisted operations are denied"
-                   % (entry.feature_id, op_type))
-            continue
-
-        if rule.status == "forbidden":
-            refuse(index, op_name, feature, op_type, rule.status, "forbidden",
-                   "operation %r on feature %r is forbidden: %s"
-                   % (op_type, entry.feature_id, rule.reason))
-            continue
-
-        if rule.status == "conditional":
-            blocking = [c for c in rule.blocked_by_constraints if c in active]
-            if blocking:
-                refuse(index, op_name, feature, op_type, rule.status,
-                       "blocked_by_constraint",
-                       "operation %r on feature %r is blocked by active "
-                       "constraint(s): %s"
-                       % (op_type, entry.feature_id, ", ".join(blocking)))
-                continue
-            unmet = None
-            for pre in rule.preconditions:
-                met, detail = evaluate_precondition(pre, ctx)
-                if not met:
-                    unmet = (pre, detail)
-                    break
-            if unmet is not None:
-                refuse(index, op_name, feature, op_type, rule.status,
-                       "precondition_unmet",
-                       "precondition %r unmet for operation %r on feature "
-                       "%r: %s" % (unmet[0], op_type, entry.feature_id,
-                                   unmet[1]))
-                continue
-
-        # status == "allowed", or a conditional that passed every check.
-        decisions.append(GateDecision(
-            op_index=index, op_name=op_name, feature=feature,
-            operation_type=op_type, allowed=True, rule_status=rule.status))
-
-    avoided = tuple(f for f in checked if f not in violated)
     return GateReport(
-        decisions=tuple(decisions),
-        protected_targets_checked=tuple(checked),
-        protected_targets_avoided=avoided,
+        decisions=decisions,
+        protected_targets_checked=tuple(judge.touched),
+        protected_targets_avoided=judge.avoided(),
     )
 
 
@@ -1030,7 +1127,7 @@ def _selfcheck() -> int:
     assert report.refusals[1].reason_code == "unknown_feature"
     print("case unknown_op + unknown_feature: refused as expected")
 
-    # Case 8: parameter_edit preflight -- bounds and topology-changing.
+    # Case 8: parameter-edit preflight -- bounds and topology-changing.
     stream = [
         ops.Extrude(sketch="base_plate", distance=8.0),
         ops.SetParam(target=0, param="distance", value=50.0),
