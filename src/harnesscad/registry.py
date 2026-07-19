@@ -647,6 +647,15 @@ ROOTS: Tuple[str, ...] = (
     # test evidence is not miscounted as dead. (Its production consumer, the
     # Constraint-Aware Editability Benchmark, is not yet written.)
     "harnesscad.domain.geometry.sketch.constraint_satisfaction",
+    # Two cited fact-tables (Onshape ConstraintType integer ids; JoinABLe B-rep
+    # entity + discrete-convexity enums). Each is pure data + name<->id helpers
+    # whose only current caller is its committed unit test -- the exact
+    # constraint_satisfaction case above (test-reachable, production consumer not
+    # yet wired). The reported wiring points -- onshape_json importing
+    # ConstraintType, edge_convexity returning Convexity ids -- are deliberately
+    # left to their owners rather than forced from here.
+    "harnesscad.domain.geometry.sketch.constraint_type_ids",
+    "harnesscad.domain.geometry.topology.brep_entity_ids",
     # The geometry capability surface: a static operation table consumed via
     # services.call(...). Its only current caller is its committed unit test
     # (tests/domain/geometry/test_services.py); its production consumer is the

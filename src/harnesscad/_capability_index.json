@@ -151,6 +151,36 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.agent.claims_gate",
+      "imports": [
+        "harnesscad.agents.agent.termination",
+        "harnesscad.agents.agent.termination.TerminationDecision",
+        "harnesscad.agents.agent.termination.gate_termination",
+        "harnesscad.governance.credibility_tier",
+        "harnesscad.governance.credibility_tier.UNVERIFIED",
+        "harnesscad.governance.credibility_tier.classify_credibility"
+      ],
+      "layer": "agents",
+      "name": "claims_gate",
+      "package": "agent",
+      "summary": "Claim-vs-evidence gating of an agent's final answer (anti-false-success).",
+      "symbols": [
+        "ClaimVerdict",
+        "IntentResolution",
+        "RouteIntent",
+        "RunEvidence",
+        "ToolEvent",
+        "collect_evidence",
+        "gate_claims",
+        "keyword_classify",
+        "main",
+        "resolve_route_intent"
+      ],
+      "tags": [
+        "agent"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.agent.code_repair_rules",
       "imports": [],
       "layer": "agents",
@@ -170,6 +200,8 @@
     {
       "dotted": "harnesscad.agents.agent.compiler_refine",
       "imports": [
+        "harnesscad.agents.agent.minimal_diff_repair",
+        "harnesscad.agents.agent.minimal_diff_repair.discipline_lines",
         "harnesscad.eval.judge.compiler_review",
         "harnesscad.eval.judge.compiler_review.ReviewResult",
         "harnesscad.eval.judge.compiler_review.feedback_message",
@@ -321,6 +353,29 @@
         "locate_span"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.agents.agent.minimal_diff_repair",
+      "imports": [
+        "harnesscad.agents.agent.compiler_refine",
+        "harnesscad.agents.agent.compiler_refine.build_refine_prompt",
+        "harnesscad.eval.judge.compiler_review",
+        "harnesscad.eval.judge.compiler_review.review_sequence"
+      ],
+      "layer": "agents",
+      "name": "minimal_diff_repair",
+      "package": "agent",
+      "summary": "Minimal-diff repair discipline: fix ONLY what failed, preserve what passed.",
+      "symbols": [
+        "RuleOutcome",
+        "build_minimal_diff_prompt",
+        "discipline_lines",
+        "format_rule_lines",
+        "main"
+      ],
+      "tags": [
+        "repair"
+      ]
     },
     {
       "dotted": "harnesscad.agents.agent.observation",
@@ -550,11 +605,19 @@
     },
     {
       "dotted": "harnesscad.agents.agent.termination",
-      "imports": [],
+      "imports": [
+        "harnesscad.agents.agent.claims_gate",
+        "harnesscad.agents.agent.claims_gate.ClaimVerdict",
+        "harnesscad.agents.agent.claims_gate.RouteIntent",
+        "harnesscad.agents.agent.claims_gate.RunEvidence",
+        "harnesscad.agents.agent.claims_gate.gate_claims",
+        "harnesscad.governance.credibility_tier",
+        "harnesscad.governance.credibility_tier.UNVERIFIED"
+      ],
       "layer": "agents",
       "name": "termination",
       "package": "agent",
-      "summary": "Verifier-gated agent termination decisions.",
+      "summary": "Verifier-gated agent termination decisions, with a claim-vs-evidence gate.",
       "symbols": [
         "TerminationDecision",
         "TerminationResult",
@@ -2376,6 +2439,27 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.generation.prompt_hillclimb",
+      "imports": [],
+      "layer": "agents",
+      "name": "prompt_hillclimb",
+      "package": "generation",
+      "summary": "Eval-scored prompt hill-climbing: keep-best, no ratchet, infra-blind.",
+      "symbols": [
+        "HillclimbResult",
+        "ScoreReport",
+        "Version",
+        "composite_score",
+        "hillclimb",
+        "main"
+      ],
+      "tags": [
+        "benchmark",
+        "generation",
+        "llm"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.generation.quirk_preflight",
       "imports": [
         "harnesscad.agents.generation",
@@ -2858,6 +2942,33 @@
         "benchmark",
         "memory",
         "rag"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.memory.failure_knowledge",
+      "imports": [
+        "harnesscad.agents.memory.skillpack",
+        "harnesscad.agents.memory.skillpack.PackSkill",
+        "harnesscad.agents.memory.skillpack.SkillPack",
+        "harnesscad.agents.memory.skillpack.register_pack",
+        "harnesscad.agents.memory.skillpack.unverified_names",
+        "harnesscad.agents.memory.skillpack.verified_prompt_lines",
+        "harnesscad.agents.memory.skills",
+        "harnesscad.agents.memory.skills.SkillLibrary"
+      ],
+      "layer": "agents",
+      "name": "failure_knowledge",
+      "package": "memory",
+      "summary": "AgentSCAD's CAD failure-mode knowledge, as UNVERIFIED skill-pack recipes.",
+      "symbols": [
+        "build_failure_pack",
+        "main",
+        "register_failure_knowledge"
+      ],
+      "tags": [
+        "agent",
+        "memory",
+        "verify"
       ]
     },
     {
@@ -4004,7 +4115,9 @@
         "canonical_json",
         "check_mate_ports",
         "edit_oplog",
-        "parse_op"
+        "mate_record",
+        "parse_op",
+        "thicken_delta"
       ],
       "tags": [
         "agent"
@@ -9225,6 +9338,40 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.electronics.component_catalog",
+      "imports": [
+        "harnesscad.domain.electronics.circuit_validation",
+        "harnesscad.domain.electronics.circuit_validation.build_validation_summary",
+        "harnesscad.domain.electronics.circuit_validation.is_design_valid",
+        "harnesscad.domain.electronics.circuit_validation.validate_circuit",
+        "harnesscad.domain.electronics.hardware_ir",
+        "harnesscad.domain.electronics.hardware_ir.ComponentInstance",
+        "harnesscad.domain.electronics.hardware_ir.ComponentTemplate",
+        "harnesscad.domain.electronics.hardware_ir.ConnectionNet",
+        "harnesscad.domain.electronics.hardware_ir.PinDefinition",
+        "harnesscad.domain.electronics.hardware_ir.PinReference"
+      ],
+      "layer": "domain",
+      "name": "component_catalog",
+      "package": "electronics",
+      "summary": "Electronic component catalog: 14 stock parts with fully typed pinouts.",
+      "symbols": [
+        "categories",
+        "component_template",
+        "ground_pins",
+        "instantiate",
+        "main",
+        "part_numbers",
+        "parts_for_use_case",
+        "parts_in_category",
+        "pin",
+        "power_pins",
+        "resolve",
+        "use_cases"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.domain.electronics.derive",
       "imports": [
         "harnesscad.domain.electronics.hardware_ir",
@@ -9624,6 +9771,36 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.fabrication.printer_profiles",
+      "imports": [
+        "harnesscad.domain.fabrication.printability_verdict",
+        "harnesscad.domain.fabrication.printability_verdict.PrinterProfile",
+        "harnesscad.domain.fabrication.printability_verdict.check_fit"
+      ],
+      "layer": "domain",
+      "name": "printer_profiles",
+      "package": "fabrication",
+      "summary": "Printer wrapper-profile schema and static G-code bounds validation.",
+      "symbols": [
+        "GCodeReport",
+        "PrinterProfileSpec",
+        "ProfileError",
+        "load_profile",
+        "main",
+        "parse_axis_bounds",
+        "parse_command",
+        "parse_numeric_tokens",
+        "strip_gcode_comment",
+        "to_printability_profile",
+        "validate_gcode"
+      ],
+      "tags": [
+        "fabrication",
+        "spec",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.fabrication.prototype_readiness",
       "imports": [],
       "layer": "domain",
@@ -9699,6 +9876,10 @@
         "harnesscad.domain.fabrication.printability_verdict.Measurements",
         "harnesscad.domain.fabrication.printability_verdict.PrinterProfile",
         "harnesscad.domain.fabrication.printability_verdict.printability_verdict",
+        "harnesscad.domain.fabrication.printer_profiles",
+        "harnesscad.domain.fabrication.printer_profiles.load_profile",
+        "harnesscad.domain.fabrication.printer_profiles.to_printability_profile",
+        "harnesscad.domain.fabrication.printer_profiles.validate_gcode",
         "harnesscad.domain.fabrication.prototype_readiness",
         "harnesscad.domain.fabrication.prototype_readiness.readiness_report",
         "harnesscad.domain.fabrication.rule_packs",
@@ -9747,6 +9928,7 @@
         "part_spec",
         "planar_drc",
         "printability",
+        "printer_profile",
         "rank_workflows",
         "readiness",
         "routed_modules",
@@ -12514,6 +12696,7 @@
         "harnesscad.domain.geometry.topology.coedge_walks",
         "harnesscad.domain.geometry.topology.edge_convexity",
         "harnesscad.domain.geometry.topology.entity_selector",
+        "harnesscad.domain.geometry.topology.euler_poincare",
         "harnesscad.domain.geometry.topology.explorer",
         "harnesscad.domain.geometry.topology.face_adjacency",
         "harnesscad.domain.geometry.topology.region_selectors",
@@ -12664,6 +12847,27 @@
         "geometry",
         "sketch",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.sketch.constraint_type_ids",
+      "imports": [],
+      "layer": "domain",
+      "name": "constraint_type_ids",
+      "package": "geometry",
+      "summary": "Onshape ``ConstraintType`` integer-id enum (SketchGraphs, verbatim fact table).",
+      "symbols": [
+        "ConstraintType",
+        "has_parameters",
+        "id_for_name",
+        "main",
+        "name_for_id"
+      ],
+      "tags": [
+        "constraints",
+        "geometry",
+        "graph",
+        "sketch"
       ]
     },
     {
@@ -13040,6 +13244,30 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.topology.brep_entity_ids",
+      "imports": [],
+      "layer": "domain",
+      "name": "brep_entity_ids",
+      "package": "geometry",
+      "summary": "JoinABLe B-rep entity-type + discrete edge-convexity id tables (fact tables).",
+      "symbols": [
+        "Convexity",
+        "EntityType",
+        "axis_lines_colinear",
+        "classify",
+        "is_concave",
+        "is_convex",
+        "is_curve_type",
+        "is_surface_type",
+        "main"
+      ],
+      "tags": [
+        "brep",
+        "geometry",
+        "topology"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.topology.coedge_walks",
       "imports": [],
       "layer": "domain",
@@ -13090,6 +13318,30 @@
         "benchmark",
         "geometry",
         "topology"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.topology.euler_poincare",
+      "imports": [
+        "harnesscad.domain.geometry.topology.sew",
+        "harnesscad.domain.geometry.topology.sew.SewFace",
+        "harnesscad.domain.geometry.topology.sew.sew_faces"
+      ],
+      "layer": "domain",
+      "name": "euler_poincare",
+      "package": "geometry",
+      "summary": "Euler-Poincare B-rep count balance: the handle a closedness check cannot see.",
+      "symbols": [
+        "TopologyCounts",
+        "check_euler_poincare",
+        "counts_from_sew_result",
+        "implied_genus",
+        "main"
+      ],
+      "tags": [
+        "geometry",
+        "topology",
+        "verify"
       ]
     },
     {
@@ -16721,6 +16973,25 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.programs.rapcad_language",
+      "imports": [],
+      "layer": "domain",
+      "name": "rapcad_language",
+      "package": "programs",
+      "summary": "RapCAD's genuinely-novel numeric and literal semantics, reimplemented exactly.",
+      "symbols": [
+        "Fact",
+        "Interval",
+        "Quaternion",
+        "ang",
+        "is_exact_rational_dialect",
+        "main",
+        "parse_number",
+        "split_unit"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.domain.programs.registry",
       "imports": [
         "harnesscad",
@@ -17418,6 +17689,7 @@
         "Rule",
         "Token",
         "check_delimiters",
+        "detect_rapcad",
         "main",
         "tokenize",
         "validate"
@@ -23263,6 +23535,46 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.analytic_fea",
+      "imports": [
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.FixtureEntry",
+        "harnesscad.eval.corpus.fixtures.Manifest",
+        "harnesscad.eval.corpus.fixtures.resources_root",
+        "harnesscad.eval.corpus.fixtures.sha256_of",
+        "harnesscad.eval.verifiers.simulation",
+        "harnesscad.eval.verifiers.simulation.beam_bending_stress",
+        "harnesscad.eval.verifiers.simulation.beam_max_deflection",
+        "harnesscad.eval.verifiers.simulation.euler_critical_load",
+        "harnesscad.eval.verifiers.simulation.rectangular_section"
+      ],
+      "layer": "eval",
+      "name": "analytic_fea",
+      "package": "bench",
+      "summary": "Closed-form structural FEA oracles: an answer key, not a second opinion.",
+      "symbols": [
+        "Beam",
+        "CrossCheck",
+        "FeaOracle",
+        "axial_extension",
+        "bending_stress_from_moment",
+        "cantilever_point_load_tip_deflection",
+        "cantilever_udl_deflection",
+        "case",
+        "cases",
+        "clamped_free_first_frequency",
+        "crosscheck",
+        "disagreements",
+        "fixed_fixed_center_load_deflection",
+        "fixed_fixed_udl_deflection",
+        "main",
+        "manifest",
+        "oracles",
+        "upstream_reference"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.bench.bikebench_metrics",
       "imports": [],
       "layer": "eval",
@@ -28102,6 +28414,32 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.corpus.fixtures.adversarial_code",
+      "imports": [
+        "harnesscad.domain.programs.validate.code_safety",
+        "harnesscad.domain.programs.validate.code_safety.check_cad_code",
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.Manifest",
+        "harnesscad.eval.corpus.fixtures.load_manifest"
+      ],
+      "layer": "eval",
+      "name": "adversarial_code",
+      "package": "corpus",
+      "summary": "Adversarial CAD-code corpus for the pre-execution safety gate.",
+      "symbols": [
+        "AdversarialCase",
+        "all_cases",
+        "attack_cases",
+        "audit",
+        "benign_cases",
+        "gap_cases",
+        "main",
+        "manifest",
+        "run_checker"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.corpus.fixtures.birdhouse_nversion",
       "imports": [
         "harnesscad.eval.corpus.fixtures",
@@ -28196,6 +28534,32 @@
       "tags": [
         "assembly",
         "material"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.fixtures.cadgenbench_broken",
+      "imports": [
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.Manifest",
+        "harnesscad.eval.corpus.fixtures.load_manifest"
+      ],
+      "layer": "eval",
+      "name": "cadgenbench_broken",
+      "package": "corpus",
+      "summary": "cadgenbench's known-bad mating-feature jigs with PINNED reference scores.",
+      "symbols": [
+        "ScoredFixture",
+        "broken_cases",
+        "iou_to_interface_score",
+        "main",
+        "manifest",
+        "pass_cases",
+        "scored_fixtures",
+        "sub_volume_fixtures",
+        "verify_against"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -32021,16 +32385,21 @@
         "harnesscad.eval.reliability.guardrails",
         "harnesscad.eval.reliability.guardrails.ErrorRecovery",
         "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic"
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity"
       ],
       "layer": "eval",
       "name": "brep_repair",
       "package": "reliability",
       "summary": "B-rep repair + repair-advisor \u2014 the *heal* half of the recycling loop.",
       "symbols": [
+        "LadderRung",
         "RepairAdvisor",
         "RepairResult",
         "RepairSuggestion",
+        "default_ladder",
+        "heal_shape_ladder",
+        "main",
         "repair_solid"
       ],
       "tags": [
@@ -32298,6 +32667,34 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.reliability.rejection_consistency",
+      "imports": [
+        "harnesscad.eval.bench.imports.intentforge_refusals",
+        "harnesscad.eval.bench.imports.intentforge_refusals.COMPLIED",
+        "harnesscad.eval.bench.imports.intentforge_refusals.REFUSED",
+        "harnesscad.eval.bench.imports.intentforge_refusals.REFUSED_OFFLABEL",
+        "harnesscad.eval.bench.imports.intentforge_refusals.RefusalCase",
+        "harnesscad.eval.bench.imports.intentforge_refusals.classify",
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.resources_root"
+      ],
+      "layer": "eval",
+      "name": "rejection_consistency",
+      "package": "reliability",
+      "summary": "Rejection-consistency gate: a refusal in words is not a refusal if geometry",
+      "symbols": [
+        "BuildEvidence",
+        "ConsistencyVerdict",
+        "classify_consistency",
+        "gate_for_case",
+        "load_adversarial_cases",
+        "main"
+      ],
+      "tags": [
+        "reliability"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.reliability.repair_loop",
       "imports": [
         "harnesscad.domain.reconstruction.tokens.deepcad_commands",
@@ -32485,6 +32882,32 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.reliability.structured_salvage",
+      "imports": [
+        "harnesscad.agents.llm.json_salvage",
+        "harnesscad.agents.llm.json_salvage.loads_with_salvage"
+      ],
+      "layer": "eval",
+      "name": "structured_salvage",
+      "package": "reliability",
+      "summary": "Truncation salvage for structured model output -- budget, gate, one retry.",
+      "symbols": [
+        "SalvageOutcome",
+        "escalate_budget",
+        "generate_structured",
+        "main",
+        "response_format",
+        "schema_errors",
+        "schema_name",
+        "schema_size",
+        "structured_max_tokens",
+        "validate_structured_json"
+      ],
+      "tags": [
+        "reliability"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.selftest.differential",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -32522,11 +32945,15 @@
       "dotted": "harnesscad.eval.selftest.field_liveness",
       "imports": [
         "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.AddArc",
         "harnesscad.core.cisp.ops.AddCircle",
+        "harnesscad.core.cisp.ops.AddEllipse",
         "harnesscad.core.cisp.ops.AddInstance",
         "harnesscad.core.cisp.ops.AddLine",
         "harnesscad.core.cisp.ops.AddPoint",
+        "harnesscad.core.cisp.ops.AddPolygon",
         "harnesscad.core.cisp.ops.AddRectangle",
+        "harnesscad.core.cisp.ops.AddSpline",
         "harnesscad.core.cisp.ops.Boolean",
         "harnesscad.core.cisp.ops.Chamfer",
         "harnesscad.core.cisp.ops.CircularPattern",
@@ -32535,16 +32962,24 @@
         "harnesscad.core.cisp.ops.Extrude",
         "harnesscad.core.cisp.ops.Fillet",
         "harnesscad.core.cisp.ops.Hole",
+        "harnesscad.core.cisp.ops.Hull",
         "harnesscad.core.cisp.ops.LinearPattern",
         "harnesscad.core.cisp.ops.Loft",
         "harnesscad.core.cisp.ops.Mate",
+        "harnesscad.core.cisp.ops.Minkowski",
         "harnesscad.core.cisp.ops.Mirror",
         "harnesscad.core.cisp.ops.NewSketch",
         "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.PatternTransform",
+        "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.core.cisp.ops.Revolve",
+        "harnesscad.core.cisp.ops.Scale",
         "harnesscad.core.cisp.ops.SetParam",
         "harnesscad.core.cisp.ops.Shell",
+        "harnesscad.core.cisp.ops.Split",
         "harnesscad.core.cisp.ops.Sweep",
+        "harnesscad.core.cisp.ops.Thicken",
+        "harnesscad.core.cisp.ops.Transform",
         "harnesscad.core.cisp.ops._REGISTRY",
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
@@ -32939,6 +33374,8 @@
     {
       "dotted": "harnesscad.eval.verifiers.access",
       "imports": [
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.metric_booleans",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
@@ -33333,6 +33770,8 @@
     {
       "dotted": "harnesscad.eval.verifiers.interference",
       "imports": [
+        "harnesscad.eval.verifiers",
+        "harnesscad.eval.verifiers.metric_booleans",
         "harnesscad.eval.verifiers.verify",
         "harnesscad.eval.verifiers.verify.Diagnostic",
         "harnesscad.eval.verifiers.verify.Severity",
@@ -33379,6 +33818,32 @@
         "preflight_shell"
       ],
       "tags": [
+        "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.verifiers.metric_booleans",
+      "imports": [],
+      "layer": "eval",
+      "name": "metric_booleans",
+      "package": "verifiers",
+      "summary": "Metric booleans: manifold3d only, never OCCT.",
+      "symbols": [
+        "MeshData",
+        "classify_overlap",
+        "common_volume",
+        "intersection_volume",
+        "main",
+        "manifold_available",
+        "mesh_to_manifold",
+        "occt_boolean_offenders",
+        "shape_to_manifold",
+        "shape_to_mesh",
+        "swept_cylinder_common_volume"
+      ],
+      "tags": [
+        "benchmark",
+        "csg",
         "verify"
       ]
     },
@@ -34078,6 +34543,30 @@
       ]
     },
     {
+      "dotted": "harnesscad.governance.scorecard",
+      "imports": [
+        "harnesscad.governance.credibility_tier",
+        "harnesscad.governance.credibility_tier.CredibilityStamp",
+        "harnesscad.governance.credibility_tier.UNVERIFIED",
+        "harnesscad.governance.credibility_tier.classify_credibility",
+        "harnesscad.governance.credibility_tier.merge_credibility"
+      ],
+      "layer": "governance",
+      "name": "scorecard",
+      "package": "",
+      "summary": "Tri-state \"no silent green\" scorecard: the aggregator that makes a skipped",
+      "symbols": [
+        "CheckResult",
+        "Scorecard",
+        "TriState",
+        "main",
+        "tri_state_rollup"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.governance.security.image_privacy",
       "imports": [],
       "layer": "governance",
@@ -34554,6 +35043,8 @@
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.check_mate_ports",
         "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.core.cisp.ops.mate_record",
+        "harnesscad.core.cisp.ops.thicken_delta",
         "harnesscad.core.constraints",
         "harnesscad.core.constraints.ConstraintGraph",
         "harnesscad.domain.geometry.topology.selector_dsl",
@@ -34625,6 +35116,8 @@
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.check_mate_ports",
         "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.core.cisp.ops.mate_record",
+        "harnesscad.core.cisp.ops.thicken_delta",
         "harnesscad.core.constraints",
         "harnesscad.core.constraints.ConstraintGraph",
         "harnesscad.domain.geometry.topology.selector_dsl",
@@ -34807,6 +35300,8 @@
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.check_mate_ports",
         "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.core.cisp.ops.mate_record",
+        "harnesscad.core.cisp.ops.thicken_delta",
         "harnesscad.domain.geometry.mesh.halfedge",
         "harnesscad.domain.geometry.mesh.halfedge.HalfedgeMesh",
         "harnesscad.domain.geometry.mesh.winding_number",
@@ -35287,6 +35782,8 @@
         "harnesscad.core.cisp.ops.canonical_json",
         "harnesscad.core.cisp.ops.check_mate_ports",
         "harnesscad.core.cisp.ops.edit_oplog",
+        "harnesscad.core.cisp.ops.mate_record",
+        "harnesscad.core.cisp.ops.thicken_delta",
         "harnesscad.eval.verifiers.assembly",
         "harnesscad.eval.verifiers.assembly.mate_dof",
         "harnesscad.eval.verifiers.verify",
@@ -35301,6 +35798,31 @@
       "summary": "StubBackend \u2014 a dependency-free backend that models the op semantics well",
       "symbols": [
         "StubBackend"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.backends.transaction",
+      "imports": [
+        "harnesscad.eval.verifiers.verify",
+        "harnesscad.eval.verifiers.verify.Diagnostic",
+        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.io.backends.base",
+        "harnesscad.io.backends.base.ApplyResult"
+      ],
+      "layer": "io",
+      "name": "transaction",
+      "package": "backends",
+      "summary": "Transactional kernel ops: every mutating op commits or leaves state byte-equivalent.",
+      "symbols": [
+        "RollbackFailed",
+        "TransactionalBackend",
+        "main",
+        "preflight",
+        "restore_state",
+        "snapshot_state",
+        "state_fingerprint",
+        "with_rollback"
       ],
       "tags": []
     },
@@ -36122,6 +36644,28 @@
         "DxfSerializer",
         "Entity",
         "Layer"
+      ],
+      "tags": [
+        "format",
+        "io"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.formats.dxf_units",
+      "imports": [
+        "harnesscad.io.formats.dxf",
+        "harnesscad.io.formats.dxf.DxfDocument"
+      ],
+      "layer": "io",
+      "name": "dxf_units",
+      "package": "formats",
+      "summary": "DXF $INSUNITS resolution: the 2D half of the silent-scale trap.",
+      "symbols": [
+        "DxfUnits",
+        "main",
+        "parse_insunits",
+        "resolve_insunits",
+        "units_from_dxf_text"
       ],
       "tags": [
         "format",
@@ -37034,6 +37578,27 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.io.ingest._step_check_worker",
+      "imports": [
+        "harnesscad.io.formats.step",
+        "harnesscad.io.formats.step.ParseError",
+        "harnesscad.io.formats.step.Typed",
+        "harnesscad.io.formats.step.parse"
+      ],
+      "layer": "io",
+      "name": "_step_check_worker",
+      "package": "ingest",
+      "summary": "Worker process for :mod:`harnesscad.io.ingest.step_check` -- never imported.",
+      "symbols": [
+        "run"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.io.ingest.assembly_transform",
       "imports": [],
       "layer": "io",
@@ -37541,6 +38106,26 @@
         "patch_order"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.io.ingest.step_check",
+      "imports": [],
+      "layer": "io",
+      "name": "step_check",
+      "package": "ingest",
+      "summary": "Subprocess-isolated STEP checking: a bad file kills a child, never the parent.",
+      "symbols": [
+        "StepCheckResult",
+        "bbox_overlap",
+        "check_step",
+        "interpenetration_candidates",
+        "main"
+      ],
+      "tags": [
+        "format",
+        "io",
+        "verify"
+      ]
     },
     {
       "dotted": "harnesscad.io.ingest.step_reserialize",
@@ -38318,8 +38903,11 @@
       "symbols": [
         "ArgSpec",
         "CommandSpec",
+        "GeneratedFileConflict",
         "command_markdown",
         "command_specs",
+        "generated_relpaths",
+        "hand_authored_skills",
         "main",
         "marketplace_json",
         "plugin_json",

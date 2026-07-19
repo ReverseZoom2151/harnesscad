@@ -147,6 +147,7 @@ from harnesscad.domain.geometry.topology import entity_selector
 from harnesscad.domain.geometry.topology import explorer as topo_explorer
 from harnesscad.domain.geometry.topology import face_adjacency
 from harnesscad.domain.geometry.topology import region_selectors
+from harnesscad.domain.geometry.topology import euler_poincare
 from harnesscad.domain.geometry.topology import relative_dimensions
 from harnesscad.domain.geometry.topology import selector_dsl
 from harnesscad.domain.geometry.topology import selector_grammar
@@ -552,6 +553,10 @@ _TABLE: Tuple[Tuple[str, str, Callable[..., Any], Tuple[str, ...], str], ...] = 
      ("topology", "brep"), "Synthetic B-rep topology (faces/edges) of an analytic primitive."),
     ("topology.explore", _G + "topology.explorer", topo_explorer.topology_summary,
      ("topology", "brep"), "Kernel-free TopoDS-style topology summary."),
+    ("topology.euler", _G + "topology.euler_poincare",
+     euler_poincare.check_euler_poincare, ("topology", "brep"),
+     "Euler-Poincare genus check: catches a handle a closed sew reports as "
+     "clean; refuses (not guesses) on seam faces and inconsistent counts."),
     ("topology.naming.fingerprint", _G + "topology.topological_naming",
      topological_naming.fingerprint, ("topology", "parametric"),
      "Stable face fingerprint -- the topological-naming problem."),
