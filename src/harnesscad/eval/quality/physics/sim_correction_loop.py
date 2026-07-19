@@ -237,7 +237,7 @@ def _synthetic_world():
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.eval.quality.physics.sim_correction_loop",
-        description="Closed detect/identify/patch/revalidate loop (SimCorrect).",
+        description="Closed detect/identify/patch/revalidate loop.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="run the loop on a synthetic fault with a CAID "

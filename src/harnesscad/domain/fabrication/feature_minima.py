@@ -462,7 +462,7 @@ def _selfcheck() -> None:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="feature_minima",
-        description="Feature-typed FDM printability minima (AgentSCAD, MIT).",
+        description="Feature-typed FDM printability minima.",
     )
     parser.add_argument(
         "--selfcheck",

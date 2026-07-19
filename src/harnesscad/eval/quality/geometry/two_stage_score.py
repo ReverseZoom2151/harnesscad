@@ -433,7 +433,7 @@ def _invalid_metrics() -> GeometryMetrics:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.eval.quality.geometry.two_stage_score",
-        description="Two-stage Quality x SpecMatch design scoring (Studio-OSS).",
+        description="Two-stage Quality x SpecMatch design scoring.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="score a well-formed gear and an invalid solid and "

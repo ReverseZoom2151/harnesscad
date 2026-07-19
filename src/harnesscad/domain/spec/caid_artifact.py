@@ -406,7 +406,7 @@ def _demo_artifact() -> Dict[str, Any]:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.spec.caid_artifact",
-        description="CAID design-artifact and design-patch contract (SimCorrect).",
+        description="CAID design-artifact and design-patch contract.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="run the golden identification-to-patch loop on a "

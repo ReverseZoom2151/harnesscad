@@ -319,7 +319,7 @@ def _selfcheck() -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validation-failure observation ledger (AgentSCAD)")
+        description="Validation-failure observation ledger")
     parser.add_argument("--selfcheck", action="store_true")
     args = parser.parse_args(argv)
     if args.selfcheck:

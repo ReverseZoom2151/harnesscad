@@ -258,7 +258,7 @@ _SELFCHECK_CASES: Tuple[Tuple[str, FaultSignature, FaultClass], ...] = (
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.eval.quality.physics.fault_taxonomy",
-        description="Simulation-fault taxonomy and classifier (SimCorrect).",
+        description="Simulation-fault taxonomy and classifier.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="classify all five SimCorrect fault scenarios plus "

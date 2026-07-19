@@ -304,7 +304,7 @@ def _selfcheck() -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Skill trigger routing (AgentSCAD dialect)")
+        description="Skill trigger routing")
     parser.add_argument("--selfcheck", action="store_true")
     args = parser.parse_args(argv)
     if args.selfcheck:

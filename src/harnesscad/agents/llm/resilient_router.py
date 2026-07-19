@@ -192,7 +192,7 @@ class ResilientRouter:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.agents.llm.resilient_router",
-        description="Provider cascade with failure cooldown (Studio-OSS).",
+        description="Provider cascade with failure cooldown.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="run the cascade against injected fake providers: "
