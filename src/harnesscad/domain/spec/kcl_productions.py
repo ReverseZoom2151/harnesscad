@@ -56,7 +56,7 @@ __all__ = [
 ]
 
 # ---------------------------------------------------------------------------
-# Production table (transliteration of kcl.grammar).
+# Production table (the KCL phrase grammar).
 #
 # Notation: rule name -> tuple of alternatives. ``?`` optional, ``*`` zero or
 # more, ``+`` one or more, ``|`` separates inline alternatives, quoted strings

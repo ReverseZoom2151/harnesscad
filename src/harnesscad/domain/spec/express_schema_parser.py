@@ -3,16 +3,16 @@
 STEP has two distinct languages: the *data* exchange format (part 21, the
 ``#N = ENTITY(...);`` text handled by :mod:`formats.stepllm_parser`) and the
 *schema definition* language, EXPRESS (part 11), in which the meaning of every
-entity, its attributes, and its inheritance are declared.  ``espr`` -- the
-EXPRESS compiler shipped inside ruststep -- parses the latter to generate Rust
-types.  The harness already models the *data* side and a small hand-written
+entity, its attributes, and its inheritance are declared.  An EXPRESS compiler
+parses the latter to generate native types.  The harness already models the
+*data* side and a small hand-written
 subset of entity layouts (:mod:`formats.stepllm_schema`), but it has no parser
 for the EXPRESS *language* itself.  This module fills that gap: it reads an
 ``.exp`` schema and builds an entity / type / attribute / inheritance model that
 downstream code (inheritance flattening, schema-to-data validation) can query.
 
 The grammar handled follows ISO 10303-11 (production numbers cited from the
-document, mirroring espr's ``parser/`` module):
+standard):
 
   * ``SCHEMA name; ... END_SCHEMA;`` with ``USE``/``REFERENCE`` interface specs;
   * ``ENTITY`` declarations: comma-shared explicit attributes, ``OPTIONAL``,

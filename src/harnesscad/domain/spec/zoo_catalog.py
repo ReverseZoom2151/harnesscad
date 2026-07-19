@@ -176,19 +176,19 @@ ENGINE_OPS: Tuple[str, ...] = (
 # File-conversion format matrix.
 # ---------------------------------------------------------------------------
 
-#: Formats Zoo can read (FileImportFormat).
+#: Formats the engine can read (FileImportFormat).
 IMPORT_FORMATS: Tuple[str, ...] = (
     "acis", "catia", "creo", "fbx", "gltf", "inventor", "nx", "obj", "parasolid",
     "ply", "sldprt", "step", "stl",
 )
 
-#: 3D formats Zoo can write (FileExportFormat).
+#: 3D formats the engine can write (FileExportFormat).
 EXPORT_FORMATS_3D: Tuple[str, ...] = ("fbx", "glb", "gltf", "obj", "ply", "step", "stl")
 
-#: 2D formats Zoo can write (OutputFormat2d) -- currently DXF only.
+#: 2D formats the engine can write (OutputFormat2d) -- currently DXF only.
 EXPORT_FORMATS_2D: Tuple[str, ...] = ("dxf",)
 
-#: All (src, dst) pairs Zoo's file-conversion endpoint accepts (src != dst).
+#: All (src, dst) pairs the file-conversion endpoint accepts (src != dst).
 CONVERSION_MATRIX: Tuple[Tuple[str, str], ...] = tuple(
     (src, dst)
     for src in IMPORT_FORMATS
@@ -235,7 +235,7 @@ def import_format_for_extension(filename_or_ext: str) -> str:
 
 
 def can_convert(src: str, dst: str) -> bool:
-    """True if Zoo can convert from import format ``src`` to export format ``dst``."""
+    """True if the engine can convert from import format ``src`` to export format ``dst``."""
     return src in IMPORT_FORMATS and dst in EXPORT_FORMATS_3D and src != dst
 
 

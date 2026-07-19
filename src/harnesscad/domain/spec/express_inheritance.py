@@ -2,8 +2,8 @@
 
 EXPRESS entities form a multiple-inheritance lattice: ``ENTITY b SUBTYPE OF
 (a)`` makes ``b`` inherit every attribute of ``a``, and ``SUPERTYPE OF`` /
-``SUBTYPE_CONSTRAINT`` declare the complementary edges.  ruststep's ``ir``
-stage ("legalize") resolves these edges and materialises, for each concrete
+``SUBTYPE_CONSTRAINT`` declare the complementary edges.  A legalisation
+stage resolves these edges and materialises, for each concrete
 entity, the full ordered attribute list an instance must supply -- supertype
 attributes first, then the entity's own.  This is exactly the information the
 part-21 data side needs: a ``#N = FOO(...)`` record lists inherited attributes

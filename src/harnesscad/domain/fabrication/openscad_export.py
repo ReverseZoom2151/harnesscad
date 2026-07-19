@@ -1,11 +1,11 @@
-"""t2cdean_openscad_export -- deterministic OpenSCAD CLI export planning.
+"""Deterministic OpenSCAD CLI export planning.
 
-The PrintX / Text-to-CAD (dean) app materialises geometry by shelling out to the
+A typical app materialises geometry by shelling out to the
 OpenSCAD binary::
 
     openscad -o <out> --export-format <fmt> <tmp>.scad
 
-and it does so with three bugs worth fixing rather than copying:
+and it commonly does so with three bugs worth fixing rather than copying:
 
 1.  the temp file name is a ``uuid4()`` -- so an identical prompt re-renders and
     re-writes a new artefact every time, and nothing can be cached;
@@ -105,7 +105,7 @@ def source_digest(source: str) -> str:
 def artifact_name(source: str) -> str:
     """Content-addressed stem: identical source always yields the same name.
 
-    Replaces PrintX's ``uuid.uuid4()``, which made every render a cache miss.
+    Replaces a ``uuid.uuid4()`` stem, which made every render a cache miss.
     """
     return str(uuid.uuid5(_NAMESPACE, source_digest(source)))
 

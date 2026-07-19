@@ -44,7 +44,7 @@ class Feature:
     ``params`` maps a parameter name (e.g. ``"radius"``, ``"width"``) to its
     *stated values*. A value of ``None`` means the slot exists but was left
     unspecified (under-specification). A list/tuple of two or more distinct
-    numbers means the same slot was assigned conflicting values (the paper's
+    numbers means the same slot was assigned conflicting values (the
     "radius 8 ... radius 10" case).
     """
 
@@ -141,7 +141,7 @@ _NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
 def vague_phrases(text: str) -> List[str]:
     """Return vague size terms in ``text`` that are not pinned to a number.
 
-    Mirrors the paper's "Ambiguous dimensions: vague size descriptions without
+    Mirrors the rule "Ambiguous dimensions: vague size descriptions without
     specific measurements". A term is only flagged when no numeric measurement
     appears in the same clause.
     """
@@ -158,7 +158,7 @@ def vague_phrases(text: str) -> List[str]:
 
 
 # --------------------------------------------------------------------------- #
-# Required-slot model (the paper: "Always include sketch plane, extrusion
+# Required-slot model ("Always include sketch plane, extrusion
 # direction, and extrusion distance").
 # --------------------------------------------------------------------------- #
 
@@ -181,7 +181,7 @@ def _feature_key(feat: Feature, param: str) -> str:
 # --------------------------------------------------------------------------- #
 
 class AmbiguityDetector:
-    """Deterministic auditor implementing ProCAD's three-class taxonomy."""
+    """Deterministic auditor implementing the three-class taxonomy."""
 
     def detect(self, spec: CADSpec) -> List[Issue]:
         issues: List[Issue] = []
@@ -302,7 +302,7 @@ def question_for(issue: Issue) -> ClarQuestion:
 
 @dataclass(frozen=True)
 class Audit:
-    """Result of a proactive audit: the paper's ``is_misleading`` envelope."""
+    """Result of a proactive audit: the ``is_misleading`` envelope."""
 
     is_misleading: bool
     issues: Tuple[Issue, ...]
@@ -323,7 +323,7 @@ class Audit:
 def audit(spec: CADSpec) -> Audit:
     """Audit ``spec`` and emit the minimal set of clarification questions.
 
-    Only one question is asked per distinct issue ``key`` (the paper's "ask the
+    Only one question is asked per distinct issue ``key`` (the "ask the
     minimum number of clarifying questions necessary").
     """
     issues = AmbiguityDetector().detect(spec)
@@ -358,7 +358,7 @@ def under_specification_score(spec: CADSpec) -> float:
     """Fraction of required geometric slots that are filled in ``[0, 1]``.
 
     ``1.0`` means fully specified; lower values indicate more missing
-    dimensions (the paper's under-specified prompts).
+    dimensions (the under-specified prompts).
     """
     slots = _required_slots(spec)
     if not slots:

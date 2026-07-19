@@ -91,7 +91,7 @@ ML_SUBCOMMANDS: Dict[str, Tuple[str, ...]] = {
     "kcl": ("edit", "copilot"),
 }
 
-# The geometry-property query verbs shared by `zoo kcl` and `zoo file`.
+# The geometry-property query verbs shared by the `kcl` and `file` groups.
 # Each runs a headless engine measurement and returns the named property.
 GEOMETRY_QUERIES: Tuple[str, ...] = (
     "volume",
@@ -104,7 +104,7 @@ GEOMETRY_QUERIES: Tuple[str, ...] = (
 
 
 def top_level_commands() -> List[str]:
-    """All top-level ``zoo`` verbs, sorted."""
+    """All top-level CLI verbs, sorted."""
     return sorted(COMMANDS)
 
 
@@ -119,7 +119,7 @@ def is_geometry_query(subcommand: str) -> bool:
 
 
 def command_path_exists(command: str, subcommand: str = "") -> bool:
-    """True if ``zoo <command> [<subcommand>]`` is a valid invocation path."""
+    """True if ``<command> [<subcommand>]`` is a valid invocation path."""
     if command not in COMMANDS:
         return False
     if not subcommand:

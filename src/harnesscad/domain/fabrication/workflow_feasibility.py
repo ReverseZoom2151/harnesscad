@@ -1,26 +1,26 @@
-"""Per-workflow feasibility analysis (CAMeleon's "learning from limits").
+"""Per-workflow feasibility analysis ("learning from limits").
 
-Feng et al. stress that a comparison tool must "show what is not working": each
-workflow gets its *own* feasibility rule rather than one generic check
-(Section 7.1.3, Figure 16, Appendix Figure 22). This module implements that
-dispatch of workflow-specific, deterministic checks:
+A comparison tool must show what is *not* working: each
+workflow gets its *own* feasibility rule rather than one generic check.
+This module implements that dispatch of workflow-specific, deterministic
+checks:
 
   * ``machine_fit``   -- part bounding box vs the machine work envelope; if it
                          overflows, how many pieces must it split into
-                         (Figure 4a: "splitting into multiple parts for the
-                         available printer bed size").
+                         (splitting into multiple parts for the
+                         available printer bed size).
   * ``print_time``    -- deterministic FDM print-time estimate from volume,
-                         infill and material (Figure 4b: "7,479 minutes ...
-                         20% infill, generic PLA").
+                         infill and material (for example 7,479 minutes at
+                         20% infill in generic PLA).
   * ``material_stock``-- snap a requested sheet thickness to the discrete stock
-                         a shop actually carries (Figure 15c).
+                         a shop actually carries.
   * ``wire_form``     -- minimum feasible segment length and bend angle for a
                          wire-bent frame; flag bends a standard bender cannot
-                         make (Figure 16b).
+                         make.
   * ``foam_load``     -- warn when a non-load-bearing material (foam, felt,
-                         pulp) is used structurally (the "foam strength tip").
+                         pulp) is used structurally (the foam strength tip).
   * ``draft_angle``   -- warn when a mold face has insufficient / negative draft
-                         to demold (Figure 16a).
+                         to demold.
 
 These are *workflow-level* feasibility rules keyed on the chosen paradigm; they
 complement, and never duplicate, the per-solid heuristics in ``verifiers/dfm.py``

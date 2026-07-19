@@ -1,10 +1,7 @@
 """Wheel-rim ISO specification code parser and derived geometry.
 
-This module implements the wheel-rim specification-code parser and the derived
-rim geometry described in:
-
-    "Generative AI and CAD Automation for Diverse and Novel Mechanical Component
-    Designs Under Data Constraints" (referred to below as the DATACON paper).
+This module implements a wheel-rim specification-code parser and the derived
+rim geometry.
 
 Automotive wheel rims are described by compact ISO-style specification codes such
 as::
@@ -20,35 +17,35 @@ which decode as:
     * ``ET34``        -- wheel offset / "Einpresstiefe" (mm),
     * ``C/B:73``      -- centre-bore diameter (mm).
 
-Paper cross-reference tables reproduced here:
+Cross-reference tables reproduced here:
 
-    * Section 3.1, Table 1 -- nominal rim-diameter code -> specified rim
+    * Table 1 -- nominal rim-diameter code -> specified rim
       diameter ``D`` (mm).  Note the specified diameter is measured at the bead
       seat, so it is larger than the nominal code times 25.4.
-    * Section 3.1, Table 2 -- flange type -> flange height ``G`` (mm).  The
+    * Table 2 -- flange type -> flange height ``G`` (mm).  The
       "3.00 B" flange family uses ``G = 14.5 mm`` while the "J" family
       (nominal widths 14-21) uses ``G = 17.5 mm``.
 
 Derived-geometry equations implemented here:
 
-    * Section 3.3 (equation near line 481) -- external circle radius::
+    * External circle radius::
 
           Rcs = D / 2 + G
 
       For ``D = 436.6 mm`` (code 17) and ``G = 17.5 mm`` this gives
       ``Rcs ~= 235.8 mm``.
 
-    * Section 3.5, equation 16 -- bolt-circle outer diameter::
+    * Bolt-circle outer diameter::
 
           Do = PCD + 4 * Rs
 
       where ``Rs`` is the bolt-hole radius.
 
-    * Section 3.5, equation 17 -- centre-bore inner diameter::
+    * Centre-bore inner diameter::
 
           Di = CB
 
-    * Section 3.5, equation 5 -- transform ratio between the specified and the
+    * Transform ratio between the specified and the
       actual external circle radii::
 
           rho = Rcs / Rca
@@ -64,7 +61,7 @@ from typing import Optional
 
 
 # ---------------------------------------------------------------------------
-# Paper Table 1 (Section 3.1): nominal rim-diameter code -> specified diameter D
+# Table 1: nominal rim-diameter code -> specified diameter D
 # (mm), measured at the bead seat.
 # ---------------------------------------------------------------------------
 SPECIFIED_DIAMETER_MM = {
@@ -90,7 +87,7 @@ SPECIFIED_DIAMETER_MM = {
 
 
 # ---------------------------------------------------------------------------
-# Paper Table 2 (Section 3.1): flange type -> flange height G (mm).
+# Table 2: flange type -> flange height G (mm).
 #   * "3.00 B" family        -> G = 14.5 mm
 #   * "J" family (14-21)     -> G = 17.5 mm  (J, JJ, JX variants)
 # ---------------------------------------------------------------------------
@@ -106,7 +103,7 @@ FLANGE_HEIGHT_MM = {
 def specified_diameter(code: int) -> float:
     """Return the specified rim diameter D (mm) for a nominal diameter code.
 
-    Implements the Table 1 cross-reference from Section 3.1 of the DATACON
+    Implements the Table 1 cross-reference of the nominal rim-diameter
     paper.  Raises ``ValueError`` for a code not present in the table.
     """
     try:
@@ -118,7 +115,7 @@ def specified_diameter(code: int) -> float:
 def flange_height(flange: str) -> float:
     """Return the flange height G (mm) for a flange type string.
 
-    Implements the Table 2 cross-reference from Section 3.1 of the DATACON
+    Implements the Table 2 cross-reference of the flange
     paper.  Supports ``'B'`` (14.5 mm) and the ``'J'`` family variants
     (``'J'``, ``'JJ'``, ``'JX'``, ``'JK'`` -> 17.5 mm).  Raises ``ValueError``
     for an unknown flange type.
@@ -176,7 +173,7 @@ def _parse_width_flange(code: str):
 def parse_rim_spec(code: str) -> RimSpec:
     """Parse a wheel-rim specification code into a :class:`RimSpec`.
 
-    Section 3.1 of the DATACON paper.  The first integer token is required and
+    the specification-code grammar.  The first integer token is required and
     becomes ``diameter_code``; all other tokens are optional and default to
     ``None`` when absent.  Parsing is token-order independent (regex based).
 
@@ -235,7 +232,7 @@ def parse_rim_spec(code: str) -> RimSpec:
 # Derived geometry (Sections 3.3 and 3.5).
 # ---------------------------------------------------------------------------
 def external_circle_radius(D: float, G: float) -> float:
-    """External circle radius Rcs = D/2 + G (Section 3.3).
+    """External circle radius Rcs = D/2 + G.
 
     For ``D = 436.6 mm`` and ``G = 17.5 mm`` this returns ``235.8 mm``.
     """
@@ -243,17 +240,17 @@ def external_circle_radius(D: float, G: float) -> float:
 
 
 def bolt_circle_outer_diameter(pcd: float, bolt_radius: float) -> float:
-    """Bolt-circle outer diameter Do = PCD + 4*Rs (Section 3.5, equation 16)."""
+    """Bolt-circle outer diameter Do = PCD + 4*Rs."""
     return pcd + 4.0 * bolt_radius
 
 
 def center_bore_inner_diameter(cb: float) -> float:
-    """Centre-bore inner diameter Di = CB (Section 3.5, equation 17)."""
+    """Centre-bore inner diameter Di = CB."""
     return cb
 
 
 def transform_ratio(rcs: float, rca: float) -> float:
-    """Transform ratio rho = Rcs / Rca (Section 3.5, equation 5).
+    """Transform ratio rho = Rcs / Rca.
 
     Raises ``ValueError`` when ``rca <= 0``.
     """

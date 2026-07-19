@@ -101,7 +101,7 @@ def parse_part_brief(brief: str) -> PartSpec:
 
 
 def hole_positions(spec: PartSpec) -> List[Tuple[float, float]]:
-    """Corner-hole (x, y) positions for a plate, cad-agent's margin rule.
+    """Corner-hole (x, y) positions for a plate, using the standard margin rule.
 
     Margin = ``max(2*hole_diameter, 0.15*min(width, depth))``. Up to four
     corners are used; ``holes <= 0`` yields none.

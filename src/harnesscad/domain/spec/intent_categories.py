@@ -119,7 +119,7 @@ class PromptValidation:
 
 
 def validate_prompt(prompt: str) -> PromptValidation:
-    """Lint ``prompt`` against BrickGPT constraints.
+    """Lint ``prompt`` against the brick-model constraints.
 
     Flags curved/organic geometry, oversize adjectives, and non-brick materials.
     More than two warnings marks the prompt invalid. Also suggests the best

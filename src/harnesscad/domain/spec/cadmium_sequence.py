@@ -107,7 +107,7 @@ class Operation:
 
 @dataclass(frozen=True)
 class CadSequence:
-    """An ordered list of :class:`Operation` -- CADmium's model representation."""
+    """An ordered list of :class:`Operation` -- the model representation."""
 
     operations: Tuple[Operation, ...] = ()
 
@@ -365,7 +365,7 @@ def _parameter_error(pred: CadSequence, ref: CadSequence) -> float:
 
 
 def score(pred: CadSequence, ref: CadSequence) -> SequenceScore:
-    """Score a predicted sequence against a reference (CADmium-style metrics)."""
+    """Score a predicted sequence against a reference (sequence-level metrics)."""
     p_cmds, r_cmds = pred.commands(), ref.commands()
     precision, recall, f1 = _multiset_prf(p_cmds, r_cmds)
     return SequenceScore(

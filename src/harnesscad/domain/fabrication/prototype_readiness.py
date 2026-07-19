@@ -1,29 +1,26 @@
-"""Looks-like prototyping-readiness gate for Sketch2Prototype image-to-3D output.
+"""Looks-like prototyping-readiness gate for image-to-3D output.
 
-Motivated by "Sketch2Prototype" (Edwards, Man, Ahmed), Sec. 2.2 (Post-processing
-and Fabrication) and Sec. 4.2 (Limitations). The paper documents the concrete,
-recurring failure modes that stop a generated concept from being a printable
-"looks-like" prototype and enumerates the guards its pipeline applies:
+A sketch-to-image-to-3D pipeline has concrete, recurring failure modes that stop
+a generated concept from being a printable "looks-like" prototype:
 
-  * Image-to-3D meshes are "often non-smooth, FRAGMENTED, and sometimes
-    non-manufacturable ... postprocessing is required either to smooth surfaces,
-    FILL HOLES, or remove unmanufacturable parts" (Sec. 4.2).
-  * "The resulting image generated from DALL-E 3 may contain TEXT, which
-    negatively affects the generation quality when converting from image to 3D.
-    To prevent this, we manually select a set of images that do not include any
-    text" (Sec. 2.1).
-  * A sketch-to-text prompt can be "deemed an UNSAFE prompt by DALL-E 3", which
-    blocks generation entirely (Sec. 4.2).
-  * Shap-E outputs are exported from Blender as STL for printing; a readiness
+  * Image-to-3D meshes are often non-smooth, FRAGMENTED, and sometimes
+    non-manufacturable; postprocessing is required either to smooth surfaces,
+    FILL HOLES, or remove unmanufacturable parts.
+  * A generated image may contain TEXT, which
+    negatively affects the generation quality when converting from image to 3D,
+    so text-bearing images are excluded up front.
+  * A sketch-to-text prompt can be rejected as an UNSAFE prompt by the image
+    generator, which blocks generation entirely.
+  * Image-to-3D outputs are exported as STL for printing; a readiness
     check gates whether that export is even worth attempting.
 
-This module turns those documented modes into a deterministic checklist over a
+This module turns those modes into a deterministic checklist over a
 lightweight prototype descriptor (a dict), producing advisory findings with a
 severity model (``ok`` / ``warning`` / ``error``) and an overall readiness gate.
 It is distinct from ``fabrication/fabworkflow_feasibility`` (machine envelope /
 print time / material stock rules keyed on a fabrication paradigm) and from
 ``verifiers/dfm`` (per-solid wall/draft checks on an OCCT solid): this operates
-on the S2P image-to-3D *stage output* and its upstream prompt/image guards, with
+on the image-to-3D *stage output* and its upstream prompt/image guards, with
 no geometry kernel involved.
 
 Standard library only; fully deterministic.
@@ -65,7 +62,7 @@ def check_prompt_safety(descriptor):
 def check_source_image_text(descriptor):
     """Warn if the source image contains rendered text before image-to-3D.
 
-    The paper manually excludes text-bearing images because text degrades the
+    Text-bearing images are excluded because text degrades the
     image-to-3D conversion.
     """
     if descriptor.get("image_contains_text", False):
@@ -119,7 +116,7 @@ def check_surface_smoothness(descriptor):
 def check_manufacturable_volume(descriptor):
     """Error on a degenerate/sparse mesh with non-positive printable volume.
 
-    The paper notes unprocessed-sketch meshes are "sparse and unmanufacturable".
+    Unprocessed-sketch meshes are typically sparse and unmanufacturable.
     """
     if "volume" not in descriptor:
         return _f("manufacturable_volume", OK, "volume not provided; skipped")

@@ -125,5 +125,5 @@ _STYLE_WARN_RE = re.compile(r"\b[XYZ]{2}\s*@\s*\(")  # e.g. "ZX @ (-64, 9, -36)"
 
 
 def style_warnings(description: str) -> List[str]:
-    """Return non-leakage style warnings (paper's ``detected_code_snippets``)."""
+    """Return non-leakage style warnings (the ``detected_code_snippets``)."""
     return [m.group(0).strip() for m in _STYLE_WARN_RE.finditer(description)]

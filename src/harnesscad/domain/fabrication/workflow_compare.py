@@ -1,29 +1,29 @@
 """Workflow comparison, intent-based ranking and reflection checklists.
 
-The heart of CAMeleon (Feng et al.) is *guided comparison*: put fabrication
+The heart of guided comparison is putting fabrication
 workflows side by side so a designer reasons across processes instead of locking
 into the first one they know. This module builds the deterministic, buildable
 core of that idea:
 
-  * ``compare_workflows``  -- a side-by-side table across the comparison criteria
-    participants found most useful (equipment, quality/precision, time, cost,
-    material, assembly complexity, durability, keywords) -- Figure 7, Section 8.4.
+  * ``compare_workflows``  -- a side-by-side table across the most useful
+    comparison criteria (equipment, quality/precision, time, cost,
+    material, assembly complexity, durability, keywords).
 
-  * ``rank_by_intent``     -- the "intent-based filtering" future-work feature
-    (Section 8.4.4): "If I give one line -- food-safe, transparent, under 3 hours
-    -- the system could shortlist two or three workflows with reasons." A purely
+  * ``rank_by_intent``     -- intent-based filtering: given one line of intent
+    ("food-safe, transparent, under 3 hours"), shortlist two or three workflows
+    with reasons. A purely
     rule-based scorer over the declarative capability tags in the taxonomy, with
     a human-readable reason for every match and miss. No model, no training.
 
-  * ``reflection_checklist`` -- the "My Reflection" structured checklist
-    (Figure 17): general considerations (materials, tools, size, time, precision,
+  * ``reflection_checklist`` -- a structured reflection checklist:
+    general considerations (materials, tools, size, time, precision,
     cost, skills) plus workflow-specific questions. This is a design-rationale /
     decision-trace schema, complementary to the exploration trace below.
 
   * ``ExplorationTrace``   -- a small deterministic log of the workflows a
-    designer considered vs. selected, and the reasoning shift, mirroring the
-    study's pre/post analysis (Table 2). This captures *design reasoning* as
-    structured data, which is the paper's stated goal.
+    designer considered vs. selected, and the reasoning shift, following a
+    pre/post analysis schema. This captures *design reasoning* as
+    structured data.
 
 Everything is stdlib-only and deterministic. This is the workflow-level
 decision-support layer; it consumes the taxonomy and does not duplicate the
@@ -47,8 +47,8 @@ from harnesscad.domain.fabrication.workflow_taxonomy import (
 # --------------------------------------------------------------------------- #
 # Side-by-side comparison
 # --------------------------------------------------------------------------- #
-# The comparison criteria, in the priority order participants reported
-# (equipment 9/12, final quality 8/12, difficulty 6/12, time 4/12 -- Sec 8.4.3).
+# The comparison criteria, in reported priority order
+# (equipment 9/12, final quality 8/12, difficulty 6/12, time 4/12).
 COMPARISON_CRITERIA: Tuple[str, ...] = (
     "category",
     "machines",
@@ -93,8 +93,7 @@ def compare_workflows(
 ) -> Dict[str, Dict[str, object]]:
     """Build a side-by-side comparison table.
 
-    The paper caps the comparison view at four workflows; we enforce the same
-    limit to keep the comparison legible (Figure 7: "up to four windows").
+    The comparison view is capped at four workflows to keep it legible.
     Returns ``{workflow_id: {criterion: value}}`` preserving input order.
     """
     ids = list(workflow_ids)
@@ -237,7 +236,7 @@ def rank_by_intent(
 # --------------------------------------------------------------------------- #
 # Reflection checklist (design-rationale schema)
 # --------------------------------------------------------------------------- #
-# General considerations shown for every workflow (Figure 17b).
+# General considerations shown for every workflow.
 _GENERAL_CONSIDERATIONS: Tuple[str, ...] = (
     "Have you considered the material properties for your use case?",
     "Do you have access to the required tools/machines?",
@@ -248,7 +247,7 @@ _GENERAL_CONSIDERATIONS: Tuple[str, ...] = (
     "Do you have the skills, or a plan to learn them, for this workflow?",
 )
 
-# Workflow-specific reflection questions (Figure 17: e.g. overhang/post-process
+# Workflow-specific reflection questions (e.g. overhang/post-process
 # for 3D printing, kerf/nesting for laser cutting).
 _WORKFLOW_QUESTIONS: Dict[str, Tuple[str, ...]] = {
     "fdm_3d_printing": (
@@ -298,7 +297,7 @@ class ReflectionChecklist:
 
 
 def reflection_checklist(workflow_id: str) -> ReflectionChecklist:
-    """The "My Reflection" structured checklist for a workflow (Figure 17)."""
+    """The structured reflection checklist for a workflow."""
     get_workflow(workflow_id)  # validates
     return ReflectionChecklist(
         workflow_id=workflow_id,
@@ -308,15 +307,15 @@ def reflection_checklist(workflow_id: str) -> ReflectionChecklist:
 
 
 # --------------------------------------------------------------------------- #
-# Exploration / reasoning trace (Table 2 pre/post schema)
+# Exploration / reasoning trace (pre/post schema)
 # --------------------------------------------------------------------------- #
 @dataclass
 class ExplorationTrace:
     """A deterministic record of a design-reasoning session.
 
-    Captures the reasoning shift the study measured: which workflows were
+    Captures the reasoning shift: which workflows were
     *considered* and *selected* before vs. after guided comparison, and the
-    criteria cited. This turns the paper's qualitative pre/post analysis into a
+    criteria cited. This turns a qualitative pre/post analysis into a
     structured, queryable artifact.
     """
 

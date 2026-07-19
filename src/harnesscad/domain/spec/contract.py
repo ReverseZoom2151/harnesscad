@@ -94,7 +94,7 @@ class Predicate:
     ``kind`` records whether the clause is gate-checkable. ``unbound`` is ``True``
     when the brief did not specify this measurable -- a ``[NEEDS CLARIFICATION]``
     marker whose magnitude must never be guessed. ``hidden`` reserves a clause for
-    the TDAD-style hidden-predicate split (held out during generation, evaluated
+    the hidden-predicate split (held out during generation, evaluated
     after) so the model cannot game the visible contract.
     """
 

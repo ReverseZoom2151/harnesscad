@@ -47,7 +47,7 @@ __all__ = [
 
 
 class ApiCallStatus:
-    """Zoo async API-call status vocabulary (``Zoo.ApiCallStatus``)."""
+    """Async API-call status vocabulary (``ApiCallStatus``)."""
 
     QUEUED = "queued"
     UPLOADED = "uploaded"
@@ -70,7 +70,7 @@ def is_success(status: str) -> bool:
 
 
 class MlFeedback:
-    """Zoo ML feedback vocabulary (``Zoo.MlFeedback``)."""
+    """ML feedback vocabulary (``MlFeedback``)."""
 
     THUMBS_UP = "thumbs_up"
     THUMBS_DOWN = "thumbs_down"
@@ -91,7 +91,7 @@ _NEGATIVE_FEEDBACK = frozenset({MlFeedback.THUMBS_DOWN, MlFeedback.REJECTED})
 
 
 class CreatedAtSortMode:
-    """Zoo history sort mode (``Zoo.CreatedAtSortMode``)."""
+    """History sort mode (``CreatedAtSortMode``)."""
 
     ASC = "created_at_ascending"
     DESC = "created_at_descending"
@@ -99,7 +99,7 @@ class CreatedAtSortMode:
 
 @dataclass(frozen=True)
 class TextToCadResponse:
-    """A Zoo ML text-to-CAD response record (``Zoo.TextToCadResponse``).
+    """An ML text-to-CAD response record (``TextToCadResponse``).
 
     ``outputs`` maps an output filename (e.g. ``"source.step"``) to its bytes /
     base64 payload -- here we keep only the keys, since payloads are opaque.
@@ -152,7 +152,7 @@ class AcceptanceStats:
 
 
 def acceptance_stats(responses: Sequence[TextToCadResponse]) -> AcceptanceStats:
-    """Reframe Zoo's ``MlFeedback`` as a checkable acceptance metric.
+    """Reframe the ``MlFeedback`` signal as a checkable acceptance metric.
 
     Counts only rated, completed generations toward acceptance; a failed or
     unrated response never counts as accepted. This is the offline quality gate a

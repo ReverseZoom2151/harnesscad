@@ -522,7 +522,7 @@ def parse_srdf(text: str, urdf: UrdfDocument) -> SrdfDocument:
 
 
 def adjacent_collision_pairs(urdf: UrdfDocument) -> Tuple[Tuple[str, str], ...]:
-    """Every parent/child link pair of the URDF, sorted -- the pairs a MoveIt
+    """Every parent/child link pair of the URDF, sorted -- the pairs a
     setup assistant would disable with reason ``Adjacent``."""
     pairs = {
         tuple(sorted((joint.parent_link, joint.child_link)))

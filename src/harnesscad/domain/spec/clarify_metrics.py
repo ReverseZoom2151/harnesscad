@@ -124,7 +124,7 @@ def _scalar_eq(a: object, b: object) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# Combined judgement with the is_misleading special cases (Appendix G)
+# Combined judgement with the is_misleading special cases
 # --------------------------------------------------------------------------- #
 
 @dataclass(frozen=True)
@@ -140,7 +140,7 @@ def score_interaction(*, prompt_is_ambiguous: bool, agent_flagged: bool,
                       target: Optional[CADSpec] = None,
                       issue_keys: Optional[Sequence[str]] = None
                       ) -> ClarifierScore:
-    """Full Appendix-G scoring, including the flag special cases.
+    """Full scoring, including the flag special cases.
 
     * unambiguous prompt, agent did not flag  -> (1, 1)
     * unambiguous prompt, agent flagged        -> (0, 0)
