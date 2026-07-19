@@ -1,11 +1,8 @@
 """Deterministic dimensional-brief parser and parametric OpenSCAD emitter.
 
-Mined from **cad-agent** (``src/cad_agent/generator.py``), a minimal but
-complete text-to-CAD path: parse a natural-language part brief that carries
-explicit dimensions into a typed ``PartSpec``, then emit parametric OpenSCAD from
-that spec with no model call. cad-agent handles two families -- a mounting
-*plate* with corner holes and a hollow electronics *box* -- driven entirely by a
-regex over the brief.
+The parser turns a natural-language part brief with explicit dimensions into a
+typed ``PartSpec``, then emits parametric OpenSCAD with no model call. It
+supports mounting plates with corner holes and hollow electronics boxes.
 
 The transferable idea is the *deterministic front half* of a text-to-CAD system:
 a brief like
@@ -123,7 +120,7 @@ def hole_positions(spec: PartSpec) -> List[Tuple[float, float]]:
 
 def _emit_plate(spec: PartSpec) -> str:
     lines = [
-        "// parametric mounting plate (harnesscad, mined from cad-agent)",
+        "// parametric mounting plate (harnesscad)",
         "$fn = 64;",
         "difference() {",
         f"  cube([{spec.width:.1f}, {spec.depth:.1f}, {spec.height:.1f}], center = false);",
@@ -143,7 +140,7 @@ def _emit_box(spec: PartSpec) -> str:
     inner_d = max(spec.depth - wall * 2.0, 0.0)
     return "\n".join(
         [
-            "// hollow electronics box (harnesscad, mined from cad-agent)",
+            "// hollow electronics box (harnesscad)",
             "$fn = 64;",
             "difference() {",
             f"  cube([{spec.width:.1f}, {spec.depth:.1f}, {spec.height:.1f}], center = false);",

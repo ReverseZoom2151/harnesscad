@@ -1,22 +1,19 @@
-"""Catalogue of the Zoo/KittyCAD command-line tool's command surface.
+"""Catalogue of a CAD command-line tool's command surface.
 
-Static reference data mined from Zoo's CLI (``cli`` repo, the Rust ``zoo``
-binary; ``src/main.rs`` top-level ``SubCommand`` and each ``cmd_*.rs``
-sub-enum).  This complements the two SDK-derived modules already in the harness:
+Static reference data covers a CLI verb surface. This complements the two
+language and engine-surface modules already in the harness:
 
-*   :mod:`harnesscad.domain.spec.kcl_grammar` models the KCL *language*;
-*   :mod:`harnesscad.domain.spec.zoo_catalog` models the *engine op set*, KCL
-    stdlib and file-conversion matrix (the HTTP API surface);
+*   :mod:`harnesscad.domain.spec.kcl_grammar` models the CAD language;
+*   :mod:`harnesscad.domain.spec.zoo_catalog` models the engine op set,
+    standard library, and file-conversion matrix;
 *   this module models the *CLI verb surface* -- the commands a user or an agent
     driving the ``zoo`` binary can actually invoke, which neither of the other
     two captured.
 
 The load-bearing part for a text-to-CAD harness is the set of **geometry
-commands**: ``zoo kcl {volume,mass,center-of-mass,density,surface-area,
-bounding-box}`` and the identical ``zoo file`` family run a headless engine
-query against a KCL program or an imported CAD file and return a scalar/vector
-geometric property.  ``zoo file convert`` is the format-conversion entry point,
-and ``zoo ml text-to-cad`` / ``zoo ml kcl`` are the generative endpoints.
+commands**: geometry-property and conversion operations run a headless engine
+query against a CAD program or imported file and return scalar/vector geometric
+properties. Generative endpoints are represented separately.
 
 Everything here is inert data plus pure query helpers; nothing shells out and no
 CLI is invoked.  It exists so an agent that wants to *use* the Zoo CLI (or a
