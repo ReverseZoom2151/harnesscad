@@ -89,7 +89,7 @@ class FireReport:
 class HookBus:
     """A deterministic, error-isolated event hook bus.
 
-    Semantics ported from freecad-ai's ``HookRegistry.fire``:
+    Hook dispatch semantics:
 
     * handlers for an event run in registration order;
     * before each handler, if an earlier handler produced ``modify`` and the

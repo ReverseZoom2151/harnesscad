@@ -497,7 +497,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.electronics.circuit_validation",
         description="Rule-based Hardware IR netlist validation "
-        "(ported from Forma-OSS).",
+        ".",
     )
     parser.add_argument(
         "--selfcheck",

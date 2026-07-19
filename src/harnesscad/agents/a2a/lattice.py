@@ -488,7 +488,7 @@ def _selfcheck() -> None:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="harnesscad.agents.a2a.lattice",
-        description="Lattice typed agent-contract layer (ported from Forma-OSS).",
+        description="Lattice typed agent-contract layer.",
     )
     parser.add_argument(
         "--selfcheck",

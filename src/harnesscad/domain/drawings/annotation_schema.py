@@ -540,7 +540,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.annotation_schema",
         description="Typed enriched-annotation schema + tolerant LLM-JSON "
-        "parser (ported from CAD-Annotator).",
+        "parser.",
     )
     parser.add_argument(
         "--selfcheck",

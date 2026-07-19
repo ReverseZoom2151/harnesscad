@@ -317,7 +317,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.analysis_pipeline",
         description="Staged drawing-analysis pipeline + session record + edit "
-        "audit trail (ported from CAD-Annotator). All model calls injected.",
+        "audit trail. All model calls injected.",
     )
     parser.add_argument(
         "--selfcheck",

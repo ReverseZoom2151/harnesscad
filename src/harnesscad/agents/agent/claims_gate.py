@@ -160,7 +160,7 @@ class RunEvidence:
 def collect_evidence(events: Sequence[ToolEvent]) -> RunEvidence:
     """Fold an ordered tool-event log into a :class:`RunEvidence`.
 
-    Rules, ported from the documented workflow state machine:
+    Rules enforced by the workflow state machine:
 
       * ``mutation_succeeded`` iff some ``mutate_geometry`` event was approved
         and non-error;

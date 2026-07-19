@@ -387,7 +387,7 @@ def _selfcheck() -> int:
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Deterministic single-prompt compaction (ported from Forma-OSS)."
+        description="Deterministic single-prompt compaction."
     )
     parser.add_argument(
         "--selfcheck",

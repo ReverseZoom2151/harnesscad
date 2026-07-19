@@ -298,7 +298,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.requery",
         description="Confidence-gated re-query of low-confidence annotations "
-        "(ported from CAD-Annotator). Vision model injected, never required.",
+        ". Vision model injected, never required.",
     )
     parser.add_argument(
         "--selfcheck",

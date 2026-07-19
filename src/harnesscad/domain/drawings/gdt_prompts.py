@@ -269,7 +269,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.gdt_prompts",
         description="Deterministic GD&T / drawing-analysis prompt builders "
-        "(ported from CAD-Annotator). No LLM calls.",
+        ". No LLM calls.",
     )
     parser.add_argument(
         "--selfcheck",

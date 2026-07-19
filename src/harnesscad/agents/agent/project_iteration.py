@@ -807,7 +807,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         prog="harnesscad.agents.agent.project_iteration",
         description=(
             "Namespace-aware project iteration and self-correction engine "
-            "(ported from Forma-OSS)."
+            "."
         ),
     )
     parser.add_argument(

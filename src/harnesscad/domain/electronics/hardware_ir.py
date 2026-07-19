@@ -972,7 +972,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     missing keys) and asserts the round trip is exact."""
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.electronics.hardware_ir",
-        description="Typed Hardware IR dataclasses (ported from Forma-OSS).",
+        description="Typed Hardware IR dataclasses.",
     )
     parser.add_argument(
         "--selfcheck",

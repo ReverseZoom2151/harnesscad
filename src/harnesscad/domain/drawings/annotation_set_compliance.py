@@ -347,7 +347,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.annotation_set_compliance",
         description="Set-level ASME Y14.5-2018 compliance over enriched "
-        "annotations (ported from CAD-Annotator; per-frame checks live in "
+        "annotations (per-frame checks live in "
         "harnesscad.domain.drawings.gdt).",
     )
     parser.add_argument(
