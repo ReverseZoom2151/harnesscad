@@ -9554,7 +9554,7 @@
       "layer": "domain",
       "name": "feature_attributes",
       "package": "fabrication",
-      "summary": "Dimensional-attribute extraction for recognised manufacturing features",
+      "summary": "Dimensional-attribute extraction for recognised manufacturing features.",
       "symbols": [
         "extract_attributes"
       ],
@@ -19575,7 +19575,7 @@
       "layer": "domain",
       "name": "answer_engine",
       "package": "reconstruction",
-      "summary": "Grounded answer engine for CAD question answering",
+      "summary": "Grounded answer engine for CAD question answering.",
       "symbols": [
         "Answer",
         "answer_question"
@@ -19590,7 +19590,7 @@
       "layer": "domain",
       "name": "assembly_trace",
       "package": "reconstruction",
-      "summary": "Progressive assembly traces from part hierarchies (Shape of Thought).",
+      "summary": "Progressive assembly traces from part hierarchies.",
       "symbols": [
         "Part",
         "assembly_order",
@@ -19638,7 +19638,7 @@
       "layer": "domain",
       "name": "decomposition_graph",
       "package": "reconstruction",
-      "summary": "Hierarchical geometry-aware decomposition graph (Learning Hierarchical Graph).",
+      "summary": "Hierarchical geometry-aware decomposition graph.",
       "symbols": [
         "Constraint",
         "DecompositionGraph",
@@ -19709,7 +19709,7 @@
       "layer": "domain",
       "name": "knowledge_graph",
       "package": "reconstruction",
-      "summary": "Graph-CAD multi-layer knowledge graph (FORMAT v4) parser and validator.",
+      "summary": "Multi-layer knowledge graph (FORMAT v4) parser and validator.",
       "symbols": [
         "GraphNode",
         "KnowledgeGraph",

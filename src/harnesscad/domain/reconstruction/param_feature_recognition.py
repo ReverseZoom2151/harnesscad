@@ -17,7 +17,7 @@ produce. That makes the recognizer a deterministic, checkable oracle: given the
 faces and the expected parameters, does the geometry actually contain the
 features the spec promised.
 
-Recognizers provided (IntentForge's set, generalized):
+Recognizers provided:
 
 *   :func:`recognize_through_holes` -- cylindrical faces along an axis, matched
     on diameter / through-length / expected centres.

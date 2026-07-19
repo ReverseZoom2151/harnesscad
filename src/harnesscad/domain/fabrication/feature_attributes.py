@@ -1,12 +1,9 @@
-"""Dimensional-attribute extraction for recognised manufacturing features
-(Khan et al., "Leveraging Vision-Language Models for Manufacturing Feature
-Recognition in CAD Designs", Sec. 5 / ref. [15] "Automatic Feature Recognition
-and Dimensional Attributes Extraction From CAD Models").
+"""Dimensional-attribute extraction for recognised manufacturing features.
 
-The paper flags as a key limitation that its VLM "cannot extract geometric
-dimensions from recognized features, which are vital for downstream
-manufacturing tasks such as process selection, cost estimation, and quality
-control". Once a feature is *named* (by the VLM, or by the deterministic
+A recognised feature name alone cannot supply the geometric
+dimensions that downstream manufacturing tasks -- process selection, cost
+estimation, quality control -- depend on. Once a feature is *named* (by a
+model, or by the deterministic
 :mod:`reconstruction.mfgfeat_rule_detector`), the dimensional attributes ARE a
 deterministic geometric computation. This module provides that step.
 
