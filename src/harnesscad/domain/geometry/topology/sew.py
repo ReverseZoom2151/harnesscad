@@ -1,6 +1,6 @@
 """Tolerant face-to-shell sewing with tolerance monotonicity and healing.
 
-Ported from kerf-main geom/sew.py and geom/body_heal.py (kerf-cad-core).
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
 
 The harness has no full B-rep face type, so the sewing input is a minimal
 :class:`SewFace`: an ordered boundary polygon of 3D points with a per-face

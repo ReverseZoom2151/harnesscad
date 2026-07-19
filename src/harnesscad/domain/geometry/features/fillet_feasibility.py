@@ -1,5 +1,7 @@
 """Fillet-feasibility preflight predicate (deterministic, stdlib-only).
 
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+
 This module supplies the feasibility predicate and supported-input contract
 for an analytic rolling-ball fillet. The full rolling-ball fillet surface
 construction (quarter-cylinder fillet face for planar+planar, quarter-torus

@@ -1,5 +1,7 @@
 """Manufacturing-constrained, multi-load-case SIMP topology optimization.
 
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+
 The pure-Python optimizer uses SIMP (Solid Isotropic Material with
 Penalization): a bilinear-quad
 (Q4) plane-stress finite element solver with a banded LDL^T factorisation, a

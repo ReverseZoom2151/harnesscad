@@ -1,5 +1,7 @@
 """NURBS curve, surface and closed-loop offsetting with an honesty contract.
 
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+
 The module includes analytic constructors and least-squares B-spline fitting
 needed to provide exact and measured-deviation offset paths.
 

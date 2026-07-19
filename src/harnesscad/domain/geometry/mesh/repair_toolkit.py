@@ -1,5 +1,7 @@
 """Triangle-mesh repair toolkit: weld, unify normals, fill holes, decimate.
 
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+
 The toolkit operates on indexed triangle meshes with a never-raise contract
 and the harness mesh convention used by :mod:`harnesscad.domain.geometry.mesh.polyhedron` and
 :mod:`harnesscad.domain.geometry.mesh.halfedge`: vertices are a

@@ -1,5 +1,7 @@
 """Isotropic remeshing: split / collapse / flip / smooth.
 
+Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+
 The pure-Python algorithm uses these deterministic passes:
 
 1. split every edge longer than ``4/3 * L`` at its midpoint, processed

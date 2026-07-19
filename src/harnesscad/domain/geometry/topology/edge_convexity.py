@@ -30,6 +30,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Sequence, Tuple
 
+from harnesscad.domain.geometry.topology import brep_entity_ids
+
 Vec3 = Tuple[float, float, float]
 
 CONVEX = "convex"
@@ -104,6 +106,50 @@ def classify_edge_convexity(
     if rn < -tolerance:
         return CONCAVE
     return SMOOTH
+
+
+# The continuous three-way sign is a strict *subset* of JoinABLe's discrete
+# six-state ``Convexity`` enum. These helpers lift a label (or a full
+# classification) into that discrete id via the enum module's authoritative
+# ``EDGE_CONVEXITY_TO_ID`` bridge -- never a second mapping -- so a caller that
+# wants JoinABLe-compatible integer ids can get them. The three states the
+# continuous sign cannot express (``None`` for faces, ``Non-manifold``,
+# ``Degenerate``) are not producible from a sign and remain reachable through
+# ``brep_entity_ids.classify`` by their wire names.
+
+
+def discrete_convexity(label: str) -> "brep_entity_ids.Convexity":
+    """Lift a continuous convexity label to its discrete :class:`Convexity` state.
+
+    ``label`` is one of :data:`CONVEX`, :data:`CONCAVE`, :data:`SMOOTH` (exactly
+    the strings :func:`classify_edge_convexity` returns). The mapping is the enum
+    module's :data:`~...brep_entity_ids.EDGE_CONVEXITY_TO_ID` bridge. Raises
+    ``KeyError`` for any label outside the continuous three-way set.
+    """
+    cid = brep_entity_ids.EDGE_CONVEXITY_TO_ID[label]
+    return brep_entity_ids.Convexity(cid)
+
+
+def classify_edge_convexity_id(
+    normal_a: Sequence[float],
+    normal_b: Sequence[float],
+    tangent: Sequence[float],
+    forward: bool = True,
+    tolerance: float = 1e-6,
+) -> "brep_entity_ids.Convexity":
+    """Discrete-id variant of :func:`classify_edge_convexity`.
+
+    Runs the identical sign classification and returns the JoinABLe discrete
+    :class:`Convexity` state (a ``Convexity`` ``IntEnum``, so it is also its
+    integer id) instead of the continuous string label. The string API and its
+    return type are unchanged; this is an additive path for callers that want the
+    discrete taxonomy, with ``None`` / ``Non-manifold`` / ``Degenerate`` still
+    available directly from :mod:`...brep_entity_ids`.
+    """
+    label = classify_edge_convexity(
+        normal_a, normal_b, tangent, forward=forward, tolerance=tolerance
+    )
+    return discrete_convexity(label)
 
 
 def dihedral_angle(
