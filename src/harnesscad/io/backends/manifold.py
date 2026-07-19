@@ -11,10 +11,24 @@ engine is wrong. That is exactly how 47 op-fields rotted undetected.
 
 Manifold (https://github.com/elalish/manifold) is a genuinely independent voice:
 a fast, guaranteed-manifold mesh-boolean kernel with a DIFFERENT algorithm
-(exact-predicate mesh booleans over a collider, not Nef polyhedra, not OCCT
-B-rep, not a sampled SDF) and therefore a different failure surface. Adding it
-makes every future correctness claim strictly stronger -- a third algorithm has
-to agree, not just a third wrapper around the same one.
+(mesh booleans over a collider, not Nef polyhedra, not OCCT B-rep, not a
+sampled SDF) and therefore a different failure surface. Adding it makes every
+future correctness claim strictly stronger -- a third algorithm has to agree,
+not just a third wrapper around the same one.
+
+It is NOT exact-predicate, and this docstring said so until 2026-07-19. The
+core comparison is ``Shadows(p, q, dir) { return p == q ? dir < 0 : p < q; }``
+(manifold ``src/shared.h:121``): a float comparison whose ties are broken by a
+direction argument. Degeneracies are resolved by SYMBOLIC PERTURBATION, and the
+perturbation is keyed on the operation via the ``expandP`` template parameter
+(``src/boolean3.cpp:53``), which is why upstream does not promise that
+``A intersect B`` and ``B intersect A`` produce identical output.
+
+That distinction matters more than it used to: metric booleans were moved onto
+manifold3d because OCCT booleans HANG on interface-overlay geometry. That is a
+liveness argument and it stands. It is not an exactness argument, and treating
+"manifold agreed" as an exact-arithmetic guarantee would be inventing a promise
+the kernel never made. Guaranteed-manifold OUTPUT is the guarantee on offer.
 
 What Manifold is, and is not
 ----------------------------

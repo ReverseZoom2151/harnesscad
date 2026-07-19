@@ -213,6 +213,16 @@ def repair_self_intersections(
 
     pairs = initial
     it = 0
+    # Keep the BEST iterate, not the last one. The relaxation is not monotone:
+    # pushing apart one intersecting pair can drive a different pair together,
+    # so a history like [12, 1, 7] is ordinary -- and returning the final
+    # iterate hands back the 7-collision mesh when a 1-collision mesh was in
+    # hand. Upstream (instant-mesh-intersection-repair) tracks the best; this
+    # port dropped that and so could return a result strictly worse than one it
+    # had already computed.
+    best_verts = list(verts)
+    best_count = len(initial)
+    best_iter = 0
     while pairs and it < max_iters:
         it += 1
         disp: Dict[int, List[float]] = {}
@@ -254,8 +264,14 @@ def repair_self_intersections(
         pairs = find_self_intersections(verts, faces,
                                         ignore_shared_vertices=ignore_shared_vertices)
         history.append(len(pairs))
+        if len(pairs) < best_count:
+            best_verts = list(verts)
+            best_count = len(pairs)
+            best_iter = it
 
-    return RepairResult(list(verts), it, len(initial), len(pairs), history)
+    # `iterations` reports where the returned mesh came from, so the number and
+    # the vertices always describe the same moment.
+    return RepairResult(best_verts, best_iter, len(initial), best_count, history)
 
 
 def _laplacian_smooth(
