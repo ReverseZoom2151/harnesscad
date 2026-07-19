@@ -1,23 +1,17 @@
-"""Named RC-servo dimension database and Gridfinity envelope constants (sdfx).
+"""Named RC-servo dimension database and storage-system envelope constants.
 
-Reimplementation of the dimension lookup tables from deadsy/sdfx
-(MIT licence, (c) 2017-2019 Jason T. Harris):
-
-* ``obj/servo.go`` -- ``initServoLookup``: a named lookup covering the well
+The database provides a named lookup covering the well
   known servo size categories (nano through giant) with the Hitec reference
   models (HS-40, HS-55, HS-85BB, HS-225BB, HS-311, HS-805BB, HS-1005SGT) plus
   the Annimos DS3218.  Each entry carries the full ``ServoParms`` field set:
   body size, mounting lug size, mounting hole layout, lug z-offset, shaft
   x-offset, shaft length/radius and mounting hole radius.
-* ``obj/gridfinity.go`` -- the Gridfinity (https://gridfinity.xyz/) envelope
-  constants: the 42.0 mm base pitch, the 7.0 mm height unit, the female /
+* storage-system envelope constants: the 42.0 mm base pitch, the 7.0 mm height unit, the female /
   male / lip profile step heights and corner rounds, and the magnet / bolt
-  hole geometry.  Only the constants are ported here, not the SDF geometry
-  generators (``GfBase`` / ``GfBody``).
+  hole geometry.
 
 This module is the *standards data* layer, structured exactly like its sibling
-:mod:`standards.thread_database` (which ports sdfx ``sdf/screw.go`` the same
-way): NamedTuple records, a module-level ``_DB`` built by small builder
+:mod:`standards.thread_database`: NamedTuple records, a module-level ``_DB`` built by small builder
 functions, ``*_lookup`` / ``*_names`` accessors and derived-geometry helpers.
 
 All dimensions are millimetres, as in the Go source.  Pure stdlib,
@@ -480,9 +474,8 @@ def _selfcheck() -> None:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Named servo dimension database and Gridfinity envelope "
-                    "constants (ported from deadsy/sdfx obj/servo.go and "
-                    "obj/gridfinity.go).")
+        description="Named servo dimension database and storage-system envelope "
+                    "constants.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="run internal consistency checks and exit")
     parser.add_argument("--list", action="store_true",

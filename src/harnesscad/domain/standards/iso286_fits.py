@@ -1,22 +1,8 @@
-"""ISO 286 limits-and-fits, ISO 2768 general tolerances, process capability (anvilate).
+"""ISO 286 limits-and-fits, ISO 2768 general tolerances, and process capability.
 
-Port of the tolerance subsystem from the anvilate repo (MIT License,
-Copyright (c) 2026 Clay Good), specifically:
-
-* ``src/anvilate/tolerance/iso286.py`` -- IT-grade widths, fundamental
-  deviations, zone limits (including the ISO 286 hole delta rule
-  ES = -ei + delta), and hole/shaft fit resolution;
-* ``src/anvilate/tolerance/general.py`` -- ISO 2768-1 general tolerances for
-  linear and angular dimensions;
-* ``src/anvilate/tolerance/process.py`` -- process-capability screening;
-* the data tables ``src/anvilate/tolerance/data/iso286_grades.yaml``,
-  ``iso286_deviations.yaml``, ``iso2768_linear.yaml``, ``iso2768_angular.yaml``
-  and ``process_capability.yaml``, embedded here as Python literals.
-
-The audit inventory flagged the data files CC0 (their in-file dataset headers
-say "CC0-1.0, tolerance values only; source standard not redistributed"), but
-the governing repo LICENSE is MIT, Copyright (c) 2026 Clay Good -- attribution
-here follows the repo LICENSE: MIT.
+The module provides IT-grade widths, fundamental deviations, zone limits,
+hole/shaft fit resolution, general linear and angular tolerances, and
+process-capability screening through embedded factual tables.
 
 What this gives the harness
 ---------------------------
@@ -933,7 +919,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="iso286_fits",
         description="ISO 286 limits-and-fits, ISO 2768 general tolerances and "
-        "process-capability lookups (ported from anvilate, MIT).",
+        "process-capability lookups.",
     )
     parser.add_argument(
         "--selfcheck",

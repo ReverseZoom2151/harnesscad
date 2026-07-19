@@ -1,14 +1,10 @@
-"""First-pass parametric modeling defaults, ported from text-to-cad's CAD skill.
+"""First-pass parametric modeling defaults.
 
-Source: earthtojake/text-to-cad (resources/cad_repos/text-to-cad-main),
-``skills/cad/SKILL.md`` ("Default assumptions") and
-``skills/cad/references/build123d-modeling.md`` / ``positioning.md``. That
-skill pack encodes the working defaults a CAD agent should assume when the
-user does not specify them -- explicitly framed there as "first-pass modeling
-defaults, not manufacturability, tolerance, or certification claims". The
-same framing applies here.
+These are working defaults for a CAD agent when the user does not specify
+values. They are first-pass modeling defaults, not manufacturability,
+tolerance, or certification claims.
 
-What is ported (values verbatim from the source skill):
+The module defines:
 
 * metric **normal clearance hole** diameters -- M3/M4/M5 -> 3.4/4.5/5.5 mm;
 * **small plastic enclosure wall**: 2.0-3.0 mm when unspecified;
@@ -203,8 +199,7 @@ def _selfcheck() -> int:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="cad_defaults",
-        description="first-pass CAD modeling defaults ported from "
-                    "earthtojake/text-to-cad")
+        description="first-pass CAD modeling defaults")
     parser.add_argument("--selfcheck", action="store_true",
                         help="run the built-in self-test and exit")
     args = parser.parse_args(argv)
