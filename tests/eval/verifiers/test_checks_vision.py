@@ -8,7 +8,9 @@ only when cadquery is installed.
 """
 
 import unittest
+from unittest import mock
 
+from harnesscad.eval.gates import judge_gate
 from harnesscad.eval.verifiers.vlm_judge import (
     VLMJudgeCheck, GEvalScore, JudgeVerdict,
     parse_judge_json, build_judge_messages, DEFAULT_RUBRIC,
@@ -183,9 +185,25 @@ class TestRealRenderJudge(unittest.TestCase):
         self.assertIs(d.severity, Severity.INFO)  # (0.9+0.7)/2 = 0.8 >= 0.5
         self.assertIn("0.8", d.message)
 
-    def test_low_score_is_warning_not_error(self):
+    def test_low_score_uncalibrated_is_info_not_warning(self):
+        # An uncalibrated judge may REPORT but may not WARN: a WARNING is a
+        # claim about correctness, and this judge has never been scored
+        # against a human or an oracle. See eval/gates/judge_gate.py.
         llm = MockVisionLLM(['{"score": 0.1}', '{"score": 0.1}'])
-        report = VLMJudgeCheck(llm, brief="a sphere").check(_cq_plate())
+        check = VLMJudgeCheck(llm, brief="a sphere")
+        with mock.patch.object(judge_gate, "is_calibrated", return_value=False):
+            report = check.check(_cq_plate())
+        self.assertTrue(report.ok)  # advisory-only: never ERROR
+        d = report.diagnostics[0]
+        self.assertIs(d.severity, Severity.INFO)
+        self.assertIn("UNCALIBRATED", d.message)
+
+    def test_low_score_calibrated_is_warning_not_error(self):
+        # Once calibrated, the WARNING returns -- but still never an ERROR.
+        llm = MockVisionLLM(['{"score": 0.1}', '{"score": 0.1}'])
+        check = VLMJudgeCheck(llm, brief="a sphere")
+        with mock.patch.object(judge_gate, "is_calibrated", return_value=True):
+            report = check.check(_cq_plate())
         self.assertTrue(report.ok)  # advisory-only
         self.assertIs(report.diagnostics[0].severity, Severity.WARNING)
 
