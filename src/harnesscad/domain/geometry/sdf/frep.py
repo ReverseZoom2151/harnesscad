@@ -1,16 +1,16 @@
-"""Functional-representation (f-rep) expression-graph IR, after libfive.
+"""Functional-representation (f-rep) expression-graph IR.
 
-libfive (Matt Keeter) represents a solid as a directed acyclic graph (DAG) of
-*opcodes* over the implicit coordinate functions ``x``, ``y``, ``z``.  A shape
-is the level set ``f(x, y, z) = 0`` of the expression the graph evaluates, with
-``f < 0`` denoting the interior (the libfive / SDF sign convention).
+An f-rep solid is a directed acyclic graph (DAG) of *opcodes* over the implicit
+coordinate functions ``x``, ``y``, ``z``. A shape is the level set
+``f(x, y, z) = 0`` of the expression the graph evaluates, with ``f < 0``
+denoting the interior.
 
 This module reifies that graph as an *introspectable, optimisable* data
 structure -- distinct from a fixed library of Python SDF callables.  The graph
 is what makes interval pruning, exact automatic differentiation and structural
 optimisation possible: they are all traversals of this same tree.
 
-Highlights ported from libfive's ``Tree``/``Opcode`` layer:
+Core properties:
 
 * the opcode set (``VAR_X``, ``OP_ADD``, ``OP_MIN``, ``OP_SQRT``, ...), each
   with an arity and a printable symbol (``opcode.cpp``);

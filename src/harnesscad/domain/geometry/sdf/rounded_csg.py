@@ -1,14 +1,12 @@
-"""Circular-arc rounded Boolean CSG, ported from ImplicitCAD's ``MathUtil``.
+"""Circular-arc rounded Boolean CSG.
 
-ImplicitCAD (Julia Longtin / Christopher Olah, https://github.com/Haskell-Things/
-ImplicitCAD) combines shapes with a *rounded* max/min rather than the plain
+Rounded CSG combines shapes with a *rounded* max/min rather than the plain
 ``max``/``min`` of hard CSG.  Where ``max(x, y) = 0`` has a sharp square corner,
-ImplicitCAD's ``rmax r x y`` replaces that corner with a **quarter of a circle
+``rmax r x y`` replaces that corner with a **quarter of a circle
 of radius r** -- an exact circular fillet -- and ``rmin`` does the same for the
-concave union corner.  This is the mechanism behind ImplicitCAD's ``unionR r``,
-``intersectR r`` and ``differenceR r`` operators (the ``R`` = rounding radius).
+concave union corner. The ``R`` denotes a rounding radius.
 
-The closed forms (``Graphics/Implicit/MathUtil.hs``) are, for ``|x - y| < r``::
+The closed forms, for ``|x - y| < r``, are::
 
     rmax r x y = y - r*sin(pi/4 - asin((x - y)/(r*sqrt 2))) + r
     rmin r x y = y + r*sin(pi/4 + asin((x - y)/(r*sqrt 2))) - r

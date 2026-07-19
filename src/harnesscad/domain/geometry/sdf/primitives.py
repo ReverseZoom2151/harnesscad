@@ -1,7 +1,6 @@
-"""Exact signed-distance-field primitives, ported from Curv's shape library.
+"""Exact signed-distance-field primitives.
 
-Curv (Doug Moen, https://github.com/curv3d/curv) is a functional language that
-represents every 3D/2D shape as a *signed distance field* (SDF): a function
+An SDF is a function
 ``f: R^n -> R`` whose sign tells inside (``f < 0``) from outside (``f > 0``) and
 whose zero level set is the boundary.  A field is **exact** (Euclidean) when
 ``|f(p)|`` equals the true Euclidean distance to the boundary and ``|grad f|``
@@ -9,8 +8,8 @@ is 1 almost everywhere (the Eikonal / 1-Lipschitz property); it is **mitred**
 when it is 1-Lipschitz but underestimates distance near reflex features (edges
 are preserved rather than rounded); and **approximate** otherwise.
 
-This module reimplements Curv's primitive constructors (``lib/curv/std.curv``)
-in stdlib-only Python.  Each returns a plain ``float`` distance.  The exact
+This module provides stdlib-only primitive constructors. Each returns a plain
+``float`` distance. The exact
 primitives (sphere, box.exact, cylinder.exact, cone.exact, capped cone,
 capsule, torus, plane/half-space, 2D circle/rect.exact) satisfy the true
 Euclidean-distance property; ``box.mitred`` / ``rect.mitred`` /

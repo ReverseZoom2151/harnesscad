@@ -1,11 +1,11 @@
-"""Distance-field and domain transforms, ported from Curv.
+"""Distance-field and domain transforms.
 
-Two families of operators (``lib/curv/std.curv``):
+Two families of operators:
 
 **Distance-field (level-set) transforms** act on the *value* of a field:
 
 * ``offset(d, field) = field - d``            -- inflate (``d>0``) / deflate.
-* ``shell(t, field) = |field| - t/2``         -- Curv's shell: a wall of
+* ``shell(t, field) = |field| - t/2``         -- a centred shell: a wall of
   thickness ``t`` *centred* on the boundary (it dilates the part by ``t/2``).
 * ``shell_inward(t, field) = max(field, -(field + t))`` -- the CAD ``Shell``
   feature: hollow inward, bounding box unchanged.

@@ -1,7 +1,6 @@
-"""SDF Boolean combinators and smooth blends, ported from Curv.
+"""SDF Boolean combinators and smooth blends.
 
-Curv composes shapes by combining their distance fields (``lib/curv/std.curv``
-and ``lib/curv/lib/blend.curv``).  The hard set operations are the classic
+Shapes compose by combining their distance fields. The hard set operations are the classic
 min/max algebra; the smooth ("blended") variants replace min/max with a smooth
 minimum so that adjacent shapes join with a fillet instead of a crease.
 
@@ -14,7 +13,7 @@ Hard operators (scalar distances ``a``, ``b`` of the argument fields):
 
 Smooth operators use a *smooth minimum* ``smin`` with radius/parameter ``k``:
 
-* polynomial (quadratic) smin -- Curv's default "elliptic blend" (IQ);
+* polynomial (quadratic) smin -- an elliptic blend;
 * exponential smin (IQ) -- smoothly blends any number of fields;
 * power smin (IQ) -- requires positive arguments.
 
