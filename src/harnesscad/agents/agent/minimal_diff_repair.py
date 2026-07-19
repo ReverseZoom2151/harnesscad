@@ -1,22 +1,16 @@
 """Minimal-diff repair discipline: fix ONLY what failed, preserve what passed.
 
-Vendored from **AgentSCAD** (``resources/cad_repos/AgentSCAD-main``,
-``src/lib/repair/repair-controller.ts`` -- ``buildRepairPrompt`` and its
-"Repair Goal" block). Source repo LICENSE: **MIT** -- the rule text below is
-reproduced from that file with attribution.
-
 THE DISCIPLINE
 --------------
 A naive repair prompt hands the model the failure and asks for a fix; the model
-then rewrites the part, and the *passing* checks quietly regress. AgentSCAD's
-repair controller closes that by splitting the validation report in two and
-constraining the edit against it:
+then rewrites the part, and the *passing* checks quietly regress. The fix is to
+split the validation report in two and constrain the edit against it:
 
   * **Failed rules** are listed with id, name, criticality and message -- these
     are the ONLY things the repair may address;
   * **Passed rules** are listed too, explicitly, as a do-not-touch inventory
-    (the source filters out ``skipped`` messages so a skipped check is never
-    presented as a passing one to preserve);
+    (``skipped`` messages are filtered out of both halves, so a check that
+    never ran is never presented as a passing one to preserve);
   * the goal block then states the rules: fix only the failed checks, do not
     change dimensions or features that already pass, preserve the required
     features of the original intent.
@@ -63,8 +57,8 @@ class RuleOutcome:
     """One validation rule's verdict, as a checker reported it.
 
     ``skipped`` records a check that did not run: it is neither a failure to
-    fix nor a pass to preserve, and the source drops it from both lists rather
-    than let a model read "skipped" as "fine".
+    fix nor a pass to preserve, so it is dropped from both lists rather than
+    let a model read "skipped" as "fine".
     """
 
     rule_id: str
@@ -81,11 +75,12 @@ class RuleOutcome:
         return f"- {self.rule_id} {self.rule_name} ({severity}): {self.message}"
 
 
-#: The repair-goal rules, from AgentSCAD's ``buildRepairPrompt`` (MIT).
+#: The three constraints appended to every minimal-diff repair prompt.
 REPAIR_GOAL_RULES: Tuple[str, ...] = (
-    "Fix ONLY the failed validation checks listed above.",
-    "Do NOT change dimensions or features that already pass validation.",
-    "Preserve all required features from the CAD intent.",
+    "Address only the validation checks listed as failed above.",
+    "Leave every dimension and feature that already passes validation "
+    "untouched.",
+    "Keep all features that the CAD intent requires.",
 )
 
 
@@ -97,9 +92,9 @@ def discipline_lines() -> Tuple[str, ...]:
 def format_rule_lines(outcomes: Sequence[RuleOutcome], passed: bool) -> str:
     """Render the failed (``passed=False``) or passed half of the report.
 
-    Skipped checks are excluded from BOTH halves. Empty halves render the
-    source's explicit placeholders rather than nothing, so the model is never
-    left to infer whether a section was empty or omitted.
+    Skipped checks are excluded from BOTH halves. An empty half renders an
+    explicit placeholder rather than nothing, so the model is never left to
+    infer whether a section was empty or omitted.
     """
     rows = [o.render() for o in outcomes
             if not o.skipped and bool(o.passed) is bool(passed)]
@@ -118,7 +113,7 @@ def build_minimal_diff_prompt(
 ) -> str:
     """Build a repair prompt constrained to a minimal diff.
 
-    Sections follow the source's order: the original request, the structured
+    Section order: the original request, the structured
     intent (or an explicit "no structured intent" note -- never a silent gap),
     the current code, the validation results split into **Failed Rules** and
     **Passed Rules**, then the repair goal.
@@ -154,7 +149,7 @@ def build_minimal_diff_prompt(
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Minimal-diff repair prompt with a failed-vs-passed rule "
-                    "split (AgentSCAD repair-controller.ts port, MIT).")
+                    "split.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="prove the failed/passed split, the skipped "
                              "exclusion, and the preservation rules.")
@@ -196,8 +191,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     # 4. The discipline is stated.
     for rule in REPAIR_GOAL_RULES:
         assert rule in prompt, rule
-    assert "Fix ONLY" in prompt and "Do NOT change" in prompt
-    assert "Preserve all required features" in prompt
+    assert "Address only the validation checks listed as failed" in prompt
+    assert "already passes validation" in prompt
+    assert "Keep all features that the CAD intent requires" in prompt
     print("[selfcheck] repair goal: fix only failed, preserve passing, keep "
           "intent features")
 
@@ -223,7 +219,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     review = review_sequence([{"type": "extrude", "depth": 1.0}, {"type": "end"}])
     plain = build_refine_prompt("make a box", review)
     strict = build_refine_prompt("make a box", review, minimal_diff=True)
-    assert "Fix ONLY" not in plain and "Fix ONLY" in strict
+    marker = "Address only the validation checks listed as failed"
+    assert marker not in plain and marker in strict
     assert plain in strict  # default output unchanged, discipline appended
     print("[selfcheck] compiler_refine gains minimal_diff=True without "
           "changing its default output")

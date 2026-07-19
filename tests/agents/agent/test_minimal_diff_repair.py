@@ -68,12 +68,12 @@ class DisciplineTests(unittest.TestCase):
         for rule in REPAIR_GOAL_RULES:
             self.assertIn(rule, prompt)
 
-    def test_goal_wording_is_the_source_discipline(self):
+    def test_goal_states_the_three_constraints(self):
         joined = " ".join(REPAIR_GOAL_RULES)
-        self.assertIn("Fix ONLY the failed validation checks", joined)
-        self.assertIn("Do NOT change dimensions or features that already pass",
+        self.assertIn("Address only the validation checks listed as failed",
                       joined)
-        self.assertIn("Preserve all required features", joined)
+        self.assertIn("already passes validation", joined)
+        self.assertIn("Keep all features that the CAD intent requires", joined)
 
     def test_discipline_lines_matches_rules(self):
         self.assertEqual(discipline_lines(), REPAIR_GOAL_RULES)
@@ -99,7 +99,7 @@ class CompilerRefineWiringTests(unittest.TestCase):
     def test_default_output_unchanged(self):
         prompt = build_refine_prompt("base task", self.review)
         self.assertIn("Compiler feedback", prompt)
-        self.assertNotIn("Fix ONLY", prompt)
+        self.assertNotIn("Address only the validation checks", prompt)
 
     def test_minimal_diff_appends_discipline(self):
         plain = build_refine_prompt("base task", self.review)
