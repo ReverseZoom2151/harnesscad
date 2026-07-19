@@ -1,12 +1,8 @@
 """Continuity-contract reviewer for multi-prompt generation batches.
 
-Ported from Forma-OSS (blueprint_core/prompt_continuity.py: PromptSeed,
-PromptContinuityFinding, PromptContinuityReview, PromptContinuityReviewer, and
-the supersede-with-child repair pattern of FirecrawlPromptBatchSeeder),
-decoupled from the Firecrawl research client and the OpenAI JSONL job queues.
-Where the reference minted uuid4 job ids and stamped wall-clock metadata, this
-port takes caller-supplied ids and derives deterministic child ids
-(f"{job_id}-r1"), so reviews are replayable byte for byte.
+The reviewer takes caller-supplied identifiers and derives deterministic child
+identifiers (``f"{job_id}-r1"``), so a batch review is replayable byte for
+byte without wall-clock metadata or random job ids.
 
 Harness gap filled: HarnessCAD generates multi-stage prompt batches (design
 plan -> geometry -> fabrication -> docs) but had no reviewer that checks each
@@ -18,8 +14,7 @@ reviewer does not rewrite for quality, it audits a fixed batch for continuity
 contract violations and, when a prompt fails, wraps it in an explicit
 continuity contract block and issues a deterministic repaired child.
 
-Finding codes (same set as the reference, Firecrawl codes replaced by the
-generic source-context code): wrong_model, missing_batch_id,
+Finding codes: wrong_model, missing_batch_id,
 missing_prompt_index, missing_stage, missing_anchor,
 missing_continuity_contract, missing_source_context, and
 missing_previous_decisions_clause for prompts with index > 1.
@@ -490,8 +485,7 @@ def _selfcheck() -> int:
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Continuity-contract reviewer for multi-prompt batches "
-            "(ported from Forma-OSS)."
+            "Continuity-contract reviewer for multi-prompt batches."
         )
     )
     parser.add_argument(

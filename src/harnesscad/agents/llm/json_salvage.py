@@ -1,12 +1,9 @@
 """Tolerant structured-JSON recovery for malformed or truncated model output.
 
-Ported from Forma-OSS (blueprint_core/llm_providers.py): the escalation ladder
-of _strip_json_markdown, _extract_json_document, _salvage_json_text and
-_prune_truncated_tail that Forma runs before pydantic validation. Forma leans
-on the third-party json_repair package for the salvage step; here the repairer
-is reimplemented from scratch on the stdlib (a char-by-char walk that tracks
-the open-container stack and in-string state, then closes what the model left
-open), so the harness gains the capability without a new dependency.
+The escalation ladder strips markdown, extracts a JSON document, repairs
+truncated structure, and prunes a truncated tail before shape validation. The
+repairer is stdlib-only: a character-by-character walk tracks the open
+container stack and in-string state, then closes only structure left open.
 
 Gap filled: harnesscad.agents.llm.structured assumes the provider text is at
 least syntactically valid JSON -- json.loads either succeeds or the whole
