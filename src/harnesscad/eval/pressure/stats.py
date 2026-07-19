@@ -17,7 +17,7 @@ Four instruments, all stdlib, all exact where an exact answer exists:
                 (the binomial sign test on the discordant pairs), not by the
                 chi-squared approximation, because the discordant counts here are
                 single digits and chi-squared is a large-sample story.
-``pass@k``      "did ANY of k attempts work" -- the demo metric. Imported from
+``pass@k``      "did ANY of k attempts work" -- the demo metric. Uses
                 ``eval/bench/sequence/pass_at_k.py``, which already existed and
                 which the pressure module never imported.
 ``pass^k``      "did ALL k attempts work" -- the conjunctive metric. This is the

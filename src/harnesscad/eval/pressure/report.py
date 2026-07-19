@@ -372,7 +372,7 @@ def pass_k_table(results: Sequence[dict]) -> str:
     lines.append("pass@k = did ANY of k draws work.   A DEMO metric.")
     lines.append("pass^k = did ALL of k draws work.   The metric a harness that "
                  "hands a part to a CNC machine needs.")
-    lines.append("Unbiased estimators (HumanEval); pass@k imported from "
+    lines.append("Unbiased estimators; pass@k uses "
                  "eval/bench/sequence/pass_at_k.py.")
     return "\n".join(lines)
 

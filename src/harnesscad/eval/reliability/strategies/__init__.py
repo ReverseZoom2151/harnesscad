@@ -10,7 +10,7 @@ lift the single-shot success probability `p` toward 1:
   - **ReflexionLoop** (sec.8/sec.10, "Read-Act-Reflect-Write / Reflexion"): on a
     failed verify, synthesize an actionable insight, WRITE it to semantic memory,
     RECALL prior insights into the next attempt's context, retry.
-  - **select_by_consensus** (MBR-exec / self-consistency, ported from PairCoder):
+  - **select_by_consensus** (execution-based self-consistency):
     re-select among N already-generated candidates with NO oracle at all -- probe
     each by an injected geometric `measure`, cluster by quantized signature, and
     keep a representative of the largest agreeing cluster. Where best_of_n needs

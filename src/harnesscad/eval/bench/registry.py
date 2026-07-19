@@ -1,11 +1,11 @@
 """Metric registry and suite runner for the bench layer.
 
-The ``eval/bench`` tree carries ~200 metric modules mined from the text-to-CAD
-literature. Each one is correct and tested in isolation, but they were never
+The ``eval/bench`` tree carries metric modules. Each one is correct and tested
+in isolation, but they were never
 runnable *together*: their public APIs differ wildly (some take point clouds,
 some take meshes, some take token streams; some return a float, some a dataclass,
-some a dict), and several of them are **rivals** -- different papers' answers to
-the same question, which by design give different numbers on the same input.
+some a dict), and several of them are **rivals** that intentionally give
+different numbers on the same input.
 
 This module makes them runnable as a benchmark layer:
 

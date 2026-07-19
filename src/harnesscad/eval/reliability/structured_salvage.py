@@ -5,19 +5,6 @@ its token budget mid-string, the completion is unparseable, and the whole
 generation is thrown away. That is not a model quality problem, it is a budget
 problem, and it is fixable without another sampling round.
 
-ATTRIBUTION
------------
-Reimplemented (no copied text) from the facts documented in
-``resources/cad_repos/Forma-OSS-main/Forma-OSS-main/blueprint_core/llm_providers.py``
--- specifically ``_structured_max_tokens``, ``_validate_structured_json``,
-``_salvage_json_text``, ``_prune_truncated_tail`` and the two-attempt loop in
-``generate_structured``. Forma-OSS is Mozilla Public License 2.0, a file-level
-copyleft this repository's vendoring policy does not admit, so nothing is
-copied: what is reused are the facts (which numbers, in which order, gated by
-what) expressed in original code. The numeric constants below are Forma's,
-measured against its own fine-tuned model; they are documented as such and are
-overridable.
-
 THE FOUR LAYERS, and who owns each here
 ---------------------------------------
 A. **Token-budget floor per schema size** -- :func:`structured_max_tokens`. A
@@ -26,8 +13,8 @@ A. **Token-budget floor per schema size** -- :func:`structured_max_tokens`. A
 
 B. **Close-and-prune salvage GATED BY FULL SCHEMA VALIDATION** --
    :func:`validate_structured_json`. The close-and-prune mechanics already exist
-   in :mod:`harnesscad.agents.llm.json_salvage` (itself ported from the same
-   Forma functions) and are imported, not reimplemented. What is NEW here is the
+   in :mod:`harnesscad.agents.llm.json_salvage` and are imported, not
+   reimplemented. What is NEW here is the
    GATE, and the gate is the whole point: **salvage cannot invent content.**
    Closing brackets and dropping a half-written trailing item can only ever
    recover a record the model actually finished writing and got cut off; it can

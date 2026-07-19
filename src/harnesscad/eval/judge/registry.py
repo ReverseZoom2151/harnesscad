@@ -1,8 +1,8 @@
 """The JUDGE surface -- score a generated part with checkable properties, not a VLM.
 
-``eval/judge`` carried the deterministic CAD graders mined from cad-judge,
-CADGenBench and cadrille: a structural compiler-review, the CAD Score composite,
-Betti topology matching, and best-of-N invalidity aggregation. Only the
+``eval/judge`` carries deterministic CAD graders: a structural compiler-review,
+the CAD Score composite, Betti topology matching, and best-of-N invalidity
+aggregation. Only the
 compiler-review had a consumer (the agent's CRM refine loop); the rest were
 correct, tested and unreachable. This module is the dispatcher: one surface over
 the whole grading family, replacing the weak VLM judge (r=0.71) with checkable

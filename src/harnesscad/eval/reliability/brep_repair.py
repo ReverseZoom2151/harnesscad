@@ -136,7 +136,7 @@ def _describe_shape(shape) -> dict:
 
 
 # ----------------------------------------------------------------------
-# Tolerance ladder (facts reimplemented from Brepler network/post/utils.py)
+# Tolerance ladder
 # ----------------------------------------------------------------------
 #: The historical single-pass parameters. Rung 0 reproduces these exactly, so
 #: the ladder is a superset of the old behaviour.
