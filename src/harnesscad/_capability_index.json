@@ -9702,7 +9702,7 @@
       "layer": "domain",
       "name": "openscad_export",
       "package": "fabrication",
-      "summary": "t2cdean_openscad_export -- deterministic OpenSCAD CLI export planning.",
+      "summary": "Deterministic OpenSCAD CLI export planning.",
       "symbols": [
         "ExportPlan",
         "OpenScadExportError",
@@ -15028,7 +15028,7 @@
       "layer": "domain",
       "name": "ddim_inversion",
       "package": "numeric",
-      "summary": "DDIM inversion + Gaussian perturbation from CADiffusion (Regularized Diffusion",
+      "summary": "DDIM inversion and Gaussian perturbation for regularized CAD diffusion.",
       "symbols": [
         "HasAlphaBar",
         "ddim_inversion_step",
@@ -15075,7 +15075,7 @@
       "layer": "domain",
       "name": "decoder_regularizer",
       "package": "numeric",
-      "summary": "Decoder distance-minimization regularizer from CADiffusion (Regularized",
+      "summary": "Decoder distance-minimization regularizer from the decoder-regularized model (Regularized",
       "symbols": [
         "HasAlphaBar",
         "batch_regularization_loss",
@@ -15461,7 +15461,7 @@
       "layer": "domain",
       "name": "quadrature",
       "package": "numeric",
-      "summary": "Gauss-Legendre quadrature nodes and weights .",
+      "summary": "Gauss-Legendre quadrature nodes and weights.",
       "symbols": [
         "gauss_points_max",
         "integrate",
@@ -15549,7 +15549,7 @@
       "layer": "domain",
       "name": "scan_directions",
       "package": "numeric",
-      "summary": "Bidirectional / multi-directional selective-scan ordering .",
+      "summary": "Bidirectional / multi-directional selective-scan ordering.",
       "symbols": [
         "apply_order",
         "bidirectional_scan",
@@ -15593,7 +15593,7 @@
       "layer": "domain",
       "name": "sphere_square_map",
       "package": "numeric",
-      "summary": "Equal-area sphere-to-square parametrization (CFD, Appx. Eq. 14).",
+      "summary": "Equal-area sphere-to-square parametrization (CFD, Appx. ).",
       "symbols": [
         "area_jacobian",
         "mean_vector",
@@ -21515,7 +21515,7 @@
       "layer": "domain",
       "name": "brep_describe",
       "package": "reconstruction",
-      "summary": "B-Rep primitive text-description generator (FutureCAD / BRepGround).",
+      "summary": "B-Rep primitive text-description generator.",
       "symbols": [
         "describe",
         "describe_all",
@@ -21533,7 +21533,7 @@
       "layer": "domain",
       "name": "brep_grounding",
       "package": "reconstruction",
-      "summary": "Text-based B-Rep primitive grounding (FutureCAD / BRepGround).",
+      "summary": "Text-based B-Rep primitive grounding.",
       "symbols": [
         "BRepPrimitive",
         "ParsedQuery",
@@ -21571,7 +21571,7 @@
       "layer": "domain",
       "name": "cadquery_translate",
       "package": "reconstruction",
-      "summary": "Deterministic DeepCAD command-sequence -> CadQuery-code translator.",
+      "summary": "Deterministic CAD command-sequence -> CadQuery-code translator.",
       "symbols": [
         "translate_to_code",
         "translate_to_program"
@@ -21591,7 +21591,7 @@
       "layer": "domain",
       "name": "grounding_consistency",
       "package": "reconstruction",
-      "summary": "Program + grounding consistency check (FutureCAD / BRepGround).",
+      "summary": "Program + grounding consistency check.",
       "symbols": [
         "ConsistencyReport",
         "FeatureStep",
@@ -21602,7 +21602,6 @@
         "uses_grounding"
       ],
       "tags": [
-        "brep",
         "reconstruction",
         "verify"
       ]
@@ -21613,7 +21612,7 @@
       "layer": "domain",
       "name": "hierarchy_text",
       "package": "reconstruction",
-      "summary": "Hierarchy-aware CAD -> structured-text serialisation (FlexCAD, Zhang et al. 2024).",
+      "summary": "Hierarchy-aware CAD -> structured-text serialisation.",
       "symbols": [
         "CADModel",
         "Curve",
@@ -21650,7 +21649,7 @@
       "layer": "domain",
       "name": "shape_program",
       "package": "reconstruction",
-      "summary": "cad2program_shape_program \u2014 text-based parametric shape-program IR + codec.",
+      "summary": "Text-based parametric shape-program IR + codec.",
       "symbols": [
         "Bbox",
         "PrimitiveInstance",
