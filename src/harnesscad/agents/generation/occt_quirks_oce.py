@@ -11,9 +11,16 @@ that exposed the defect (``PRO10366``, ``BUC50070``, ``trj3_s1-ac-214.stp``,
 ``ug_exhaust-A.stp``).
 
 Source repository:
-  resources/cad_repos/oce-oce-patches/oce-oce-patches (the OCE fork tracking
-  Open CASCADE Technology; modern module layout: ModelingAlgorithms/,
-  DataExchange/, ModelingData/, ...).
+  resources/cad_repos/oce-oce-patches/oce-oce-patches -- despite the directory
+  name this is NOT the OCE fork. adm/cmake/version.cmake declares
+  OCC_VERSION 8.0.0-rc1 and README.md is titled "Open CASCADE Technology"; the
+  tree is upstream OCCT, modern module layout (ModelingAlgorithms/,
+  DataExchange/, ModelingData/, ...). Corrected 2026-07-19: this docstring
+  previously called it "the OCE fork", which would send anyone verifying a
+  quirk to the wrong project and the wrong line numbers. The quirks below are
+  unaffected -- they were read out of this tree, which is OCCT 8.0.0.
+  (For contrast the corpus also carries OCP at OCCT 7.9.3 and pythonocc-core
+  at 7.7.0, so a quirk's kernel generation matters when checking it.)
 
 License verdict of the mined repo: LGPL-2.1 (LICENSE_LGPL_21.txt) WITH the
 Open CASCADE exception version 1.0 (OCCT_LGPL_EXCEPTION.txt), which permits
