@@ -1,17 +1,14 @@
 """Deterministic scene-graph construction from CAD geometric primitives.
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.), Sec. III-B steps 3 & 5.
-
-The paper embeds each mesh as a node carrying its centroid and 3D bounding box,
-then adds an edge between two nodes when their meshes are within a fixed
+Each mesh is embedded as a node carrying its centroid and 3D bounding box,
+and an edge is added between two nodes when their meshes are within a fixed
 proximity (``<= 1 cm``, the voxel grid size). This module reconstructs that
 low-level *spatial* layer of the scene graph **purely from bounding-box
 geometry** -- no learned model, no point cloud. Given a set of primitives
 ``(id, obj_type, AABB)`` it derives, deterministically:
 
 * **touching / adjacency** -- when the axis-aligned gap between two boxes is at
-  or below a proximity threshold (the paper's ``1 cm`` rule);
+  or below a proximity threshold (the ``1 cm`` rule);
 * **containment** -- when one box fully encloses another (``CONTAINS`` /
   ``CONTAINED_BY``);
 * **support / on-top-of** -- when one box rests on another: horizontally
@@ -20,7 +17,7 @@ geometry** -- no learned model, no point cloud. Given a set of primitives
   ``RIGHT_OF`` (x), ``FRONT_OF`` / ``BEHIND`` (y) chosen by the axis of maximum
   centroid separation, so exactly one directional pair is emitted per near pair.
 
-Each asymmetric relation is stored together with its inverse (Sec. inverse map
+Each asymmetric relation is stored together with its inverse (inverse map
 in :mod:`reconstruction.scenegraph_model`) so ``a ON_TOP_OF b`` implies
 ``b SUPPORTS a``. Construction is order-stable: nodes and the candidate pairs are
 processed in input order, giving byte-reproducible graphs.
@@ -60,7 +57,7 @@ class Primitive:
 class ConstructionConfig:
     """Thresholds for deterministic relation derivation.
 
-    ``proximity`` mirrors the paper's ``1 cm`` adjacency rule (default 0.01).
+    ``proximity`` mirrors the ``1 cm`` adjacency rule (default 0.01).
     ``support_overlap_frac`` is the minimum horizontal footprint-overlap
     fraction (of the smaller footprint) required to call one box supported by
     another. ``emit_directional`` toggles the ABOVE/BELOW/LEFT/RIGHT/FRONT/BEHIND
@@ -142,7 +139,7 @@ def build_scene_graph(
 
     Pairs are examined in input order (i < j). For each near pair the derived
     relations are added with their inverses. Directional relations are emitted
-    for adjacent pairs only (so the graph stays sparse and matches the paper's
+    for adjacent pairs only (so the graph stays sparse and matches the intended
     proximity edges).
     """
     cfg = cfg or ConstructionConfig()

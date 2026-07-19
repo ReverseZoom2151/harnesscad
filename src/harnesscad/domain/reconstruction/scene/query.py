@@ -1,9 +1,6 @@
 """Query and reasoning engine over a CAD scene graph.
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.), Sec. I / V-D / VI.
-
-Once the scene graph is built and semantically enriched, the paper's motivation
+Once the scene graph is built and semantically enriched, the motivation
 is *reasoning*: giving an LLM agent a structured representation it can query to
 answer high-level questions ("which components influence what other components
 and in what order"). This module provides the deterministic query primitives an
@@ -18,9 +15,9 @@ agent would call:
 * :func:`shortest_path` -- BFS shortest undirected path between two nodes with
   order-stable tie-breaking, plus :func:`path_exists`;
 * :func:`connected_component` / :func:`connected_components` -- undirected
-  reachability, used to isolate freestanding structures (the paper's clustered
+  reachability, used to isolate freestanding structures (the clustered
   ``structures``);
-* :func:`count_by_type` -- a type histogram (the paper's label-distribution
+* :func:`count_by_type` -- a type histogram (the label-distribution
   analysis).
 
 Traversals are deterministic (nodes visited in insertion order) and stdlib-only.

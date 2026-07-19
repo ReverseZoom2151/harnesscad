@@ -1,16 +1,12 @@
 """Deterministic semantic enrichment of a CAD scene graph.
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.), Sec. III-A (Vocabulary),
-III-B step 4 (Semantic Labelling).
-
-The paper enriches every mesh with a coarse ``group`` label and a specific
+Every mesh is enriched with a coarse ``group`` label and a specific
 ``name`` label drawn from a **three-layer vocabulary tree** (root -> group ->
 name), attaching them (plus the usd path) as node attributes. Labelling itself
-is done by an LVLM (out of scope), but the paper stresses that a *predefined
+is done by an LVLM (out of scope), but a *predefined
 vocabulary* is what keeps labels consistent, and that the **bounding-box
 dimensions are provided precisely so thin gaskets can be told apart from thick
-flanges** (Sec. V-B). That geometry-driven disambiguation is fully deterministic.
+flanges**. That geometry-driven disambiguation is fully deterministic.
 
 This module provides the offline, network-free enrichment scaffolding:
 
@@ -19,12 +15,12 @@ This module provides the offline, network-free enrichment scaffolding:
 * :func:`enrich_node` / :func:`enrich_graph` -- attach ``group``, ``name``,
   ``material``, ``affordance`` and ``usd_path`` attributes to nodes, validating
   labels against the vocabulary;
-* :func:`classify_by_dimensions` -- the paper's bbox-based disambiguation rule
+* :func:`classify_by_dimensions` -- the bbox-based disambiguation rule
   (aspect-ratio thresholds that separate thin plate-like parts from thick
   block-like parts, e.g. gasket vs flange);
 * :data:`DEFAULT_AFFORDANCES` and :func:`affordance_for` -- a deterministic
   ``group`` -> affordance mapping (valve -> ``turn``, gauge -> ``read`` ...)
-  giving the actionable-element semantics the paper needs for simulation.
+  giving the actionable-element semantics needed for simulation.
 
 Everything is stdlib-only and deterministic.
 """
@@ -43,9 +39,9 @@ from harnesscad.domain.reconstruction.scene.model import AABB, SceneGraph, Scene
 class Vocabulary:
     """Three-layer label tree: root -> ``group`` -> ``name``.
 
-    The root carries no information (per the paper). Each group maps to the set
+    The root carries no information. Each group maps to the set
     of allowed specific names. New groups / names can be proposed at runtime
-    (the paper permits the LVLM to extend the vocabulary).
+    (the LVLM may extend the vocabulary).
     """
 
     def __init__(self, groups: Optional[Dict[str, List[str]]] = None) -> None:
@@ -145,7 +141,7 @@ class DimensionRule:
 
 
 # Default rule set separating thin plate-like parts (gasket) from thick
-# block-like parts (flange), exactly the distinction the paper highlights.
+# block-like parts (flange), exactly the intended distinction.
 DEFAULT_DIMENSION_RULES: Tuple[DimensionRule, ...] = (
     DimensionRule("gasket", max_flatness=0.15, min_flatness=0.0),
     DimensionRule("flange", max_flatness=1.0, min_flatness=0.15),

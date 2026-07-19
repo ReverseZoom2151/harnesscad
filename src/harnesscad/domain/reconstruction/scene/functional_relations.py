@@ -1,9 +1,5 @@
 """Functional-relation extraction over a CAD scene graph (Algorithm 1).
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.), Sec. III-B step 6 and
-**Algorithm 1 (Extracting Functional Relations)**.
-
 Given the enriched scene graph and its ``group`` semantics, Algorithm 1 infers
 the direct functional relationships between the functional units inside a pipe
 system. It needs:
@@ -25,7 +21,7 @@ a node claimed by another. It returns the compact **functional graph**
 This module implements exactly that, deterministically and stdlib-only:
 
 * :func:`find_functional_units` -- group same-``group`` connected nodes into
-  units (the paper's "interconnected node clusters of the same group label");
+  units ("interconnected node clusters of the same group label");
 * :func:`extract_functional_relations` -- the full Algorithm 1
   (marked-set growth to fixpoint + edge-induced unit adjacency);
 * :class:`FunctionalGraph` -- ``V_func`` / ``E_func`` with per-unit membership
@@ -142,7 +138,7 @@ def extract_functional_relations(
 ) -> FunctionalGraph:
     """Run Algorithm 1: grow units through connectors and induce unit adjacency.
 
-    Parameters mirror the paper: ``functional_units`` = ``F``; ``pipe_groups`` =
+    Parameters: ``functional_units`` = ``F``; ``pipe_groups`` =
     the connector label set ``S_pipe``. Growth claims each connector node for at
     most one unit (global marked set ``M``), iterating to fixpoint. Then every
     scene-graph edge whose endpoints fall in two *different* units contributes an

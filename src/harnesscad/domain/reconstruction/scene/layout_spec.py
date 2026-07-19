@@ -1,18 +1,15 @@
 """Object-layout scene-composition representation for authored 3D worlds.
 
-Paper: *WorldCraft: Photo-Realistic 3D World Creation and Customization via LLM
-Agents* (Liu, Tang, Tai).
-
-WorldCraft's ArrangeIt stage (Sec. 3.3) composes a scene by *placing* a
+An arrangement stage composes a scene by *placing* a
 collection of 3D assets, each with a 3D location ``p_i = (x, y, z)`` and an
 orientation ``theta_i = (theta_x, theta_y, theta_z)`` in Euler angles, and by
 recognising the **hierarchical dependencies between objects** (e.g. a bookshelf
 and the books it holds) so the arrangement can be decomposed into an *object
-tree* of subproblems (Fig. 5).
+tree* of subproblems.
 
 This module is the deterministic, stdlib-only **authored layout representation**
 that stage produces and consumes. It is deliberately DISTINCT from
-``reconstruction.scenegraph_model`` (paper 159), which *reads* typed spatial
+``reconstruction.scenegraph_model``, which *reads* typed spatial
 relations off already-positioned geometry: here the poses are the authored
 design variables, and the graph is a placement/containment *tree* of design
 intent rather than a derived relation graph.
@@ -51,7 +48,7 @@ def _as_vec3(value: object, name: str) -> Vec3:
 
 
 def _wrap_angle(a: float) -> float:
-    """Wrap an angle into the half-open interval ``[0, 2*pi)`` (paper's range)."""
+    """Wrap an angle into the half-open interval ``[0, 2*pi)``."""
     w = math.fmod(a, _TWO_PI)
     if w < 0.0:
         w += _TWO_PI
@@ -68,7 +65,7 @@ class Pose:
 
     ``position`` is the world location ``p_i``. ``orientation`` holds the Euler
     angles ``theta_i`` (radians), each normalised into ``[0, 2*pi)`` to match the
-    paper's ``[0, 2*pi]^3`` orientation domain. ``scale`` is a per-axis positive
+    ``[0, 2*pi]^3`` orientation domain. ``scale`` is a per-axis positive
     scale factor applied to the local geometry (uniform by default).
     """
 
@@ -217,8 +214,9 @@ class LayoutSpec:
 
     Insertion order is preserved deterministically. ``room_bounds`` is an
     optional axis-aligned ``(min, max)`` extent of the enclosing sub-space (the
-    room the coordinator carves out in Sec. 3.1). The parent links across
-    placements form the *object tree* ArrangeIt decomposes into subproblems.
+    room the coordinator carves out). The parent links across
+    placements form the *object tree* the arrangement stage decomposes into
+    subproblems.
     """
 
     def __init__(self, room_bounds: Optional[Tuple[Vec3, Vec3]] = None) -> None:

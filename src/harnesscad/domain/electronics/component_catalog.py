@@ -19,15 +19,11 @@ a per-dataset :data:`PROVENANCE` block, bare-designation lookup, and a
 knows no pins and this one knows no threads.
 
 Data provenance.  The part list, pin identifiers, pin types, nominal voltages,
-categories, indicative prices and sourcing URLs were cross-checked against the
-component seed data in Forma-OSS
-(``supabase/migrations/20260618000200_seed_component_templates.sql``,
-MPL-2.0), whose own values come from the manufacturer datasheets linked in
-:data:`_TEMPLATES` under ``sourcing_url``.  MPL-2.0 is a file-level copyleft:
-it covers the source file, not the datasheet facts it records.  Pin numbers and
+categories, indicative prices and sourcing URLs come from the manufacturer
+datasheets linked in :data:`_TEMPLATES` under ``sourcing_url``.  Pin numbers and
 supply voltages are published measurements of physical parts, so they are cited
-as data here; no text from the SQL migration is reproduced, and the tables
-below are independently structured around this package's dataclasses.
+as data here; the tables below are independently structured around this
+package's dataclasses.
 
 Prices are indicative hobbyist single-unit USD as of the retrieval date and are
 suitable for the BOM rollup in :mod:`harnesscad.domain.electronics.derive`

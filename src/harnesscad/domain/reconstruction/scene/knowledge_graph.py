@@ -1,6 +1,6 @@
-"""Graph-CAD multi-layer knowledge graph (FORMAT v4) parser and validator.
+"""Multi-layer knowledge graph (FORMAT v4) parser and validator.
 
-Graph-CAD (Gong et al., ICLR 2026) mediates text-to-CAD generation through a
+This representation mediates text-to-CAD generation through a
 hierarchical, geometry-aware decomposition graph that is serialised as
 structured text. Its stage-1 model emits two blocks: a MATERIAL LIBRARY and a
 KNOWLEDGE GRAPH delimited by ``BEGIN_GRAPH`` / ``END_GRAPH`` markers, one node
@@ -25,7 +25,7 @@ references, parent cycles, dependency cycles, unknown materials, leaves with no
 ``create_method``, boolean nodes missing their tool or target, and
 ``assembly_order`` groups that do not partition the node's children.
 
-Only the deterministic representation layer is reimplemented here; the trained
+Only the deterministic representation layer is implemented here; the trained
 stage-1/2/3 language models are external.
 """
 

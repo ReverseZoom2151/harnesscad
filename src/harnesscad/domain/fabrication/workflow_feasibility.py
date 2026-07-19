@@ -30,7 +30,7 @@ severity model: ``ok`` / ``warning`` / ``error`` (error only for a truly
 impossible fabrication, e.g. a bend sharper than the bender can physically make).
 
 Stdlib-only, deterministic. A "part" is described by a light dict/dataclass of
-measurements a caller already has (bbox, volume, thickness, wire polyline) — no
+measurements a caller already has (bbox, volume, thickness, wire polyline) -- no
 geometry kernel is invoked here.
 """
 
@@ -152,7 +152,7 @@ def estimate_print_time(
     interior. We approximate deposited volume as ``V * (shell + (1-shell)*infill)``
     with a fixed shell fraction, then divide by a material-specific volumetric
     deposition rate (mm^3/min). This is an order-of-magnitude planning estimate
-    (matching the paper's "7,479 minutes" flavour), not a slicer.
+    at the scale of hours-to-days, not a slicer.
     """
     if part.volume_mm3 is None:
         return Finding("print_time", "ok", "no volume supplied; time not estimated")
@@ -176,7 +176,7 @@ def estimate_print_time(
 def check_material_stock(
     workflow_id: str, part: PartSpec, material: Optional[str] = None
 ) -> Finding:
-    """Snap a requested sheet thickness to available stock gauges (Figure 15c).
+    """Snap a requested sheet thickness to available stock gauges.
 
     If the design asks for a thickness the shop does not stock, snap to the
     nearest available gauge and warn; if it matches, pass.
@@ -204,7 +204,7 @@ def check_material_stock(
 
 
 def check_kerf(workflow_id: str, part: PartSpec, kerf_mm: float = 0.2) -> Finding:
-    """Advisory: laser-cut joints need kerf compensation (Figure 17 checklist)."""
+    """Advisory: laser-cut joints need kerf compensation."""
     return Finding("kerf", "ok",
                    f"apply ~{kerf_mm} mm kerf compensation to slot joints",
                    {"kerf_mm": kerf_mm})
@@ -215,7 +215,7 @@ def check_wire_form(
     min_segment_mm: float = 15.0,
     max_bend_deg: float = 135.0,
 ) -> Finding:
-    """Wire-forming feasibility (Figure 16b).
+    """Wire-forming feasibility.
 
     A standard bender needs a minimum straight length between bends to grip the
     wire, and cannot exceed a maximum turn angle in one bend. Segments shorter
@@ -250,8 +250,8 @@ def check_wire_form(
 def check_foam_load(workflow_id: str, part: PartSpec) -> Finding:
     """Warn when a non-load-bearing material is used structurally.
 
-    Covers the paper's "Standard EPS/XPS foam has limited load-bearing capacity"
-    tip, and generalizes to felt / papier-mache which also cannot carry load.
+    Standard EPS/XPS foam has limited load-bearing capacity; this
+    generalizes to felt / papier-mache which also cannot carry load.
     """
     wf = get_workflow(workflow_id)
     non_structural = any(
@@ -271,7 +271,7 @@ def check_foam_load(workflow_id: str, part: PartSpec) -> Finding:
 def check_draft_angle(
     part: PartSpec, min_draft_deg: float = 2.0
 ) -> Finding:
-    """Mold-demold feasibility (Figure 16a).
+    """Mold-demold feasibility.
 
     A cast/molded face needs at least ``min_draft_deg`` of draft to release; a
     negative angle is an undercut that traps the part (error).

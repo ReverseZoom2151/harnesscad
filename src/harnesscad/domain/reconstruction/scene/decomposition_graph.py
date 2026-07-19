@@ -1,18 +1,18 @@
-"""Hierarchical geometry-aware decomposition graph (Learning Hierarchical Graph).
+"""Hierarchical geometry-aware decomposition graph.
 
-Mined from *Learning Hierarchical and Geometry-Aware Graph Representations for
-Text-to-CAD* (Graph-CAD, ICLR 2026). The model is trained, but its **intermediate
-representation** is a deterministic structure: a top-down assembly decomposition
-whose multi-level nodes are parts/components and whose edges are explicit geometric
-constraints, serialised to a layered structured-text form (paper Fig. 1c)::
+A hierarchical, geometry-aware graph representation for text-to-CAD. The model
+is trained, but its **intermediate representation** is a deterministic
+structure: a top-down assembly decomposition whose multi-level nodes are
+parts/components and whose edges are explicit geometric constraints, serialised
+to a layered structured-text form::
 
     # Layer 0
     || microwave_oven | Composite of Door + Body ||
     # Layer 1
     || Door | Composite of Door_window + Control_panel | Align(XYZ) Door.back_face to Body.front_face ||
 
-This module ports the representation, its serialisation/parse round-trip, and the
-paper's graph-fidelity metrics: node-level accuracy, hierarchy-level accuracy, and
+This module implements the representation, its serialisation/parse round-trip,
+and graph-fidelity metrics: node-level accuracy, hierarchy-level accuracy, and
 Geometric Constraint Satisfaction (GCS). Deterministic and stdlib-only.
 """
 
@@ -77,7 +77,7 @@ class DecompositionGraph:
 
 
 def serialize(graph: DecompositionGraph) -> str:
-    """Render the graph to the paper's layered structured-text form."""
+    """Render the graph to the layered structured-text form."""
     lines: List[str] = []
     for layer in range(graph.max_layer() + 1):
         layer_nodes = [n for n in graph.nodes if n.layer == layer]

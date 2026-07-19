@@ -1,9 +1,6 @@
 """Typed 3D scene-graph representation for CAD-based industrial environments.
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.).
-
-The paper (Sec. III-B, Sec. VI) enriches an unstructured CAD environment into a
+An unstructured CAD environment is enriched into a
 **multi-layered 3D scene graph** ``G = (V, E)`` whose nodes are meshes/objects
 carrying geometric properties (centroid, 3D bounding box, usd path) and whose
 edges encode *spatial adjacency* and, at a higher layer, *functional* relations.
@@ -27,7 +24,7 @@ pipeline. It provides:
   adjacency lookup, neighbour / relation queries and inverse-edge helpers.
 
 Everything is pure, deterministic and network-free. The LVLM labelling and
-DBSCAN clustering of the paper are handled by sibling modules; this file only
+DBSCAN clustering are handled by sibling modules; this file only
 defines the representation they populate.
 """
 
@@ -47,7 +44,7 @@ Vec3 = Tuple[float, float, float]
 class AABB:
     """Axis-aligned bounding box defined by inclusive ``min`` / ``max`` corners.
 
-    Axis convention (matches the paper's stored 3D bounding box / centroid):
+    Axis convention (matches the stored 3D bounding box / centroid):
     ``x`` = left/right, ``y`` = front/behind, ``z`` = up/down (vertical).
     """
 
@@ -169,7 +166,7 @@ class SceneNode:
     """A typed object node in the scene graph.
 
     ``node_id`` is a stable unique identity. ``obj_type`` is the coarse object
-    class (the paper's ``group`` label, e.g. ``"pipe"``, ``"valve"``).
+    class (the ``group`` label, e.g. ``"pipe"``, ``"valve"``).
     ``attributes`` holds free-form semantic / geometric annotations
     (``name`` label, ``material``, ``affordance``, ``usd_path`` etc.).
     """

@@ -1,8 +1,6 @@
-"""Grounded answer engine for CAD question answering
-(Kienle et al., "QueryCAD: Grounded Question Answering for CAD Models",
-Sec. III-B "QueryCAD: CAD Understanding, Reasoning and Answering").
+"""Grounded answer engine for CAD question answering.
 
-In QueryCAD an LLM writes Python code that (a) calls SegCAD to retrieve the
+An LLM writes Python code that (a) calls a segmentation module to retrieve the
 parts referenced by the question and (b) computes the answer from the parts'
 properties -- "the radius of a hole", "the center of a rod", counts, and so on.
 The LLM/code-generation step is external (skipped). This module implements the
@@ -11,7 +9,7 @@ CAD model (a list of :class:`rag.querycad_segmentation_grounding.Part`) and a
 typed :class:`bench.querycad_query_schema.CadQaQuestion`, it grounds the question
 via the segmentation module and computes the answer directly from geometry.
 
-Supported question types (Sec. III-C, Fig. 4 "11 different properties"):
+Supported question types (11 different properties):
 
     count        -> number of grounded parts (integer)
     existence    -> whether any grounded part exists (boolean)
@@ -22,11 +20,11 @@ Supported question types (Sec. III-C, Fig. 4 "11 different properties"):
                     property value ("what is the diameter of the largest bore?")
 
 Every answer is *grounded*: it records the ids of the parts it was computed from
-(the paper's core contribution -- answers are traceable to CAD geometry, not
-hallucinated). Property filters from the query (Fig. 4, e.g. "radius of 5 mm")
+(answers are traceable to CAD geometry, not
+hallucinated). Property filters from the query (e.g. "radius of 5 mm")
 are applied before answering.
 
-The paper computes all metrics in world coordinates and flags local-orientation
+All metrics are computed in world coordinates; local-orientation
 and surface-normal questions as future work; those are intentionally out of scope
 here. Pure, deterministic, stdlib-only.
 """

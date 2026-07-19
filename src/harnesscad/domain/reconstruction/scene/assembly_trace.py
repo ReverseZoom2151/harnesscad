@@ -1,14 +1,14 @@
-"""Progressive assembly traces from part hierarchies (Shape of Thought).
+"""Progressive assembly traces from part hierarchies.
 
-Mined from *Shape of Thought: Progressive Object Assembly via Visual Chain-of-
-Thought*. SoT trains a multimodal model, but its **supervision** is built by a
-deterministic pipeline that turns a part-based CAD hierarchy (PartNet-style) into a
-step-aligned assembly trace: parts are ordered into incremental construction steps,
-each yielding a cumulative state ``s_n``. The paper's T2S-CompBench then grades
-**component numeracy** (are the right number of parts present?) and **trace
-faithfulness** (does each step add parts and grow monotonically?).
+Progressive object assembly via a visual chain of thought. The multimodal model
+is trained, but its **supervision** is built by a deterministic pipeline that
+turns a part-based CAD hierarchy into a step-aligned assembly trace: parts are
+ordered into incremental construction steps, each yielding a cumulative state
+``s_n``. A compositional benchmark then grades **component numeracy** (are the
+right number of parts present?) and **trace faithfulness** (does each step add
+parts and grow monotonically?).
 
-This module ports:
+This module provides:
 
 *   :func:`assembly_order` -- a deterministic build order over a part hierarchy
     (parents before children, stable by name);

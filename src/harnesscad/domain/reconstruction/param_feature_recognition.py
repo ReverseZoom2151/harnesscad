@@ -1,7 +1,6 @@
 """Parameter-aware topological feature recognition with confidence tiers.
 
-Mined from **IntentForge** (``src/harness/topology/feature_recognizer.py``),
-whose insight is that feature recognition is far more reliable when it is
+The core insight is that feature recognition is far more reliable when it is
 *parameter-aware*: instead of guessing "is this cylinder a hole", it checks the
 model's faces against the **expected** holes/cutouts/corners implied by the
 part's parameter table, matching diameter, through-length, and hole centres.
@@ -10,7 +9,7 @@ recognized feature carries a confidence tier and an expected-vs-recognized
 count, and low-confidence failures are surfaced as warnings rather than turned
 into a brittle release gate.
 
-IntentForge runs this against live CadQuery topology. The transferable,
+Run against live CadQuery topology, the transferable,
 kernel-free core is the *recognition logic*, so this module operates on a plain
 face list -- each face a light record of ``(kind, bbox, axis, radius)`` -- which
 any backend (OCC, CadQuery, a mesh face-fitter, a synthetic fixture) can

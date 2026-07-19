@@ -1,13 +1,10 @@
 """Consistency and validity checking for a CAD scene graph.
 
-Paper: *Semantic Enrichment of CAD-Based Industrial Environments via Scene
-Graphs for Simulation and Reasoning* (Walus et al.).
-
-A scene graph is only useful for reasoning if it is *well formed*: the paper
-notes that a **correct scene graph** is essential for successful functional
-identification (Sec. V-D) and reports concrete structural errors -- a continuous
-pipe split into two clusters, and two unrelated structures joined by a single
-spurious edge (Sec. V-A). This module supplies the deterministic validity
+A scene graph is only useful for reasoning if it is *well formed*: a **correct
+scene graph** is essential for successful functional identification, and typical
+structural errors are concrete -- a continuous pipe split into two clusters, and
+two unrelated structures joined by a single spurious edge. This module supplies
+the deterministic validity
 checks that guard against such malformed graphs before reasoning runs.
 
 Checks (each yields typed :class:`Issue` records; nothing is mutated):

@@ -257,7 +257,7 @@ def _origin_2d(plane: str, origin3: Sequence[float]) -> Tuple[float, float]:
 
 
 class DeepCADDecoder(_BaseDecoder):
-    """DeepCAD (Wu et al., ICCV 2021): 256 levels, round-half-even, level-valued.
+    """DeepCAD family: 256 levels, round-half-even, level-valued.
 
     Tokens are the 17-int rows of :mod:`...tokens.deepcad_vector_layout`
     (``[cmd, x, y, alpha, f, r, theta, phi, gamma, px, py, pz, s, e1, e2, b, u]``).
@@ -412,7 +412,7 @@ class DeepCADDecoder(_BaseDecoder):
 
 # --- SkexGen ---------------------------------------------------------------
 class SkexGenDecoder(_BaseDecoder):
-    """SkexGen (Xu et al., ICML 2022): 6-bit truncating quantiser, flat streams."""
+    """SkexGen family: 6-bit truncating quantiser, flat streams."""
 
     family = SKEXGEN
     modules = (
@@ -475,7 +475,7 @@ def _curve_from_dict(curve: dict) -> Curve:
 
 # --- HNC-CAD ---------------------------------------------------------------
 class HNCDecoder(_BaseDecoder):
-    """HNC-CAD (Xu et al., ICML 2023): floor quantiser + 25-frame rotation codebook.
+    """HNC-CAD family: floor quantiser + 25-frame rotation codebook.
 
     Tokens: ``{"cmds": [...], "params": [[8 ints], ...], "extrude": [11 ints]}``
     exactly as :func:`...tokens.hnc_vector_codec.encode_sketch` /
@@ -583,7 +583,7 @@ def _close_chain(curves: Sequence[Curve], starts: Sequence[Tuple[float, float]]
 
 # --- Vitruvion -------------------------------------------------------------
 class VitruvionDecoder(_BaseDecoder):
-    """Vitruvion (Seff et al., ICLR 2022): floor quantise, BIN-CENTRE reconstruction.
+    """Vitruvion family: floor quantise, BIN-CENTRE reconstruction.
 
     The only unbiased round-trip of the four, and the only sketch-*only* family:
     it has no extrude vocabulary, so the ingested op stream is sketch ops with no
