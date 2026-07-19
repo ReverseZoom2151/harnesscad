@@ -1,6 +1,6 @@
 """Cost-aware progressive escalation policy for a text-to-CAD pipeline.
 
-Mined from **AgentSCAD** (Kevoyuan/AgentSCAD), whose headline design rule is a
+The module's headline design rule is a
 *progressive* pipeline: one generation call on the happy path, a repair attempt
 that runs **only after a validation failure**, and a visual (VLM) repair that
 runs **only when the user explicitly requests it**. The AgentSCAD README states

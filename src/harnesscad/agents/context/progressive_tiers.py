@@ -1,6 +1,6 @@
 """Token-budgeted progressive-tier reading over a ranked memory set.
 
-Mined from CoMeT (Cognitive Memory Tree). CoMeT stores every memory node at
+The progressive memory model stores every memory node at
 three tiers of increasing fidelity and cost -- tier 0 ``summary`` (index),
 tier 1 ``detailed_summary`` (a lazy 3-8 sentence expansion), tier 2 ``raw``
 (the full original text) -- and its ``read_memory(node_id, depth)`` API lets an

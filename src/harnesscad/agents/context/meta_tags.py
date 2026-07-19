@@ -1,6 +1,6 @@
 """Terse meta-tag rendering for a memory context map.
 
-Mined from CoMeT's orchestrator (``get_session_context`` / ``_to_row`` /
+The context tagger uses
 ``_pick_highest`` / ``_render_with_origin_merge``). CoMeT tags every memory node
 along four independent axes -- ORIGIN (where the content came from), ACT (what
 kind of action the turn was), KIND (semantic flags), IMPORTANCE -- but a node

@@ -1,6 +1,6 @@
 """Deterministic error-to-hint-to-autofix rules for generated CAD code.
 
-Mined from **CadAgent** (``agent/code_fixes.py``), whose robustness trick is a
+The module applies a robustness rule:
 *deterministic* pre-execution validator plus an error-classification table that
 turns a raw kernel exception into (a) an actionable hint and (b), where the fix
 is unambiguous, a rewritten source string the loop can re-run **without another

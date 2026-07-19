@@ -1,12 +1,12 @@
 """State-conditioned reference injection for the agent loop's context builder.
 
-Ported from CadAgent ``agent/references.py`` (CadAgent-main): instead of
+Instead of
 relying on the model to load reference docs on demand, the loop's context
 builder injects short reference snippets AUTOMATICALLY based on agent state
 (iteration number, quality-gate results, error history). Two pieces:
 
 1. **QUALITY_FIX_MAP** -- the source's quality-gate-code -> terse-fix table,
-   imported verbatim (unicode ">=0.5mm" rendered as ASCII; wording otherwise
+   represented in ASCII form; wording otherwise
    unchanged). Each entry maps a quality issue code (NO_SOLID, MULTI_SOLID,
    ...) to a concrete repair instruction the model can act on directly.
 
@@ -26,7 +26,7 @@ Every snippet stays terse (the source budgets ~300 tokens each). The loop
 consults :func:`references_for_state` and joins the returned snippets into
 its context; nothing here talks to a model or a kernel.
 
-Attribution: CadAgent (agent/references.py). Pure stdlib, deterministic.
+Pure stdlib and deterministic.
 """
 
 from __future__ import annotations

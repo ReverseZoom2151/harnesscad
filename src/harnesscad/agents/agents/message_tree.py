@@ -1,6 +1,6 @@
 """Conversation / message branch tree (deterministic, stdlib-only).
 
-Ported from ``shared/Tree.ts`` in CADAM (Adam-CAD's open-source text-to-CAD web
+The message tree is an open-source-style text-to-CAD web
 app). CADAM stores chat turns as flat rows carrying a ``parent_message_id`` and
 reconstructs the branching conversation tree client-side: a message may have
 several children (regenerations / edits create sibling branches), and the UI

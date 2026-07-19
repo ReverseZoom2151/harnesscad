@@ -1,6 +1,6 @@
 """Deterministic Build123d code lints and fillet auto-heal (Studio-OSS).
 
-Mined from **Studio-OSS** (the code-validation pass in
+This code-validation pass
 ``app/api/generate/route.ts`` and the auto-heal path in
 ``app/api/compile/route.ts``). Studio wraps its model-generated Build123d code
 in two deterministic safety layers that this module ports:

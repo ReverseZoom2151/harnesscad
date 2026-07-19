@@ -361,7 +361,7 @@ class Planner:
         self.last_references: List[str] = []
         # ADDITIONAL RECALL SOURCES, both additive and both UNVERIFIED.
         # `skill_router` is an agents/memory/skill_triggers.TriggerRouter
-        # (`route(brief) -> [RouteMatch]`): which mined skill a brief routes to.
+        # (`route(brief) -> [RouteMatch]`): which skill a brief routes to.
         # `observation_ledger` is an agents/memory/observation_ledger
         # .ObservationLedger (`advisories(family) -> [Advisory]`): which rules
         # THIS part family keeps failing.
