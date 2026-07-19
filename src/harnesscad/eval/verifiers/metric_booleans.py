@@ -58,7 +58,12 @@ approximation, exactly as it did when a kernel call failed.
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import subprocess
 import sys
+import tempfile
+import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -67,11 +72,16 @@ __all__ = [
     "OCCT_BOOLEAN_MARKERS",
     "OVERLAP_NOISE_EPSILON",
     "TESSELLATION_DEFLECTION",
+    "DEFAULT_BOOLEAN_BUDGET_S",
+    "BOOLEAN_WORKER_MODULE",
     "MeshData",
+    "BooleanBudgetResult",
     "classify_overlap",
     "common_volume",
     "intersection_volume",
+    "intersection_volume_isolated",
     "manifold_available",
+    "manifold_to_mesh_arrays",
     "mesh_to_manifold",
     "occt_boolean_offenders",
     "shape_to_mesh",
@@ -112,6 +122,26 @@ TESSELLATION_DEFLECTION = 0.05
 
 #: Angular deflection (radians) for the same tessellation.
 TESSELLATION_ANGULAR = 0.5
+
+#: Default wall-clock budget (seconds) for ONE isolated metric boolean.
+#:
+#: A normal manifold3d intersection is sub-millisecond (measured min/mean/max over
+#: overlapping 10mm cubes: 0.07 / 0.21 / 0.96 ms; cadgenbench calls it "sub-
+#: millisecond and bounded"). Upstream manifold's own fuzzers watchdog every
+#: boolean at 10s. This budget is 20s -- twice the upstream watchdog and ~20000x a
+#: normal boolean -- plus it must also cover the child's interpreter start and
+#: ``import manifold3d`` (~0.2s here). So it never trips on real geometry and
+#: still bounds a wedged one. It applies only when a caller OPTS IN to isolation
+#: (passes ``budget_s``); the in-process fast path is unchanged and untimed.
+DEFAULT_BOOLEAN_BUDGET_S = 20.0
+
+#: Worker module run as ``python -m`` in the child to compute one boolean.
+BOOLEAN_WORKER_MODULE = "harnesscad.eval.verifiers._metric_boolean_worker"
+
+#: Every status an isolated boolean can report. ``ok``/``empty`` mean the boolean
+#: RAN; the rest mean it did not, each for a different reason (and each yields
+#: ``volume=None`` so the caller's ``classify_overlap`` reads it as ``unknown``).
+BOOLEAN_STATUSES = ("ok", "empty", "timeout", "unavailable", "error")
 
 
 @dataclass(frozen=True)
@@ -293,6 +323,169 @@ def intersection_volume(a, b) -> Optional[float]:
         return None
 
 
+# --------------------------------------------------------------------------- #
+# The time-budgeted boolean (subprocess isolation, step_check.py pattern)
+# --------------------------------------------------------------------------- #
+@dataclass(frozen=True)
+class BooleanBudgetResult:
+    """The outcome of one budget-bounded, out-of-process metric boolean.
+
+    ``volume`` is the overlap volume ONLY when ``status`` is ``ok`` (or ``0.0``
+    for ``empty``); for every refusal -- ``timeout``, ``unavailable``, ``error``
+    -- it is ``None``, so passing ``.volume`` straight to :func:`classify_overlap`
+    yields ``unknown``. A timed-out boolean is UNKNOWN, never a fabricated number.
+    """
+
+    status: str
+    volume: Optional[float]
+    elapsed_s: float = 0.0
+    returncode: Optional[int] = None
+    timed_out: bool = False
+    killed: bool = False
+    note: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.status in ("ok", "empty")
+
+
+def manifold_to_mesh_arrays(manifold):
+    """A ``manifold3d.Manifold`` as ``(vert_properties, tri_verts)`` numpy arrays.
+
+    The two operands of an isolated boolean cross the process boundary as plain
+    vertex/triangle arrays (``Manifold.to_mesh()``), which is exactly why the
+    boolean CAN be isolated: a mesh marshals, a live kernel handle does not.
+    Returns ``None`` when manifold3d/numpy are missing or the solid has no mesh.
+    """
+    if manifold is None:
+        return None
+    try:
+        import numpy as np
+
+        mesh = manifold.to_mesh()
+        vp = np.array(mesh.vert_properties, dtype=np.float32, order="C")
+        tv = np.array(mesh.tri_verts, dtype=np.uint32, order="C")
+        if vp.shape[0] == 0 or tv.shape[0] == 0:
+            return None
+        return vp, tv
+    except Exception:  # noqa: BLE001 - unmeshable -> caller degrades to unavailable
+        return None
+
+
+def intersection_volume_isolated(
+    a, b,
+    budget_s: float = DEFAULT_BOOLEAN_BUDGET_S,
+    worker_cmd: Optional[Sequence[str]] = None,
+    python_executable: Optional[str] = None,
+) -> BooleanBudgetResult:
+    """Compute ``a ^ b``'s volume in a CHILD process under ``budget_s`` seconds.
+
+    The honest mechanism, stated plainly: Python cannot interrupt an in-thread
+    C-extension call, so a thread+join watchdog could only DETECT a wedged
+    ``a ^ b`` -- never kill it. This runs the boolean in a separate PROCESS
+    (:data:`BOOLEAN_WORKER_MODULE`) and, on overrun, KILLS and reaps it, which is
+    the only real kill for a wedged kernel call. It is the same isolation
+    :mod:`harnesscad.io.ingest.step_check` uses for untrusted STEP files.
+
+    A timeout RETURNS a refusal (``status='timeout'``, ``volume=None``); it never
+    raises into the caller and never invents a volume. ``worker_cmd`` overrides
+    the default worker (the ``.npz`` input path is appended as the final argument),
+    which is what makes the kill+reap path testable: a self-check can point the
+    real worker at a stall and watch the parent survive it.
+    """
+    arrays_a = manifold_to_mesh_arrays(a)
+    arrays_b = manifold_to_mesh_arrays(b)
+    if arrays_a is None or arrays_b is None:
+        return BooleanBudgetResult(
+            status="unavailable", volume=None,
+            note="an operand had no marshallable mesh (no kernel or empty solid)")
+
+    try:
+        import numpy as np
+    except Exception as exc:  # noqa: BLE001
+        return BooleanBudgetResult(status="unavailable", volume=None,
+                                   note="numpy absent: %s" % exc)
+
+    fd, npz_path = tempfile.mkstemp(suffix=".npz", prefix="hc_metric_bool_")
+    os.close(fd)
+    start = time.monotonic()
+    try:
+        np.savez(npz_path, va=arrays_a[0], ta=arrays_a[1],
+                 vb=arrays_b[0], tb=arrays_b[1])
+
+        cmd = (list(worker_cmd) if worker_cmd
+               else [python_executable or sys.executable, "-m",
+                     BOOLEAN_WORKER_MODULE])
+        cmd = cmd + [npz_path]
+
+        child_env = dict(os.environ)
+        # The child imports harnesscad; inherit the parent's resolution so a
+        # source checkout works without an install step (as step_check does).
+        child_env.setdefault("PYTHONPATH", os.pathsep.join(
+            p for p in sys.path if p and os.path.isdir(p)))
+
+        try:
+            proc = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                text=True, env=child_env)
+        except OSError as exc:
+            return BooleanBudgetResult(
+                status="error", volume=None, elapsed_s=time.monotonic() - start,
+                note="cannot start worker: %s: %s" % (type(exc).__name__, exc))
+
+        try:
+            stdout, stderr = proc.communicate(timeout=budget_s)
+        except subprocess.TimeoutExpired:
+            # The whole point: the wedged boolean's process dies, this one lives.
+            proc.kill()
+            try:
+                _, stderr = proc.communicate(timeout=10.0)
+            except subprocess.TimeoutExpired:  # pragma: no cover - unkillable child
+                stderr = "worker did not die after kill"
+            return BooleanBudgetResult(
+                status="timeout", volume=None,
+                elapsed_s=time.monotonic() - start, returncode=proc.returncode,
+                timed_out=True, killed=True,
+                note="boolean exceeded %g s and was killed" % budget_s)
+
+        elapsed = time.monotonic() - start
+        line = ""
+        for candidate in reversed((stdout or "").strip().splitlines()):
+            if candidate.strip():
+                line = candidate.strip()
+                break
+        if not line:
+            return BooleanBudgetResult(
+                status="error", volume=None, elapsed_s=elapsed,
+                returncode=proc.returncode,
+                note="worker produced no report (exit %s): %s"
+                     % (proc.returncode, (stderr or "")[-200:]))
+        try:
+            payload = json.loads(line)
+            if not isinstance(payload, dict):
+                raise ValueError("worker report is not a JSON object")
+        except Exception as exc:  # noqa: BLE001
+            return BooleanBudgetResult(
+                status="error", volume=None, elapsed_s=elapsed,
+                returncode=proc.returncode,
+                note="unreadable worker report: %s" % exc)
+
+        status = str(payload.get("status", "error"))
+        if status not in BOOLEAN_STATUSES:
+            status = "error"
+        volume = payload.get("volume") if status in ("ok", "empty") else None
+        if volume is not None:
+            volume = abs(float(volume))
+        return BooleanBudgetResult(
+            status=status, volume=volume, elapsed_s=elapsed,
+            returncode=proc.returncode, note=str(payload.get("note", "")))
+    finally:
+        try:
+            os.remove(npz_path)
+        except OSError:  # pragma: no cover - best-effort cleanup
+            pass
+
+
 def classify_overlap(volume: Optional[float],
                      epsilon: float = OVERLAP_NOISE_EPSILON) -> str:
     """Classify an overlap volume: ``'unknown'``, ``'none'``, ``'noise'`` or ``'clash'``.
@@ -312,13 +505,21 @@ def classify_overlap(volume: Optional[float],
 
 
 def common_volume(shape_a, shape_b,
-                  deflection: float = TESSELLATION_DEFLECTION) -> Optional[float]:
+                  deflection: float = TESSELLATION_DEFLECTION,
+                  budget_s: Optional[float] = None) -> Optional[float]:
     """Overlap volume of two OCCT solids, computed with manifold3d.
 
     The drop-in replacement for an OCCT ``BRepAlgoAPI_Common`` + ``VolumeProperties``
     pair. Returns ``None`` when the geometry cannot be measured (no kernel,
     unmeshable shape, non-manifold input), which every caller already handles by
     falling back to its bounding-box approximation.
+
+    ``budget_s`` is the one-line, default-OFF opt-in to the watchdog: leave it
+    ``None`` (the default) and the boolean runs in-process exactly as before; pass
+    a budget (e.g. :data:`DEFAULT_BOOLEAN_BUDGET_S`) and the boolean runs in a
+    child process that is KILLED on overrun, returning ``None`` (an UNKNOWN
+    overlap) rather than wedging the caller. Tessellation stays in-process because
+    it is bounded; only the hang-prone boolean is isolated.
     """
     a = shape_to_manifold(shape_a, deflection)
     if a is None:
@@ -326,13 +527,16 @@ def common_volume(shape_a, shape_b,
     b = shape_to_manifold(shape_b, deflection)
     if b is None:
         return None
-    return intersection_volume(a, b)
+    if budget_s is None:
+        return intersection_volume(a, b)
+    return intersection_volume_isolated(a, b, budget_s=budget_s).volume
 
 
 def swept_cylinder_common_volume(pos: Sequence[float], axis: Sequence[float],
                                  radius: float, length: float, part_shape,
                                  deflection: float = TESSELLATION_DEFLECTION,
-                                 segments: int = 64) -> Optional[float]:
+                                 segments: int = 64,
+                                 budget_s: Optional[float] = None) -> Optional[float]:
     """Overlap volume of a swept tool cylinder and a part, computed with manifold3d.
 
     The cylinder is built natively in manifold3d (``Manifold.cylinder`` along +Z,
@@ -340,6 +544,10 @@ def swept_cylinder_common_volume(pos: Sequence[float], axis: Sequence[float],
     or boolean is involved. ``segments`` fixes the circular tessellation, making
     the result deterministic and slightly conservative (an inscribed polygon
     under-reports a curved overlap rather than inventing one).
+
+    ``budget_s`` is the same default-OFF watchdog opt-in as :func:`common_volume`:
+    ``None`` keeps the in-process boolean; a budget isolates it in a killable
+    child, returning ``None`` (UNKNOWN) on overrun instead of hanging.
     """
     if radius <= 0.0 or length <= 0.0:
         return None
@@ -349,7 +557,9 @@ def swept_cylinder_common_volume(pos: Sequence[float], axis: Sequence[float],
     tool = _cylinder_manifold(pos, axis, radius, length, segments)
     if tool is None:
         return None
-    return intersection_volume(tool, part)
+    if budget_s is None:
+        return intersection_volume(tool, part)
+    return intersection_volume_isolated(tool, part, budget_s=budget_s).volume
 
 
 def _cylinder_manifold(pos: Sequence[float], axis: Sequence[float],
@@ -547,6 +757,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         check("OCCT solids overlap in 400 mm^3 via manifold3d",
               vol is not None and abs(vol - 400.0) < 1e-2)
 
+        # The default-OFF opt-in: the SAME overlap, but with the boolean isolated
+        # in a killable child, must give the SAME 400 mm^3 -- proving the one-line
+        # opt-in on common_volume routes through the watchdog without changing the
+        # answer on normal geometry.
+        vol = common_volume(b1, b2, budget_s=DEFAULT_BOOLEAN_BUDGET_S)
+        check("common_volume opt-in (budget_s) gives the same 400 mm^3",
+              vol is not None and abs(vol - 400.0) < 1e-2)
+
         # The swept-cylinder entry point: a r=2 tool driven 10mm down the -Z
         # axis from above the box passes through 5mm of it => 5*pi*4 mm^3.
         vol = swept_cylinder_common_volume((0, 0, 10), (0, 0, -1), 2.0, 10.0, b1)
@@ -557,6 +775,45 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         # A tool pointed away from the part hits nothing.
         vol = swept_cylinder_common_volume((0, 0, 10), (0, 0, 1), 2.0, 10.0, b1)
         check("a tool aimed away from the part intersects nothing", vol == 0.0)
+
+    # 6. THE WATCHDOG -- both arms, out of process.
+    #
+    #    ARM A (normal boolean completes untouched): the SAME two overlapping
+    #    cubes (125 mm^3), but through the killable child worker. It must return
+    #    the right volume, status ok, and a reaped exit 0.
+    ra = intersection_volume_isolated(cube_a, cube_b, budget_s=DEFAULT_BOOLEAN_BUDGET_S)
+    check("isolated boolean returns the right volume (125 mm^3)",
+          ra.status == "ok" and ra.volume is not None
+          and abs(ra.volume - 125.0) < 1e-3)
+    check("isolated boolean's worker was reaped (returncode 0)",
+          ra.returncode == 0)
+    check("isolated volume still classifies as a clash",
+          classify_overlap(ra.volume) == "clash")
+    print("[selfcheck] normal isolated boolean: status=%s volume=%.3f "
+          "worker_exit=%s (%.2fs, out-of-process)"
+          % (ra.status, ra.volume or -1.0, ra.returncode, ra.elapsed_s))
+
+    #    ARM B (a hanging boolean is caught): point the REAL worker at a 60s
+    #    stall and give it a 1s budget. It must be KILLED and reaped -- returning
+    #    a timeout refusal with volume=None (UNKNOWN), not a hang and not a wrong
+    #    number. The parent must come back in about the budget, not in 60s.
+    stall_worker = [sys.executable, "-m", BOOLEAN_WORKER_MODULE, "--stall", "60"]
+    t0 = time.monotonic()
+    rb = intersection_volume_isolated(cube_a, cube_b, budget_s=1.0,
+                                      worker_cmd=stall_worker)
+    elapsed = time.monotonic() - t0
+    check("a hanging boolean times out (not hangs)", rb.status == "timeout")
+    check("a timed-out boolean returns UNKNOWN, not a number", rb.volume is None)
+    check("a timed-out boolean classifies as unknown",
+          classify_overlap(rb.volume) == "unknown")
+    check("the timed-out worker was killed", rb.timed_out and rb.killed)
+    check("the killed worker was reaped (returncode set)",
+          rb.returncode is not None)
+    check("the parent returned near the budget, not the worker's 60s",
+          elapsed < 30.0)
+    print("[selfcheck] hanging isolated boolean: status=%s volume=%s "
+          "killed=%s worker_exit=%s -- parent back in %.2fs (worker wanted 60s)"
+          % (rb.status, rb.volume, rb.killed, rb.returncode, elapsed))
 
     if failures:
         print("SELFCHECK FAILED: %s" % ", ".join(failures), file=sys.stderr)
