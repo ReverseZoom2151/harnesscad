@@ -1,7 +1,7 @@
 """process_state — agent state, tools, and long-running processes as a state model.
 
-Ported from ghost-os's runtime abstractions. ghost-os models an agent not as a
-straight-line function call but as a STATE MACHINE that can dispatch tools, some of
+This module models an agent not as a straight-line function call but as a state
+machine that can dispatch tools, some of
 which are LONG-RUNNING: a process that outlives the turn that started it (an export,
 a mesh boolean, a solver run) and whose completion the agent must come back and
 OBSERVE later. Three abstractions carry that:

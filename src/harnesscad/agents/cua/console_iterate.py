@@ -1,7 +1,6 @@
 """console_iterate — a deterministic controller for driving an app's Python console.
 
-Ported from BabyCommandAGI's iterate-on-a-CLI loop. BabyCommandAGI does not click:
-it types a command, reads the result, and ADJUDICATES the result into one of four
+It types a command, reads the result, and adjudicates the result into one of four
 verdicts — the task is Complete, it must Interrupt (a failure to repair), it should
 Continue (more steps remain), or the program is blocked waiting for <input> and it
 must supply some. That single adjudication step, run after every command, is the
@@ -18,8 +17,8 @@ own text, not a model's opinion of a screenshot. This is the same insight as
 :mod:`harnesscad.io.cua.uia` (never trust a return, verify the outcome) applied to a
 REPL instead of the accessibility tree.
 
-Two ideas ported precisely
----------------------------
+Core mechanisms
+---------------
 * **The stall-adjudicator** (:func:`adjudicate`). A pure function from the console's
   latest output (plus the previous output, to detect a stall) to a
   :class:`Verdict`. Done markers -> COMPLETE; an input prompt at the tail -> INPUT;
@@ -28,8 +27,8 @@ Two ideas ported precisely
 * **Failure-focused log slicing** (:func:`focus_failure`). A console can emit
   thousands of lines; the part that matters is the region AROUND the failure. This
   keeps a window of lines centred on the first error line (with a head/tail
-  fallback) so a long log is trimmed to its diagnostic core, exactly as
-  BabyCommandAGI trims before reasoning over a result.
+  fallback) so a long log is trimmed to its diagnostic core before the next
+  reasoning step.
 
 Pure stdlib, deterministic, import-safe. The console itself is injected as a
 :class:`ConsoleChannel`; the tests drive a scripted fake, and no live app,

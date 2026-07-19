@@ -1,7 +1,6 @@
 """capabilities — the model-agnostic CUA loop, as a deterministic capability router.
 
-Ported from cua-main (trycua)'s agent framework. Its central design decision is
-that two very different model abilities are kept as SEPARATE capabilities:
+Two very different model abilities are kept as separate capabilities:
 
 * ``predict_step`` — a full computer-use model that, given a screenshot and an
   instruction, emits the next ACTION directly (OpenAI computer-use, Claude
@@ -10,8 +9,8 @@ that two very different model abilities are kept as SEPARATE capabilities:
   returns only WHERE to click (OmniParser + a locator, ShowUI, a Set-of-Marks
   picker). It cannot plan; it can only point.
 
-cua-main's loops are assembled from these: a model that advertises ``predict_step``
-runs a native loop; a model that only advertises ``predict_click`` runs a COMPOSED
+A model that advertises ``predict_step`` runs a native loop; a model that only
+advertises ``predict_click`` runs a composed
 loop where a separate planner decides WHAT to do and the click model decides WHERE.
 The loop is model-agnostic precisely because it routes over the capability SET
 rather than the model's identity.

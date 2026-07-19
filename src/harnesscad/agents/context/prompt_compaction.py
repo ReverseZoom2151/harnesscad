@@ -1,10 +1,5 @@
 """Deterministic single-prompt compaction under a character budget.
 
-Ported from Forma-OSS (blueprint_core/prompt_compaction.py, the
-PromptCompactionAgent). Forma-OSS uses it to squeeze oversized image-generation
-prompts under the OpenAI 32k-character limit without losing the structural
-facts (dimensions, components, mounting planes) that make the render truthful.
-
 Harness gap filled: HarnessCAD had no way to shrink ONE oversized prompt
 string. This module complements harnesscad.agents.context.manager
 (ContextManager), which enforces a token budget across a WHOLE message window
@@ -13,7 +8,7 @@ message-level eviction; this is character-level compaction INSIDE a single
 prompt string. The two compose: the manager decides which messages survive,
 this module makes any single surviving prompt fit a provider character cap.
 
-Strategy ladder (same as the reference, generalized):
+Strategy ladder:
   (a) find embedded single-line JSON objects that look like a large structured
       spec (the "looks like spec" predicate is pluggable; the default checks
       for components / placements / dimensions style keys) and re-serialize
