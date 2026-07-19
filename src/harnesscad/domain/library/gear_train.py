@@ -1,15 +1,13 @@
-"""Deterministic spur/helical gear-train parameter math, mined from CAD-GPT.
+"""Deterministic spur/helical gear-train parameter math.
 
-CAD-GPT's thesis is "generate the logic of generation, not the result": the LLM
-emits an inspectable set of gear parameters that a downstream CAD engine renders.
-The parameter computation itself is standard involute-gear engineering math and
-is fully deterministic -- so this module extracts it as a verifiable domain
-utility, independent of the LLM that would propose the inputs.
+The parameter computation is standard involute-gear engineering math and is
+fully deterministic, yielding a verifiable domain utility independent of how
+inputs are proposed.
 
 It provides:
 
 * :func:`snap_module` -- round a raw module to the nearest ISO 54 preferred
-  value (CAD-GPT's priority + secondary series), so a designer's arbitrary
+  value, so a designer's arbitrary
   module becomes a stock-standard one,
 * :func:`gear_geometry` -- pitch / addendum / dedendum / outside / root
   diameters from module + tooth count (+ helix angle for helical gears),

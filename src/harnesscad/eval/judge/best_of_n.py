@@ -1,8 +1,7 @@
-"""Best-of-N aggregation and the invalidity ratio, mined from cadrille.
+"""Best-of-N aggregation and the invalidity ratio.
 
-cadrille (arXiv:2505.22914) evaluates a CAD-reconstruction model by sampling N
-candidate CadQuery programs per ground-truth part, compiling each to a mesh, and
-reporting three deterministic aggregates over the run:
+This module samples N candidate CAD programs per ground-truth part, evaluates
+them, and reports three deterministic aggregates over the run:
 
 * **best-of-N selection** -- per sample, keep the candidate with the smallest
   Chamfer Distance (and, separately, the largest IoU); a sample with no valid
@@ -14,12 +13,12 @@ reporting three deterministic aggregates over the run:
 * **skip-worst curve** -- IR and mean CD recomputed after dropping the k
   worst-CD samples, exposing how the tail dominates the mean.
 
-cadrille also fixes a canonical pose before comparison: centre the mesh at the
+The evaluator fixes a canonical pose before comparison: centre the mesh at the
 origin, scale so its largest extent is 1, then translate to the unit box
 ``[0.5, 0.5, 0.5]`` (:func:`normalize_to_unit_box`).
 
-The model calls and the mesh kernel live upstream; this module is the pure,
-deterministic aggregation over already-computed per-candidate metric records.
+This module is the pure, deterministic aggregation over already-computed
+per-candidate metric records.
 """
 
 from __future__ import annotations

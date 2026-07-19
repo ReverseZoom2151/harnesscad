@@ -1,10 +1,9 @@
-"""Discrete brick-assembly representation with deterministic validity checks,
-mined from BrickGPT (ICCV 2025, Best Paper).
+"""Discrete brick-assembly representation with deterministic validity checks.
 
-BrickGPT generates toy-brick models on an integer voxel lattice and rejects any
+The representation places toy-brick models on an integer voxel lattice and rejects any
 structure that is not *buildable*: bricks must stay in bounds, not overlap, rest
 on support, and connect down to the ground. Those are exactly the deterministic,
-kernel-free checks a verifier-first harness wants -- so this module extracts the
+kernel-free checks a verifier-first harness wants -- so this module provides the
 brick representation and its four structural predicates, with the physics-solver
 (Gurobi) stability model deliberately left out (that needs a licensed LP solver;
 see "What is skipped" below).

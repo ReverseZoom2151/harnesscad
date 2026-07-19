@@ -1,14 +1,12 @@
 """Compiler-as-a-review: a deterministic structural grader for sketch-extrude
-op sequences, mined from cad-judge (arXiv:2508.04002).
+op sequences.
 
-cad-judge replaces a hackable VLM judge with a CAD *compiler* that classifies
+A CAD compiler classifies
 each failure into one of four modes -- ``format`` / ``geometry`` / ``extrusion``
 / ``boolean`` -- and renders a feedback message that can be re-injected into the
 generator's prompt (the CRM "generate -> review -> refine" loop).
 
-The upstream code only reaches those categories *after* invoking pythonOCC, so
-it is unusable in a CPU-only harness. This module extracts the deterministic
-half: every category except the ones that genuinely need a B-rep kernel can be
+Every category except the ones that genuinely need a B-rep kernel can be
 decided by structural inspection of the op list alone. Concretely we validate:
 
 * **format** -- the sequence is a list of typed ops, terminated by ``end``,
@@ -20,7 +18,7 @@ decided by structural inspection of the op list alone. Concretely we validate:
 * **boolean** -- every boolean references a known kind and has an existing base
   solid to combine against (a ``cut`` / ``intersect`` with no base is invalid).
 
-The op schema mirrors cad-judge / DeepCAD / Text2CAD::
+The op schema is:
 
     [
         {"type": "sketch",  "loops": [{"points": [[x, y], ...]}, ...]},
@@ -46,7 +44,7 @@ __all__ = [
     "feedback_message",
 ]
 
-#: Opcodes the structural reviewer understands (aligned with cad-judge).
+#: Opcodes the structural reviewer understands.
 VALID_OPCODES = ("sketch", "extrude", "boolean", "end")
 
 #: Boolean kinds a solid combination may declare.
