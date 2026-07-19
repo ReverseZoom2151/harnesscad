@@ -1,9 +1,8 @@
-"""Python object model -> OpenSCAD source emitter (the SolidPython direction).
+"""Python object model -> OpenSCAD source emitter.
 
-SolidPython (SolidCode/SolidPython) is a pure code generator: a tree of Python
-objects (``cube``, ``translate``, ``difference``, ...) is rendered to OpenSCAD
-source text.  No geometry kernel is involved -- rendering is a deterministic
-tree walk plus value formatting.
+A tree of Python objects (``cube``, ``translate``, ``difference``, ...) is
+rendered to OpenSCAD source text. No geometry kernel is involved -- rendering
+is a deterministic tree walk plus value formatting.
 
 The harness already has the *inverse* direction (``programs.scadlm_ast`` parses
 OpenSCAD source into an AST; ``geometry.scadlm_csg_eval`` evaluates it into a
@@ -12,8 +11,7 @@ Python object model that *emits* OpenSCAD.  That closes the loop -- a generator
 can build a model programmatically, emit it, and immediately verify it by
 parsing and evaluating the emitted source with the existing modules.
 
-Ported / reimplemented from SolidPython's ``solid/objects.py`` and
-``solid/solidpython.py``:
+The object model provides:
 
   * :class:`ScadNode` -- name + params + children + modifier, with the operator
     sugar ``+`` (union), ``-`` (difference), ``*`` (intersection) and

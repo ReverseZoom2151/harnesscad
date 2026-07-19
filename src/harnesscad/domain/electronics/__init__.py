@@ -1,4 +1,4 @@
-"""Typed electronics IR plus rule-based circuit validation, mined from Forma-OSS.
+"""Typed electronics IR plus rule-based circuit validation.
 
 This package gives HarnessCAD's device-level text-to-CAD briefs a typed
 electrical layer parallel to the geometric op stream: a dataclass Hardware IR
@@ -9,15 +9,12 @@ seeding. HarnessCAD previously had no electronics/netlist IR at all.
 
 Modules:
 
-* ``hardware_ir`` -- the dataclass schema (Forma-OSS blueprint_core/models.py).
+* ``hardware_ir`` -- the dataclass schema.
 * ``component_catalog`` -- 14 stock parts with datasheet-typed pinouts, the
   ground truth the electrical rules need in order to be executable at all.
-* ``circuit_validation`` -- the five electrical rules
-  (Forma-OSS blueprint_core/validation.py).
-* ``derive`` -- deterministic rail/bus/current/BOM derivations
-  (Forma-OSS blueprint_core/agents/orchestrator.py).
-* ``enclosure_layout`` -- heuristic mechanical placement seeding
-  (Forma-OSS build_mechanical_render_data).
+* ``circuit_validation`` -- the five electrical rules.
+* ``derive`` -- deterministic rail/bus/current/BOM derivations.
+* ``enclosure_layout`` -- heuristic mechanical placement seeding.
 
 There is deliberately no dispatcher here. The catalogue, manufacturing and spec
 surfaces each carry a ``registry`` because they arbitrate between *rival*

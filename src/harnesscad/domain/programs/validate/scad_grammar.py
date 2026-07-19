@@ -1,21 +1,9 @@
 """OpenSCAD grammar validator -- an FSA / structural checker for .scad text.
 
-The grammar enforced here is transliterated from the OpenSCAD language as
-documented in RapCAD's ``doc/openscad.bnf`` (RapCAD is GPL-3). **It validates
-OpenSCAD only.** RapCAD ships a second, larger grammar for its own language,
-``doc/rapcad.bnf`` (202 lines to openscad.bnf's 121), which this port never saw;
-fed a ``.rcad`` file, an OpenSCAD parser does not fail politely, it invents
-syntax errors at valid RapCAD (``return``, ``const``/``param``, ``^``, ``~=``,
-``::``, ``|x|``, the U+00B1 tolerance operator, typed parameters, ``/** */``
-doc-comments, ``import <p> as name;``). So RapCAD input is *refused* by name
-rather than mis-diagnosed -- see :func:`detect_rapcad` and
-:mod:`harnesscad.domain.programs.rapcad_language`. The BNF file
-was read as a *reference for facts about a public language*: the grammar rules
-of OpenSCAD are properties of the language itself, not creative expression of
-RapCAD. The rules have been reimplemented from scratch in this module's own
-structure (token tables, an explicit delimiter FSA, and a recursive-descent
-checker); no file content was copied. The underlying standard is the OpenSCAD
-language reference (https://openscad.org/documentation.html).
+The grammar validates OpenSCAD only. A different dialect is refused by name
+rather than misdiagnosed as malformed OpenSCAD; see :func:`detect_rapcad` and
+:mod:`harnesscad.domain.programs.rapcad_language`. The validator uses its own
+token tables, an explicit delimiter FSA, and a recursive-descent checker.
 
 Coverage (statement level):
 

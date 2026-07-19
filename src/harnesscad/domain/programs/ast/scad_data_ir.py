@@ -1,7 +1,6 @@
-"""scadclj_data_ir -- a data-first keyword-tagged S-expression CSG IR + emitter.
+"""Data-first keyword-tagged S-expression CSG IR and emitter.
 
-Ported / reimplemented from scad-clj (Matthew Farrell), a Clojure library that
-renders OpenSCAD source from *plain data*.  A shape is not an object with
+A shape is not an object with
 methods; it is an inert nested tuple whose head is a keyword tag::
 
     (":cube", {"x": 1, "y": 2, "z": 3, "center": True})
@@ -14,10 +13,9 @@ from ``geometry.libfive_frep_ir`` (an SDF opcode DAG over implicit x/y/z).  The
 value a data-first form adds:
 
 * **Canonical inert data.**  A model is tuples and dicts -- directly
-  serialisable, hashable-after-freezing, diffable, and walkable without any
-  class.  ``postwalk`` (a generic bottom-up transform) is provided so a caller
-  can rewrite a tree structurally the way scad-clj uses ``clojure.walk``.
-* **scad-clj's radian rotation convention.**  ``rotate`` stores its angle in
+serialisable, hashable-after-freezing, diffable, and walkable without any
+class. ``postwalk`` is a generic bottom-up transform for structural rewrites.
+* **Radian rotation convention.** ``rotate`` stores its angle in
   *radians*; the emitter converts to degrees on the way out (OpenSCAD wants
   degrees).  SolidPython passes the angle through untouched -- a genuinely
   different transform handling.
