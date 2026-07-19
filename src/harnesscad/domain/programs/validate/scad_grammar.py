@@ -1,7 +1,15 @@
 """OpenSCAD grammar validator -- an FSA / structural checker for .scad text.
 
 The grammar enforced here is transliterated from the OpenSCAD language as
-documented in RapCAD's ``doc/openscad.bnf`` (RapCAD is GPL-3). The BNF file
+documented in RapCAD's ``doc/openscad.bnf`` (RapCAD is GPL-3). **It validates
+OpenSCAD only.** RapCAD ships a second, larger grammar for its own language,
+``doc/rapcad.bnf`` (202 lines to openscad.bnf's 121), which this port never saw;
+fed a ``.rcad`` file, an OpenSCAD parser does not fail politely, it invents
+syntax errors at valid RapCAD (``return``, ``const``/``param``, ``^``, ``~=``,
+``::``, ``|x|``, the U+00B1 tolerance operator, typed parameters, ``/** */``
+doc-comments, ``import <p> as name;``). So RapCAD input is *refused* by name
+rather than mis-diagnosed -- see :func:`detect_rapcad` and
+:mod:`harnesscad.domain.programs.rapcad_language`. The BNF file
 was read as a *reference for facts about a public language*: the grammar rules
 of OpenSCAD are properties of the language itself, not creative expression of
 RapCAD. The rules have been reimplemented from scratch in this module's own
@@ -58,6 +66,8 @@ __all__ = [
     "MODIFIERS",
     "tokenize",
     "check_delimiters",
+    "RAPCAD_MARKERS",
+    "detect_rapcad",
     "validate",
     "main",
 ]
@@ -85,6 +95,7 @@ class Rule(str, Enum):
     VECTOR = "vector"
     COMPREHENSION = "list_comprehension"
     DEPTH = "nesting_depth"
+    DIALECT = "dialect"
 
 
 # --------------------------------------------------------------------------
@@ -802,14 +813,190 @@ class _Parser:
 # public API
 # --------------------------------------------------------------------------
 
-def validate(source: str) -> Result:
+# --------------------------------------------------------------------------
+# dialect gate: refuse RapCAD rather than mis-diagnose it
+# --------------------------------------------------------------------------
+#
+# This module implements OpenSCAD, transliterated from RapCAD's
+# ``doc/openscad.bnf``. RapCAD ships a *second*, larger grammar for its own
+# language, ``doc/rapcad.bnf`` (202 lines against openscad.bnf's 121), which
+# this port never saw. Fed a ``.rcad`` file, the OpenSCAD parser below does not
+# merely fail -- it fails *confidently and wrongly*, reporting a pile of
+# invented syntax errors at constructs that are perfectly valid RapCAD.
+#
+# Rather than pretend to validate a language we do not implement, we refuse it.
+# The refusal is one diagnostic naming the marker and the construct, so the
+# caller learns "this is RapCAD, and I do not speak RapCAD" instead of "line 4:
+# expected ';'". See ``harnesscad.domain.programs.rapcad_language`` for the
+# RapCAD semantics the harness *does* model.
+#
+# Each marker is a construct that is valid RapCAD and is not valid OpenSCAD;
+# citations are into the RapCAD source (GPL-3, facts only, nothing copied).
+
+#: ``(marker_text, human_description)`` -- word markers must appear as whole
+#: identifiers; the rest match anywhere outside strings, comments and paths.
+RAPCAD_MARKERS: Tuple[Tuple[str, str], ...] = (
+    # structural keywords (src/lexer.l:90-96)
+    ("return", "RapCAD `return` (imperative user functions)"),
+    ("const", "RapCAD `const` declaration"),
+    ("param", "RapCAD `param` (parametric variable)"),
+    # operators (src/lexer.l:97-112, src/parser.y:305-320)
+    ("::", "RapCAD `::` namespace operator"),
+    ("~=", "RapCAD `~=` append operator"),
+    ("**", "RapCAD `**` cross-product operator"),
+    (".*", "RapCAD `.*` componentwise-multiply operator"),
+    ("./", "RapCAD `./` componentwise-divide operator"),
+    ("^", "RapCAD `^` exponent operator"),
+    (chr(0x00B1), "RapCAD `+/-` (U+00B1) tolerance-interval operator"),
+    # doc comments are lexed as grammar tokens, not comments (src/lexer.l:131)
+    ("/**", "RapCAD `/** @param */` doc-comment tokens"),
+)
+
+_WORD_MARKERS = frozenset({"return", "const", "param"})
+_IDENT_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$")
+
+
+def _dialect_scan(source: str) -> Optional[Tuple[int, int, str]]:
+    """First RapCAD-only construct in ``source`` as ``(line, col, what)``.
+
+    Walks the raw text skipping strings, comments and ``<...>`` include/use/
+    import paths, so that a path like ``include <./lib.scad>`` is not mistaken
+    for the ``./`` operator. Returns ``None`` when nothing RapCAD-specific is
+    seen. Deterministic: the earliest marker always wins.
+    """
+    i, line, col, n = 0, 1, 1, len(source)
+    while i < n:
+        ch = source[i]
+        # -- doc comment must be tested before the block-comment skip --------
+        if source.startswith("/**", i):
+            return line, col, "RapCAD `/** @param */` doc-comment tokens"
+        if source.startswith("//", i):
+            end = source.find("\n", i)
+            i = n if end < 0 else end
+            continue
+        if source.startswith("/*", i):
+            end = source.find("*/", i + 2)
+            stop = n if end < 0 else end + 2
+            for c in source[i:stop]:
+                if c == "\n":
+                    line, col = line + 1, 1
+                else:
+                    col += 1
+            i = stop
+            continue
+        if ch == '"':
+            j = i + 1
+            while j < n and source[j] != '"':
+                j += 2 if source[j] == "\\" else 1
+            for c in source[i:min(j + 1, n)]:
+                if c == "\n":
+                    line, col = line + 1, 1
+                else:
+                    col += 1
+            i = min(j + 1, n)
+            continue
+        # -- include/use/import <path>: skip the whole angle-bracket path ----
+        if ch in "iu" and (source.startswith("include", i)
+                           or source.startswith("use", i)
+                           or source.startswith("import", i)):
+            word = ("include" if source.startswith("include", i)
+                    else "import" if source.startswith("import", i) else "use")
+            after = i + len(word)
+            k = after
+            while k < n and source[k] in " \t":
+                k += 1
+            before_ok = i == 0 or source[i - 1] not in _IDENT_CHARS
+            if before_ok and k < n and source[k] == "<":
+                end = source.find(">", k)
+                stop = n if end < 0 else end + 1
+                for c in source[i:stop]:
+                    if c == "\n":
+                        line, col = line + 1, 1
+                    else:
+                        col += 1
+                i = stop
+                continue
+        # -- word markers ----------------------------------------------------
+        if ch in _IDENT_CHARS and (i == 0 or source[i - 1] not in _IDENT_CHARS):
+            j = i
+            while j < n and source[j] in _IDENT_CHARS:
+                j += 1
+            word = source[i:j]
+            if word in _WORD_MARKERS:
+                for text, what in RAPCAD_MARKERS:
+                    if text == word:
+                        return line, col, what
+            # a bare number immediately followed by '[' is a RapCAD tolerance
+            # interval literal (src/parser.y:301-304); OpenSCAD has no such
+            # form, and this parser would silently read it as an index.
+            if word and word[0].isdigit() and j < n and source[j] == "[":
+                return (line, col,
+                        "RapCAD tolerance-interval literal `N[a,b]`")
+            col += j - i
+            i = j
+            continue
+        # -- operator markers ------------------------------------------------
+        for text, what in RAPCAD_MARKERS:
+            if text in _WORD_MARKERS:
+                continue
+            if source.startswith(text, i):
+                return line, col, what
+        if ch == "\n":
+            line, col = line + 1, 1
+        else:
+            col += 1
+        i += 1
+    return None
+
+
+def detect_rapcad(source: str,
+                  path: Optional[str] = None) -> Optional[Diagnostic]:
+    """Refuse RapCAD input, returning the refusal diagnostic (or ``None``).
+
+    Two independent signals, either of which is enough:
+
+    * ``path`` ends in ``.rcad`` -- RapCAD's own extension; and
+    * ``source`` contains a construct from :data:`RAPCAD_MARKERS` that is valid
+      RapCAD and is not valid OpenSCAD.
+
+    A leading UTF-8 BOM is *not* treated as a signal on its own (it is a common
+    editor artefact), though RapCAD does lex it as a real token
+    (``src/lexer.l:147``) while this module's OpenSCAD lexer would call it a
+    lexical fault.
+    """
+    hit = _dialect_scan(source)
+    if path is not None and path.lower().endswith(".rcad"):
+        found = hit[2] if hit else "a .rcad file"
+        return Diagnostic(hit[0] if hit else 1, hit[1] if hit else 1,
+                          Rule.DIALECT,
+                          "OpenSCAD source (this validator implements only "
+                          "OpenSCAD; see domain.programs.rapcad_language)",
+                          "RapCAD source -- refusing rather than "
+                          "mis-diagnosing it: " + found)
+    if hit is None:
+        return None
+    return Diagnostic(hit[0], hit[1], Rule.DIALECT,
+                      "OpenSCAD source (this validator implements only "
+                      "OpenSCAD; see domain.programs.rapcad_language)",
+                      "RapCAD source -- refusing rather than "
+                      "mis-diagnosing it: " + hit[2])
+
+
+def validate(source: str, path: Optional[str] = None) -> Result:
     """Validate ``source`` against the OpenSCAD grammar.
 
     Returns a :class:`Result` whose ``ok`` is True when no diagnostic fired.
-    Lexical faults short-circuit; unbalanced delimiters short-circuit (with
-    every unmatched position reported); otherwise the recursive-descent pass
-    reports each statement-level fault it can recover past. Deterministic.
+    RapCAD input is *refused* up front with a single :attr:`Rule.DIALECT`
+    diagnostic (see :func:`detect_rapcad`) instead of being run through a
+    grammar that does not describe it. Then: lexical faults short-circuit;
+    unbalanced delimiters short-circuit (with every unmatched position
+    reported); otherwise the recursive-descent pass reports each statement-level
+    fault it can recover past. Deterministic.
     """
+    refusal = detect_rapcad(source, path)
+    if refusal is not None:
+        return Result(False, (refusal,))
     try:
         tokens = tokenize(source)
     except _LexError as exc:
@@ -876,6 +1063,37 @@ _INVALID_SNIPPETS: Tuple[Tuple[str, str, str], ...] = (
      "x = true ? 1;", Rule.EXPR),
 )
 
+# RapCAD constructs that are valid RapCAD and not valid OpenSCAD. Every one
+# must be REFUSED as a dialect, not reported as a syntax error. All snippets are
+# written from scratch for this test; no RapCAD file is vendored.
+_RAPCAD_SNIPPETS: Tuple[Tuple[str, str], ...] = (
+    ("imperative function with return",
+     "function f(x) { return x * 2; }"),
+    ("const declaration", "const width = 10;"),
+    ("param declaration", "param depth = 4;"),
+    ("namespace operator", "x = lib::helper(1);"),
+    ("append operator", "xs ~= [1, 2];"),
+    ("exponent operator", "x = 2 ^ 8;"),
+    ("cross-product operator", "n = a ** b;"),
+    ("componentwise multiply", "v = a .* b;"),
+    ("componentwise divide", "v = a ./ b;"),
+    ("tolerance operator", "d = 10 " + chr(0x00B1) + " 0.1;"),
+    ("tolerance interval literal", "d = 10[0.1, 0.2];"),
+    ("doc comment tokens", "/** @param r radius */\nmodule ring(r) { }"),
+)
+
+# Constructs that merely *look* like RapCAD markers but are ordinary OpenSCAD,
+# and must NOT trip the dialect gate.
+_NOT_RAPCAD_SNIPPETS: Tuple[Tuple[str, str], ...] = (
+    ("relative include path", "include <./lib/util.scad>\ncube(1);"),
+    ("relative use path", "use <../shared/gears.scad>\ncube(1);"),
+    ("marker text inside a string", 'echo("return const param :: ^");'),
+    ("marker text inside a line comment", "// return const ^ ::\ncube(1);"),
+    ("marker text inside a block comment", "/* param ~= .* */\ncube(1);"),
+    ("identifier merely containing a marker", "constant = 1;\nreturns = 2;"),
+    ("ordinary indexing of an identifier", "x = v[0];"),
+)
+
 
 def _selfcheck() -> int:
     failures = 0
@@ -897,11 +1115,46 @@ def _selfcheck() -> int:
             print("    " + d.render())
         if not rejected:
             failures += 1
+    for label, src in _RAPCAD_SNIPPETS:
+        result = validate(src)
+        refused = (not result.ok
+                   and len(result.diagnostics) == 1
+                   and result.diagnostics[0].rule == Rule.DIALECT.value)
+        status = "ok" if refused else "FAIL"
+        print("rapcad  [%s] %s" % (status, label))
+        for d in result.diagnostics:
+            print("    " + d.render())
+        if not refused:
+            failures += 1
+    for label, src in _NOT_RAPCAD_SNIPPETS:
+        result = validate(src)
+        clean = not any(d.rule == Rule.DIALECT.value for d in result.diagnostics)
+        status = "ok" if clean else "FAIL"
+        print("scad    [%s] %s" % (status, label))
+        if not clean:
+            failures += 1
+            for d in result.diagnostics:
+                print("    " + d.render())
+    # the extension alone is enough, even for text that is also legal OpenSCAD
+    by_path = validate("cube(1);", path="part.rcad")
+    ok_path = (not by_path.ok
+               and by_path.diagnostics[0].rule == Rule.DIALECT.value)
+    print("rapcad  [%s] .rcad extension alone" % ("ok" if ok_path else "FAIL"))
+    if not ok_path:
+        failures += 1
+    same_text_as_scad = validate("cube(1);")
+    print("scad    [%s] same text without the .rcad path"
+          % ("ok" if same_text_as_scad.ok else "FAIL"))
+    if not same_text_as_scad.ok:
+        failures += 1
+
     if failures:
         print("selfcheck: %d failure(s)" % failures)
         return 1
-    print("selfcheck: all %d valid and %d invalid snippets behaved as expected"
-          % (len(_VALID_SNIPPETS), len(_INVALID_SNIPPETS)))
+    print("selfcheck: %d valid, %d invalid, %d refused-as-RapCAD and %d "
+          "look-alike snippets behaved as expected"
+          % (len(_VALID_SNIPPETS), len(_INVALID_SNIPPETS),
+             len(_RAPCAD_SNIPPETS), len(_NOT_RAPCAD_SNIPPETS)))
     return 0
 
 
@@ -921,7 +1174,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
     with open(args.path, "r", encoding="utf-8") as handle:
         source = handle.read()
-    result = validate(source)
+    result = validate(source, path=args.path)
     print(result.render())
     return 0 if result.ok else 1
 
