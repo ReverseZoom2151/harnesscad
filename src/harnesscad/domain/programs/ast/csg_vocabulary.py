@@ -6,8 +6,35 @@ Geometry program built from booleans, transforms, primitives and the two set
 operators that are *not* plain booleans -- convex ``hull`` and ``minkowski`` sum.
 Four sibling projects speak the same idea in different words:
 
-*   **RapCAD** -- an OpenSCAD-compatible language (Giles Bathgate); same keywords
-    plus its own additions (``writeln``, ``assign``, ``pull``).
+*   **RapCAD** -- an OpenSCAD-*inspired* (not OpenSCAD-compatible) language by
+    Giles Bathgate.  It shares the CSG keyword core, but it is a different
+    language in both directions, and the difference is structural rather than a
+    handful of extra builtins:
+
+    - it *adds* ``return``, ``const``, ``param``, ``import <p> as name;``, the
+      ``::`` namespace operator, the operators ``^ ** .* ./ ~ ~= |x| PM``,
+      interval literals ``N[a,b]`` / ``N PM e``, quaternion literals
+      ``<w,x,y,z>``, unit-suffixed numbers (``5mm``, ``2in``) and an
+      exact-rational numeric tower -- see
+      :mod:`harnesscad.domain.programs.rapcad_language` for these, with
+      citations;
+    - it *lacks* OpenSCAD features a port may wrongly assume: ``each``, list
+      comprehensions, ``intersection_for``, function literals, ``lookup`` and
+      ``search`` (verified absent from RapCAD ``src/parser.y``, ``src/lexer.l``
+      and ``src/function/``; ``doc/feature_matrix.asciidoc:107,119`` agrees for
+      the last two);
+    - console output is ``echo`` plus RapCAD's own ``write`` / ``writeln``
+      (``src/module/writelnmodule.cpp:22``).
+
+    Two frequently-repeated claims about RapCAD are false and were removed from
+    this docstring: there is **no** ``assign`` module (RapCAD dropped it --
+    ``doc/feature_matrix.asciidoc:18`` records "Assign module | RapCAD No |
+    OpenSCAD Yes"; it has assignment-in-``for``/``if``/instance instead, lines
+    15-17), and there is **no** ``pull`` keyword anywhere in ``src/``.
+    Note also that ``doc/feature_matrix.asciidoc:99`` ("concat | No") is itself
+    stale: ``concat`` *is* a RapCAD builtin
+    (``src/function/concatfunction.cpp:24``, registered at
+    ``src/builtincreator.cpp:147``), so the matrix is not a reliable oracle.
 *   **AngelCAD** -- a C++/AngelScript CAD language; solids are objects and booleans
     are the ``+ - *`` operators over ``solid`` values, primitives are
     ``box``/``cone``/``sphere``.
@@ -160,6 +187,9 @@ DIALECTS: Dict[CsgOp, Dict[str, Tuple[str, ...]]] = {
         "openjscad": ("cylinder",), "replicad": ("makeCylinder",),
     },
     CsgOp.CONE: {
+        # RapCAD has a first-class cone primitive that OpenSCAD lacks
+        # (src/module/conemodule.cpp:26; doc/feature_matrix.asciidoc:54).
+        "rapcad": ("cone",),
         "angelcad": ("cone",),
         "openjscad": ("cylinderElliptic",),
     },
