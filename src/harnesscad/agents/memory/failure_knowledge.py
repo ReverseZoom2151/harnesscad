@@ -1,11 +1,14 @@
-"""AgentSCAD's CAD failure-mode knowledge, as UNVERIFIED skill-pack recipes.
+"""CAD failure-mode knowledge, as UNVERIFIED skill-pack recipes.
 
-Vendored from **AgentSCAD** (``resources/cad_repos/AgentSCAD-main``,
-``cad_knowledge/failures/{floating_parts,missing_holes,non_manifold_boolean}.md``).
-Source repo LICENSE: **MIT** -- the symptom / cause / repair-strategy /
-prevention content below is reproduced from those files with attribution.
+The three failure modes covered here -- floating parts, missing holes and
+non-manifold booleans -- and the four-part diagnosis shape are taken from the
+failure notes in **AgentSCAD** (``resources/cad_repos/AgentSCAD-main``,
+``cad_knowledge/failures/*.md``; that repo is MIT). ``_PROVENANCE`` records
+that origin on every entry. The symptom / cause / strategy / prevention text
+below is written for this repo rather than copied: what is borrowed is the
+taxonomy, not the sentences.
 
-Each failure MD is one diagnosis: a *symptom* a validator can observe, the
+Each diagnosis is a *symptom* a validator can observe, the
 *causes* that produce it, an ordered *repair strategy*, and the *prevention*
 rules that stop it recurring. That is exactly a
 :class:`~harnesscad.agents.memory.skillpack.PackSkill`: triggers (the symptom),
@@ -14,17 +17,15 @@ must be re-checked before success may be claimed).
 
 VERIFICATION-FIRST
 ------------------
-This is a recipe written by someone else -- plausible text, not executed
-geometry -- and the pack convention is verification-first. So
+This is a recipe, not executed geometry -- plausible text that no build has
+confirmed -- and the pack convention is verification-first. So
 :func:`register_failure_knowledge` routes through
 :func:`~harnesscad.agents.memory.skillpack.register_pack`, which admits every
 entry with ``verified=False`` and no expander. Nothing here flips ``verified``;
 only :meth:`~harnesscad.agents.memory.skills.SkillLibrary.add_verified` can,
 and only by executing an expansion that actually builds. Until then the
 knowledge is for the planner's retrieval and for human review --
-``verified_prompt_lines`` will not surface it to a model, which is also why the
-source's OpenSCAD-specific numbers (``$fn``, ``_merge_tol``) are safe to carry
-verbatim: they are recorded provenance, not injected instruction.
+``verified_prompt_lines`` will not surface it to a model.
 
 The prose is *reference* text (Category B exemplar corpus), never a prompt.
 
@@ -55,6 +56,10 @@ __all__ = [
 
 FAILURE_PACK_NAME = "agentscad_failures"
 
+# Origin of the failure taxonomy, recorded on every entry. The prose in this
+# module is ours; what these fields credit is where the three failure modes and
+# the four-part diagnosis shape came from. ``license`` records the source repo's
+# licence so a later reader can check the lineage for themselves.
 _PROVENANCE = {
     "repo": "AgentSCAD",
     "path": "cad_knowledge/failures",
@@ -86,10 +91,10 @@ def _skill(name: str, source_md: str, description: str, symptom: str,
 
 
 def build_failure_pack() -> SkillPack:
-    """The three AgentSCAD failure diagnoses as a :class:`SkillPack`."""
+    """The three failure diagnoses as a :class:`SkillPack`."""
     return SkillPack(
         name=FAILURE_PACK_NAME,
-        description=("AgentSCAD CAD failure modes: symptom, causes, repair "
+        description=("CAD failure modes: symptom, causes, repair "
                      "strategy and prevention per validation failure. "
                      "Unverified reference knowledge."),
         provenance=dict(_PROVENANCE),
@@ -98,40 +103,42 @@ def build_failure_pack() -> SkillPack:
                 "repair-floating-parts",
                 "floating_parts.md",
                 "Repair a part whose validation found disconnected components.",
-                symptom=("The generated part contains disconnected components; "
-                         "validation detects floating geometry that would print "
-                         "separately from the main body."),
+                symptom=("The model splits into more than one body: the "
+                         "connectivity check reports islands of geometry that "
+                         "would come off the printer as loose pieces."),
                 causes=[
-                    "Missing union(): multiple solids defined at module scope "
-                    "without being wrapped, rendering as separate mesh islands.",
-                    "Boolean operations with gaps: a difference() severs the "
-                    "connection between two regions of the part.",
-                    "Translated children not connected: translate() moves a "
-                    "child outside the parent body with no connecting element.",
-                    "Misaligned components output as separate meshes (e.g. lid "
-                    "separate from body without a connecting runner).",
+                    "No enclosing union(): several solids sit side by side at "
+                    "module scope, so each one meshes as its own island.",
+                    "A difference() cut all the way through the material that "
+                    "used to join two regions of the part.",
+                    "A translate() carried a child clear of the parent body "
+                    "and nothing was added to span the resulting gap.",
+                    "Components that were meant to touch are offset slightly, "
+                    "so they mesh apart (a lid sitting above its body with no "
+                    "runner between them).",
                 ],
                 strategy=[
-                    "Wrap all geometry in a single union() at the top level.",
-                    "Add connecting bridges or runners between separated "
-                    "components.",
-                    "Verify translation offsets -- ensure features are "
-                    "positioned within the main body.",
-                    "For multi-part assemblies, offset the second part so it is "
-                    "clearly separate rather than accidentally detached.",
+                    "Put the whole part inside one top-level union().",
+                    "Span any deliberate separation with a bridge or runner.",
+                    "Re-check every translation offset and pull stray features "
+                    "back inside the main body.",
+                    "If the file really is a multi-part assembly, move the "
+                    "second part far enough away that the separation reads as "
+                    "intentional instead of as a defect.",
                 ],
                 prevention=[
-                    "All geometry must be inside a single union() in the "
+                    "Keep every solid inside the single union() of the "
                     "top-level part module.",
-                    "Features (ribs, bosses, standoffs) must penetrate the base "
-                    "by the merge tolerance.",
-                    "Prefer a library boss helper over a raw cylinder for "
-                    "standoffs.",
-                    "Verify translations are within expected body bounds.",
+                    "Sink ribs, bosses and standoffs into the base by at least "
+                    "the merge tolerance so the union has material to fuse.",
+                    "Reach for the library's boss helper instead of dropping a "
+                    "bare cylinder in for a standoff.",
+                    "Check that each translation leaves the feature inside the "
+                    "expected body bounds.",
                 ],
                 verification=[
-                    "Re-run the connectivity check: the part must be one "
-                    "connected component.",
+                    "Re-run the connectivity check: the part must come back as "
+                    "exactly one connected component.",
                 ],
             ),
             _skill(
@@ -139,36 +146,38 @@ def build_failure_pack() -> SkillPack:
                 "missing_holes.md",
                 "Repair a part whose hole_count validation found fewer holes "
                 "than requested.",
-                symptom=("Validation detects fewer holes than expected "
-                         "(hole_count check fails): N requested, M < N present."),
+                symptom=("The hole_count check comes back short: N holes were "
+                         "asked for and only M of them, M < N, are present in "
+                         "the rendered part."),
                 causes=[
-                    "Hole pattern uses wrong coordinates: the loop positions "
-                    "holes outside the part body.",
-                    "Boolean subtraction order: holes are subtracted from the "
-                    "wrong parent solid.",
-                    "Insufficient circle resolution makes circular holes render "
-                    "as polygons.",
-                    "Hole depth too shallow: the subtracted cylinder does not "
-                    "fully penetrate the part.",
+                    "The pattern loop computes coordinates that fall outside "
+                    "the body, so those cutters remove nothing.",
+                    "The cutters were subtracted from the wrong solid, leaving "
+                    "the intended parent untouched.",
+                    "Circle resolution is too coarse, so what should be a hole "
+                    "renders as a low-sided polygon.",
+                    "The cutting cylinder is shorter than the material it has "
+                    "to clear, so it leaves a blind pocket instead of a hole.",
                 ],
                 strategy=[
-                    "Count the holes actually generated inside the subtraction "
-                    "blocks.",
-                    "Verify hole coordinates are inside the part bounding box.",
-                    "Verify hole height exceeds the part thickness at the hole "
+                    "Count how many cutters the subtraction blocks actually "
+                    "emit, not how many the pattern was meant to emit.",
+                    "Confirm each hole centre lies inside the part bounding "
+                    "box.",
+                    "Confirm each cutter is taller than the material at its "
                     "location.",
-                    "Add the missing holes at the correct positions.",
-                    "Re-validate with the hole_count check.",
+                    "Place the holes that are missing.",
+                    "Run hole_count again.",
                 ],
                 prevention=[
-                    "Use the standard bolt-pattern / circular-array helpers "
-                    "rather than hand-placed holes.",
-                    "Always extend hole height past the part surface.",
-                    "Verify the edge margin is large enough that holes do not "
-                    "break through edges.",
+                    "Reach for the bolt-pattern and circular-array helpers "
+                    "instead of placing holes by hand.",
+                    "Always run cutters past both faces of the material.",
+                    "Leave enough edge margin that a hole cannot break out "
+                    "through the side of the part.",
                 ],
                 verification=[
-                    "Re-run hole_count: the rendered part must contain exactly "
+                    "Re-run hole_count: the rendered part must carry exactly "
                     "the requested number of through-holes.",
                 ],
             ),
@@ -176,35 +185,39 @@ def build_failure_pack() -> SkillPack:
                 "repair-non-manifold-boolean",
                 "non_manifold_boolean.md",
                 "Repair a mesh that renders but fails the manifold check.",
-                symptom=("The part renders but mesh validation reports "
-                         "non-manifold geometry: holes, self-intersections, or "
-                         "degenerate triangles in the exported mesh."),
+                symptom=("The part renders on screen, but the mesh check "
+                         "rejects it as non-manifold: the export carries gaps, "
+                         "self-intersections or degenerate triangles."),
                 causes=[
-                    "Coincident faces: two solids share exactly the same "
-                    "surface plane, so inside/outside is undecidable at the "
-                    "boundary.",
-                    "Zero-thickness geometry: a difference() creates an "
-                    "infinitely thin wall where two subtracted volumes meet.",
-                    "Degenerate triangles from minkowski sums with tiny radii.",
-                    "Non-closed polyhedron: faces do not form a closed solid.",
+                    "Two solids meet on exactly the same plane, which leaves "
+                    "the boolean with no way to decide which side of that "
+                    "surface is inside the part.",
+                    "Two subtracted volumes meet edge to edge and the material "
+                    "left between them has no thickness at all.",
+                    "A minkowski sum with a very small radius emits triangles "
+                    "of near-zero area.",
+                    "A hand-written polyhedron whose faces never close into a "
+                    "watertight shell.",
                 ],
                 strategy=[
-                    "Identify the non-manifold location from the validation "
-                    "report.",
-                    "Add merge-tolerance overlaps between unioned solids.",
-                    "Extend subtracted volumes past the part boundaries.",
-                    "Replace problematic patterns: prefer a hull over a "
-                    "minkowski for simple roundings; offset coplanar faces.",
+                    "Read the offending location off the validation report.",
+                    "Overlap the unioned solids by the merge tolerance so they "
+                    "have material in common.",
+                    "Run the subtracted volumes past the part boundary.",
+                    "Swap the pattern that caused it: a hull is safer than a "
+                    "minkowski for simple roundings, and coplanar faces can be "
+                    "nudged apart.",
                 ],
                 prevention=[
-                    "Always overlap boolean unions by the merge tolerance.",
-                    "Extend subtracted cylinders and cubes past part surfaces.",
-                    "Prefer the library rounded-box and boss helpers.",
-                    "Never position two solids with exact face contact inside a "
-                    "union.",
+                    "Give every boolean union a merge-tolerance overlap.",
+                    "Run cutting cylinders and cubes past the surfaces they "
+                    "pass through.",
+                    "Reach for the library's rounded-box and boss helpers.",
+                    "Never leave two solids in a union touching face to face "
+                    "with no overlap at all.",
                 ],
                 verification=[
-                    "Re-run the manifold check: every edge must be shared by "
+                    "Re-run the manifold check: every edge must belong to "
                     "exactly two faces.",
                 ],
             ),
@@ -229,8 +242,8 @@ def register_failure_knowledge(library: SkillLibrary,
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="AgentSCAD failure-mode knowledge as unverified skill-pack "
-                    "recipes (cad_knowledge/failures/*.md, MIT).")
+        description="CAD failure-mode knowledge as unverified skill-pack "
+                    "recipes.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="prove the pack round-trips and every entry lands "
                              "unverified, unexpandable and prompt-invisible.")
