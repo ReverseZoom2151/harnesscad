@@ -1,24 +1,22 @@
 """Compression and reconstruction-error metrics for wavelet shape encoding.
 
 Tables 1 & 8 and
-Sec. 4.  The paper evaluates its wavelet-tree representation with two families
 of numbers, both fully deterministic:
 
   * **Representation compactness** -- how many floating-point "input variables"
-    the representation carries versus the raw ``256^3`` SDF grid (Table 1's
-    "Input Variables" column and the 44.5% data-loading reduction claim).
+    the representation carries versus the raw ``256^3`` SDF grid.
 
   * **Reconstruction fidelity** -- how faithfully the (lossy, top-K filtered)
     representation reconstructs the original TSDF, reported as an
     Intersection-over-Union of the reconstructed occupancy against ground truth
-    (Table 1's IOU of 99.56%, Sec. 4's mean IoU claims).
+.
 
 This module implements those metrics on plain grids (works with the
 ``Grid3D`` produced by ``numeric.makeashape_wavelet_transform`` or with any
 equal-length sequences):
 
   * ``mse`` / ``rmse`` / ``relative_l2_error`` / ``psnr`` -- signal error;
-  * ``occupancy_from_sdf`` / ``occupancy_iou`` -- the IoU the paper reports,
+  * ``occupancy_from_sdf`` / ``occupancy_iou`` -- the IoU this approach reports,
     thresholding a (T)SDF at an iso level to get inside/outside occupancy;
   * ``compression_ratio`` / ``coefficient_reduction_fraction`` /
     ``streaming_reduction_fraction`` -- compactness ratios;
@@ -88,7 +86,7 @@ def psnr(a, b, value_range: float) -> float:
 
 
 # --------------------------------------------------------------------------- #
-# Occupancy IoU (the paper's headline reconstruction metric)                    #
+# Occupancy IoU (the headline reconstruction metric)                    #
 # --------------------------------------------------------------------------- #
 
 def occupancy_from_sdf(sdf, iso: float = 0.0) -> List[bool]:
@@ -134,7 +132,7 @@ def coefficient_reduction_fraction(original_count: int, kept_count: int) -> floa
 
 
 def streaming_reduction_fraction(original_bytes: float, representation_bytes: float) -> float:
-    """The paper's 44.5% data-loading reduction is exactly this fraction."""
+    """The 44.5% data-loading reduction is exactly this fraction."""
     if original_bytes <= 0:
         raise ValueError("original_bytes must be positive")
     if representation_bytes < 0:

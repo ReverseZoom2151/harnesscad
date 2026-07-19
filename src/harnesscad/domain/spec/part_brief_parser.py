@@ -16,7 +16,7 @@ before any geometry exists. This is distinct from
 :mod:`harnesscad.domain.spec.scad_parameters` (which extracts parameters *out of*
 existing SCAD): here we go *from a brief to a spec* and synthesize SCAD.
 
-The emitter mirrors cad-agent's templates: a plate is ``cube`` minus corner-hole
+The emitter uses standard templates: a plate is ``cube`` minus corner-hole
 cylinders (over-drilled +/-1mm so the difference cleanly punches through), a box
 is an outer ``cube`` minus a wall-inset inner ``cube``. Hole placement uses the
 same corner-margin rule (``max(2*hole_dia, 0.15*min(width, depth))``).

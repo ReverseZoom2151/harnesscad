@@ -1,11 +1,10 @@
 """SRDF (Semantic Robot Description Format) parser with URDF cross-validation.
 
-Ported from ``packages/cadjs/src/lib/urdf/parseSrdf.js`` of the ``text-to-cad``
-(CAD Skills) repository.  An SRDF layers MoveIt planning semantics on top of a
-URDF: planning groups, end effectors, named group states, and the disabled
-self-collision matrix.  Nothing in the harness modelled any of this.
+An SRDF layers motion-planning semantics on top of a URDF: planning groups, end
+effectors, named group states, and the disabled self-collision matrix.  Nothing
+in the harness modelled any of this.
 
-The transferable content is not the XML reading -- it is the *semantic closure*
+The load-bearing content is not the XML reading -- it is the *semantic closure*
 and the validation rules, all of which need the linked URDF to evaluate:
 
 * :func:`chain_joint_names` walks the URDF joint tree from a chain's

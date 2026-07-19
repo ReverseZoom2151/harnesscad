@@ -1,12 +1,10 @@
-"""Dialogue state: ellipsis + reference resolution (Cleopatra, 1985).
+"""Dialogue state: ellipsis + reference resolution.
 
-The sample session in "Towards a Natural Language Interface for CAD" shows
-Cleopatra sustaining a *conversation*: after a full query
+A CAD command interface can sustain a *conversation*: after a full query
 ``what is the voltage at nl at 10 ns`` the user may type only the fragment
-``at 20 ns`` and Cleopatra reuses the prior frame, overriding just the supplied
-time -- annotated in the paper as "Simple ellipsis is handled".  Section 4.1
-also flags pronoun handling ("it", "the last one") as a needed capability of a
-CAD language interface.
+``at 20 ns`` and the interface reuses the prior frame, overriding just the
+supplied time (simple ellipsis).  Pronoun handling ("it", "the last one") is
+another needed capability of a CAD language interface.
 
 This module supplies the two dialogue mechanisms, deterministically:
 

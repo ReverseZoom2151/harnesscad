@@ -48,7 +48,7 @@ __all__ = [
 ]
 
 # ---------------------------------------------------------------------------
-# Token kinds (mirror of syntax_kind.rs SyntaxKind).
+# Token kinds (the SyntaxKind vocabulary).
 # ---------------------------------------------------------------------------
 
 SYNTAX_KINDS: Tuple[str, ...] = (
@@ -67,7 +67,7 @@ SYNTAX_KINDS: Tuple[str, ...] = (
     "Unknown", "QuestionMark", "At", "SemiColon",
 )
 
-#: Reserved words -> their keyword SyntaxKind (mirror of ``keyword_or_word``).
+#: Reserved words -> their keyword SyntaxKind.
 KEYWORDS = {
     "if": "IfKw", "else": "ElseKw", "for": "ForKw", "while": "WhileKw",
     "return": "ReturnKw", "break": "BreakKw", "continue": "ContinueKw",
@@ -91,7 +91,7 @@ RECOVERY_KINDS = frozenset({"Unknown", "UnterminatedString", "UnterminatedBlockC
 NUMBER_SUFFIXES = ("mm", "cm", "m", "inch", "in", "ft", "yd", "deg", "rad", "?")
 
 # ---------------------------------------------------------------------------
-# AST / operator vocabulary (mirror of parsing/ast/types/mod.rs).
+# AST / operator vocabulary.
 # ---------------------------------------------------------------------------
 
 #: BinaryOperator variants -> their source spelling.
@@ -104,7 +104,7 @@ BINARY_OPERATORS = {
 #: UnaryOperator variants -> their source spelling.
 UNARY_OPERATORS = {"Neg": "-", "Not": "!", "Plus": "+"}
 
-#: AST node / enum names grouped by role (from ``parsing/ast/types/mod.rs``).
+#: AST node / enum names grouped by role.
 AST_NODES = {
     "program": ("Program", "Shebang", "BodyItem"),
     "statements": (
@@ -155,7 +155,7 @@ def keyword_or_word(text: str) -> str:
 # Lexer.
 #
 # Longest-match tokenisation. The ordering below only breaks ties (equal match
-# length), which mirrors logos' priority resolution for KCL's token set.
+# length), which resolves priority for KCL's token set.
 # ---------------------------------------------------------------------------
 
 _WHITESPACE = re.compile(r"[ \t\n\r]+")

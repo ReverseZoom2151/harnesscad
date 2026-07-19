@@ -1,19 +1,17 @@
-"""Program + grounding consistency check (FutureCAD / BRepGround).
+"""Program + grounding consistency check.
 
-Li et al., "Towards High-Fidelity CAD Generation via LLM-Driven Program
-Generation and Text-Based B-Rep Primitive Grounding" (FutureCAD, 2026),
-Sec. 3.1 and Eq. 3-5. A generated CadQuery program is a feature sequence
+A generated CadQuery program is a feature sequence
 ``F = f_1, ..., f_T``; the kernel executes it while maintaining a transient
 B-Rep ``B_i = Phi(B_{i-1}, f_i)``. When a feature needs operands its embedded
 text query ``q_i`` must resolve to a *non-empty* set of primitives drawn from
-the B-Rep produced by the *preceding* features: ``pi_i subseteq P(B_{i-1})``
-(Sec. 3.1). Advanced features (``fillet``/``chamfer``/``shell``) require
-``pi_i != {}`` (Sec. 3.1, "typically require pi_i != {}").
+the B-Rep produced by the *preceding* features: ``pi_i subseteq P(B_{i-1})``.
+Advanced features (``fillet``/``chamfer``/``shell``) typically require
+``pi_i != {}``.
 
 The LLM/kernel are external. This module checks, purely from the program's
 declared queries and per-step transient primitive sets, whether the
 program-and-grounding pair is internally *consistent* -- the deterministic
-validity conditions the paper's Invalidity-Ratio metric measures at the
+validity conditions the Invalidity-Ratio metric measures at the
 grounding level:
 
   * every query resolves to at least one primitive (no dangling reference);
@@ -41,7 +39,7 @@ from harnesscad.domain.reconstruction.translate.brep_grounding import (
 )
 
 # Feature types that select existing B-Rep primitives, and the primitive kind
-# each expects for its operand set (Sec. 3.1).
+# each expects for its operand set.
 _REFINEMENT_KIND = {
     "fillet": "edge",
     "chamfer": "edge",
@@ -158,7 +156,7 @@ def query_specificity(step: FeatureStep) -> float:
 
     1.0 means the query grounds to a single primitive (maximally specific);
     lower values mean it selects a larger fraction of the available set. Useful
-    as a soft signal for the paper's "query is specific enough" concern.
+    as a soft signal for the "query is specific enough" concern.
     Returns 1.0 for steps without a query.
     """
     if step.query is None:

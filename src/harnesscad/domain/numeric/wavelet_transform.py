@@ -14,14 +14,14 @@ This module implements that transform from scratch, stdlib-only:
     two wavelet families that both give **perfect reconstruction**:
       - ``haar`` -- the orthonormal Haar wavelet;
       - ``bior53`` -- the Le Gall 5/3 *biorthogonal* wavelet (the JPEG-2000
-        lifting wavelet), a stand-in for the paper's biorthogonal choice
-        ("biorthogonal wavelets with 6 and 8 moments", p. 6 footnote);
+        lifting wavelet), a stand-in for a biorthogonal family with higher
+        vanishing-moment counts;
   * the **separable single-level 3D DWT** producing the eight octant subbands
     ``LLL, HLL, LHL, HHL, LLH, HLH, LHH, HHH`` (the 3D case has *seven* detail
-    subbands per level plus the all-low coarse band -- Fig. 5), and its inverse;
+    subbands per level plus the all-low coarse band), and its inverse;
   * the **multi-level decomposition** that recursively transforms the coarse
-    ``LLL`` band, yielding the ``C0`` root plus per-level detail subbands
-    (Fig. 5's ``C2 -> C1 -> C0`` cascade), and its exact inverse round-trip.
+    ``LLL`` band, yielding the ``C0`` root plus per-level detail subbands,
+    and its exact inverse round-trip.
 
 All boundary handling is periodic so reconstruction is exact to floating point.
 No wall clock, no randomness.
@@ -298,7 +298,7 @@ class WaveletDecomposition:
     per-level dicts of the seven detail subbands, ordered *finest first*
     (``details[0]`` are the highest-frequency subbands at half the input
     resolution; ``details[-1]`` are the coarsest, at the resolution of
-    ``coarse``).  This mirrors the paper's ``C2 -> C1 -> C0`` cascade where
+    ``coarse``).  This mirrors the ``C2 -> C1 -> C0`` cascade where
     ``D0`` (coarsest detail) sits beside ``C0``.
     """
 

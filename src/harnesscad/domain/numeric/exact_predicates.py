@@ -17,10 +17,10 @@ guaranteed-correct sign.  The strategy is the standard two-tier one:
 * otherwise fall back to an *exact* recomputation.  Python ``float`` values are
   binary fractions, so :class:`fractions.Fraction` represents each input with
   zero error and the exact determinant sign is recovered with no rounding at
-  all -- this is stronger than Shewchuk's staged expansions, which only refine
+  all -- this is stronger than the standard staged expansions, which only refine
   until the sign is certain.
 
-The returned sign convention matches Manifold / Shewchuk:
+The returned sign convention matches the standard convention:
 
 * :func:`orient2d` ``> 0`` when ``a, b, c`` are counter-clockwise;
 * :func:`orient3d` ``> 0`` when ``d`` is below the plane ``a, b, c`` oriented
@@ -55,7 +55,7 @@ Point2 = Sequence[float]
 Point3 = Sequence[float]
 
 # Error-bound coefficients.  eps is the IEEE-754 double unit round-off (2**-53).
-# The constants are Shewchuk's conservative a-priori relative error bounds for
+# The constants are the standard conservative a-priori relative error bounds for
 # each determinant expansion; multiplying by the sum of magnitudes of the
 # permanent gives an absolute bound below which the float sign is not trusted.
 _EPS = 2.0 ** -53
@@ -125,7 +125,7 @@ def orient3d(a: Point3, b: Point3, c: Point3, d: Point3) -> int:
     Positive iff ``d`` lies on the negative side of the plane through
     ``a, b, c`` taken counter-clockwise (right-hand rule) -- equivalently, the
     signed volume of the tetrahedron ``(a, b, c, d)`` has the opposite sign of
-    the returned value's convention: it matches Shewchuk's ``orient3d``.
+    the returned value's convention: it matches the standard ``orient3d``.
     """
     adx, ady, adz = a[0] - d[0], a[1] - d[1], a[2] - d[2]
     bdx, bdy, bdz = b[0] - d[0], b[1] - d[1], b[2] - d[2]

@@ -26,7 +26,7 @@ _EPS = 1e-12
 
 
 def cross_entropy(targets: list[float], predicted: list[float]) -> float:
-    """CE loss ``-sum t_i log(p_hat_i)`` for one token's distributions (Eq. 5).
+    """CE loss ``-sum t_i log(p_hat_i)`` for one token's distributions.
 
     ``targets`` is the ground-truth distribution (need not be one-hot but must be
     non-negative); ``predicted`` are model probabilities. Probabilities are
@@ -45,7 +45,7 @@ def cross_entropy(targets: list[float], predicted: list[float]) -> float:
 
 
 def p_mse(predicted: list[float], targets: list[float]) -> float:
-    """Parametric MSE ``(1/N) sum |f(h_i) - p_i|^2`` (Eq. 6).
+    """Parametric MSE ``(1/N) sum |f(h_i) - p_i|^2``.
 
     Averaged over the N predicted numeric parameters.
     """
@@ -58,7 +58,7 @@ def p_mse(predicted: list[float], targets: list[float]) -> float:
 
 @dataclass(frozen=True)
 class LossBreakdown:
-    """The three loss terms and their weighted total (Eq. 7)."""
+    """The three loss terms and their weighted total."""
 
     ce: float
     p_mse: float
@@ -69,7 +69,7 @@ class LossBreakdown:
 
 def total_loss(ce: float, pmse: float,
                lambda_ce: float = 1.0, lambda_p_mse: float = 1.0) -> LossBreakdown:
-    """Weighted sum ``lambda_CE * L_CE + lambda_P-MSE * L_P-MSE`` (Eq. 7)."""
+    """Weighted sum ``lambda_CE * L_CE + lambda_P-MSE * L_P-MSE``."""
     if lambda_ce < 0 or lambda_p_mse < 0:
         raise ValueError("loss weights must be non-negative")
     total = lambda_ce * ce + lambda_p_mse * pmse

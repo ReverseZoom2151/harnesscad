@@ -1,19 +1,18 @@
-"""Hierarchy-aware CAD -> structured-text serialisation (FlexCAD, Zhang et al. 2024).
+"""Hierarchy-aware CAD -> structured-text serialisation.
 
-FlexCAD ("Unified and Versatile Controllable CAD Generation with Fine-Tuned Large
-Language Models") represents a sketch-and-extrude CAD model as a *concise, structured
-text* by abstracting each construction hierarchy as a sequence of text tokens
-(paper Sec. 3.1, Fig. 3). The construction hierarchy is::
+A sketch-and-extrude CAD model is represented as a *concise, structured
+text* by abstracting each construction hierarchy as a sequence of text tokens.
+The construction hierarchy is::
 
     model  ->  sketch-extrusion (SE)  ->  {sketch, extrusion}
     sketch ->  face  ->  loop  ->  curve  (line | arc | circle)
 
-Faithful text-representation rules (paper Sec. 3.1 + appendix A.1):
+Faithful text-representation rules:
 
 * The curve *type* (line / arc / circle) is emitted directly as a textual token.
 * Numerical geometry (point coordinates) is expressed as **decimal integers** and
   then as textual tokens -- e.g. the centre ``(31, 31)`` -- rather than the binary
-  one-hot ``([0,1,1,1,1,1],[0,1,1,1,1,1])`` used by SkexGen.
+  one-hot ``([0,1,1,1,1,1],[0,1,1,1,1,1])`` used by codebook tokenisers.
 * A special ``<H>_end`` token marks the end of every hierarchy,
   ``H in {curve, loop, face, sketch, extrusion}``, instead of one-hot ending flags.
 * Tokens of the finer hierarchy are concatenated to form the coarser one; a model is
@@ -22,7 +21,7 @@ Faithful text-representation rules (paper Sec. 3.1 + appendix A.1):
   numerical attributes (appendix A.1: ``B V V T T T R..R S O O`` = 18 params, the
   op being ``B``; here the op is the token and the remaining 17 are integer attrs).
 
-This module is the **deterministic** core FlexCAD idea: the CAD<->text serialiser and
+This module is the **deterministic** core idea: the CAD<->text serialiser and
 its round-trip parser, plus a low-level *field masker* (replace one hierarchy field
 with a mask token, keep the removed tokens as the infill answer) that the
 hierarchy-aware masking scheme and the training-pair constructor build upon. The LLM
@@ -54,7 +53,7 @@ FACE_END = "<face_end>"
 SKETCH_END = "<sketch_end>"
 EXTRUSION_END = "<extrusion_end>"
 
-# Hierarchy-aware mask tokens (paper Sec. 3.2, Fig. 4). Curve masks are *typed*.
+# Hierarchy-aware mask tokens. Curve masks are *typed*.
 SE_MASK = "[sketch-extrusionmask]"
 SKETCH_MASK = "[sketchmask]"
 EXTRUSION_MASK = "[extrusionmask]"
@@ -310,7 +309,7 @@ def parse(text: str) -> CADModel:
 
 
 # --- low-level hierarchy-field masker --------------------------------------
-# Levels addressable by the masking scheme (paper Sec. 3.2).
+# Levels addressable by the masking scheme.
 LEVEL_CAD = "cad"
 LEVEL_SE = "sketch_extrusion"
 LEVEL_SKETCH = "sketch"

@@ -2,8 +2,8 @@
 
 This module targets what it calls **complex parametric sequences** -- long
 (60-256 command) CAD programs whose difficulty is the whole reason for the
-multi-scale design. The paper's ABC-256 dataset is built precisely by *filtering
-on sequence complexity* (Sec. 4 / Supp. 1): keep only models "with complete
+multi-scale design. The ABC-256 dataset is built precisely by *filtering
+on sequence complexity*: keep only models "with complete
 design operations", "excluding simpler cases with only sketching and extrusion",
 ensuring sequence lengths of 60-256. That filter is a deterministic notion of
 complexity, and this module makes it concrete -- distinct from any learned model.
@@ -11,7 +11,7 @@ complexity, and this module makes it concrete -- distinct from any learned model
 A CAD command sequence is modelled conventionally: a tuple of
 ``(command_type, params)`` pairs where ``command_type`` is a small integer (the
 paper defines six types incl. ``SOL`` start-of-loop and ``EOS``) and ``params``
-is a fixed-width vector with unused entries set to ``-1`` (Sec. 3.2, Supp. 2).
+is a fixed-width vector with unused entries set to ``-1``.
 
 Provided measures (all deterministic, stdlib-only):
 
@@ -161,7 +161,7 @@ def sequence_complexity(program: Program, sol_type: int, eos_type: int = -1,
     command-type entropy, loop count, parameter richness, and transition
     diversity with fixed deterministic weights.
 
-    The weighting mirrors the paper's emphasis: length and operation variety
+    The weighting mirrors the emphasis: length and operation variety
     dominate (that is what makes a sequence "complex"), while parameter richness
     and loop structure refine the score. Reproducible for identical input.
     """
@@ -184,11 +184,11 @@ def sequence_complexity(program: Program, sol_type: int, eos_type: int = -1,
 def is_complex(program: Program, sol_type: int, min_len: int = 60,
                max_len: int = 256, min_types: int = 3, eos_type: int = -1,
                pad_type: int = -2) -> bool:
-    """ABC-256-style complexity filter (Sec. 4).
+    """ABC-256-style complexity filter.
 
     Returns ``True`` when the effective length is within ``[min_len, max_len]``
     **and** the sequence uses at least ``min_types`` distinct command types
-    (rejecting the "only sketching and extrusion" simple cases the paper
+    (rejecting the "only sketching and extrusion" simple cases this approach
     explicitly excludes).
     """
     active = _active(program, eos_type, pad_type)

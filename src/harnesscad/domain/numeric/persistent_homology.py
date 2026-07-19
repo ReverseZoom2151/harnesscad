@@ -6,24 +6,23 @@ the signed distance field ``S`` sampled on a grid, define the nested filtration
 upward.  Topological features are *born* and *die* along the sweep, producing a
 set of birth-death pairs ``(b, d)`` -- the persistence diagram (PD).  The
 persistence ``|d - b|`` measures how long a feature survives; points close to the
-diagonal (short persistence) are noise (Sec. 3, last paragraph).
+diagonal (short persistence) are noise.
 
 This module computes the **0-dimensional** persistence diagram -- the birth and
 death of connected components along the sublevel filtration -- exactly and
 deterministically with a union-find and the *elder rule* (Edelsbrunner & Harer):
 when two components merge, the one with the *later* birth dies at the current
-threshold.  This is the deterministic core of the paper's PH analysis; higher
+threshold.  This is the deterministic core of the PH analysis; higher
 dimensions require boundary-matrix reduction and are out of scope here.
 
 Design notes (distinct from anything in the repo -- no PH exists yet):
 
   * ``persistence_pairs`` -- 0-dim PD as ``(birth, death)`` pairs; the single
     globally-surviving component gets ``death = +inf`` (an *essential* class).
-  * ``persistence_points`` -- the paper's ``g_i = (b_i, d_i - b_i)`` birth /
-    persistence representation used as diffusion conditioning features (Sec. 4.2,
-    "Persistence points").
-  * ``top_k_persistent`` -- keep the ``k`` longest-lived points (the paper keeps
-    the 16 longest, discarding near-diagonal noise; Sec. 5.2).
+  * ``persistence_points`` -- the ``g_i = (b_i, d_i - b_i)`` birth /
+    persistence representation used as diffusion conditioning features.
+  * ``top_k_persistent`` -- keep the ``k`` longest-lived points (this approach keeps
+    the 16 longest, discarding near-diagonal noise; ).
   * ``betti_curve`` -- ``beta_0`` of ``K_i`` as a function of the threshold.
 
 The grid is given as a mapping ``coord -> value`` (``coord`` an int tuple) plus
@@ -139,7 +138,7 @@ def persistence_points(
     pairs: Sequence[Tuple[float, float]],
     finite_only: bool = True,
 ) -> List[Tuple[float, float]]:
-    """Birth / persistence points ``g_i = (b_i, d_i - b_i)`` (Sec. 4.2).
+    """Birth / persistence points ``g_i = (b_i, d_i - b_i)``.
 
     Essential (``inf``) classes are dropped when ``finite_only`` is set.
     """
@@ -164,7 +163,7 @@ def top_k_persistent(
     k: int,
     keep_essential: bool = True,
 ) -> List[Tuple[float, float]]:
-    """Keep the ``k`` longest-persistence pairs (Sec. 5.2 keeps the 16 longest).
+    """Keep the ``k`` longest-persistence pairs.
 
     Essential classes (infinite persistence) are always kept first when
     ``keep_essential`` is set, then the longest finite pairs fill the remainder.

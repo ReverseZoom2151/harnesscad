@@ -3,9 +3,9 @@
 This is the capability that only becomes possible once both halves exist: the
 EXPRESS *schema* model (:mod:`spec.express_schema_parser` +
 :mod:`spec.express_inheritance`) and the part-21 *data* model
-(:mod:`formats.stepllm_parser`).  ruststep's runtime does exactly this pairing
--- an ``.exp`` schema compiled by espr defines the entities, and a ``.step``
-file's records are then deserialised against those definitions.
+(:mod:`formats.stepllm_parser`).  A STEP toolchain does exactly this pairing
+-- an ``.exp`` schema defines the entities, and a ``.step`` file's records are
+then deserialised against those definitions.
 
 The harness previously validated data only against a small hand-written entity
 table (:mod:`formats.stepllm_schema`).  Here validation is driven by an

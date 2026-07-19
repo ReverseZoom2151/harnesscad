@@ -1,26 +1,23 @@
 """Fabrication-workflow taxonomy, machine registry and material-stock presets.
 
-Distilled from Feng et al., *Comparing Fabrication Workflows in CAD to Support
-Design Reasoning* (the CAMeleon system). The paper surveys 55 real fabrication
-projects and clusters them into a small taxonomy of fabrication paradigms, then
-implements 16 representative workflows, each carrying a standardized bundle of
-metadata: the machines it needs, the material stock it consumes, its assembly
-step count, capability keywords ("durable", "lightweight", ...), and a set of
-per-workflow feasibility checks.
+A survey of 55 real fabrication projects clusters them into a small taxonomy of
+fabrication paradigms, from which 16 representative workflows are implemented,
+each carrying a standardized bundle of metadata: the machines it needs, the
+material stock it consumes, its assembly step count, capability keywords
+("durable", "lightweight", ...), and a set of per-workflow feasibility checks.
 
-This module is the *data model* for that survey — the workflow-level layer that
+This module is the *data model* for that survey -- the workflow-level layer that
 sits **above** the per-part critics already in the repo (``verifiers/dfm.py``
 does wall-thickness/draft heuristics on one solid; ``quality/estimate.py`` does
-mass/cost/BOM). Nothing here re-implements those; instead it captures the
-paper's contribution: a machine-aware, comparable *catalog of fabrication
-paradigms* so a design can be reasoned about across processes, not locked into
-one.
+mass/cost/BOM). Nothing here re-implements those; instead it provides a
+machine-aware, comparable *catalog of fabrication paradigms* so a design can be
+reasoned about across processes, not locked into one.
 
 Everything is stdlib-only, deterministic (no wall clock, no randomness) and
 free of any external geometry kernel: a workflow is described by declarative
 metadata, and the machines/materials are plain frozen records.
 
-Taxonomy (Figure 10 of the paper): five primary paradigms plus an "other"
+Taxonomy: five primary paradigms plus an "other"
 bucket for the two projects that did not cluster (epoxy shapes, spar/frame
 boats):
 
@@ -74,7 +71,7 @@ class Machine:
 MACHINES: Dict[str, Machine] = {
     m.id: m
     for m in (
-        # 3D printers (working dims pre-loaded, per Figure 15a: Prusa, Ender).
+        # 3D printers (working dims pre-loaded).
         Machine("prusa_mk3", "Prusa MK3", "printer", (250.0, 210.0, 210.0)),
         Machine("ender3", "Creality Ender 3", "printer", (220.0, 220.0, 250.0)),
         Machine("prusa_xl", "Prusa XL", "printer", (360.0, 360.0, 360.0)),
@@ -101,10 +98,10 @@ class MaterialStock:
     """A stock material with the discrete sizes actually available.
 
     ``sheet_thicknesses`` are the plate/sheet gauges a shop stocks (mm); a
-    laser/interlocking workflow must snap to one of these (Figure 15c: "align
-    generated geometries to realistic stock sizes"). ``wire_diameter`` is set
+    laser/interlocking workflow must snap to one of these, aligning generated
+    geometry to realistic stock sizes. ``wire_diameter`` is set
     for wire stock. ``load_bearing`` flags whether the material can carry
-    structural load (foam cannot — the paper's "foam strength tip").
+    structural load (foam cannot).
     """
 
     id: str
@@ -151,7 +148,7 @@ MATERIALS: Dict[str, MaterialStock] = {
 class Workflow:
     """One fabrication workflow with its full standardized metadata bundle.
 
-    Fields mirror the paper's per-workflow template (scene / CAD-logic / tutorial
+    Fields follow a per-workflow template (scene / CAD-logic / tutorial
     / export) reduced to declarative, comparable metadata:
 
       * ``keywords``     -- swatch keywords surfaced in the sidebar ("durable").
@@ -359,7 +356,7 @@ def workflows_in_category(category: str) -> List[Workflow]:
 
 
 def workflows_for_machine(machine_id: str) -> List[Workflow]:
-    """Workflows that can run on a given machine (Figure 15: constrain to the
+    """Workflows that can run on a given machine (constrained to the
     machines a learner actually has access to)."""
     if machine_id not in MACHINES:
         raise KeyError(f"unknown machine {machine_id!r}")
@@ -372,8 +369,8 @@ def workflows_for_machine(machine_id: str) -> List[Workflow]:
 def available_workflows(machine_ids: List[str]) -> List[Workflow]:
     """Workflows runnable given a *set* of available machines (any-of match).
 
-    This is the paper's core machine-constraint idea: "you give it the machines
-    you have access to, then it generates workflows based on that."
+    This is the core machine-constraint idea: given the machines you have
+    access to, only the workflows they support are generated.
     """
     avail = set(machine_ids)
     for mid in avail:

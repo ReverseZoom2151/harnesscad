@@ -1,8 +1,8 @@
-"""Equal-area sphere-to-square parametrization (CFD, Appx. Eq. 14).
+"""Equal-area sphere-to-square parametrization (CFD, Appx. ).
 
 Consistent Flow Distillation warps points on the object surface to a 2D
 reference space through a mapping designed so that points uniformly scattered
-on the sphere remain uniform after being mapped to the square. The paper's
+on the sphere remain uniform after being mapped to the square. The
 motivation is noise-map fairness, but the mapping itself is a purely
 deterministic, verifiable geometric primitive: an *equal-area* projection
 between a spherical lune and a planar triangle.
@@ -11,13 +11,13 @@ For a mechanical-CAD harness this is directly useful for distributing inspection
 / render camera viewpoints uniformly over a sphere around a part, and for
 building area-fair spherical parametrizations without a learned model.
 
-Mapping (paper Eq. 14, azimuth octant phi in [0, pi/2)):
+Mapping):
 
     r  = sqrt(1 - cos(theta))
     xr = r
     yr = r * (2 * phi / (pi/2) - 1)
 
-Key property (proven in the paper and checked numerically in the tests):
+Key property (proven in this approach and checked numerically in the tests):
 
     |d(xr, yr) / d(theta, phi)| = (2 / pi) * sin(theta)
 
@@ -39,7 +39,7 @@ _SQRT2 = math.sqrt(2.0)
 
 
 def sphere_to_square(theta: float, phi: float) -> Tuple[float, float]:
-    """Map a spherical direction to the planar reference space (Eq. 14).
+    """Map a spherical direction to the planar reference space.
 
     theta is the polar angle in [0, pi]; phi is the azimuth in [0, pi/2).
     Returns (xr, yr) with 0 <= xr <= sqrt(2) and -xr <= yr <= xr.

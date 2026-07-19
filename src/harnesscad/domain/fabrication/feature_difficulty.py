@@ -1,22 +1,20 @@
 """Dataset difficulty stratification and confusable-pair diagnostics for AFR.
 
-Supplementary deterministic tooling distilled from Khan, Chen, Ng, Feng, Tan &
-Moon, *Leveraging Vision-Language Models for Manufacturing Feature Recognition
-in CAD Designs* (SIMTech / ARTC / NTU, A*STAR).
+Supplementary deterministic tooling for feature-recognition evaluation.
 
-That paper's core contributions -- the hierarchical manufacturing-feature
-taxonomy, the rule-based / VLM feature detector, the four evaluation metrics
-(feature name accuracy, feature quantity accuracy, hallucination rate, mean
-absolute error) and the per-feature attribute extraction -- are implemented
-elsewhere in the codebase (the ``mfgfeat_*`` modules for this paper's primary
+The core feature-recognition machinery -- the hierarchical manufacturing-feature
+taxonomy, the rule-based / model-driven feature detector, the four evaluation
+metrics (feature name accuracy, feature quantity accuracy, hallucination rate,
+mean absolute error) and the per-feature attribute extraction -- is implemented
+elsewhere in the codebase (the ``mfgfeat_*`` modules for the primary
 pass, plus ``bench/engdesign_dfm_scoring.py`` for DFM feature-recognition
 metrics). This module deliberately does NOT re-implement any of those.
 
-Instead it captures two smaller, self-contained ideas from the paper that the
+Instead it captures two smaller, self-contained ideas that the
 detector / taxonomy / metric layer does not express:
 
-1.  **Difficulty stratification** (paper Section 3.1). The authors partition
-    their 100-part dataset into ``easy`` / ``medium`` / ``hard`` buckets using
+1.  **Difficulty stratification**. A 100-part labelled dataset is partitioned
+    into ``easy`` / ``medium`` / ``hard`` buckets using
     explicit, human-auditable rules based on feature *count* and the *presence*
     of particular complex feature families. Easy parts have fewer than six
     features and *exclude* gussets, ribs, necks, threaded features and sheet
@@ -27,14 +25,14 @@ detector / taxonomy / metric layer does not express:
     deterministically so any labelled part can be assigned a difficulty tier
     for stratified reporting.
 
-2.  **Confusable-pair diagnostics** (paper Section 4). Across every difficulty
-    level the authors observe the VLMs systematically swapping *visually
+2.  **Confusable-pair diagnostics**. Across every difficulty
+    level, recognisers systematically swap *visually
     similar* feature pairs -- ``chamfer`` vs ``fillet`` and ``pipe/tube`` vs
     ``boss``. :func:`confusion_report` takes a ground-truth count vector and a
     prediction count vector and quantifies, per known-confusable pair, how much
     of the error is explained by leakage between the two members (one member
     under-counted while the sibling is over-counted). This is a diagnostic that
-    complements -- but is orthogonal to -- the paper's aggregate metrics: MAE
+    complements -- but is orthogonal to -- the aggregate metrics: MAE
     tells you *how wrong*, this tells you *whether the wrongness is a mix-up*.
 
 Everything is stdlib-only, deterministic (no wall clock, no randomness) and
@@ -51,12 +49,12 @@ from typing import Dict, Iterable, List, Mapping, Tuple
 # --------------------------------------------------------------------------- #
 # Feature vocabulary (canonical lowercase keys)
 # --------------------------------------------------------------------------- #
-# The paper lists a hierarchy of manufacturing features grouped into five
+# The taxonomy groups manufacturing features into five
 # primary categories. For the two diagnostics here we only need the flat set of
 # leaf feature keys plus a few semantic groupings used by the difficulty rules.
 
 #: Features whose presence disqualifies a part from the "easy" tier
-#: (paper Section 3.1: easy excludes gussets, ribs, necks, threaded features
+#: (easy excludes gussets, ribs, necks, threaded features
 #: and sheet metal features).
 EASY_EXCLUDED_FEATURES: frozenset = frozenset(
     {
@@ -71,9 +69,9 @@ EASY_EXCLUDED_FEATURES: frozenset = frozenset(
 )
 
 #: Features that push a part to the "hard" tier -- casting (draft) and freeform
-#: (depression / protrusion) features (paper Section 3.1: the difficult level is
-#: "characterized by highly complex designs ... including intricate geometries
-#: such as casting and freeform features").
+#: (depression / protrusion) features. The difficult level is characterised by
+#: highly complex designs, including intricate geometries such as casting and
+#: freeform features.
 HARD_INDICATOR_FEATURES: frozenset = frozenset(
     {
         "draft",
@@ -82,16 +80,16 @@ HARD_INDICATOR_FEATURES: frozenset = frozenset(
     }
 )
 
-#: Pairs of features the paper reports the models frequently confuse because of
-#: their subtle visual similarity (Section 4.2 chamfer/fillet, Section 4.3
-#: pipe-tube/boss). Order within a pair is irrelevant.
+#: Pairs of features that recognisers frequently confuse because of
+#: their subtle visual similarity (chamfer/fillet, pipe-tube/boss).
+#: Order within a pair is irrelevant.
 CONFUSABLE_PAIRS: Tuple[Tuple[str, str], ...] = (
     ("chamfer", "fillet"),
     ("pipe_tube", "boss"),
 )
 
-#: Default count threshold separating "few" from "numerous" features. The paper
-#: describes easy parts as having "fewer than six ... features"; a part at or
+#: Default count threshold separating "few" from "numerous" features. Easy
+#: parts have fewer than six features; a part at or
 #: above ``HARD_COUNT_THRESHOLD`` is treated as "numerous".
 EASY_MAX_FEATURE_COUNT: int = 6
 HARD_COUNT_THRESHOLD: int = 15
@@ -178,7 +176,7 @@ def classify_difficulty(
 ) -> DifficultyResult:
     """Assign an easy/medium/hard tier to a labelled CAD part.
 
-    Deterministic re-implementation of the paper's Section 3.1 rules:
+    Deterministic stratification rules:
 
     * **hard** if the part contains any casting/freeform (hard-indicator)
       feature, or its total feature quantity reaches ``hard_count_threshold``
@@ -188,8 +186,8 @@ def classify_difficulty(
       feature quantity reaches ``easy_max_count`` (no longer "fewer than six");
     * else **easy**.
 
-    Parameters mirror the paper's tunables so callers can reproduce alternative
-    stratifications; defaults reproduce the paper's stated thresholds.
+    The thresholds are exposed as parameters so callers can reproduce
+    alternative stratifications; the defaults are the standard thresholds.
     """
     if easy_max_count < 1:
         raise ValueError("easy_max_count must be >= 1")

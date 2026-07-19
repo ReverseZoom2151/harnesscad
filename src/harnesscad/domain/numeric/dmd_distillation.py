@@ -8,21 +8,21 @@ are out of scope, but several pieces of the distillation recipe are pure,
 deterministic bookkeeping that this module implements:
 
   * ``few_step_timesteps`` -- the fixed set of teacher timesteps the few-step
-    student is evaluated at (the step-reduction schedule; the paper uses 4 steps
+    student is evaluated at (the step-reduction schedule; this approach uses 4 steps
     over a 1000-step teacher schedule). This is the deterministic timestep
     mapping a distilled few-step generator applies at inference.
 
   * ``dmd_gradient`` -- the DMD update direction is the difference of the two
-    score functions ``s_real - s_fake`` . Given the (caller
+    score functions ``s_real - s_fake``. Given the (caller
     supplied) real/teacher and fake/student scores, the per-element gradient is a
     closed-form subtraction, optionally scaled by a normalising weight.
 
   * ``dual_teacher_gradient`` -- the dual-teacher objective :
     the MV-DMD gradient plus ``lambda`` times the mean of the K per-view SV-DMD
-    gradients. ``lambda = 1`` in the paper. This module computes that weighted
+    gradients. ``lambda = 1`` in this approach. This module computes that weighted
     combination deterministically from the supplied MV and per-view SV gradients.
 
-  * ``compounding_collapse_indicator`` -- a scalar diversity monitor: the paper
+  * ``compounding_collapse_indicator`` -- a scalar diversity monitor: this approach
     observes "compounding mode collapse" when distilling the MV teacher alone
     (outputs collapse toward the synthetic Objaverse mode). Given per-view score
     magnitudes, this reports the fraction of diversity retained -- a deterministic
@@ -84,7 +84,7 @@ def dmd_gradient(
     score_fake: Sequence[float],
     weight: float = 1.0,
 ) -> List[float]:
-    """DMD update direction ``weight * (s_real - s_fake)`` .
+    """DMD update direction ``weight * (s_real - s_fake)``.
 
     ``score_real`` is the frozen teacher score and ``score_fake`` the trained
     student-distribution score, evaluated at the same noised sample. The DMD
@@ -112,7 +112,7 @@ def dual_teacher_gradient(
 
         g_mv  +  lam * (1/K) * sum_i g_sv_i
 
-    with ``lam = 1`` in the paper. All gradient vectors must share a length.
+    with ``lam = 1`` in this approach. All gradient vectors must share a length.
     """
     if lam < 0.0:
         raise ValueError("lam must be non-negative")

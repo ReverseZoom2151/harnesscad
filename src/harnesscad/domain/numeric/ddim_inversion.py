@@ -1,10 +1,9 @@
-"""DDIM inversion + Gaussian perturbation from CADiffusion (Regularized Diffusion
-Modeling for CAD Representation Generation, ICLR 2025 submission, Sec. 3.3).
+"""DDIM inversion and Gaussian perturbation for regularized CAD diffusion.
 
-CADiffusion's decoder-regularization strategy "navigates through the noise space"
+A decoder-regularization strategy navigates through the noise space
 of the diffusion model in three deterministic stages:
 
-1. **Inverse mapping to noise space** (paper Eq. 6). A clean training latent
+1. **Inverse mapping to noise space**. A clean training latent
    ``z0`` is mapped *back up* to a noised latent ``z_hat_T`` with DDIM inversion.
    The inversion is the exact reverse direction of the DDIM sampler and is
    governed by::
@@ -19,9 +18,9 @@ of the diffusion model in three deterministic stages:
    downward DDIM reverse step in :mod:`numeric.lion_ddim_sampler` -- which
    implements only the denoising direction, never inversion.
 
-2. **Gaussian perturbation** (paper Eq. 7). The inverted latent is nudged toward
+2. **Gaussian perturbation**. The inverted latent is nudged toward
    isotropic Gaussian noise by a convex blend with a scaling factor ``sigma``
-   (the paper uses ``sigma = 0.1``)::
+   (this approach uses ``sigma = 0.1``)::
 
        z_hat_T' = (1 - sigma) * z_hat_T + sigma * N(0, I)
 
@@ -58,7 +57,7 @@ def ddim_inversion_step(
     alpha_bar_prev: float,
     alpha_bar_t: float,
 ) -> List[float]:
-    """One deterministic DDIM inversion step ``z_{t-1} -> z_t`` (paper Eq. 6).
+    """One deterministic DDIM inversion step ``z_{t-1} -> z_t``.
 
     ``z_t = sqrt(alpha_bar_t) * x0_pred + sqrt(1 - alpha_bar_t) * eps`` where
     ``x0_pred`` is the clean-sample estimate recovered from ``z_{t-1}``. The
@@ -102,7 +101,7 @@ def ddim_invert(
     total_steps: int,
     sample_steps: int | None = None,
 ) -> List[float]:
-    """Full deterministic DDIM inversion loop ``z0 -> z_hat_T`` (paper Eq. 6).
+    """Full deterministic DDIM inversion loop ``z0 -> z_hat_T``.
 
     Climbs the ascending sub-sequence from :func:`make_inversion_timesteps`,
     evaluating ``eps_model(z_prev, prev_t)`` at each source step (the previous,
@@ -142,7 +141,7 @@ def gaussian_perturb(
     sigma: float,
     noise: Vector,
 ) -> List[float]:
-    """Convex blend toward isotropic Gaussian noise (paper Eq. 7).
+    """Convex blend toward isotropic Gaussian noise.
 
     ``z_hat_T' = (1 - sigma) * z_T + sigma * noise``. ``sigma`` is the perturbation
     scaling factor (paper default ``0.1``); ``noise`` is a caller-supplied

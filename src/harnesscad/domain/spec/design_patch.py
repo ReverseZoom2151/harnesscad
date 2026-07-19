@@ -1,8 +1,8 @@
 """Design-artifact / parameter-patch contract for an external correction loop.
 
-OpenCAD ships a versioned JSON handshake (``opencad/design_artifact.py`` plus the
-``caid-design-artifact-v1`` / ``caid-design-patch-v1`` JSON schemas) between the
-CAD side and a downstream simulator ("SimCorrect"): the CAD side exports a
+A versioned JSON handshake (the ``caid-design-artifact-v1`` /
+``caid-design-patch-v1`` JSON schemas) runs between the
+CAD side and a downstream simulator: the CAD side exports a
 *design artifact* -- feature tree, named design parameters, and *simulation
 tags* mapping design names to simulator names -- and the simulator sends back a
 *design patch*: structured parameter changes against those names, never raw

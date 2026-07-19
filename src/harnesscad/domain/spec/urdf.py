@@ -1,14 +1,12 @@
 """Strict URDF (Unified Robot Description Format) parser and tree validator.
 
-Ported from ``packages/cadjs/src/lib/urdf/parseUrdf.js`` in the ``text-to-cad``
-(CAD Skills) repository, which parses a robot description into the link/joint
-records consumed by its viewer.  The harness previously had no robot-description
-reader at all, so this whole capability is new.
+This parses a robot description into the link/joint records a viewer consumes.
+The harness previously had no robot-description reader at all, so this whole
+capability is new.
 
-What makes the source parser worth transferring is that it is *strict*: rather
-than silently tolerating a malformed robot, it rejects every structural defect
-that would make downstream kinematics meaningless.  This module reproduces those
-rules exactly:
+The parser is deliberately *strict*: rather than silently tolerating a malformed
+robot, it rejects every structural defect that would make downstream kinematics
+meaningless.  The enforced rules are:
 
 * joint types are restricted to ``fixed`` / ``revolute`` / ``continuous`` /
   ``prismatic``; anything else is an error;

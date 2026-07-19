@@ -3,8 +3,8 @@
 The denoiser is a **Multi-Scale Transformer (MST)** whose every
 layer runs three parallel attention branches with window sizes 64 / 128 / 256 to
 capture "local geometric constraints, medium-range topological dependencies, and
-global semantic coherence" (Sec. 3.3), then combines them with an **Adaptive
-Fusion** gate (Eq. 5 / Eq. 12)::
+global semantic coherence", then combines them with an **Adaptive
+Fusion** gate::
 
     H = MLP( sigma(W_g [H_l || H_m || H_g]) (*) [H_l || H_m || H_g] )
 
@@ -13,19 +13,18 @@ external, but three ingredients are **purely deterministic** and are implemented
 here, distinct from the single-scale gated mixer in
 ``numeric.geofusion_state_space``:
 
-* :func:`window_mask` -- the banded attention mask ``M_w`` (Eq. 11): 0 inside a
+* :func:`window_mask` -- the banded attention mask ``M_w``: 0 inside a
   window of half-width ``w`` and ``-inf`` outside; ``w=None`` gives the global
   (all-ones) mask;
 * :func:`masked_attention` -- deterministic scaled-dot-product attention given
   explicit ``Q, K, V`` and a mask, so a single scale branch ``H_l/H_m/H_g`` can
   be computed exactly;
 * :func:`softmax` -- numerically stable row softmax used above;
-* :func:`adaptive_fusion` -- the gated concat-fusion of Eq. 5: concatenate the
+* :func:`adaptive_fusion` -- the gated concat-fusion of : concatenate the
   per-scale token features, form a sigmoid gate from them (with a supplied
   ``W_g`` or a default identity gate), multiply, and project;
 * :func:`sequence_aware_pe` -- the scalable sinusoidal positional encoding
-  ``PE(Z) = Z + eta * PE(pos, D)`` with a trainable scalar ``eta`` (Eq. 6 /
-  Eq. 13), which reduces to a deterministic additive residual.
+  ``PE(Z) = Z + eta * PE(pos, D)`` with a trainable scalar ``eta``, which reduces to a deterministic additive residual.
 
 Sequences are ``tuple`` of equal-width feature vectors. stdlib-only,
 deterministic.
@@ -43,7 +42,7 @@ _NEG_INF = float("-inf")
 
 
 def window_mask(length: int, half_width: int | None) -> Matrix:
-    """Banded attention mask ``M_w`` (Eq. 11).
+    """Banded attention mask ``M_w``.
 
     Returns an ``length x length`` matrix whose ``(i, j)`` entry is ``0.0`` when
     position ``j`` lies within the window ``|i - j| <= half_width`` of query
@@ -141,7 +140,7 @@ def _matvec(mat: Matrix, vec: Vec) -> Vec:
 def adaptive_fusion(h_local: Seq, h_mid: Seq, h_global: Seq,
                     w_gate: Matrix | None = None,
                     w_out: Matrix | None = None) -> Seq:
-    """Adaptive Fusion of three scale branches (Eq. 5).
+    """Adaptive Fusion of three scale branches.
 
     For each token, concatenate ``[H_l || H_m || H_g]`` (call it ``c``), form the
     gate ``g = sigmoid(W_g c)`` (identity gate ``W_g = I`` if ``w_gate`` is
@@ -168,7 +167,7 @@ def adaptive_fusion(h_local: Seq, h_mid: Seq, h_global: Seq,
 
 def sequence_aware_pe(seq: Seq, eta: float = 1.0) -> Seq:
     """Scalable sinusoidal positional encoding ``PE(Z) = Z + eta * PE(pos, D)``
-    with trainable scalar ``eta`` (Eq. 6 / Eq. 13).
+    with trainable scalar ``eta``.
 
     ``PE(pos, D)`` is the standard transformer sinusoid: even channel ``2i`` uses
     ``sin(pos / 10000^(2i/D))`` and odd channel ``2i+1`` uses the matching

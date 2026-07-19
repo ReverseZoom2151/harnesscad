@@ -1,7 +1,7 @@
 """Extract editable parameters from OpenSCAD source (Customizer annotation vocab).
 
-Mined from Zoo/CADAM's ``shared/parseParameters.ts`` and ported to deterministic,
-stdlib-only Python. It answers "what does this OpenSCAD model expose as an
+This is a deterministic, stdlib-only parameter extractor. It answers
+"what does this OpenSCAD model expose as an
 adjustable input?" by reading the top-of-file variable declarations and their
 Customizer-style trailing-comment annotations -- the same convention the OpenSCAD
 Customizer GUI uses.
@@ -16,7 +16,7 @@ The recognised annotation vocabulary::
     name = "hi"; // 20                      -> maxLength (string) / step (number)
     /* [Group Name] */                     -> starts a new group section
 
-Rules mirrored from the source:
+Rules enforced:
 
 *   Only declarations *before* the first ``module`` or ``function`` keyword are
     exposed; everything after is implementation, not API.

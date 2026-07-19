@@ -39,14 +39,14 @@ CONFLICT = CONFLICTING
 
 @dataclass
 class Trajectory:
-    """A synthetic clarification trajectory (paper: ``(p_hat, q, a, p)``)."""
+    """A synthetic clarification trajectory ``(p_hat, q, a, p)``."""
 
     original: CADSpec         # p  -- verified ground truth
     ambiguous: CADSpec        # p_hat -- perturbed / misleading prompt
     questions: Tuple[str, ...]
     answers: Tuple[Tuple[str, object], ...]
     ambiguity_type: str       # "under_specified" | "conflicting"
-    num_issues: int           # K (matches Appendix E "number of issues")
+    num_issues: int           # K -- the number of introduced issues
     keys: Tuple[str, ...]     # perturbed slot keys (ground-truth question keys)
 
 
@@ -132,7 +132,7 @@ def _perturb_value(v: float, rng: random.Random) -> float:
 # --------------------------------------------------------------------------- #
 
 class AmbiguityGenerator:
-    """Deterministic perturbation generator (paper Appendix J.3)."""
+    """Deterministic perturbation generator."""
 
     def __init__(self, seed: int = 0) -> None:
         self.rng = random.Random(seed)
@@ -185,7 +185,7 @@ def _numeric(v: object) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# curation rule (Section 5.2)
+# curation rule
 # --------------------------------------------------------------------------- #
 
 def keep_sample(orig_cd: float, perturbed_cd: float,

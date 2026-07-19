@@ -1,14 +1,11 @@
 """Case-frame parser for natural-language CAD commands.
 
-Deterministic reconstruction of the core parsing model of Cleopatra
-(Samad & Director, "Towards a Natural Language Interface for CAD", 22nd DAC,
-1985).  Cleopatra parses through *case-frames* (Fillmore): a verb is taken to
+A deterministic parser built on *case-frames*: a verb is taken to
 have a set of *semantic cases* (objective, locative, temporal, ...) each of
 which may be filled by a *nominal* (a noun phrase or a prepositional phrase).
 A nominal is admitted into a case only if it satisfies the case's constraint
-(the paper encodes these as arbitrary LISP ``is-feature`` predicates; here they
-are declarative feature requirements) and matches the case's preposition, if
-any.
+(here expressed as declarative feature requirements) and matches the case's
+preposition, if any.
 
 This module supplies:
 

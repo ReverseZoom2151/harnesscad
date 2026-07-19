@@ -101,7 +101,7 @@ def _area(poly):
 
 
 def _contains(outer, inner, tolerance):
-    # Bounding containment is sufficient for the paper's axis-aligned nesting
+    # Bounding containment is sufficient for the axis-aligned nesting
     # rule and deliberately treats touching boundaries as not nested.
     ob = (min(x for x, _ in outer), min(y for _, y in outer),
           max(x for x, _ in outer), max(y for _, y in outer))

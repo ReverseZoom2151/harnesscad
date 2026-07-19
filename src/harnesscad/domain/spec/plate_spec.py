@@ -17,7 +17,7 @@ runtime traceback that the LLM repair loop must guess at.  This module
 implements the *schema* deterministically and up front: it
 enumerates the required and optional keys per category, checks their types and
 value ranges, and reports every problem in one pass with a precise field path --
-turning "some Blender error" into an actionable list.
+turning "some opaque runtime error" into an actionable list.
 
 The validator is the deterministic, transferable core; the mesh building,
 the LLM calls and the web-service plumbing are out of scope.

@@ -1,8 +1,8 @@
 """Design-specification tiling: decompose a spec into sub-specification tiles.
 
-The DST paper (Sec. 3) measures knowledge sufficiency by tiling a query's
-*components*. This module operationalises the complementary, generation-facing
-half the paper leaves to the LLM: splitting one natural-language design
+Knowledge sufficiency can be measured by tiling a query's *components*. This
+module operationalises the complementary, generation-facing
+half: splitting one natural-language design
 specification into **independent sub-specification tiles** that can be reasoned
 about (and later generated) semi-independently, plus resolving the ordering
 imposed by spatial/topological dependencies between tiles.

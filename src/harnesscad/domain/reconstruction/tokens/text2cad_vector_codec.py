@@ -59,7 +59,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# --- token ids (CadSeqProc/utility/macro.py) --------------------------------
+# --- token ids ---------------------------------------------------------------
 END_TOKEN: tuple[str, ...] = (
     "PADDING", "START", "END_SKETCH", "END_FACE", "END_LOOP", "END_CURVE",
     "END_EXTRUSION",
@@ -197,7 +197,7 @@ def encode_extrusion(extrusion: dict) -> list[Token]:
 
 @dataclass(frozen=True)
 class CadVectors:
-    """The three parallel streams consumed by the Text2CAD decoder."""
+    """The three parallel streams consumed by the decoder."""
 
     cad_vec: list[Token]
     flag_vec: list[int]
@@ -252,8 +252,7 @@ def encode_model(
 def split_tokens(tokens: list[Token], value: int) -> list[list[Token]]:
     """Split on every token whose first slot equals ``value``; the token is dropped.
 
-    Mirrors ``utils.split_array(arr, val, include_val=False)``: one chunk is produced
-    per occurrence of ``value`` (a trailing remainder without a terminator is not a
+    One chunk is produced per occurrence of ``value`` (a trailing remainder without a terminator is not a
     chunk), so a well-formed stream terminates with ``value``.
     """
     chunks: list[list[Token]] = []
@@ -274,8 +273,7 @@ def strip_padding(cad_vec: list[Token]) -> list[Token]:
 def decode_loop(tokens: list[Token]) -> list[dict]:
     """Rebuild a closed loop from its coordinate tokens (``END_LOOP`` removed).
 
-    Reproduces ``merge_end_tokens_from_loop``: a single curve group is a circle;
-    otherwise each group is chained with the first token of the next group (wrapping),
+    A single curve group is a circle; otherwise each group is chained with the first token of the next group (wrapping),
     a 1-token group becoming a line and a 2-token group an arc.
     """
     groups = split_tokens(tokens, END_CURVE)
@@ -366,7 +364,7 @@ def decode_model(cad_vec: list[Token]) -> list[dict]:
 
 
 def boolean_name(index: int) -> str:
-    """Map a boolean-operation index to its Fusion360/DeepCAD operation name."""
+    """Map a boolean-operation index to its operation name."""
     if not 0 <= index < len(EXTRUDE_OPERATIONS):
         raise CadVecError(f"boolean index {index} out of range")
     return EXTRUDE_OPERATIONS[index]

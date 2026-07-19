@@ -69,13 +69,13 @@ def _offset(a: Point, b: Point) -> Tuple[float, ...]:
 class DiscrepancyEncoding:
     """A directional error field the editor consumes to propose the next edit.
 
-    - ``target_offsets`` / ``render_offsets`` : the selected ``(x,y,z,dx,dy,dz)``
+    - ``target_offsets`` / ``render_offsets``: the selected ``(x,y,z,dx,dy,dz)``
       points from each side (already trimmed to the ``k`` most discrepant).
-    - ``max_discrepancy`` / ``mean_discrepancy`` : summary magnitudes over the
+    - ``max_discrepancy`` / ``mean_discrepancy``: summary magnitudes over the
       *selected* points (the signal the loop watches for convergence).
-    - ``symmetric_discrepancy`` : mean of the two directed means -- a scalar the
+    - ``symmetric_discrepancy``: mean of the two directed means -- a scalar the
       edit loop can use as a stopping/selection metric without a separate CD call.
-    - ``t1`` : whether this is the null-prediction t=1 encoding.
+    - ``t1``: whether this is the null-prediction t=1 encoding.
     """
 
     target_offsets: Tuple[OffsetPoint, ...] = ()

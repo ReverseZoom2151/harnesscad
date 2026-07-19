@@ -1,29 +1,28 @@
-"""Text-based B-Rep primitive grounding (FutureCAD / BRepGround).
+"""Text-based B-Rep primitive grounding.
 
-Li et al., "Towards High-Fidelity CAD Generation via LLM-Driven Program
-Generation and Text-Based B-Rep Primitive Grounding" (FutureCAD, 2026),
-Sec. 3-4. In FutureCAD an LLM emits an executable CadQuery program in which,
+An LLM emits an executable CadQuery program in which,
 whenever a feature (``fillet``/``chamfer``/``shell`` ...) needs an operand set
 ``pi_i``, the program embeds a *natural-language query* ``q_i`` -- for example
-``cq.Query("All circular holes on the surface.")``. During execution BRepGround
+``cq.Query("All circular holes on the surface.")``. During execution the grounder
 takes the transient B-Rep ``B_{i-1}`` and grounds ``q_i`` to a subset of the
-available primitives ``pi_i subseteq P(B_{i-1})`` (Eq. 5).
+available primitives ``pi_i subseteq P(B_{i-1})``.
 
-BRepGround itself is a trained BERT + UV-Net + cross-attention transformer; the
-network and the LLM are external and out of scope. This module implements the
-DETERMINISTIC counterpart the paper's task is defined against: given the set of
+A learned grounder is typically a language encoder plus a surface encoder and
+cross-attention transformer; the network and the LLM are external and out of
+scope. This module implements the DETERMINISTIC counterpart that task is defined
+against: given the set of
 B-Rep primitives (faces and edges) available in a transient B-Rep, and a textual
 reference such as "the top face", "the largest hole" or "all circular edges",
 resolve the reference to specific primitives purely from their *geometric
 properties* (type, sub-type, size, position, orientation).
 
-This is a genuinely different grounding scheme from the neighbours in the repo:
+This is a genuinely different grounding scheme from its neighbouring modules:
 
   * ``reconstruction.pointercad_pointer`` resolves *index pointers* -- a numeric
-    reference into an ordered primitive list (paper 145). Here the reference is
+    reference into an ordered primitive list. Here the reference is
     free text describing geometry, not an index.
   * ``reconstruction.querycad_answer_engine`` grounds a *question* to segmented
-    parts to compute an answer (paper 148). Here we ground a *selection query*
+    parts to compute an answer. Here we ground a *selection query*
     to raw B-Rep faces/edges to produce an operand set for a CAD feature.
 
 The grounder parses a query into (a) hard *type/sub-type/hole* predicates that
@@ -278,7 +277,7 @@ def ground_one(
 def ground_all(
     text: str, primitives: Sequence[BRepPrimitive]
 ) -> List[BRepPrimitive]:
-    """Resolve a reference to an operand set ``pi_i`` (Eq. 5).
+    """Resolve a reference to an operand set ``pi_i``.
 
     Returns every hard-matching primitive when the query is plural/"all"; for a
     singular query with a ranking cue it returns just the top primitive, and for

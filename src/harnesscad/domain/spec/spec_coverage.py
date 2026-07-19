@@ -2,10 +2,10 @@
 
 Given a query specification decomposed into tiles and a set of selected
 exemplars, this module reports *how sufficiently* the exemplars cover the
-query -- both the paper's global weighted tiling ratio (Eq. 6) and a per-tile
+query -- both a global weighted tiling ratio and a per-tile
 breakdown that pinpoints which sub-specifications remain under-served.
 
-The per-tile coverage view is what the paper's case study (Sec. 4.3, Fig. 5)
+The per-tile coverage view is what a qualitative case study
 argues for qualitatively: similarity top-k can tile some features while
 completely missing others ("cylinder with hole" covered, "protruding rod"
 missed). Here that is made quantitative -- each tile gets its own tiling ratio

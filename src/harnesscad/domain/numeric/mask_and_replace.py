@@ -13,7 +13,7 @@ is a **hybrid** of the two, applied over ``K`` real code categories plus one ext
   ``beta_t`` (the uniform-diffusion part);
 * *mask* it (jump to ``[MASK]``) with probability ``gamma_t`` (the absorbing part).
 
-The ``[MASK]`` state is absorbing (row = identity). This is exactly Eq. 7 of the
+The ``[MASK]`` state is absorbing (row = identity). This is exactly of the
 paper written row-stochastically (row ``i`` = ``q(x_t | x_{t-1} = i)``), matching the
 row-vector convention of ``sketchdnn_categorical_diffusion``. The three rates obey
 the row-sum constraint
@@ -73,7 +73,7 @@ def beta_from(num_classes: int, alpha: float, gamma: float) -> float:
 
 
 def mask_and_replace_matrix(num_classes: int, alpha: float, gamma: float) -> Matrix:
-    """Row-stochastic mask-and-replace transition (Eq. 7) over ``K + 1`` states.
+    """Row-stochastic mask-and-replace transition over ``K + 1`` states.
 
     States ``0 .. K-1`` are real code categories; state ``K`` is ``[MASK]``. Row ``i``
     is ``q(x_t | x_{t-1} = i)``. The mask row is the identity row (absorbing).

@@ -91,7 +91,7 @@ def hungarian(cost: Sequence[Sequence[float]]) -> List[int]:
 
 def earth_movers_distance(cloud_a: Sequence[Point],
                           cloud_b: Sequence[Point]) -> float:
-    """Total EMD (Eq. 21): min-cost bijection sum over equal-size clouds.
+    """Total EMD: min-cost bijection sum over equal-size clouds.
 
     The two clouds must be non-empty and have the same number of points (EMD as
     it is defined as a bijection). Returns the summed transport cost.

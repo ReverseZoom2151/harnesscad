@@ -209,7 +209,7 @@ class Message:
     def modality(self) -> str:
         """Classify as ``multimodal`` / ``text`` / ``drawing`` / ``empty``.
 
-        Mirrors the modality tallies in Sec. 5.2.
+        Mirrors the modality tallies in 
         """
         t, d = self.has_text, self.has_drawing
         if t and d:
@@ -236,10 +236,10 @@ class Message:
 # ---------------------------------------------------------------------------
 # Deterministic multimodal-instruction parser / representation.
 # ---------------------------------------------------------------------------
-# Small closed-class verb set used to detect imperative refinement directives
-# (Sec. 5.2, Fig. 6B: refinement text expresses actions/directives, mostly
-# imperative verbs). This is a deterministic lexical heuristic, not a parser
-# model; this approach used Stanza, which we deliberately do not depend on.
+# Small closed-class verb set used to detect imperative refinement directives:
+# refinement text expresses actions/directives, mostly imperative verbs. This is
+# a deterministic lexical heuristic, not a parser model, and deliberately
+# depends on no external NLP library.
 _IMPERATIVE_VERBS = frozenset({
     "make", "move", "remove", "delete", "draw", "add", "connect", "extend",
     "shrink", "enlarge", "rotate", "shift", "straighten", "curve", "close",

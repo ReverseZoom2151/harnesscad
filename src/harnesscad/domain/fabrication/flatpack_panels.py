@@ -1,12 +1,10 @@
 """Flat-pack decomposition of a box cabinet into cut-ready 2D panels.
 
-Motivated by "How Can Large Language Models Help Humans in Design and
-Manufacturing" (Makatura et al., sections 4.1.1, 6.4.2, 9.1.2, Figures
-2/42/68).  The paper's recurring cabinet example asks an LLM to turn a
+The recurring cabinet example turns a
 3D box-cabinet (exterior height/width/depth plus a plywood thickness)
-into flat panels for laser/CNC cutting.  GPT-4 repeatedly mishandled the
-wall thickness: side boards were made too thin, the back board came out
-too short, and board thickness was confused with cabinet depth.  A finite
+into flat panels for laser/CNC cutting.  Wall thickness is the classic
+failure mode here: side boards made too thin, a back board that comes out
+too short, and board thickness confused with cabinet depth.  A finite
 laser bed also forces oversized panels (for example the back board wider
 than the 12-inch bed) to be split into pieces.
 
@@ -161,7 +159,7 @@ def split_panel_to_fit(
     If ``panel`` already fits the bed (in either orientation) it is
     returned unchanged as ``[panel]``.  Otherwise the panel is divided
     along its longer dimension into ``ceil(long / bed_long)`` equal
-    strips, mirroring the paper splitting an oversized back board into
+    strips -- for example splitting an oversized back board into
     halves.  The strips are named ``panel.name + "_1"``, ``"_2"``, ...
 
     Args:

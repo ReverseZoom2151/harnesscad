@@ -1,34 +1,33 @@
-"""Deterministic DeepCAD command-sequence -> CadQuery-code translator.
+"""Deterministic CAD command-sequence -> CadQuery-code translator.
 
-Paper 171 -- *Text-to-CadQuery* (Xie & Ju, 2025) -- builds its 170k-pair dataset by
-translating each DeepCAD/Text2CAD sample (a minimal JSON of sketch loops + an
-extrusion) into equivalent CadQuery code, using an LLM with a feedback loop
-(Sec. 3.1, Appendix A.3). The LLM step is out of scope here, but the underlying
-mapping is a small, *fully deterministic* rewrite -- which this module implements.
+A text-to-CadQuery corpus is built by translating each command-sequence sample
+(a minimal JSON of sketch loops + an extrusion) into equivalent CadQuery code,
+typically with an LLM in a feedback loop. The LLM step is out of scope here, but
+the underlying mapping is a small, *fully deterministic* rewrite -- which this
+module implements.
 
-It consumes the exact DeepCAD command representation from
+It consumes the compact CAD-operation command representation from
 :mod:`reconstruction.deepcad_command_spec` (the six command types ``SOL / Line /
 Arc / Circle / Ext / EOS`` with their 16-slot parameter vector) and emits a
 :class:`programs.t2cq_ast.CqProgram` (which then serializes to runnable CadQuery
-Python). The rewrite follows the paper's own worked examples (Appendix A.3):
+Python). The rewrite follows these worked examples:
 
   * a **circle** loop  -> ``.circle(r)`` (centred with ``.moveTo`` when off-origin),
   * a **polyline** loop -> ``.moveTo(x0, y0).lineTo(...)....close()``,
-  * an **arc** segment  -> ``.threePointArc((mx, my), (ex, ey))`` (the paper derives
-    the mid-point from the DeepCAD sweep angle ``alpha`` and ccw flag ``f``),
+  * an **arc** segment  -> ``.threePointArc((mx, my), (ex, ey))`` (the mid-point is
+    derived from the sweep angle ``alpha`` and ccw flag ``f``),
   * the **extrusion**   -> ``.extrude(depth)`` where ``depth = e1 + e2`` (the two
-    DeepCAD extrude distances, Sec. 3.1),
+    extrude distances),
   * the **coordinate system** (Ext angles ``theta/phi/gamma`` + origin
-    ``px/py/pz``) -> trailing ``.rotate(...)`` / ``.translate(...)`` calls, exactly
-    as in the Appendix A.3 example ``part_1.rotate((0,0,0),(0,0,1),-90)`` then
-    ``.translate((0, 0.5625, 0))``.
+    ``px/py/pz``) -> trailing ``.rotate(...)`` / ``.translate(...)`` calls, e.g.
+    ``part_1.rotate((0,0,0),(0,0,1),-90)`` then ``.translate((0, 0.5625, 0))``.
 
-Each ``SOL ... Ext`` group becomes one ``part_k`` assignment. The DeepCAD boolean
+Each ``SOL ... Ext`` group becomes one ``part_k`` assignment. The boolean
 type ``b`` on the extrusion selects how ``part_k`` combines into the running result
 (new body / union / cut / intersect), yielding a final ``result`` assignment.
 
 Pure stdlib (``math`` only) and deterministic (no wall clock, no RNG). It imports
-the DeepCAD spec and the CadQuery AST by full path and executes no CAD kernel.
+the command spec and the CadQuery AST by full path and executes no CAD kernel.
 """
 
 from __future__ import annotations
@@ -42,7 +41,7 @@ from harnesscad.domain.programs.ast.cadquery import (
     Assign, Call, Chain, CqProgram, VarRef, Workplane,
 )
 
-# DeepCAD boolean-operation codes on the extrusion (paper Appendix A.1 / Sec. 3.1):
+# Boolean-operation codes on the extrusion:
 # NewBody / Join(union) / Cut / Intersect.
 NEW_BODY = 0
 JOIN = 1
@@ -51,7 +50,7 @@ INTERSECT = 3
 
 _BOOL_METHOD = {JOIN: "union", CUT: "cut", INTERSECT: "intersect"}
 
-# CadQuery plane name for an axis-aligned sketch. DeepCAD's default sketch plane is
+# CadQuery plane name for an axis-aligned sketch. The default sketch plane is
 # XY; general orientations are applied afterwards via explicit rotate/translate so
 # the sketch itself is always authored on "XY".
 _DEFAULT_PLANE = "XY"
@@ -66,8 +65,8 @@ def _round(value: float, ndigits: int = 6) -> float:
 def _arc_midpoint(start, end, alpha: float, ccw: bool):
     """Mid-point of a circular arc from ``start`` to ``end`` sweeping angle ``alpha``.
 
-    DeepCAD encodes an arc by its end-point plus the sweep angle ``alpha`` and a
-    counter-clockwise flag ``f`` (paper Sec. 3.1). CadQuery's ``threePointArc``
+    An arc is encoded by its end-point plus the sweep angle ``alpha`` and a
+    counter-clockwise flag ``f``. CadQuery's ``threePointArc``
     needs an intermediate point, so we reconstruct the arc's circle and take the
     point at the sweep mid-angle. Degenerate cases (zero sweep / coincident points)
     fall back to the chord mid-point, which serializes to a valid straight segment.
@@ -105,7 +104,7 @@ def _loop_calls(loop: list[Command]) -> list[Call]:
             calls.append(Call("moveTo", (cx, cy)))
         calls.append(Call("circle", (r,)))
         return calls
-    # Polyline / arc loop. DeepCAD curve commands give end-points; the start of the
+    # Polyline / arc loop. Curve commands give end-points; the start of the
     # first command is the end-point of the last (closed loop), so we seed moveTo
     # from the last vertex.
     verts: list[tuple[float, float]] = [
@@ -163,7 +162,7 @@ def _split_groups(commands: list[Command]) -> list[tuple[list[list[Command]], Co
 def _coordinate_calls(ext: Command) -> list[Call]:
     """Trailing ``.rotate`` / ``.translate`` calls for the extrusion's pose.
 
-    Follows Appendix A.3: rotations about the ZYZ axes for ``(theta, phi, gamma)``
+    Rotations about the ZYZ axes for ``(theta, phi, gamma)``
     (in radians -> degrees) followed by a translation to ``(px, py, pz)``. Only
     non-identity transforms are emitted, so axis-aligned parts stay clean.
     """
@@ -186,7 +185,7 @@ def _coordinate_calls(ext: Command) -> list[Call]:
 
 
 def _extrude_depth(ext: Command) -> float:
-    """Total extrusion depth = e1 + e2 (paper's two DeepCAD extrude distances)."""
+    """Total extrusion depth = e1 + e2 (the two extrude distances)."""
     e1 = ext.get("e1")
     e2 = ext.get("e2")
     e1 = 0.0 if e1 == -1.0 else e1
@@ -198,7 +197,7 @@ def _extrude_depth(ext: Command) -> float:
 
 
 def translate_to_program(commands: list[Command]) -> CqProgram:
-    """Translate a DeepCAD command list into a CadQuery :class:`CqProgram`.
+    """Translate a CAD command list into a CadQuery :class:`CqProgram`.
 
     Produces one ``part_k`` assignment per extrusion group and a final ``result``
     that combines the parts per each group's boolean type (new body / union / cut /
@@ -238,6 +237,6 @@ def translate_to_program(commands: list[Command]) -> CqProgram:
 
 
 def translate_to_code(commands: list[Command]) -> str:
-    """Convenience: translate a DeepCAD command list straight to CadQuery source."""
+    """Convenience: translate a CAD command list straight to CadQuery source."""
     from harnesscad.domain.programs.ast.cadquery import serialize
     return serialize(translate_to_program(commands))

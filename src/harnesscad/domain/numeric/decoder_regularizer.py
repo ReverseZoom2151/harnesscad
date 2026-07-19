@@ -1,17 +1,16 @@
-"""Decoder distance-minimization regularizer from CADiffusion (Regularized
-Diffusion Modeling for CAD Representation Generation, ICLR 2025 submission,
-Sec. 3.3 "CAD Decoder Regularization Term", Eq. 8).
+"""Decoder distance-minimization regularizer from the decoder-regularized model (Regularized
+Diffusion Modeling for CAD Representation Generation, 
 
-The paper's central *new* contribution is a regularization term that trains the
+The central *new* contribution is a regularization term that trains the
 CAD decoder ``D`` to be robust to the kind of latent variations the diffusion
 model produces at sampling time. Rather than only decoding clean training latents
 ``z0`` (which "leads to some unrealistic decoded results"), it augments the
 decoder objective with a **perturb-and-match** energy:
 
-1. invert a clean latent ``z0`` up to noise space ``z_hat_T``   (Eq. 6)
-2. perturb it toward isotropic Gaussian: ``z_hat_T' = (1-sigma) z_hat_T + sigma n``  (Eq. 7)
+1. invert a clean latent ``z0`` up to noise space ``z_hat_T``
+2. perturb it toward isotropic Gaussian: ``z_hat_T' = (1-sigma) z_hat_T + sigma n``
 3. regenerate a nearby latent by DDIM denoising: ``z_hat_0' = DDIM(z_hat_T')``
-4. penalize the decoded distance to the original CAD (Eq. 8)::
+4. penalize the decoded distance to the original CAD::
 
        min_D || D(z_hat_0') - CAD ||
 
@@ -53,7 +52,7 @@ class HasAlphaBar(Protocol):
 
 
 def decoder_distance(decoded: Vector, target: Vector) -> float:
-    """Euclidean (L2) distance ``|| decoded - target ||`` (paper Eq. 8).
+    """Euclidean (L2) distance ``|| decoded - target ||``.
 
     The regularization objective ``min_D || D(z_hat_0') - CAD ||`` is measured with
     the L2 norm between the decoded CAD parameter vector and the ground-truth CAD.
@@ -76,7 +75,7 @@ def regularization_energy(
     seed: int,
     sample_steps: int | None = None,
 ) -> float:
-    """Full deterministic CADiffusion decoder-regularization energy (Eq. 6-8).
+    """Full deterministic the decoder-regularized model decoder-regularization energy.
 
     Composes: DDIM-invert ``z0`` to ``z_hat_T``; Gaussian-perturb by ``sigma``
     using noise from ``random.Random(seed)``; DDIM-regenerate to ``z_hat_0'``;
@@ -137,12 +136,12 @@ def combined_decoder_loss(
 ) -> float:
     """Reconstruction + weighted regularization decoder loss.
 
-    The paper trains the decoder on both the clean latent ``z0`` (reconstruction
+    This approach trains the decoder on both the clean latent ``z0`` (reconstruction
     ``|| D(z0) - CAD ||``) and the perturbed regularization energy: "The latent
     representations z0 of the original data are also used to train this decoder."
     Returns ``recon + reg_weight * reg`` where ``reg`` is
     :func:`regularization_energy`. With ``reg_weight == 0`` this reduces to the
-    plain reconstruction term (the paper's "w/o reg" ablation).
+    plain reconstruction term (the "w/o reg" ablation).
     """
     if reg_weight < 0.0:
         raise ValueError("reg_weight must be >= 0")

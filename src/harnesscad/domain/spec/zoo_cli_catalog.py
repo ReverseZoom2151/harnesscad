@@ -7,7 +7,7 @@ language and engine-surface modules already in the harness:
 *   :mod:`harnesscad.domain.spec.zoo_catalog` models the engine op set,
     standard library, and file-conversion matrix;
 *   this module models the *CLI verb surface* -- the commands a user or an agent
-    driving the ``zoo`` binary can actually invoke, which neither of the other
+    driving the CAD CLI binary can actually invoke, which neither of the other
     two captured.
 
 The load-bearing part for a text-to-CAD harness is the set of **geometry
@@ -16,7 +16,7 @@ query against a CAD program or imported file and return scalar/vector geometric
 properties. Generative endpoints are represented separately.
 
 Everything here is inert data plus pure query helpers; nothing shells out and no
-CLI is invoked.  It exists so an agent that wants to *use* the Zoo CLI (or a
+CLI is invoked.  It exists so an agent that wants to *use* the CLI (or a
 harness author wiring a subprocess backend) has one checked place to read the
 command tree, the geometry-query verbs, and which verbs accept a KCL program vs.
 an imported file.

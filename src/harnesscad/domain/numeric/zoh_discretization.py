@@ -10,29 +10,29 @@ To run this on a discrete parametric-CAD token sequence the continuous
 parameters ``(A, B)`` are discretized with the **Zero-Order-Hold (ZOH)** method
 using a per-step time-scale ``delta``::
 
-    Abar = exp(delta A)                                  (Eq. 1)
-    Bbar = (delta A)^-1 (exp(delta A) - I) . (delta B)   (Eq. 2)
-    H_k  = Abar . H_{k-1} + Bbar . X_k                   (Eq. 3)
-    Y_k  = C . H_k                                       (Eq. 4)
+    Abar = exp(delta A)
+    Bbar = (delta A)^-1 (exp(delta A) - I) . (delta B)
+    H_k  = Abar . H_{k-1} + Bbar . X_k
+    Y_k  = C . H_k
 
-Mamba's ``A`` is *diagonal*, so every operator above is element-wise and this
+the reference ``A`` is *diagonal*, so every operator above is element-wise and this
 module works channel-by-channel on plain ``tuple[float, ...]`` vectors.
 
 Provided here (all deterministic, stdlib-only):
 
 * :func:`zoh_abar` -- ``Abar = exp(delta A)`` (element-wise);
-* :func:`zoh_bbar` -- exact ``Bbar`` (Eq. 2), with the numerically-stable
+* :func:`zoh_bbar` -- exact ``Bbar``, with the numerically-stable
   ``a -> 0`` limit ``Bbar -> delta B`` handled per channel;
 * :func:`zoh_bbar_simplified` -- the common ``Bbar ~= delta B`` approximation
-  that Mamba's reference implementation uses in place of Eq. 2;
+  that the reference reference implementation uses in place of ;
 * :func:`discretize` -- returns ``(Abar, Bbar)`` for a diagonal system;
 * :func:`discrete_scan` -- runs ``H_k = Abar H_{k-1} + Bbar X_k`` over a
-  sequence (the ZOH-discretized recurrence, Eq. 3);
+  sequence (the ZOH-discretized recurrence, );
 * :func:`analytic_state` -- the exact continuous-time state of a scalar
   constant-input system, used to verify the discretization is exact for a
   piecewise-constant hold.
 
-The delta cancels in Eq. 2: ``(delta a)^-1 (exp(delta a) - 1) . delta b =
+The delta cancels in : ``(delta a)^-1 (exp(delta a) - 1) . delta b =
 (exp(delta a) - 1)/a . b``.  As ``delta -> 0`` both ``Abar -> I`` and
 ``Bbar -> delta B``, recovering the continuous system to first order (forward
 Euler), which the tests check.
@@ -45,7 +45,7 @@ import math
 Vec = tuple[float, ...]
 Seq = tuple[Vec, ...]
 
-# Below this magnitude of ``delta * a`` we use the analytic limit of Eq. 2 to
+# Below this magnitude of ``delta * a`` we use the analytic limit of to
 # avoid catastrophic cancellation / division by zero.
 _SMALL = 1e-8
 
@@ -56,14 +56,14 @@ def _check(a_diag: Vec, b_diag: Vec) -> None:
 
 
 def zoh_abar(a_diag: Vec, delta: float) -> Vec:
-    """``Abar = exp(delta A)`` for a diagonal ``A`` (Eq. 1), element-wise."""
+    """``Abar = exp(delta A)`` for a diagonal ``A``, element-wise."""
     if delta < 0.0:
         raise ValueError("delta must be non-negative")
     return tuple(math.exp(delta * a) for a in a_diag)
 
 
 def zoh_bbar(a_diag: Vec, b_diag: Vec, delta: float) -> Vec:
-    """Exact ZOH input matrix ``Bbar`` (Eq. 2) for a diagonal system.
+    """Exact ZOH input matrix ``Bbar`` for a diagonal system.
 
     Per channel ``Bbar_i = (exp(delta a_i) - 1) / a_i * b_i``; when
     ``|delta a_i|`` is tiny this reduces to the stable limit ``delta b_i``.
@@ -84,7 +84,7 @@ def zoh_bbar(a_diag: Vec, b_diag: Vec, delta: float) -> Vec:
 
 def zoh_bbar_simplified(b_diag: Vec, delta: float) -> Vec:
     """Simplified input matrix ``Bbar ~= delta B`` (the approximation used by
-    the reference Mamba implementation in place of Eq. 2)."""
+    the reference the state-space model implementation in place of )."""
     if delta < 0.0:
         raise ValueError("delta must be non-negative")
     return tuple(delta * b for b in b_diag)

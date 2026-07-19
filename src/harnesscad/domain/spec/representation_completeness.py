@@ -1,22 +1,20 @@
-"""CAD data-representation completeness taxonomy (Fan et al., 2026, "AI+CAD Data
-Representation Architecture -- From DeepCAD Solid Modeling to WHUCAD
-Industrial-Level Parametric Feature Modeling").
+"""CAD data-representation completeness taxonomy.
 
-The paper's thesis is that in AI+CAD the *data representation format* -- not the
+The thesis is that in AI+CAD the *data representation format* -- not the
 network -- sets the ceiling on what can be learned, and that different formats
-retain different engineering semantics. It contrasts DeepCAD's flat
-sketch-extrude "solid modeling" representation against WHUCAD's three-level
-"industrial-level parametric feature" architecture, and argues completeness is a
-function of which semantic layers survive the encoding.
+retain different engineering semantics. It contrasts a flat sketch-extrude
+"solid modeling" representation against a three-level "industrial-level
+parametric feature" architecture, and argues completeness is a function of which
+semantic layers survive the encoding.
 
 This module turns that qualitative argument into a deterministic checklist score.
 Each representation is described by which of the canonical engineering-semantic
 layers it preserves; the module ranks representations, reports the missing layers
-that cap their learnability, and assigns the paper's three-tier level
+that cap their learnability, and assigns a three-tier level
 (solid-modeling vs. feature-modeling vs. industrial-parametric).
 
-No model, no geometry -- a pure schema/scoring utility mirroring the paper's
-Table-style comparison.
+No model, no geometry -- a pure schema/scoring utility providing a
+table-style comparison.
 """
 
 from __future__ import annotations
@@ -31,7 +29,7 @@ __all__ = [
 ]
 
 # Canonical engineering-semantic layers, ordered from geometry-only to
-# industrial parametric feature modeling (paper Sec. 1-3).
+# industrial parametric feature modeling.
 SEMANTIC_LAYERS: Sequence[str] = (
     "geometry",            # points / mesh / raw solid
     "sketch",              # 2D parametric sketches
@@ -41,7 +39,7 @@ SEMANTIC_LAYERS: Sequence[str] = (
     "topological_naming",  # persistent face/edge references + selection
 )
 
-# The three tiers the paper defines, each requiring a cumulative layer set.
+# The three tiers, each requiring a cumulative layer set.
 LEVEL_REQUIREMENTS: Mapping[str, Sequence[str]] = {
     "solid_modeling": ("geometry", "sketch"),
     "feature_modeling": ("geometry", "sketch", "feature_tree", "modeling_order"),
@@ -97,8 +95,8 @@ def compare_representations(
     """Rank several representations best-first.
 
     Ordering is by achieved tier, then coverage, then name (deterministic). This
-    reproduces the paper's DeepCAD-vs-WHUCAD comparison: WHUCAD, carrying
-    topological naming + constraints, ranks strictly above a bare sketch-extrude
+    reproduces the layered-vs-flat comparison: a representation carrying
+    topological naming + constraints ranks strictly above a bare sketch-extrude
     representation.
     """
     scored = [score_representation(n, l) for n, l in reps.items()]

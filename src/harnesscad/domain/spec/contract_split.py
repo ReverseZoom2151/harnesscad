@@ -3,12 +3,11 @@ a contract the generator can overfit in full.
 
 WHAT IT DOES
 ------------
-TDAD (Rehan, Fiverr Labs, arXiv 2603.08806) and the Kitchen Loop (Roy, arXiv
-2603.25697) share one anti-gaming move: **hold part of the specification back**.
-TDAD splits tests into a VISIBLE set the generator sees and a HIDDEN set kept
-for evaluation only; Kitchen's "unbeatable tests" are the ones the author cannot
-tune toward because they never see them. A model that can read every acceptance
-criterion can satisfy the letter of each one without producing the intended
+Two anti-gaming techniques share one move: **hold part of the specification
+back**. One splits tests into a VISIBLE set the generator sees and a HIDDEN set
+kept for evaluation only; the other's "unbeatable tests" are the ones the author
+cannot tune toward because they never see them. A model that can read every
+acceptance criterion can satisfy the letter of each one without producing the intended
 part -- the MGC's many-to-one residual made exploitable. Holding predicates back
 forces GENERALISATION: the visible contract shapes the part, the hidden contract
 scores whether that part actually generalises to criteria it was never shown.

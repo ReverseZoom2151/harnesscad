@@ -1,6 +1,6 @@
-"""CADmium CAD-sequence representation -- parser, normaliser, tokenizer, metric.
+"""CAD-sequence representation -- parser, normaliser, tokenizer, metric.
 
-CADmium (text-to-CAD LLM work) treats a CAD model as a *sequence* of parametric
+This representation treats a CAD model as a *sequence* of parametric
 modelling operations rather than a mesh or a B-rep: a natural-language brief is
 mapped to an ordered list of feature commands (sketch a profile, extrude it,
 place a hole, fillet an edge...), and the model is judged on whether the
@@ -18,7 +18,7 @@ free parts of that idea are:
 
 None of this calls a model or runs geometry.  It is a self-contained, stdlib-only
 front end for the *representation*, so the harness can parse, canonicalise, tokenise
-and score CAD sequences the same way CADmium's dataset pipeline does.
+and score CAD sequences the same way a sequence-model dataset pipeline does.
 
 Sequence grammar (one operation per line, ``#`` comments and blanks ignored)::
 

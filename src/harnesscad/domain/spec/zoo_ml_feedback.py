@@ -1,14 +1,13 @@
-"""Zoo ML text-to-CAD *response + feedback* model and acceptance metric.
+"""Text-to-CAD *response + feedback* model and acceptance metric.
 
-Mined from **Zoo** (tryAGI/Zoo, the .NET SDK generated from Zoo/KittyCAD's
-OpenAPI). The generated ML client surfaces the *result* side of Zoo's text-to-CAD
-service that the harness had not modelled: ``TextToCadResponse`` (prompt, model
-version, output format, status, per-format ``outputs``, and a user
-``feedback``), the ``MlFeedback`` thumbs-up/down vocabulary, and
-``ListTextToCadPartsForUser`` -- a paginated history of a user's generated parts
-sorted by creation time (``CreatedAtSortMode``).
+A generated ML client surfaces the *result* side of a text-to-CAD service that
+the harness had not modelled: ``TextToCadResponse`` (prompt, model version,
+output format, status, per-format ``outputs``, and a user ``feedback``), the
+``MlFeedback`` thumbs-up/down vocabulary, and ``ListTextToCadPartsForUser`` -- a
+paginated history of a user's generated parts sorted by creation time
+(``CreatedAtSortMode``).
 
-This is deliberately distinct from the harness's existing Zoo pieces:
+This is deliberately distinct from the harness's existing engine pieces:
 
 * :mod:`harnesscad.domain.spec.zoo_catalog` -- engine ops, KCL stdlib, formats;
 * :mod:`harnesscad.domain.spec.zoo_cli_catalog` -- the CLI verb surface;
@@ -19,7 +18,7 @@ Those cover "how to ask" and "what formats exist". This covers "what came back
 and was it any good" -- the response record, the terminal status semantics, and
 the feedback signal **reframed as a checkable acceptance metric**: over a set of
 completed generations with recorded feedback, what fraction did users accept
-(thumbs up). That turns Zoo's ``MlFeedback`` from a UI affordance into an offline
+(thumbs up). That turns the ``MlFeedback`` signal from a UI affordance into an offline
 quality gate a text-to-CAD harness can score itself with.
 
 Everything here is inert data plus pure functions; no network, no wall clock.

@@ -315,7 +315,7 @@ def parse_quantity(expr, base: float | None = None, base_kind: str = LENGTH) -> 
     """Evaluate ``expr`` into a :class:`Quantity`.
 
     ``int``/``float`` inputs are treated as *base-unit* quantities of ``base_kind``
-    (metres for lengths -- matching CodeToCAD's convention).  A bare percentage
+    (metres for lengths -- the conventional base unit).  A bare percentage
     resolves against ``base`` when supplied.
     """
     if isinstance(expr, Quantity):
@@ -341,7 +341,7 @@ def parse_length(expr, base: float | None = None) -> float:
     if quantity.kind == PERCENT:
         raise ExpressionError("percentage used without a base value")
     if quantity.kind == SCALAR:
-        # bare number in a length context == metres (CodeToCAD convention)
+        # bare number in a length context == metres (base-unit convention)
         return quantity.value
     if quantity.kind != LENGTH:
         raise ExpressionError("expected a length, got " + quantity.kind)

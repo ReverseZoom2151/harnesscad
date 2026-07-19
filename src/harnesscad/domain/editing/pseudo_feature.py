@@ -97,8 +97,7 @@ def regenerate(tree: FeatureTree, edit) -> RegenResult:
 
     Regeneration fails when the edited feature is the anchor of one or more
     trailing pseudo-features and the edit moves the anchor's controlling offset
-    away from the snapshot the pseudo-feature was captured against -- exactly the
-    P10 33->68 failure in Fig. 3.
+    away from the snapshot the pseudo-feature was captured against.
     """
     from harnesscad.domain.editing.hybrid_model import ParameterEdit
     if not isinstance(edit, ParameterEdit):

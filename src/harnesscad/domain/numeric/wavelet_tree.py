@@ -5,7 +5,7 @@ the raw multi-level 3D DWT (see ``numeric.makeashape_wavelet_transform``), the
 paper builds a compact **wavelet-tree representation** through three
 deterministic constructions, all implemented here:
 
-  * **Subband coefficient filtering** (Sec. 4, Fig. 7).  Because sibling detail
+  * **Subband coefficient filtering**.  Because sibling detail
     coefficients are positively correlated, for every spatial location the
     paper takes the *largest-magnitude* coefficient across the sibling detail
     subbands as that location's "information" measure, then keeps the top-K
@@ -13,22 +13,22 @@ deterministic constructions, all implemented here:
     ``truncate_top_k`` zeroes every detail coefficient outside the kept set,
     yielding the lossy-but-faithful representation.
 
-  * **Subband adaptive coordinate sets** (Sec. 6, Eq. 2).  For each detail
-    subband the paper finds the max magnitude ``v`` and marks every coefficient
+  * **Subband adaptive coordinate sets**.  For each detail
+    subband this approach finds the max magnitude ``v`` and marks every coefficient
     with magnitude ``> v/32`` as important, unioning the sibling sets into a
     single coordinate set ``P0`` (and its complement ``P0'``).  These drive the
     adaptive training loss.  ``importance_mask`` and ``adaptive_coordinate_set``
     build them, and ``coordinate_set_as_binary_mask`` gives the fixed-size mask
-    the paper uses for efficient loss computation.
+    this approach uses for efficient loss computation.
 
-  * **Subband coefficient packing** (Sec. 5, Fig. 8).  Siblings and their
+  * **Subband coefficient packing**.  Siblings and their
     children are channel-wise concatenated so the representation collapses onto
     the low-resolution coarse grid with many channels (in 3D: ``1`` coarse
     ``+ 7`` D0 siblings ``+ 7*8`` D1 descendants ``= 64`` channels), making it a
     regular grid a diffusion model can consume.  ``pack_diffusible`` /
     ``unpack_diffusible`` perform this rearrangement and its exact inverse.
 
-Everything is stdlib-only and deterministic (random selection, where the paper
+Everything is stdlib-only and deterministic (random selection, where this approach
 uses it, is seeded via ``random.Random``).
 """
 
@@ -54,8 +54,7 @@ def sibling_information(detail: Dict[str, Grid3D]) -> Dict[Coord, float]:
 
     ``detail`` is one level's dict of the seven detail subbands (all sharing
     the same dims).  Returns a mapping from ``(ix, iy, iz)`` to the largest
-    sibling magnitude at that location (Sec. 4: "selecting the one with the
-    largest magnitude ... as the measure of information").
+    sibling magnitude at that location.
     """
     names = [n for n in DETAIL_NAMES if n in detail]
     if not names:
@@ -94,7 +93,7 @@ def truncate_top_k(detail: Dict[str, Grid3D], k: int) -> Dict[str, Grid3D]:
     """Return a copy of ``detail`` with all but the top-K locations zeroed.
 
     Every sibling subband keeps its coefficient at a kept location and is set to
-    zero elsewhere (Sec. 4 subband coefficient filtering).
+    zero elsewhere.
     """
     keep: Set[Coord] = set(top_k_locations(detail, k))
     names = [n for n in DETAIL_NAMES if n in detail]
@@ -141,13 +140,13 @@ def nonzero_detail_count(decomp: WaveletDecomposition, tol: float = 0.0) -> int:
 
 
 # --------------------------------------------------------------------------- #
-# Subband adaptive coordinate sets (Eq. 2)                                     #
+# Subband adaptive coordinate sets                                     #
 # --------------------------------------------------------------------------- #
 
 def importance_mask(subband: Grid3D, ratio: float = 32.0) -> Set[Coord]:
     """Coords whose magnitude exceeds ``v/ratio`` where ``v`` is the band max.
 
-    The paper uses ``v/32`` (Sec. 6).  A constant/zero band yields the empty set.
+    This approach uses ``v/32``.  A constant/zero band yields the empty set.
     """
     if ratio <= 0:
         raise ValueError("ratio must be positive")
@@ -166,7 +165,7 @@ def importance_mask(subband: Grid3D, ratio: float = 32.0) -> Set[Coord]:
 
 
 def adaptive_coordinate_set(detail: Dict[str, Grid3D], ratio: float = 32.0) -> Set[Coord]:
-    """Union of the per-subband importance masks -> the set ``P0`` (Eq. 2)."""
+    """Union of the per-subband importance masks -> the set ``P0``."""
     names = [n for n in DETAIL_NAMES if n in detail]
     p0: Set[Coord] = set()
     for n in names:
@@ -184,7 +183,7 @@ def complement_coordinate_set(detail: Dict[str, Grid3D], p0: Set[Coord]) -> Set[
 
 
 def coordinate_set_as_binary_mask(coords: Set[Coord], dims: Tuple[int, int, int]) -> Grid3D:
-    """Fixed-size 0/1 mask for a coordinate set (Sec. 6 efficient loss)."""
+    """Fixed-size 0/1 mask for a coordinate set."""
     nx, ny, nz = dims
     data = [0.0] * (nx * ny * nz)
     for (ix, iy, iz) in coords:
@@ -195,7 +194,7 @@ def coordinate_set_as_binary_mask(coords: Set[Coord], dims: Tuple[int, int, int]
 def sample_complement(
     p_complement: Set[Coord], count: int, seed: int
 ) -> List[Coord]:
-    """Randomly pick ``count`` coords from ``P0'`` (the ``R(.)`` op in Eq. 2).
+    """Randomly pick ``count`` coords from ``P0'`` (the ``R(.)`` op in ).
 
     Deterministic given ``seed``; picks ``min(count, |P0'|)`` distinct coords.
     """
@@ -207,7 +206,7 @@ def sample_complement(
 
 
 # --------------------------------------------------------------------------- #
-# Subband coefficient packing (Fig. 8): collapse onto coarse grid + channels   #
+# Subband coefficient packing: collapse onto coarse grid + channels   #
 # --------------------------------------------------------------------------- #
 
 # Channel layout per coarse cell:

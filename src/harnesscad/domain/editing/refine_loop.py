@@ -54,14 +54,14 @@ Point = Tuple[float, ...]
 class EditStep:
     """One iteration of the loop.
 
-    - ``t``            : 1-based iteration index.
-    - ``program``      : the program C_t the editor emitted this step.
-    - ``valid``        : whether R(C_t) rendered a non-degenerate solid.
-    - ``select_score`` : D against the *selection* target (``inf`` if invalid).
-    - ``report_score`` : D against the *reporting* target (``None`` if invalid or
+    - ``t``: 1-based iteration index.
+    - ``program``: the program C_t the editor emitted this step.
+    - ``valid``: whether R(C_t) rendered a non-degenerate solid.
+    - ``select_score``: D against the *selection* target (``inf`` if invalid).
+    - ``report_score``: D against the *reporting* target (``None`` if invalid or
                          no separate report target was supplied).
-    - ``encoding``     : the discrepancy encoding that fed the editor at this step.
-    - ``error``        : render/editor error string when invalid.
+    - ``encoding``: the discrepancy encoding that fed the editor at this step.
+    - ``error``: render/editor error string when invalid.
     """
 
     t: int

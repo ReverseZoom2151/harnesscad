@@ -1,23 +1,21 @@
-"""Deterministic catalogue of Zoo/KittyCAD's KCL stdlib, engine ops and file formats.
+"""Deterministic catalogue of the KCL stdlib, engine ops and file formats.
 
-Static reference data mined directly from Zoo's SDKs and modeling-app:
+Static reference data for the KCL toolchain:
 
 *   :data:`KCL_STD_FUNCTIONS` -- the KCL standard-library function set, grouped by
-    module, from ``modeling-app/rust/kcl-lib/src/std/mod.rs`` (the ``std_fn``
-    dispatch table). These are the callable modeling primitives a KCL program uses.
-*   :data:`ENGINE_OPS` -- the engine modeling-command set from
-    ``kittycad.py/models/modeling_cmd.py`` (the ``ModelingCmd`` discriminated
-    union). These are the low-level ops the KCL executor sends to the engine.
+    module (the ``std_fn`` dispatch table). These are the callable modeling
+    primitives a KCL program uses.
+*   :data:`ENGINE_OPS` -- the engine modeling-command set (the ``ModelingCmd``
+    discriminated union). These are the low-level ops the KCL executor sends to
+    the engine.
 *   :data:`IMPORT_FORMATS` / :data:`EXPORT_FORMATS_3D` / :data:`EXPORT_FORMATS_2D`
-    and :data:`CONVERSION_MATRIX` -- the file-conversion format matrix from
-    ``kittycad.py/models/file_import_format.py``, ``file_export_format.py`` and
-    ``output_format2d.py``. This tells a codec author which formats matter.
-*   :data:`EXTENSION_TO_IMPORT_FORMAT` -- filename-extension resolution, mirrored
-    from Zoo's diff-viewer extension (``src/chrome/diff.ts``).
+    and :data:`CONVERSION_MATRIX` -- the file-conversion format matrix. This
+    tells a codec author which formats matter.
+*   :data:`EXTENSION_TO_IMPORT_FORMAT` -- filename-extension resolution.
 
 Everything here is inert data + pure query helpers; nothing is imported eagerly,
-no API is called. It exists so a Zoo-backend / codec author has one checked place
-to read "what does Zoo actually support" without re-mining the SDKs.
+no API is called. It exists so a backend / codec author has one checked place
+to read what the engine actually supports without re-deriving it.
 """
 
 from __future__ import annotations
@@ -122,7 +120,7 @@ KCL_STD_FUNCTIONS: Dict[str, Tuple[str, ...]] = {
 }
 
 # ---------------------------------------------------------------------------
-# Engine op set (from kittycad.py models/modeling_cmd.py ModelingCmd union).
+# Engine op set (the ModelingCmd discriminated union).
 # The low-level commands the KCL executor issues to the modeling engine.
 # ---------------------------------------------------------------------------
 

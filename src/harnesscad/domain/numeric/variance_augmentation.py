@@ -3,7 +3,7 @@
 the model observes that a continuous variance schedule (e.g. the cosine schedule)
 cannot be reused verbatim inside Gaussian-Softmax diffusion: the softmax
 projection distorts the injected noise so that the *discrete* label switches far
-too abruptly (Fig. 2, orange vs. blue curves). The paper therefore augments the
+too abruptly. This approach therefore augments the
 schedule so that the argmax of ``y_t`` follows a controlled categorical marginal
 
     argmax(y_t) ~ C( b_t y_0 + (1 - b_t) / D )
@@ -15,11 +15,11 @@ Gumbel-max approximation of the argmax of a Gaussian vector. With
 
 the augmented continuous retention coefficient is
 
-    alpha_t = f(b_t)^2 / ( f(b_t)^2 + f(k)^2 )                      (Eq. 8 / A.4)
+    alpha_t = f(b_t)^2 / ( f(b_t)^2 + f(k)^2 )
 
 where ``k`` is the label-smoothing constant (default 0.99). The inverse -- the
 discrete keep-probability ``b_t`` implied by a given continuous ``alpha_t`` -- is
-obtained by solving Eq. 8 for ``f(b_t)`` and inverting ``f``:
+obtained by solving for ``f(b_t)`` and inverting ``f``:
 
     f(b_t) = -sqrt( alpha_t / (1 - alpha_t) ) * |f(k)|,
     b_t    = (1 - e^y) / ( (D - 1) e^y + 1 ),   y = f(b_t).
@@ -66,7 +66,7 @@ def gumbel_f(x: float, num_classes: int) -> float:
 def augmented_alpha(
     b_t: float, num_classes: int, k: float = 0.99
 ) -> float:
-    """Continuous ``alpha_t`` realising a discrete keep-schedule ``b_t`` (Eq. 8).
+    """Continuous ``alpha_t`` realising a discrete keep-schedule ``b_t``.
 
     ``alpha_t = f(b_t)^2 / (f(b_t)^2 + f(k)^2)``. At ``b_t = 0`` (fully noised
     label) this returns 0; as ``b_t -> 1`` it approaches 1.
@@ -94,7 +94,7 @@ def implied_discrete_keep(
 ) -> float:
     """Discrete keep-probability ``b_t`` implied by continuous ``alpha_t``.
 
-    True inverse of :func:`augmented_alpha`: solves Eq. 8 for ``f(b_t)`` (taking
+    True inverse of :func:`augmented_alpha`: solves for ``f(b_t)`` (taking
     the ``f < 0`` branch, since ``f`` is negative on ``(0, 1)``) and inverts
     ``f``. ``alpha_t = 0`` maps to ``b_t = 0``; ``alpha_t -> 1`` maps to
     ``b_t -> 1``.

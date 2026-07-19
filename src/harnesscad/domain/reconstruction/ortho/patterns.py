@@ -8,7 +8,7 @@ import itertools
 from .edges import projection_feature
 from .model import Diagnostic, Edge2D, Edge3D
 
-# Paper taxonomy, mapped to our per-view H/V/I/A vocabulary.  Pt projections
+# Reference taxonomy, mapped to our per-view H/V/I/A vocabulary.  Pt projections
 # have no explicit edge and are represented by ``None``.
 PATTERNS = {
     "L1": ("H", "H", None), "L2": ("V", None, "V"), "L3": (None, "V", "H"),
@@ -44,7 +44,7 @@ def _point3(front: tuple[float, float], bottom: tuple[float, float]) -> tuple[fl
 def match_patterns(views, tolerance: float):
     """Match complete three-edge patterns; emit diagnostics for ambiguity.
 
-    Pt-bearing L1–L3 remain named in :data:`PATTERNS`, but require vertex data
+    Pt-bearing L1-L3 remain named in :data:`PATTERNS`, but require vertex data
     not expressible as an edge-only SVG and are reported as unsupported here.
     """
     candidates: list[Edge3D] = []

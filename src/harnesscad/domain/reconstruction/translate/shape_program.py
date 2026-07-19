@@ -1,18 +1,17 @@
-"""cad2program_shape_program — text-based parametric shape-program IR + codec.
+"""Text-based parametric shape-program IR + codec.
 
-CAD2PROGRAM (Wang et al., "From 2D CAD Drawings to 3D Parametric Models: A
-Vision-Language Approach", AAAI 2025) departs from fixed-slot command templates by
+This representation departs from fixed-slot command templates by
 representing a 3D parametric model as a *script in a general-purpose language*
-(Python or YAML).  A model is an assembly of primitive instances (Sec. 3.1):
+(Python or YAML).  A model is an assembly of primitive instances:
 
     Z = {Z_i},   Z_i = (M_i, B_i, P_i)
 
 where ``M_i`` is a primitive model ID, ``B_i = (p_i, s_i, r_i)`` is a 3D box of
-common parameters — center position ``p in R^3``, size ``s in R^3`` and a single
-rotation angle ``r`` about the vertical (z) axis — and ``P_i`` is a list of
+common parameters -- center position ``p in R^3``, size ``s in R^3`` and a single
+rotation angle ``r`` about the vertical (z) axis -- and ``P_i`` is a list of
 model-specific ``key=value`` parameters (empty when the primitive has none).
 
-The Python serialisation is Listing 1 / Figure 10::
+The Python serialisation is::
 
     bbox_0 = Bbox(507, 185, 805, 1014, 370, 50, 0)
     model_0 = <model_57761062>()
@@ -20,12 +19,12 @@ The Python serialisation is Listing 1 / Figure 10::
     model_2 = <model_115813862>(N=1, NKA=928, DBXX=1, BT=18)
 
 with ``Bbox(position_x, position_y, position_z, scale_x, scale_y, scale_z,
-angle_z)``.  The YAML serialisation is Figure 11 (a list of ``- id:`` records with
+angle_z)``.  The YAML serialisation is a list of ``- id:`` records with
 ``position_*``/``scale_*``/``angle_z``/``model_id`` and any model-specific keys).
 
-The paper's central deterministic claim is that this text representation is
+The central deterministic property is that this text representation is
 *lossless* for continuous values (no domain tokenizer quantization) and can be
-round-tripped; that round-trip — parse -> IR -> serialise -> parse — is exactly
+round-tripped; that round-trip -- parse -> IR -> serialise -> parse -- is exactly
 what this module implements, for both proxy languages.  The VLM that *predicts*
 the script from a raster drawing is the learned, out-of-scope part.
 
@@ -49,7 +48,7 @@ BBOX_FIELDS: Tuple[str, ...] = (
 
 
 def _fmt_number(value: Number) -> str:
-    """Format a number the way the paper's listings do: no trailing ``.0``."""
+    """Format a number the way the listings do: no trailing ``.0``."""
     if isinstance(value, bool):  # guard: bool is an int subclass
         return str(int(value))
     if isinstance(value, int):
@@ -175,7 +174,7 @@ def model_id_bracketed(model_id: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Python proxy language (Listing 1 / Figure 10)
+# Python proxy language
 # --------------------------------------------------------------------------- #
 
 def serialize_python(program: ShapeProgram) -> str:
@@ -199,7 +198,7 @@ _MODEL_RE = re.compile(r"model_(\d+)\s*=\s*(<[^>]+>)\(([^)]*)\)")
 
 
 def parse_python(text: str) -> ShapeProgram:
-    """Parse a Python shape program (Listing 1 / Figure 10) into a program.
+    """Parse a Python shape program into a program.
 
     Robust to arbitrary whitespace inside the listings (the extracted PDFs pad
     numbers with spaces).  Lines are matched by their ``bbox_<i>`` / ``model_<i>``
@@ -271,7 +270,7 @@ def serialize_yaml(program: ShapeProgram) -> str:
 def parse_yaml(text: str) -> ShapeProgram:
     """Parse the restricted block-sequence YAML of Figure 11.
 
-    Only the subset the paper emits is supported: a top-level sequence of
+    Only the emitted subset is supported: a top-level sequence of
     mappings, each item introduced by ``- <key>: <value>`` and continued by
     indented ``<key>: <value>`` lines.  No nesting, flow style or anchors.
     """
@@ -310,7 +309,7 @@ def parse_yaml(text: str) -> ShapeProgram:
 
 
 # --------------------------------------------------------------------------- #
-# Canonical pose (Sec. 3.1, Page 4)
+# Canonical pose
 # --------------------------------------------------------------------------- #
 
 def program_bounds(program: ShapeProgram
@@ -347,7 +346,7 @@ def translate(program: ShapeProgram,
 def normalize_to_first_octant(program: ShapeProgram) -> ShapeProgram:
     """Move the assembly so its bounding box's min corner sits at the origin.
 
-    The paper aligns the subject to the main axes with the origin at one corner
+    The subject is aligned to the main axes with the origin at one corner
     of the bounding box so the whole model lies in the first octant (all
     coordinates non-negative).  This is the deterministic canonical pose used to
     remove translation ambiguity before evaluation.

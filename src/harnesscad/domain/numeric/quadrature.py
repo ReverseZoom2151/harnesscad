@@ -1,4 +1,4 @@
-"""Gauss-Legendre quadrature nodes and weights .
+"""Gauss-Legendre quadrature nodes and weights.
 
 the kernel's ``math`` toolkit ships a hard-coded table of Gauss-Legendre
 quadrature abscissae (``Point[]``) and weights (``Weight[]``) for every order

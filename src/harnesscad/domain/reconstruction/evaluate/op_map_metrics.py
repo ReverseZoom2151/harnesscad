@@ -12,15 +12,15 @@ here, stdlib-only and deterministic:
     mask ``1 - user_stroke`` (only pixels away from the drawn stroke count), and
     the error is a weighted mean with the same mask as weights.  Predictions on
     stroke pixels are therefore free, which is exactly the training convention.
-  * :func:`foreground_background_curve_error` — the bevel objective: the
+  * :func:`foreground_background_curve_error` -- the bevel objective: the
     prediction is split into a foreground part (inside the ground-truth curve
     mask) and a background part (the rest of the stroke-masked region); the two
     squared/absolute sums are added and normalised by the number of stroke-mask
     pixels, not by the image area.  This keeps a thin curve from being drowned
     out by background.
-  * :func:`curve_class_metrics` — per-class precision / recall / F1 / IoU over
+  * :func:`curve_class_metrics` -- per-class precision / recall / F1 / IoU over
     the derived base/offset/profile curve labels.
-  * :func:`operation_report` — one dict combining the above for a sample.
+  * :func:`operation_report` -- one dict combining the above for a sample.
 
 Every function takes flat row-major float lists of equal length.
 """
@@ -61,7 +61,7 @@ def face_heatmap_error(
 
 
 def stroke_mask(user_stroke: Sequence[float]) -> List[float]:
-    """``1 - user_stroke`` — the region the curve heads are scored on."""
+    """``1 - user_stroke`` -- the region the curve heads are scored on."""
     if not user_stroke:
         raise MetricError("empty map")
     return [1.0 - float(v) for v in user_stroke]

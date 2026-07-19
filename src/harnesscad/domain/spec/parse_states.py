@@ -1,17 +1,16 @@
-"""Parallel parse-states with confidence-levels (Cleopatra, Samad & Director 1985).
+"""Parallel parse-states with confidence-levels.
 
-Section 2.2 of "Towards a Natural Language Interface for CAD" describes parsing
-as a *parallel* search over competing *parse-states*.  As each word is read,
-"as many new parse-states are instantiated as there are possible
-interpretations of the input" -- one per *lexical sense* of the word (the paper
-notes ``output`` is both a verb and a noun, and ``what`` is both a determiner
-and an interrogative pronoun).  A parse-state carries a numeric
-*confidence-level* (the paper uses a 1..10 scale) reflecting how likely it is to
-be the correct reading; confidence is dynamic and driven by sense frequency and
-word-order preference.  States that violate a local constraint are *terminated*
-(the paper: a determiner cannot be followed by a verb, so the determiner reading
-of ``what`` dies at ``is``), and "if, at any point, too many parse-states are in
-contention, the less-likely ones can be suspended".
+Parsing is modelled as a *parallel* search over competing *parse-states*.  As
+each word is read, as many new parse-states are instantiated as there are
+possible interpretations of the input -- one per *lexical sense* of the word
+(``output`` is both a verb and a noun, and ``what`` is both a determiner and an
+interrogative pronoun).  A parse-state carries a numeric *confidence-level* (a
+1..10 scale) reflecting how likely it is to be the correct reading; confidence
+is dynamic and driven by sense frequency and word-order preference.  States that
+violate a local constraint are *terminated* (a determiner cannot be followed by
+a verb, so the determiner reading of ``what`` dies at ``is``), and if at any
+point too many parse-states are in contention, the less-likely ones are
+suspended.
 
 This module is a deterministic realisation of that engine:
 
@@ -131,7 +130,7 @@ class ParseState:
 
     @property
     def confidence(self) -> int:
-        """Confidence on the paper's 1..10 scale (mean per-step score)."""
+        """Confidence on a 1..10 scale (mean per-step score)."""
         if self.steps == 0:
             return 1
         raw = round(self.score_sum / self.steps)

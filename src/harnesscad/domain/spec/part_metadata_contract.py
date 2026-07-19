@@ -1,10 +1,8 @@
-"""aicad part-metadata contract: feature tags, params placement, viewer isolation.
+"""Part-metadata contract: feature tags, params placement, viewer isolation.
 
-Source: ``resources/cad_repos/forgent3d-main`` (``packages/electron/electron/
-skills/aicad-core-skill-content.md`` + ``build123d-skill-content.md``).
-forgent3d's viewer runtime imposes a small, checkable contract on every
-generated model, and ships it to the agent as skill text. The deterministic
-rules (as opposed to the modeling advice) are:
+A viewer runtime can impose a small, checkable contract on every generated
+model, and ship it to the agent as skill text. The deterministic rules (as
+opposed to the modeling advice) are:
 
 1. **Feature-tag metadata** (schema ``aicad.part.metadata.v1``): a part may
    expose semantic feature tags -- name, ``kind`` (hole, slot, boss, ...),
@@ -23,8 +21,7 @@ rules (as opposed to the modeling advice) are:
    Nothing in ``__viewer`` may feed dimensions, topology, anchors, joints,
    or constraints.
 
-The integration campaign took forgent3d's printability verdict only; this
-contract layer was unmined. It is harness-relevant because it makes a
+This contract layer is harness-relevant because it makes a
 generated artifact's *metadata* verifiable the same way its geometry is:
 a plausible-looking part with a selector that silently names the wrong
 topology, or a viewer color that leaks into a dimension, is caught by rule,
@@ -68,7 +65,7 @@ ASSEMBLY_LEVEL_KEYS: Tuple[str, ...] = (
     "placement", "motion", "constraints", "anchors", "__viewer",
 )
 
-#: Name patterns that identify per-part geometry knobs (the skill's examples:
+#: Name patterns that identify per-part geometry knobs (for example:
 #: teeth, bore, thickness, radii, hole sizes, feature counts, local dims).
 GEOMETRY_KNOB_PATTERNS: Tuple[str, ...] = (
     r"teeth", r"bore", r"thickness", r"radius", r"radii", r"diameter",
@@ -78,7 +75,7 @@ GEOMETRY_KNOB_PATTERNS: Tuple[str, ...] = (
 
 _KNOB_RE = re.compile("|".join(GEOMETRY_KNOB_PATTERNS), re.IGNORECASE)
 
-#: Feature-tag kinds the skill names as functional/user-visible topology.
+#: Feature-tag kinds that name functional/user-visible topology.
 TAG_KINDS: Tuple[str, ...] = (
     "hole", "slot", "boss", "rim", "rail", "hinge", "cutout", "connector",
     "mount", "gear_bore", "generic",

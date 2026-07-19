@@ -1,18 +1,18 @@
 """Numeric constraint-graph diagnostics and a Gauss-Newton sketch solver.
 
-OpenCAD's ``opencad_solver`` exposes something most sketch solvers hide: a full
+A sketch solver can expose something most sketch solvers hide: a full
 *constraint-graph introspection* payload (``ConstraintDiagnostics``) built from
 the numeric Jacobian of the residual system -- variable index -> (entity,
 parameter) map, constraint -> residual-row-span map, Jacobian shape + rank +
 sparsity pattern, remaining degrees of freedom (``dof = n_vars - rank``), the
 IDs of conflicting constraints, and the indices of variables no constraint
-touches.  Upstream this needs NumPy/SciPy (``matrix_rank``, ``minimize``); the
+touches.  A typical implementation this needs NumPy/SciPy (``matrix_rank``, ``minimize``); the
 harness already has a *combinatorial* DOF model (:mod:`constraints` --
 union-find over nominal constraint weights), but no numeric one.
 
 This module supplies the numeric half in pure stdlib:
 
-* residual functions for the ten OpenCAD constraint kinds (horizontal, vertical,
+* residual functions for the ten the solver constraint kinds (horizontal, vertical,
   parallel, perpendicular, equal, coincident, tangent, fixed, distance, angle)
   over point / line / circle entities;
 * a variable codec (entity parameters <-> flat vector) with an index map;

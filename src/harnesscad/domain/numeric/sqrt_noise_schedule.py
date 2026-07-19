@@ -2,7 +2,7 @@
 
 Diffusion-CAD trains a DDPM over *CAD vectors* (continuous embeddings of a
 discretised CAD command sequence). The learned denoiser is out of scope, but
-several pieces of the paper are fully deterministic given a schedule and a seed:
+several pieces of this approach are fully deterministic given a schedule and a seed:
 
 1.  The **sqrt noise schedule** (Diffusion-LM style, adopted verbatim by the
     paper: "1000 diffusion steps with a sqrt noise schedule"). The schedule is
@@ -23,7 +23,7 @@ several pieces of the paper are fully deterministic given a schedule and a seed:
     ground-truth CAD vector to step ``t``).
 
 3.  The **classifier-free conditional noise seeding** used at generation time
-    for command-type / dimension / partial-sketch control (Section III-C). The
+    for command-type / dimension / partial-sketch control. The
     user-specified coordinates of the CAD vector are seeded from the *shifted*
     distribution ``N( sqrt(alpha_bar_T) e_c , (1 - alpha_bar_T) I )`` while the
     remaining coordinates are drawn from the standard Gaussian ``N(0, I)``. This
@@ -151,12 +151,12 @@ def conditional_noise_seed(
     rng: random.Random,
     t: int | None = None,
 ) -> list[float]:
-    """Classifier-free conditional noise seeding (Section III-C).
+    """Classifier-free conditional noise seeding.
 
     Coordinates listed in ``conditioned`` (index -> embedding value ``e_c``) are
     drawn from ``N( sqrt(alpha_bar_t) * e_c , (1 - alpha_bar_t) I )``; all other
     coordinates are drawn from the standard Gaussian ``N(0, I)``. ``t`` defaults
-    to the terminal step ``T`` (the paper seeds the input noise at time ``T``).
+    to the terminal step ``T`` (this approach seeds the input noise at time ``T``).
 
     This is the deterministic construction of the biased input noise used for
     command-type control, dimension control, and partial-sketch completion.

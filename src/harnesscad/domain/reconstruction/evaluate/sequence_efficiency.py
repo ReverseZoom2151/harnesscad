@@ -26,14 +26,14 @@ from harnesscad.domain.reconstruction.brep.graphbrep_surface_graph import Matrix
 
 
 def tree_sequence_length(max_faces: int, max_edges_per_face: int) -> int:
-    """BrepGen fixed edge-sequence length ``n_faces * max_edges_per_face``."""
+    """Fixed edge-sequence length ``n_faces * max_edges_per_face``."""
     if max_faces < 0 or max_edges_per_face < 0:
         raise ValueError("lengths must be non-negative")
     return max_faces * max_edges_per_face
 
 
 def graph_sequence_length(total_edge_count: int) -> int:
-    """GraphBrep edge-sequence length: the actual (max) number of edges."""
+    """Graph edge-sequence length: the actual (max) number of edges."""
     if total_edge_count < 0:
         raise ValueError("edge count must be non-negative")
     return total_edge_count

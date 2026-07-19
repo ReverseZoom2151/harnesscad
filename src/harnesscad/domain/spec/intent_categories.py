@@ -1,13 +1,12 @@
-"""Text-intent -> brick category routing and prompt constraint linting (AlphaCAD).
+"""Text-intent -> brick category routing and prompt constraint linting.
 
-Source: ``AlphaCAD-main`` (``summit-demo/utils.py`` + ``vote_server.py``). Before
-any model is invoked, AlphaCAD deterministically maps a free-form request onto
-the fixed set of BrickGPT object categories and lints the prompt against the
-model's hard constraints (1-unit cuboid bricks, 20x20x20 grid, trained
-categories only). This is a self-contained keyword / synonym / semantic-verb
-router plus a rule-based prompt validator -- reusable for any pipeline that must
-snap an open-ended intent onto a closed vocabulary and warn about
-out-of-vocabulary requests.
+Before any model is invoked, this module deterministically maps a free-form
+request onto a fixed set of brick-assembly object categories and lints the
+prompt against the model's hard constraints (1-unit cuboid bricks, 20x20x20
+grid, trained categories only). This is a self-contained keyword / synonym /
+semantic-verb router plus a rule-based prompt validator -- reusable for any
+pipeline that must snap an open-ended intent onto a closed vocabulary and warn
+about out-of-vocabulary requests.
 
 Pure, stdlib only, deterministic. No model, no network.
 """
@@ -16,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# The 21 categories BrickGPT is trained on.
+# The 21 trained object categories.
 CATEGORIES: tuple[str, ...] = (
     "basket", "bed", "bench", "birdhouse", "bookshelf", "bottle", "bowl",
     "bus", "camera", "car", "chair", "guitar", "jar", "mug", "piano",

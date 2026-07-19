@@ -1,13 +1,11 @@
 """Redundancy-based error recovery for terse / errorful CAD commands.
 
-Section 2.3 ("Redundant Encoding of Constraints") and Section 4.2 of "Towards a
-Natural Language Interface for CAD" observe that "misspellings and grammatical
-deviations pervade the use of natural language interfaces" -- chiefly deletions
-of articles and of some prepositions.  Because grammaticality is encoded
-*redundantly* (a verb constrains its object and a noun constrains its verb),
-Cleopatra can restore such input: "Determiners can be skipped, and the
-prepositions of extranuclear constituents can be skipped if no ambiguity
-results", so the cryptic
+Misspellings and grammatical deviations pervade the use of natural-language
+interfaces -- chiefly deletions of articles and of some prepositions.  Because
+grammaticality is encoded *redundantly* (a verb constrains its object and a noun
+constrains its verb), such input can be restored: determiners can be skipped,
+and the prepositions of extranuclear constituents can be skipped if no ambiguity
+results, so the cryptic
 
     What is voltage nl 10 ns?
 
@@ -153,8 +151,8 @@ def _is_known(low: str) -> bool:
 def recover(text: str, replacements: Optional[Dict[str, str]] = None) -> RecoveryResult:
     """Repair a terse/errorful command, returning the reconstructed stream.
 
-    ``replacements`` maps an unknown surface word to a substitute (the paper's
-    "type in one or more words as replacement").  Words still unknown after
+    ``replacements`` maps an unknown surface word to a substitute (type in one
+    or more words as replacement).  Words still unknown after
     substitution are collected in ``unknown_words``.
     """
     replacements = {k.lower(): v for k, v in (replacements or {}).items()}

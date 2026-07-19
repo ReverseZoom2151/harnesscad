@@ -1,7 +1,7 @@
-"""Bidirectional / multi-directional selective-scan ordering .
+"""Bidirectional / multi-directional selective-scan ordering.
 
-This ordering follows the vision-Mamba line of work (paper
-"Mamba-based models") that runs the selective scan along *several traversal
+This ordering follows the vision-the state-space model line of work (paper
+"the state-space model-based models") that runs the selective scan along *several traversal
 orders* -- e.g. "perform bi-directional scanning on these two directions" --
 and merges the results, so every token can attend to context on both sides
 despite the scan being a strictly causal left-to-right recurrence.

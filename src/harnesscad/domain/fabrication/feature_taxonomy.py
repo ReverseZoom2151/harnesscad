@@ -1,8 +1,6 @@
-"""Manufacturing-feature taxonomy / ontology (Khan et al., "Leveraging Vision-
-Language Models for Manufacturing Feature Recognition in CAD Designs", Sec. 3.1
-and 3.3.1, Fig. 4).
+"""Manufacturing-feature taxonomy / ontology.
 
-The paper builds a *hierarchical* manufacturing-feature list used as the fixed
+A *hierarchical* manufacturing-feature list used as the fixed
 label space for Automatic Feature Recognition (AFR). Features are organised into
 five primary categories, each subdivided into subcategories, whose lowest level
 holds the individual leaf features that a recogniser must name:
@@ -21,14 +19,14 @@ holds the individual leaf features that a recogniser must name:
     sheet metal features   -> bend
 
 Similar geometries are grouped: e.g. blind / through / countersink / counterbore
-/ tapered holes all fall under the single leaf ``hole`` "due to their similar
-geometries and tooling requirements" (Sec. 3.3.1). Those finer distinctions are
+/ tapered holes all fall under the single leaf ``hole`` due to their similar
+geometries and tooling requirements. Those finer distinctions are
 represented here as *subtypes* (attributes), NOT as separate leaf labels.
 
-This is the paper's DETERMINISTIC contribution: a fixed ontology + a normaliser
-that maps free-text feature names (as a VLM or an expert would write them) onto
+This layer is DETERMINISTIC: a fixed ontology + a normaliser
+that maps free-text feature names (as a model or an expert would write them) onto
 the canonical leaf label space. It is distinct from ``bench/engdesign_taxonomy``
-and ``bench/engdesign_dfm_scoring.MACHINING_FEATURES`` (paper 85's flat
+and ``bench/engdesign_dfm_scoring.MACHINING_FEATURES`` (a flat
 15-machining-feature list): this taxonomy is hierarchical and spans five
 manufacturing processes, not machining alone.
 
@@ -87,7 +85,7 @@ _LEAF_INDEX = {
     for leaf in leaves
 }
 
-# Hole subtypes grouped under the single ``hole`` leaf (Sec. 3.3.1).
+# Hole subtypes grouped under the single ``hole`` leaf.
 HOLE_SUBTYPES = (
     "simple", "blind", "through", "countersink", "counterbore", "tapered",
     "threaded",
@@ -118,7 +116,7 @@ FEATURE_ATTRIBUTES = {
 # --------------------------------------------------------------------------- #
 # Name normalisation: map free-text feature names onto canonical leaf labels.
 # --------------------------------------------------------------------------- #
-# Aliases / synonyms a VLM or expert might emit. Keys are normalised (lowercase,
+# Aliases / synonyms a model or expert might emit. Keys are normalised (lowercase,
 # single-spaced); values are canonical leaf labels. Canonical labels and their
 # space/hyphen variants are added automatically below.
 _ALIASES = {

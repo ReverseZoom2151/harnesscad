@@ -1,15 +1,14 @@
-"""Target-spec extraction from a free-form CAD prompt (Studio-OSS).
+"""Target-spec extraction from a free-form CAD prompt.
 
-Mined from **Studio-OSS** (``lib/scoring.ts``, ``extractTargetSpec``). Studio's
-evaluation agent never scores a design in a vacuum: it first parses the user's
-prompt into a structured *target specification* -- explicit dimensions, target
-aspect ratios, whether symmetry is wanted and with what confidence, which
+An evaluation agent should never score a design in a vacuum: it first parses the
+user's prompt into a structured *target specification* -- explicit dimensions,
+target aspect ratios, whether symmetry is wanted and with what confidence, which
 features are requested and in what counts, and a coarse texture hint -- and
 then scores the produced geometry *against that spec*. The extraction itself
 is entirely deterministic (regex + lexicons), which is what makes the
 spec-conditioned half of the score reproducible.
 
-Ported ideas:
+Key ideas:
 
   * dimension regexes in both orders ("30 mm height" and "height of 30mm")
     for height/width/diameter/thickness/depth/bore;
@@ -96,7 +95,7 @@ _FEATURE_PATTERNS: Tuple[Tuple[str, str, bool], ...] = (
 )
 
 #: Design-family keyword -> ideal (min, max) height/width ratio range,
-#: used when no explicit ratio target exists (Studio computeSpecMatch).
+#: used when no explicit ratio target exists.
 _FAMILY_RATIO_RANGES: Tuple[Tuple[Tuple[str, ...], Tuple[float, float]], ...] = (
     (("gear", "disc", "disk", "plate", "washer", "flange"), (0.05, 1.5)),
     (("vase", "bottle", "column", "tower"), (1.5, 8.0)),
@@ -150,7 +149,7 @@ def extract_target_spec(
 ) -> TargetSpec:
     """Parse the prompt (and optionally tree parameters) into a TargetSpec.
 
-    ``tree_parameters`` follows Studio's shape: name -> record with at least
+    ``tree_parameters`` has the shape: name -> record with at least
     ``value`` and ``unit`` ("mm" or "count"); mm values enter target_dims and
     count values whose key looks like a feature enter feature_counts.
     """

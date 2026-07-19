@@ -70,7 +70,7 @@ def uniform_transition_matrix(num_classes: int, beta: float) -> Matrix:
 def absorbing_transition_matrix(
     num_classes: int, beta: float, absorb_index: int | None = None
 ) -> Matrix:
-    """absorbing transition: mass ``b`` decays into an absorbing state.
+    """Absorbing-state transition: mass ``b`` decays into an absorbing state.
 
     ``absorb_index`` defaults to the last category (the conventional ``[MASK]``
     slot). The absorbing row is the identity row, so once absorbed a state never
@@ -178,7 +178,7 @@ def categorical_posterior(
     q_t: Matrix,
     qbar_prev: Matrix | None,
 ) -> Vector:
-    """True posterior ``q(x_{t-1} | x_t, x_0)`` .
+    """True posterior ``q(x_{t-1} | x_t, x_0)``.
 
     ``proportional to (x_t Q_t^T) elementwise (x_0 Qbar_{t-1})``, renormalised.
     For ``t == 1`` pass ``qbar_prev=None``; the ``Qbar_0 = I`` factor makes the

@@ -38,17 +38,17 @@ class Dimension:
 
 
 def type_match(gt: Dimension, pred: Dimension) -> bool:
-    """T(P, P_hat): dimension types agree (Eq. 1)."""
+    """T(P, P_hat): dimension types agree."""
     return gt.dim_type == pred.dim_type
 
 
 def value_match(gt: Dimension, pred: Dimension, tau_v: float) -> bool:
-    """V(P, P_hat): value deviates within ``tau_v`` (Eq. 2)."""
+    """V(P, P_hat): value deviates within ``tau_v``."""
     return abs(pred.value - gt.value) <= tau_v
 
 
 def element_match(gt: Dimension, pred: Dimension, tau_e: float) -> bool:
-    """E(P, P_hat): every attached element aligns within ``tau_e`` (Eq. 3).
+    """E(P, P_hat): every attached element aligns within ``tau_e``.
 
     Requires equal element counts and each corresponding element pair within the
     positional tolerance (Euclidean, per-coordinate absolute distance).
@@ -83,7 +83,7 @@ class DAResult:
 
 def dimension_accuracy(gts: list[Dimension], preds: list[Dimension],
                        tau_v: float, tau_e: float) -> DAResult:
-    """DA over paired ground-truth / predicted dimensions (Eq. 4).
+    """DA over paired ground-truth / predicted dimensions.
 
     ``gts`` and ``preds`` are index-aligned; a ``None`` prediction (missing) is
     counted as incorrect. DA is the ratio of correct predictions to the number

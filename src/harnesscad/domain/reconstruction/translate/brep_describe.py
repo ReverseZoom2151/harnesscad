@@ -1,10 +1,8 @@
-"""B-Rep primitive text-description generator (FutureCAD / BRepGround).
+"""B-Rep primitive text-description generator.
 
-Li et al., "Towards High-Fidelity CAD Generation via LLM-Driven Program
-Generation and Text-Based B-Rep Primitive Grounding" (FutureCAD, 2026),
-Sec. 5.1 "Textual description generation". Training BRepGround requires, for
+Training a text-based grounder requires, for
 each feature with non-empty operands, a *textual description that refers to the
-target primitives* (the paper obtains these with Claude-4.5; the LLM step is
+target primitives* (usually obtained from an LLM; that step is
 external). This module implements the inverse of
 :mod:`reconstruction.brepground_grounding`: it turns a
 :class:`reconstruction.brepground_grounding.BRepPrimitive` into a short natural
@@ -14,8 +12,8 @@ the geometric cues the grounder consumes.
 The generator is deterministic and template-based (no LLM). It is designed to
 round-trip with the grounder: for a primitive that is uniquely distinguishable
 within its B-Rep, ``ground_one(describe(prim, brep), brep)`` returns that same
-primitive (see the discriminative-phrase helper). This closes the loop that the
-paper trains a network to approximate, and gives a reference oracle for the
+primitive (see the discriminative-phrase helper). This closes the loop that a
+learned network would otherwise approximate, and gives a reference oracle for the
 grounding-accuracy metric.
 
 Pure, deterministic, stdlib-only.
@@ -135,7 +133,7 @@ def describe(
 def describe_detailed(prim: BRepPrimitive) -> str:
     """A richer, non-round-tripping sentence with numeric size and position.
 
-    Mirrors the paper's "detailed description" style ("... a span of ~40 units
+    Mirrors the "detailed description" style ("... a span of ~40 units
     ... extruded upwards by 15 units"): it states the measured size and the
     centroid coordinates. Numbers are rounded to keep the string deterministic.
     """

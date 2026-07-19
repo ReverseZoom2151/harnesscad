@@ -6,15 +6,15 @@ through LLM-Driven NURBS Modeling*
 NURBGen serialises every CAD face as an untrimmed NURBS surface -- control
 points, knot vectors, degrees and rational weights -- and converts the JSON back
 to a B-rep.  The deterministic heart of that conversion is the **B-spline basis
-function** ``N_{i,p}(u)``, defined by the Cox-de Boor recursion (paper Eq. 2):
+function** ``N_{i,p}(u)``, defined by the Cox-de Boor recursion:
 
     N_{i,0}(u) = 1  if  u_i <= u < u_{i+1},  else 0
     N_{i,p}(u) = (u - u_i)/(u_{i+p} - u_i)     * N_{i,p-1}(u)
                + (u_{i+p+1} - u)/(u_{i+p+1} - u_{i+1}) * N_{i+1,p-1}(u)
 
 (with the convention that a 0/0 term contributes 0).  These basis functions are
-the shared machinery behind both the NURBS *curve* (Eq. 1) and the tensor-product
-NURBS *surface* (Eq. 3).  Existing package code (``geometry.dreamcad_rational_
+the shared machinery behind both the NURBS *curve* and the tensor-product
+NURBS *surface*.  Existing package code (``geometry.dreamcad_rational_
 bezier``) only covers the *Bernstein/Bezier* uniform case with no knot vector;
 this module adds the genuinely non-uniform knot-vector machinery.
 
@@ -115,7 +115,7 @@ def expand_multiplicities(values: Sequence[float],
 
 
 # ---------------------------------------------------------------------------
-# Cox-de Boor recursion (literal form, paper Eq. 2)
+# Cox-de Boor recursion (literal form, paper )
 # ---------------------------------------------------------------------------
 
 def cox_de_boor(i: int, p: int, u: float, knots: Sequence[float]) -> float:
