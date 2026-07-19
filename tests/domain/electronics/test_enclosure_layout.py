@@ -14,11 +14,10 @@ behaviours are:
     not both present, skips enclosure-layer placements, and caps
     controller-relative rows at 9.
 
-There is *no* overlap rejection, *no* bounds enforcement and *no* clearance
-rule anywhere in the file, so the classic layout known-bad vectors cannot be
-expressed as "the module refuses X". They are expressed instead as assertions
-on what it actually produces, and two of them are genuine defects marked
-``expectedFailure`` below.
+There is *no* general overlap rejection, bounds enforcement, or clearance-rule
+engine in this module. Focused regression cases therefore assert the concrete
+containment and non-interpenetration guarantees the deterministic heuristics
+are able to make, rather than claiming that every arbitrary BOM is feasible.
 """
 
 import itertools
@@ -628,17 +627,17 @@ class GeneratedLayoutInvariantTests(unittest.TestCase):
     Scope note: the checked invariant is containment on X (plus Y for parts the
     module itself marks 'internal'). Front-mounted parts are placed deliberately
     proud of the front face, so Y containment does not apply to them. Z
-    containment is NOT checked here because it is genuinely violated - see
-    DisplayHeightDefectTests. Global non-overlap is likewise not an invariant of
-    this module - see PowerRowDefectTests.
+    containment is checked by the focused display regression below. Global
+    non-overlap remains outside this heuristic's contract, except for the
+    bounded power-grid regression below.
     """
 
     CATEGORIES = ["Microcontroller", "Sensor", "Display", "Communication",
                   "Passives"]
 
     def _random_bom(self, rng):
-        # At most three parts per category: beyond that the row-spreading
-        # heuristics are known to break (see PowerRowDefectTests).
+        # Keep the randomized matrix small enough to be diagnostic: this is a
+        # placement-seeding test, not a feasibility solver stress test.
         parts = []
         index = 0
         for category in self.CATEGORIES:
@@ -720,10 +719,9 @@ class GeneratedLayoutInvariantTests(unittest.TestCase):
         self.assertTrue(boxes_overlap(by_ref["DS1"], by_ref["S1"]))
 
 
-class DisplayHeightDefectTests(unittest.TestCase):
-    @unittest.expectedFailure
-    def test_bug_display_pokes_through_the_top_of_a_minimum_envelope(self):
-        # REAL BUG. Reproducing input: a single
+class DisplayHeightRegressionTests(unittest.TestCase):
+    def test_display_stays_inside_the_top_of_a_minimum_envelope(self):
+        # Regression: a single
         #   ComponentInstance(ref_des="DS1", name="OLED Display",
         #                     category="Display")
         # with no render_dimensions, so infer_render_dimensions returns the
@@ -753,9 +751,8 @@ class DisplayHeightDefectTests(unittest.TestCase):
         self.assertLessEqual(high, 30.0 + 1e-6)
 
 
-class PowerRowDefectTests(unittest.TestCase):
-    """Two real defects in the ``key == "power"`` row heuristic, kept as
-    expectedFailure so the code is not changed to make them pass."""
+class PowerGridRegressionTests(unittest.TestCase):
+    """The power heuristic uses a bounded 2D grid, not an overflowing row."""
 
     @staticmethod
     def _four_power_parts_ir():
@@ -763,18 +760,12 @@ class PowerRowDefectTests(unittest.TestCase):
                  for i in range(4)]
         return enrich_mechanical_layout(build_ir(parts))
 
-    @unittest.expectedFailure
-    def test_bug_fourth_power_part_is_pushed_outside_the_enclosure(self):
-        # REAL BUG. Reproducing input: four ComponentInstances with
+    def test_four_power_parts_stay_inside_the_enclosure(self):
+        # Regression: four ComponentInstances with
         # category="Power", name="Regulator", ref_des P0..P3 and no
         # render_dimensions, i.e. the count-scaled envelope x_mm = 98.
-        # placement_position's power branch is -width*0.28 + index*width*0.22,
-        # which is unbounded in `index`; at index 3 the centre is x = +37.24
-        # with a 42mm-wide preset, so the right edge lands at 58.24mm against a
-        # half-width of 49.0mm - the part protrudes 9.24mm through the wall.
-        # Every other row heuristic (buttons, sensors, structural, remaining)
-        # uses _row_position, which spreads over a bounded span; only the power
-        # branch multiplies the index without a clamp.
+        # A fixed 42x22mm power preset fits a 2x2 grid in the inferred 98x52mm
+        # envelope.  This guards both X and Y containment.
         ir = self._four_power_parts_ir()
         half_width = ir.mechanical.render_dimensions.x_mm / 2.0
         for placement in ir.mechanical.component_placements:
@@ -782,13 +773,8 @@ class PowerRowDefectTests(unittest.TestCase):
             self.assertGreaterEqual(low, -half_width - 1e-6, placement.ref_des)
             self.assertLessEqual(high, half_width + 1e-6, placement.ref_des)
 
-    @unittest.expectedFailure
-    def test_bug_power_parts_in_a_row_interpenetrate(self):
-        # REAL BUG (same reproducing input as above). The power row pitch is
-        # width*0.22 = 21.56mm while the power size preset is 42mm wide, so
-        # consecutive regulators overlap by ~20mm in X while sharing an
-        # identical Y and Z. Any two adjacent power parts occupy the same
-        # volume, which is not a plausible seed layout even for a heuristic.
+    def test_four_power_parts_do_not_interpenetrate(self):
+        # Regression: the old one-row pitch was 21.56mm for 42mm-wide modules.
         ir = self._four_power_parts_ir()
         rows = ir.mechanical.component_placements
         for left, right in itertools.combinations(rows, 2):
@@ -796,21 +782,13 @@ class PowerRowDefectTests(unittest.TestCase):
                              "%s overlaps %s" % (left.ref_des, right.ref_des))
 
 
-class TokenMatchingDefectTests(unittest.TestCase):
-    @unittest.expectedFailure
-    def test_bug_capacitor_is_classified_as_a_button(self):
-        # REAL BUG. Reproducing input:
+class TokenMatchingRegressionTests(unittest.TestCase):
+    def test_capacitor_is_not_classified_as_a_button(self):
+        # Regression:
         #   ComponentInstance(ref_des="C1", part_number="CAP-100",
         #                     name="100uF Capacitor", category="Passives")
-        # placement_size and placement_position both test for the bare substring
-        # "cap" (intended for "button cap") against the concatenated
-        # ref_des/name/part_number/category text. "Capacitor" and "CAP-100"
-        # contain it, so an electrolytic capacitor is given the 10x7x10 button
-        # envelope and placed in the front-face button row at y = -depth*0.43,
-        # where it is then marked mounting_face="front" - a bulk capacitor
-        # sticking out of the user-facing panel. Same trap fires for any part
-        # whose text contains "cap" (e.g. "Capacitive Soil Sensor",
-        # "capacity"). The fix would be to match "button cap" as a phrase.
+        # The old bare "cap" substring matched both Capacitor and CAP-100,
+        # giving an electrolytic a front-face button envelope.
         cap = component("C1", name="100uF Capacitor", category="Passives",
                         part_number="CAP-100")
         size = placement_size(cap, DIMS)

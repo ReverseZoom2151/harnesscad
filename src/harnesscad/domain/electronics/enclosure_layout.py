@@ -78,6 +78,17 @@ def _category_key(component: ComponentInstance) -> str:
     return component.category.strip().lower()
 
 
+def _is_button_like(component: ComponentInstance) -> bool:
+    """Whether a component belongs in the user-input row.
+
+    ``"cap"`` is intentionally *not* a signal on its own: it appears in
+    capacitor part numbers and ordinary words such as ``capacitive``.  A button
+    cap is still covered because it contains the meaningful ``button`` token.
+    """
+    text = _component_text(component)
+    return "button" in text or "switch" in text
+
+
 def _is_enclosure_component(component: ComponentInstance) -> bool:
     text = _component_text(component)
     if any(
@@ -189,7 +200,7 @@ def placement_size(
         return _mechanical_vector(23, 12, 29)
     if any(token in text for token in ["oled", "display"]):
         return _mechanical_vector(34, 3, 18)
-    if any(token in text for token in ["button", "switch", "cap"]):
+    if _is_button_like(component):
         return _mechanical_vector(10, 7, 10)
     if any(token in text for token in ["usb-c", "usb"]):
         return _mechanical_vector(18, 8, 7)
@@ -246,11 +257,7 @@ def placement_position(
     if any(token in text for token in ["controller mount", "esp32 mount", "board mount"]):
         return _mechanical_vector(0, -depth * 0.05, -height * 0.1)
 
-    button_like = [
-        item
-        for item in components
-        if any(token in _component_text(item) for token in ["button", "switch", "cap"])
-    ]
+    button_like = [item for item in components if _is_button_like(item)]
     button_index = next(
         (index for index, item in enumerate(button_like) if item.ref_des == component.ref_des),
         -1,
@@ -273,7 +280,13 @@ def placement_position(
         return _mechanical_vector(corner_x, depth * 0.28, corner_z)
 
     if "display" in key or "oled" in text:
-        return _mechanical_vector(0, -depth * 0.43, height * 0.24)
+        # The display height is absolute while the historical Z offset was a
+        # percentage of the enclosure height.  At the module's 30 mm minimum
+        # that put an 18 mm display 1.2 mm through the lid.  Bound its centre
+        # by its own half-height instead of assuming those two scales agree.
+        display_half_height = placement_size(component, dimensions).z_mm / 2.0
+        z_limit = max(0.0, height / 2.0 - display_half_height)
+        return _mechanical_vector(0, -depth * 0.43, min(height * 0.24, z_limit))
     if key == "microcontroller":
         return _mechanical_vector(0, 0, -height * 0.04)
     if "battery" in text:
@@ -323,9 +336,26 @@ def placement_position(
                 0,
             ),
         )
+        # A fixed 42 mm-wide regulator cannot be laid out in a one-dimensional
+        # row inside the count-scaled 98 mm enclosure: the fourth part escaped
+        # the wall and adjacent parts overlapped.  Use the first rectangular
+        # grid that physically fits the fixed preset; for the four-part case
+        # this is a 2 x 2 grid with positive clearance on both axes.
+        size = placement_size(component, dimensions)
+        grid_columns = 1
+        for columns in range(1, len(power_parts) + 1):
+            rows = (len(power_parts) + columns - 1) // columns
+            if columns * size.x_mm <= width and rows * size.y_mm <= depth:
+                grid_columns = columns
+                break
+        grid_rows = (len(power_parts) + grid_columns - 1) // grid_columns
+        column = power_index % grid_columns
+        row = power_index // grid_columns
+        x_limit = max(0.0, width / 2.0 - size.x_mm / 2.0)
+        y_limit = max(0.0, depth / 2.0 - size.y_mm / 2.0)
         return _mechanical_vector(
-            -width * 0.28 + power_index * width * 0.22,
-            depth * 0.22,
+            _row_position(column, grid_columns, x_limit * 2.0),
+            _row_position(row, grid_rows, y_limit * 2.0),
             -height * 0.25,
         )
 
