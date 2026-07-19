@@ -6,7 +6,7 @@
       "layer": "agents",
       "name": "lattice",
       "package": "a2a",
-      "summary": "Lattice -- typed agent-contract manifests, ported from Forma-OSS.",
+      "summary": "Lattice -- typed agent-contract manifests for composable domain agents.",
       "symbols": [
         "LatticeAgentCard",
         "LatticeCapability",
@@ -95,7 +95,7 @@
       "layer": "agents",
       "name": "assembly_trace",
       "package": "agent",
-      "summary": "Progressive assembly-trace plan structuring, mined from Shape-of-Thought",
+      "summary": "Progressive assembly-trace plan structuring.",
       "symbols": [
         "AssemblyStep",
         "AssemblyTrace",
@@ -210,7 +210,7 @@
       "layer": "agents",
       "name": "compiler_refine",
       "package": "agent",
-      "summary": "Compiler-review refine loop (CRM), mined from cad-judge (arXiv:2508.04002).",
+      "summary": "Compiler-review refine loop (CRM).",
       "symbols": [
         "RefineResult",
         "RefineStep",
@@ -345,7 +345,7 @@
       "layer": "agents",
       "name": "locate_then_infill",
       "package": "agent",
-      "summary": "Locate-then-infill edit-plan construction, mined from CAD-Editor",
+      "summary": "Locate-then-infill edit-plan construction.",
       "symbols": [
         "InfillPlan",
         "apply_infill",
@@ -399,7 +399,7 @@
       "layer": "agents",
       "name": "pair_programming",
       "package": "agent",
-      "summary": "Driver/Navigator pair-programming loop controller, mined from PairCoder++",
+      "summary": "Driver/Navigator pair-programming loop controller.",
       "symbols": [
         "PairResult",
         "Round",
@@ -509,7 +509,7 @@
       "layer": "agents",
       "name": "project_iteration",
       "package": "agent",
-      "summary": "Namespace-aware project iteration and self-correction engine -- ported from Forma-OSS.",
+      "summary": "Namespace-aware project iteration and self-correction engine.",
       "symbols": [
         "IterationMetadata",
         "ProjectIterator",
@@ -1221,7 +1221,7 @@
       "layer": "agents",
       "name": "atlas_policy",
       "package": "cua",
-      "summary": "atlas_policy \u2014 atlas's Gemini computer-use PROMPT POLICY (the half not in coordinate).",
+      "summary": "Computer-use prompt policy.",
       "symbols": [
         "ComputerUsePolicy",
         "render_policy"
@@ -1606,7 +1606,7 @@
       "layer": "agents",
       "name": "turix",
       "package": "cua",
-      "summary": "turix \u2014 TuriX's step-verification, skill-file (SOP) schema, and Brain rules.",
+      "summary": "Step verification, skill-file schema, and execution rules.",
       "symbols": [
         "SOP",
         "SOPStep",
@@ -1630,7 +1630,7 @@
       "layer": "agents",
       "name": "verified_trajectory",
       "package": "cua",
-      "summary": "verified_trajectory \u2014 Fara-7B's GUI-trajectory pipeline, with a FREE exact oracle.",
+      "summary": "Verified GUI-trajectory pipeline with an exact oracle.",
       "symbols": [
         "CUAVerifierBench",
         "OracleVerdict",
@@ -2355,7 +2355,7 @@
       "layer": "agents",
       "name": "occt_quirks_oce",
       "package": "generation",
-      "summary": "OCCT kernel-quirk catalog mined from the OCE/OCCT sources themselves.",
+      "summary": "OCCT kernel-quirk catalog.",
       "symbols": [
         "Quirk",
         "main",
@@ -2846,7 +2846,7 @@
       "layer": "agents",
       "name": "resilient_router",
       "package": "llm",
-      "summary": "Multi-provider resilient routing with failure cooldown (Studio-OSS).",
+      "summary": "Multi-provider resilient routing with failure cooldown.",
       "symbols": [
         "AllProvidersFailedError",
         "ProviderError",
@@ -3170,7 +3170,7 @@
       "layer": "agents",
       "name": "skills",
       "package": "memory",
-      "summary": "SkillLibrary \u2014 a Voyager-style, execution-verified library of parametric",
+      "summary": "SkillLibrary \u2014 an execution-verified library of parametric",
       "symbols": [
         "Skill",
         "SkillLibrary",
@@ -4152,7 +4152,7 @@
       "layer": "core",
       "name": "provenance",
       "package": "cisp",
-      "summary": "CISP provenance citations -- traceSDD's orphan-REQ check, applied to geometry.",
+      "summary": "CISP provenance citations -- a spec-traceability orphan-requirement check, applied to geometry.",
       "symbols": [
         "OpDelta",
         "Provenance",
@@ -4478,7 +4478,7 @@
       "layer": "core",
       "name": "lm_solver",
       "package": "",
-      "summary": "Levenberg-Marquardt 2D constraint solver, ported from ezpz (Rust).",
+      "summary": "Levenberg-Marquardt 2D constraint solver.",
       "symbols": [
         "FreedomReport",
         "LMConfig",
@@ -7741,7 +7741,7 @@
       "layer": "domain",
       "name": "block_codec",
       "package": "drawings",
-      "summary": "Sketch2CAD (SIGGRAPH Asia 2020) multi-channel training-block codec.",
+      "summary": "Multi-channel training-block codec for sketch-to-CAD samples.",
       "symbols": [
         "BlockFormatError",
         "BlockShape",
@@ -7758,10 +7758,8 @@
       "tags": [
         "drawings",
         "format",
-        "graph",
         "io",
-        "sketch",
-        "vision"
+        "sketch"
       ]
     },
     {
@@ -8202,7 +8200,7 @@
       "layer": "domain",
       "name": "primitive_points",
       "package": "drawings",
-      "summary": "Primitive-as-point representation for symbol spotting (SymPoint, ECCV 2024).",
+      "summary": "Primitive-as-point representation for symbol spotting.",
       "symbols": [
         "Primitive",
         "anchor_points",
@@ -8245,7 +8243,7 @@
       "layer": "domain",
       "name": "query_grouping",
       "package": "drawings",
-      "summary": "Query-to-instance decoding for symbol spotting (SymPoint, ECCV 2024).",
+      "summary": "Query-to-instance decoding for point-based symbol spotting.",
       "symbols": [
         "instance_inference",
         "semantic_inference",
@@ -8490,7 +8488,7 @@
       "layer": "domain",
       "name": "svg_view_metrics",
       "package": "drawings",
-      "summary": "MUSE 4-view engineering-drawing SVG metrics (deterministic).",
+      "summary": "Four-view engineering-drawing SVG metrics (deterministic).",
       "symbols": [
         "all_views_present",
         "analyze_svg_text",
@@ -8589,7 +8587,7 @@
       "layer": "domain",
       "name": "viewport",
       "package": "drawings",
-      "summary": "Drawing-space <-> canvas-space viewport transforms (from the ``arcs`` CAD system).",
+      "summary": "Drawing-space <-> canvas-space viewport transforms.",
       "symbols": [
         "Dimension",
         "Viewport",
@@ -8604,7 +8602,6 @@
         "zoom_to_fit"
       ],
       "tags": [
-        "curves",
         "drawings"
       ]
     },
@@ -8677,7 +8674,7 @@
       "layer": "domain",
       "name": "candidate_verify",
       "package": "editing",
-      "summary": "CADMorph verification stage: shape-distance selection with a cross-round queue.",
+      "summary": "Verification stage: shape-distance selection with a cross-round queue.",
       "symbols": [
         "CandidateQueue",
         "ScoredCandidate",
@@ -8753,7 +8750,7 @@
       "layer": "domain",
       "name": "curve_degeneracy",
       "package": "editing",
-      "summary": "Degenerate-curve resolution for mrCAD edits (``editing_actions.py`` semantics).",
+      "summary": "Degenerate-curve resolution for sketch edits.",
       "symbols": [
         "canonicalize_design",
         "move_point_resolved",
@@ -8761,7 +8758,8 @@
       ],
       "tags": [
         "curves",
-        "editing"
+        "editing",
+        "sketch"
       ]
     },
     {
@@ -8770,7 +8768,7 @@
       "layer": "domain",
       "name": "discrepancy_encoding",
       "package": "editing",
-      "summary": "CADReasoner geometry-discrepancy encoding: nearest-surface cross-shape offsets.",
+      "summary": "Geometry-discrepancy encoding: nearest-surface cross-shape offsets.",
       "symbols": [
         "DiscrepancyEncoding",
         "encode_discrepancy",
@@ -8790,7 +8788,7 @@
       "layer": "domain",
       "name": "edit_planning",
       "package": "editing",
-      "summary": "CADMorph planning stage: relative-contribution masking of a CAD sequence.",
+      "summary": "Planning stage: relative-contribution masking of a CAD sequence.",
       "symbols": [
         "PlanResult",
         "apply_mask",
@@ -8833,7 +8831,7 @@
       "layer": "domain",
       "name": "hybrid_consistency",
       "package": "editing",
-      "summary": "Three-layer information-consistency reconciliation (Section 5 + 4.5 of Zou 2025).",
+      "summary": "Three-layer information-consistency reconciliation.",
       "symbols": [
         "DistanceConstraint",
         "HybridModel",
@@ -8935,7 +8933,7 @@
       "layer": "domain",
       "name": "layout_ops",
       "package": "editing",
-      "summary": "autocad_layout_ops -- align & distribute objects by axis-aligned bbox.",
+      "summary": "Align and distribute objects by axis-aligned bounding box.",
       "symbols": [
         "Align",
         "align",
@@ -8943,6 +8941,7 @@
         "distribute_gaps"
       ],
       "tags": [
+        "acceleration",
         "editing"
       ]
     },
@@ -8968,7 +8967,7 @@
       "layer": "domain",
       "name": "locked_param_edits",
       "package": "editing",
-      "summary": "Locked-parameter edit-script protocol and iteration gate (Studio-OSS).",
+      "summary": "Locked-parameter edit-script protocol and iteration gate.",
       "symbols": [
         "ApplyOutcome",
         "EditAction",
@@ -8992,7 +8991,7 @@
       "layer": "domain",
       "name": "modeling_session",
       "package": "editing",
-      "summary": "Sketch2CAD (SIGGRAPH Asia 2020) incremental modelling state machine.",
+      "summary": "the state machine  incremental modelling state machine.",
       "symbols": [
         "ModelingSession",
         "OpRecord",
@@ -9004,10 +9003,7 @@
         "serialize_history"
       ],
       "tags": [
-        "editing",
-        "graph",
-        "sketch",
-        "vision"
+        "editing"
       ]
     },
     {
@@ -9021,7 +9017,7 @@
       "layer": "domain",
       "name": "operation_translation",
       "package": "editing",
-      "summary": "Operation Translating integration (Section 4.4 of Zou 2025).",
+      "summary": "Operation Translating integration.",
       "symbols": [
         "FaceParamLink",
         "Translation",
@@ -9066,7 +9062,7 @@
       "layer": "domain",
       "name": "plan_verify_loop",
       "package": "editing",
-      "summary": "CADMorph plan-generate-verify loop: geometry-driven parametric CAD editing.",
+      "summary": "Plan-generate-verify loop: geometry-driven parametric CAD editing.",
       "symbols": [
         "CADMorphLoop",
         "LoopResult",
@@ -9092,7 +9088,7 @@
       "layer": "domain",
       "name": "pseudo_feature",
       "package": "editing",
-      "summary": "Pseudo-Feature integration (Section 4.1 of Zou 2025).",
+      "summary": "Pseudo-Feature integration.",
       "symbols": [
         "RegenResult",
         "append_pseudo_feature",
@@ -9141,7 +9137,7 @@
       "layer": "domain",
       "name": "refinement_session",
       "package": "editing",
-      "summary": "Refinement round/turn state machine for mrCAD (Sec. 2.2 'Playing the Game').",
+      "summary": "Refinement round/turn state machine for sketch refinement.",
       "symbols": [
         "RefinementSession",
         "Rollout",
@@ -9151,7 +9147,8 @@
         "won"
       ],
       "tags": [
-        "editing"
+        "editing",
+        "sketch"
       ]
     },
     {
@@ -9251,7 +9248,7 @@
       "layer": "domain",
       "name": "sketch_edit_schema",
       "package": "editing",
-      "summary": "Multimodal refinement schema for mrCAD (McCarthy, Vaduguru et al., 2025).",
+      "summary": "Multimodal refinement schema for sketch refinement (McCarthy, Vaduguru et al., 2025).",
       "symbols": [
         "Curve",
         "DeletePoint",
@@ -9283,7 +9280,7 @@
       "layer": "domain",
       "name": "synchronous_partition",
       "package": "editing",
-      "summary": "Synchronous Technology partial conversion (Section 4.3 of Zou 2025).",
+      "summary": "Synchronous Technology partial conversion.",
       "symbols": [
         "SyncPartition",
         "from_tree"
@@ -9326,7 +9323,7 @@
       "layer": "domain",
       "name": "circuit_validation",
       "package": "electronics",
-      "summary": "Rule-based netlist validation for the Hardware IR, mined from Forma-OSS.",
+      "summary": "Rule-based netlist validation for the Hardware IR.",
       "symbols": [
         "build_validation_summary",
         "is_design_valid",
@@ -9385,7 +9382,7 @@
       "layer": "domain",
       "name": "derive",
       "package": "electronics",
-      "summary": "Deterministic Hardware IR derivations, mined from Forma-OSS.",
+      "summary": "Deterministic Hardware IR derivations.",
       "symbols": [
         "bom_rollup",
         "estimate_current_draw",
@@ -9411,7 +9408,7 @@
       "layer": "domain",
       "name": "enclosure_layout",
       "package": "electronics",
-      "summary": "Deterministic mechanical placement enrichment, mined from Forma-OSS.",
+      "summary": "Deterministic mechanical placement enrichment.",
       "symbols": [
         "derive_spatial_relationships",
         "enrich_mechanical_layout",
@@ -9429,7 +9426,7 @@
       "layer": "domain",
       "name": "hardware_ir",
       "package": "electronics",
-      "summary": "Typed Hardware IR for device-level electronics briefs, mined from Forma-OSS.",
+      "summary": "Typed Hardware IR for device-level electronics briefs.",
       "symbols": [
         "AssemblyStep",
         "BusConnection",
@@ -9461,7 +9458,7 @@
       "layer": "domain",
       "name": "brick_assembly",
       "package": "fabrication",
-      "summary": "Discrete brick-assembly representation with deterministic validity checks,",
+      "summary": "Discrete brick-assembly representation with deterministic validity checks.",
       "symbols": [
         "AssemblyReport",
         "Brick",
@@ -9980,7 +9977,7 @@
       "layer": "domain",
       "name": "rule_packs",
       "package": "fabrication",
-      "summary": "Versioned declarative fabrication rule packs (IntentForge).",
+      "summary": "Versioned declarative fabrication rule packs.",
       "symbols": [
         "ConditionEvaluationError",
         "EvaluationResult",
@@ -11194,7 +11191,7 @@
       "layer": "domain",
       "name": "colorize",
       "package": "geometry",
-      "summary": "Mesh colorization for Magic3DSketch's stylization branch (Zang et al. 2024).",
+      "summary": "Mesh colorization: per-vertex colours propagated across the surface.",
       "symbols": [
         "barycentric",
         "color_from_prompt",
@@ -11206,8 +11203,7 @@
       ],
       "tags": [
         "geometry",
-        "meshing",
-        "sketch"
+        "meshing"
       ]
     },
     {
@@ -11236,7 +11232,7 @@
       "layer": "domain",
       "name": "hierarchical_sampler",
       "package": "geometry",
-      "summary": "METRO-style hierarchical mesh coarsening / upsampling and template positional encoding.",
+      "summary": "Hierarchical mesh coarsening / upsampling and template positional encoding.",
       "symbols": [
         "MeshHierarchy",
         "apply_operator",
@@ -11257,7 +11253,7 @@
       "layer": "domain",
       "name": "integer_geometry",
       "package": "geometry",
-      "summary": "Fixed-point integer geometry with shared-grid vertex welding (SolidType).",
+      "summary": "Fixed-point integer geometry with shared-grid vertex welding.",
       "symbols": [
         "CoordRangeError",
         "VertexRegistry",
@@ -11312,7 +11308,7 @@
       "layer": "domain",
       "name": "isotropic_remesh",
       "package": "geometry",
-      "summary": "Botsch-Kobbelt isotropic remeshing: split / collapse / flip / smooth.",
+      "summary": "Isotropic remeshing: split / collapse / flip / smooth.",
       "symbols": [
         "isotropic_remesh",
         "main"
@@ -11502,7 +11498,7 @@
       "layer": "domain",
       "name": "winding_number",
       "package": "geometry",
-      "summary": "Winding-number point-in-mesh test and Kahan mass properties (Manifold).",
+      "summary": "Winding-number point-in-mesh test and Kahan mass properties.",
       "symbols": [
         "is_inside",
         "signed_volume",
@@ -12110,7 +12106,7 @@
       "layer": "domain",
       "name": "cam_profile",
       "package": "geometry",
-      "summary": "Exact 2D signed distance fields for mechanical cam profiles (sdfx).",
+      "summary": "Exact 2D signed distance fields for mechanical cam profiles.",
       "symbols": [
         "FlatFlankCam",
         "ThreeArcCam",
@@ -12129,7 +12125,7 @@
       "layer": "domain",
       "name": "combinators",
       "package": "geometry",
-      "summary": "SDF Boolean combinators and smooth blends, ported from Curv.",
+      "summary": "SDF Boolean combinators and smooth blends.",
       "symbols": [
         "chamfer_intersection",
         "chamfer_min",
@@ -12387,7 +12383,7 @@
       "layer": "domain",
       "name": "field_transforms",
       "package": "geometry",
-      "summary": "Distance-field and domain transforms, ported from Curv.",
+      "summary": "Distance-field and domain transforms.",
       "symbols": [
         "mirror_x",
         "morph",
@@ -12415,7 +12411,7 @@
       "layer": "domain",
       "name": "frep",
       "package": "geometry",
-      "summary": "Functional-representation (f-rep) expression-graph IR, after libfive.",
+      "summary": "Functional-representation (f-rep) expression-graph IR.",
       "symbols": [
         "Graph",
         "Node",
@@ -12500,7 +12496,7 @@
       "layer": "domain",
       "name": "primitives",
       "package": "geometry",
-      "summary": "Exact signed-distance-field primitives, ported from Curv's shape library.",
+      "summary": "Exact signed-distance-field primitives.",
       "symbols": [
         "box_exact",
         "box_mitred",
@@ -12532,7 +12528,7 @@
       "layer": "domain",
       "name": "rounded_csg",
       "package": "geometry",
-      "summary": "Circular-arc rounded Boolean CSG, ported from ImplicitCAD's ``MathUtil``.",
+      "summary": "Circular-arc rounded Boolean CSG.",
       "symbols": [
         "rmax",
         "rmaximum",
@@ -12547,7 +12543,6 @@
         "csg",
         "curves",
         "geometry",
-        "implicit",
         "sdf"
       ]
     },
@@ -12614,7 +12609,7 @@
       "layer": "domain",
       "name": "tpms",
       "package": "geometry",
-      "summary": "Triply-periodic minimal surfaces (TPMS) as approximate SDFs, from Curv.",
+      "summary": "Triply-periodic minimal surfaces (TPMS) as approximate SDFs.",
       "symbols": [
         "gyroid",
         "neovius",
@@ -13282,7 +13277,7 @@
       "layer": "domain",
       "name": "brep_entity_ids",
       "package": "geometry",
-      "summary": "JoinABLe B-rep entity-type + discrete edge-convexity id tables (fact tables).",
+      "summary": "B-rep entity-type + discrete edge-convexity id tables (fact tables).",
       "symbols": [
         "Convexity",
         "EntityType",
@@ -13318,7 +13313,10 @@
     },
     {
       "dotted": "harnesscad.domain.geometry.topology.edge_convexity",
-      "imports": [],
+      "imports": [
+        "harnesscad.domain.geometry.topology",
+        "harnesscad.domain.geometry.topology.brep_entity_ids"
+      ],
       "layer": "domain",
       "name": "edge_convexity",
       "package": "geometry",
@@ -13328,7 +13326,9 @@
         "EdgeArc",
         "build_aag",
         "classify_edge_convexity",
-        "dihedral_angle"
+        "classify_edge_convexity_id",
+        "dihedral_angle",
+        "discrete_convexity"
       ],
       "tags": [
         "geometry",
@@ -14650,7 +14650,7 @@
       "layer": "domain",
       "name": "gear_train",
       "package": "library",
-      "summary": "Deterministic spur/helical gear-train parameter math, mined from CAD-GPT.",
+      "summary": "Deterministic spur/helical gear-train parameter math.",
       "symbols": [
         "GearGeometry",
         "MeshResult",
@@ -14912,7 +14912,7 @@
       "layer": "domain",
       "name": "assembly_dof",
       "package": "numeric",
-      "summary": "CadQuery assembly constraint algebra and 6-DOF well-posedness analysis.",
+      "summary": "Assembly constraint algebra and 6-DOF well-posedness analysis.",
       "symbols": [
         "AssemblyConstraint",
         "AssemblyDOF",
@@ -14931,7 +14931,7 @@
       "layer": "domain",
       "name": "categorical_diffusion",
       "package": "numeric",
-      "summary": "Categorical (Multinomial / D3PM) discrete diffusion from SketchDNN, Sec. 3.2.",
+      "summary": "Categorical (multinomial) discrete diffusion from the model, Sec. 3.2.",
       "symbols": [
         "absorbing_transition_matrix",
         "argmax_decode",
@@ -14948,8 +14948,7 @@
         "vec_mat"
       ],
       "tags": [
-        "numeric",
-        "sketch"
+        "numeric"
       ]
     },
     {
@@ -15049,7 +15048,7 @@
       "layer": "domain",
       "name": "ddim_sampler",
       "package": "numeric",
-      "summary": "Deterministic DDIM sampling + diffuse-denoise from LION (Zeng et al., 2022).",
+      "summary": "Deterministic DDIM sampling + diffuse-denoise from the latent diffusion model .",
       "symbols": [
         "HasAlphaBar",
         "ddim_sample",
@@ -15094,7 +15093,7 @@
       "layer": "domain",
       "name": "dmd_distillation",
       "package": "numeric",
-      "summary": "Deterministic Dual-Teacher DMD distillation schedule (Turbo3D, Hu et al. 2024).",
+      "summary": "Deterministic Dual-Teacher DMD distillation schedule .",
       "symbols": [
         "compounding_collapse_indicator",
         "dmd_gradient",
@@ -15113,7 +15112,7 @@
       "layer": "domain",
       "name": "exact_predicates",
       "package": "numeric",
-      "summary": "Robust adaptive geometric orientation predicates (Manifold kernel substrate).",
+      "summary": "Robust adaptive geometric orientation predicates.",
       "symbols": [
         "incircle",
         "insphere",
@@ -15152,7 +15151,7 @@
       "layer": "domain",
       "name": "flow_ode",
       "package": "numeric",
-      "summary": "Clean-flow ODE / SDE integrator on an analytic Gaussian target (CFD Sec. 3).",
+      "summary": "Clean-flow ODE / SDE integrator on an analytic Gaussian target.",
       "symbols": [
         "clean_flow_ode_endpoint",
         "cosine_schedule",
@@ -15174,7 +15173,7 @@
       "layer": "domain",
       "name": "forward_ad",
       "package": "numeric",
-      "summary": "Forward-mode automatic differentiation over the f-rep IR, after libfive.",
+      "summary": "Forward-mode automatic differentiation over the f-rep IR.",
       "symbols": [
         "Dual",
         "eval_dual",
@@ -15191,7 +15190,7 @@
       "layer": "domain",
       "name": "gaussian_softmax_diffusion",
       "package": "numeric",
-      "summary": "Gaussian-Softmax (GS) discrete diffusion from SketchDNN (ICML 2025), Sec. 3.3.",
+      "summary": "Gaussian-Softmax (GS) discrete diffusion for sketch primitive labels.",
       "symbols": [
         "argmax_class",
         "gs_cumulative_sample",
@@ -15216,7 +15215,7 @@
       "layer": "domain",
       "name": "geometric_state_space",
       "package": "numeric",
-      "summary": "Geometric state-space forward scan for GeoFusion-CAD's G-Mamba block.",
+      "summary": "Geometric state-space forward scan for a linear-time sequence block.",
       "symbols": [
         "conditioning_vector",
         "curvature_descriptor",
@@ -15240,7 +15239,7 @@
       "layer": "domain",
       "name": "gradient_variance",
       "package": "numeric",
-      "summary": "Scaled gradient-variance consistency metric (CFD, Appx. F, Eq. 15).",
+      "summary": "Scaled gradient-variance consistency metric.",
       "symbols": [
         "ema_moments",
         "scaled_gradient_variance",
@@ -15258,7 +15257,7 @@
       "layer": "domain",
       "name": "integral_noise",
       "package": "numeric",
-      "summary": "Variance-preserving integral-noise transport and SDE noise schedule (CFD).",
+      "summary": "Variance-preserving integral-noise transport and SDE noise schedule.",
       "symbols": [
         "ReferenceNoise",
         "aggregate_cell",
@@ -15282,7 +15281,7 @@
       "layer": "domain",
       "name": "interval_arithmetic",
       "package": "numeric",
-      "summary": "Interval arithmetic and an interval evaluator over the f-rep IR, after libfive.",
+      "summary": "Interval arithmetic and an interval evaluator over the f-rep IR.",
       "symbols": [
         "Interval",
         "classify",
@@ -15308,7 +15307,7 @@
       "layer": "domain",
       "name": "joint_diffusion",
       "package": "numeric",
-      "summary": "Joint continuous-discrete diffusion coordination (SketchDNN Sec. 4 & 4.1).",
+      "summary": "Joint continuous-discrete diffusion coordination for sketch primitives.",
       "symbols": [
         "continuous_slice",
         "corrupt_primitive",
@@ -15329,7 +15328,7 @@
       "layer": "domain",
       "name": "mask_and_replace",
       "package": "numeric",
-      "summary": "VQ-Diffusion \"mask-and-replace\" hybrid transition for VQ-CAD (Sec. 3.2.1, Eq. 7).",
+      "summary": "\"Mask-and-replace\" hybrid transition for vector-quantised CAD code diffusion.",
       "symbols": [
         "beta_from",
         "converges_to_mask",
@@ -15351,7 +15350,7 @@
       "layer": "domain",
       "name": "multiscale_attention",
       "package": "numeric",
-      "summary": "Multi-scale adaptive fusion and hierarchical window attention (MamTiff-CAD).",
+      "summary": "Multi-scale adaptive fusion and hierarchical window attention .",
       "symbols": [
         "adaptive_fusion",
         "masked_attention",
@@ -15417,7 +15416,7 @@
       "layer": "domain",
       "name": "parameter_expressions",
       "package": "numeric",
-      "summary": "Safe parametric-expression evaluator and parameter table (OpenCAD-style).",
+      "summary": "Safe parametric-expression evaluator and parameter table.",
       "symbols": [
         "CyclicParameterError",
         "ExpressionError",
@@ -15462,7 +15461,7 @@
       "layer": "domain",
       "name": "quadrature",
       "package": "numeric",
-      "summary": "Gauss-Legendre quadrature nodes and weights (OCCT ``math`` package).",
+      "summary": "Gauss-Legendre quadrature nodes and weights .",
       "symbols": [
         "gauss_points_max",
         "integrate",
@@ -15550,7 +15549,7 @@
       "layer": "domain",
       "name": "scan_directions",
       "package": "numeric",
-      "summary": "Bidirectional / multi-directional selective-scan ordering (Mamba-CAD).",
+      "summary": "Bidirectional / multi-directional selective-scan ordering .",
       "symbols": [
         "apply_order",
         "bidirectional_scan",
@@ -15614,7 +15613,7 @@
       "layer": "domain",
       "name": "sphere_tracing",
       "package": "numeric",
-      "summary": "Sphere tracing (ray marching) of a signed distance field, from Curv.",
+      "summary": "Sphere tracing (ray marching) of a signed distance field.",
       "symbols": [
         "estimate_normal",
         "ray_direction",
@@ -15651,7 +15650,7 @@
       "layer": "domain",
       "name": "unit_expressions",
       "package": "numeric",
-      "summary": "Unit-aware length/angle expression evaluator (CodeToCAD-style ``LengthExp``).",
+      "summary": "Unit-aware length/angle expression evaluator.",
       "symbols": [
         "ExpressionError",
         "Quantity",
@@ -15676,7 +15675,7 @@
       "layer": "domain",
       "name": "variance_augmentation",
       "package": "numeric",
-      "summary": "Variance-schedule augmentation for Gaussian-Softmax diffusion (SketchDNN 3.4).",
+      "summary": "Variance-schedule augmentation for Gaussian-Softmax diffusion (the model 3.4).",
       "symbols": [
         "argmax_marginal",
         "augmented_alpha",
@@ -15687,8 +15686,7 @@
         "inverse_gumbel_f"
       ],
       "tags": [
-        "numeric",
-        "sketch"
+        "numeric"
       ]
     },
     {
@@ -16270,7 +16268,7 @@
       "layer": "domain",
       "name": "csg_vocabulary",
       "package": "programs",
-      "summary": "Cross-family CSG vocabulary superset -- RapCAD / AngelCAD / OpenJSCAD / replicad.",
+      "summary": "Cross-family CSG vocabulary superset over several OpenSCAD-sibling dialects.",
       "symbols": [
         "CsgOp",
         "canonicalise",
@@ -16402,7 +16400,7 @@
       "layer": "domain",
       "name": "scad_data_ir",
       "package": "programs",
-      "summary": "scadclj_data_ir -- a data-first keyword-tagged S-expression CSG IR + emitter.",
+      "summary": "Data-first keyword-tagged S-expression CSG IR and emitter.",
       "symbols": [
         "background",
         "call",
@@ -16565,7 +16563,7 @@
       "layer": "domain",
       "name": "openscad_emit",
       "package": "programs",
-      "summary": "Python object model -> OpenSCAD source emitter (the SolidPython direction).",
+      "summary": "Python object model -> OpenSCAD source emitter.",
       "symbols": [
         "ScadNode",
         "back",
@@ -16675,7 +16673,7 @@
       "layer": "domain",
       "name": "classify",
       "package": "programs",
-      "summary": "Classify parametric-property expressions into the paper's C1..C5 categories.",
+      "summary": "Classify parametric-property expressions into the C1..C5 categories.",
       "symbols": [
         "Category",
         "Classification",
@@ -16726,7 +16724,7 @@
       "layer": "domain",
       "name": "handle_position",
       "package": "programs",
-      "summary": "Derive parametric handle positions by walking a CSG tree (paper Section 4.1-4.2).",
+      "summary": "Derive parametric handle positions by walking a CSG tree.",
       "symbols": [
         "DerivationError",
         "Node",
@@ -16758,7 +16756,7 @@
       "layer": "domain",
       "name": "handles",
       "package": "programs",
-      "summary": "Parametric handle grids for CAD primitives (paper Section 4 + Appendix Table 4).",
+      "summary": "Parametric handle grids for CAD primitives.",
       "symbols": [
         "circle_handles",
         "cube_handles",
@@ -16976,7 +16974,7 @@
       "layer": "domain",
       "name": "quantization_ranges",
       "package": "programs",
-      "summary": "DeepCAD / SkexGen parameter quantization ranges and codecs.",
+      "summary": "Parameter quantization ranges and codecs for two CAD sequence tokenizers.",
       "symbols": [
         "FieldSpec",
         "deepcad_dequantize",
@@ -17002,7 +17000,8 @@
       "tags": [
         "format",
         "io",
-        "parametric"
+        "parametric",
+        "parsing"
       ]
     },
     {
@@ -17011,7 +17010,7 @@
       "layer": "domain",
       "name": "rapcad_language",
       "package": "programs",
-      "summary": "RapCAD's genuinely-novel numeric and literal semantics, reimplemented exactly.",
+      "summary": "Exact numeric and literal semantics of a rational-numeric OpenSCAD dialect.",
       "symbols": [
         "Fact",
         "Interval",
@@ -17150,7 +17149,7 @@
       "layer": "domain",
       "name": "correct",
       "package": "programs",
-      "summary": "CADReview correction pass \u2014 turn a detected error into a code edit.",
+      "summary": "Correction pass -- turn a detected error into a code edit.",
       "symbols": [
         "Correction",
         "FixSuggestion",
@@ -17179,7 +17178,7 @@
       "layer": "domain",
       "name": "detect",
       "package": "programs",
-      "summary": "CADReview error detector \u2014 locate the wrong block and name the error type.",
+      "summary": "Error detector -- locate the wrong block and name the error type.",
       "symbols": [
         "Detection",
         "Review",
@@ -17207,7 +17206,7 @@
       "layer": "domain",
       "name": "errorgen",
       "package": "programs",
-      "summary": "CADReview error generator \u2014 deterministically inject the eight error types.",
+      "summary": "Error generator -- deterministically inject the eight error types.",
       "symbols": [
         "InjectedError",
         "inject",
@@ -17252,7 +17251,7 @@
       "layer": "domain",
       "name": "report",
       "package": "programs",
-      "summary": "CADReview review report + diagnostic scorer.",
+      "summary": "Review report + diagnostic scorer.",
       "symbols": [
         "ReviewReport",
         "build_report",
@@ -17437,7 +17436,7 @@
       "layer": "domain",
       "name": "bpy_script",
       "package": "programs",
-      "summary": "Static analysis of BlenderLLM ``bpy`` scripts (Du et al., 2024).",
+      "summary": "Static analysis of generated ``bpy`` scripts.",
       "symbols": [
         "BpyCall",
         "SyntaxCheck",
@@ -17448,7 +17447,6 @@
         "vocabulary_coverage"
       ],
       "tags": [
-        "llm",
         "verify"
       ]
     },
@@ -17539,7 +17537,7 @@
       "layer": "domain",
       "name": "code_safety",
       "package": "programs",
-      "summary": "Static safety gate for model-generated CAD scripts (Text23D).",
+      "summary": "Static safety gate for model-generated CAD scripts.",
       "symbols": [
         "CodeSafetyError",
         "SafetyReport",
@@ -17587,7 +17585,7 @@
       "layer": "domain",
       "name": "fluent_subset_policy",
       "package": "programs",
-      "summary": "Straight-line fluent-subset policy for model-generated CAD scripts (OpenCAD).",
+      "summary": "Straight-line fluent-subset policy for model-generated CAD scripts.",
       "symbols": [
         "FluentPolicy",
         "FluentPolicyError",
@@ -17612,7 +17610,7 @@
       "layer": "domain",
       "name": "openecad_validity",
       "package": "programs",
-      "summary": "Loop-closure and profile validity for OpenECAD sketches (Yuan et al., 2024).",
+      "summary": "Loop-closure and profile validity for OpenECAD sketches.",
       "symbols": [
         "LoopKey",
         "curve_endpoints",
@@ -17738,7 +17736,7 @@
       "layer": "domain",
       "name": "a2z_scan_labeling",
       "package": "reconstruction",
-      "summary": "A2Z scan-annotation primitives (Jena et al., 2026, \"A2Z-10M+: Geometric Deep",
+      "summary": "Scan-annotation primitives pairing scan-like meshes with B-Rep labels.",
       "symbols": [
         "classify_tiny_loops",
         "skill_amplitude",
@@ -17746,8 +17744,8 @@
         "sph_poly6_weight"
       ],
       "tags": [
-        "benchmark",
         "brep",
+        "meshing",
         "pointcloud",
         "reconstruction"
       ]
@@ -18416,7 +18414,7 @@
       "layer": "domain",
       "name": "condition_schema",
       "package": "reconstruction",
-      "summary": "Deterministic multi-modal condition-encoding schema (DreamCAD, Sec. 4.3).",
+      "summary": "Deterministic multi-modal condition-encoding schema.",
       "symbols": [
         "ConditionSchema",
         "Modality"
@@ -18432,7 +18430,7 @@
       "layer": "domain",
       "name": "loi_align",
       "package": "reconstruction",
-      "summary": "img2cadsvg_loi_align -- Joint-Decoupled Line-of-Interest Aligning (JD LOIAlign).",
+      "summary": "Joint-Decoupled Line-of-Interest Aligning (JD LOIAlign).",
       "symbols": [
         "DecoupledGroups",
         "decoupled_groups",
@@ -18442,8 +18440,6 @@
         "psi"
       ],
       "tags": [
-        "format",
-        "io",
         "kinematics",
         "reconstruction"
       ]
@@ -18454,7 +18450,7 @@
       "layer": "domain",
       "name": "op_router",
       "package": "reconstruction",
-      "summary": "Sketch2CAD (SIGGRAPH Asia 2020) operation vocabulary and branch router.",
+      "summary": "Sketch-driven operation vocabulary and branch router.",
       "symbols": [
         "OperationError",
         "OperationSpec",
@@ -18468,10 +18464,8 @@
         "spec_for"
       ],
       "tags": [
-        "graph",
         "reconstruction",
-        "sketch",
-        "vision"
+        "sketch"
       ]
     },
     {
@@ -18480,7 +18474,7 @@
       "layer": "domain",
       "name": "param_decode",
       "package": "reconstruction",
-      "summary": "Sketch2CAD (SIGGRAPH Asia 2020) map -> operation-parameter decoding.",
+      "summary": "Map -> operation-parameter decoding for sketch-driven modelling.",
       "symbols": [
         "DecodeError",
         "OffsetParameters",
@@ -18500,11 +18494,9 @@
         "threshold_pixels"
       ],
       "tags": [
-        "graph",
         "parametric",
         "reconstruction",
-        "sketch",
-        "vision"
+        "sketch"
       ]
     },
     {
@@ -18549,7 +18541,7 @@
       "layer": "domain",
       "name": "primitive_shapes",
       "package": "reconstruction",
-      "summary": "Architectural primitive geometry for Sketch2CAD (Yang, EPFL 2023).",
+      "summary": "Architectural primitive geometry for sketch-to-CAD reconstruction.",
       "symbols": [
         "Mesh",
         "build_from_object",
@@ -18558,8 +18550,7 @@
       "tags": [
         "curves",
         "reconstruction",
-        "sketch",
-        "vision"
+        "sketch"
       ]
     },
     {
@@ -18568,7 +18559,7 @@
       "layer": "domain",
       "name": "progressive_tuning",
       "package": "reconstruction",
-      "summary": "Progressive Hierarchical Tuning (PHT) for PHT-CAD (Niu et al. 2025, Sec. 4.3).",
+      "summary": "Progressive Hierarchical Tuning (PHT) for parametric primitive analysis.",
       "symbols": [
         "Prediction",
         "StageSpec",
@@ -18580,7 +18571,9 @@
         "stage"
       ],
       "tags": [
+        "benchmark",
         "curves",
+        "parametric",
         "reconstruction"
       ]
     },
@@ -18590,7 +18583,7 @@
       "layer": "domain",
       "name": "residual_regions",
       "package": "reconstruction",
-      "summary": "PS-CAD geometric-guidance computation: local-geometry-difference detector.",
+      "summary": "Geometric-guidance computation: local-geometry-difference detector.",
       "symbols": [
         "ResidualGuidance",
         "ResidualRegion",
@@ -18610,7 +18603,7 @@
       "layer": "domain",
       "name": "solid_regeneration",
       "package": "reconstruction",
-      "summary": "cvcad_solid_regeneration \u2014 3D solid regeneration from extracted 2D dimensions.",
+      "summary": "3D solid regeneration from extracted 2D dimensions.",
       "symbols": [
         "Solid",
         "box_from_corners",
@@ -18632,7 +18625,7 @@
       "layer": "domain",
       "name": "visual_hull",
       "package": "reconstruction",
-      "summary": "Deterministic visual-hull carving from silhouette masks (GaussianCAD init).",
+      "summary": "Deterministic visual-hull carving from silhouette masks.",
       "symbols": [
         "Silhouette",
         "VoxelGrid",
@@ -18651,7 +18644,7 @@
       "layer": "domain",
       "name": "wire_assembly",
       "package": "reconstruction",
-      "summary": "Weld a bag of edge polylines into oriented closed loops (faceformer wires).",
+      "summary": "Weld a bag of edge polylines into oriented closed loops (B-Rep wires).",
       "symbols": [
         "LoopAssembly",
         "WeldResult",
@@ -18670,7 +18663,7 @@
       "layer": "domain",
       "name": "wireframe_binding",
       "package": "reconstruction",
-      "summary": "img2cadsvg_binding -- bind dense line proposals to sparse endpoint proposals.",
+      "summary": "Bind dense line proposals to sparse endpoint proposals.",
       "symbols": [
         "BoundSegment",
         "bind_and_select",
@@ -18679,8 +18672,6 @@
         "nearest_endpoint"
       ],
       "tags": [
-        "format",
-        "io",
         "reconstruction"
       ]
     },
@@ -18690,7 +18681,7 @@
       "layer": "domain",
       "name": "wireframe_schema",
       "package": "reconstruction",
-      "summary": "img2cadsvg_representation -- the Structured Visual Geometry (SVG) schema.",
+      "summary": "Wireframe representation -- the Structured Visual Geometry (SVG) schema.",
       "symbols": [
         "Segment",
         "Validity",
@@ -19056,7 +19047,7 @@
       "layer": "domain",
       "name": "dedup",
       "package": "reconstruction",
-      "summary": "mmABC dataset curation primitives from CMT (Sec. 3).",
+      "summary": "Dataset curation primitives for a CAD-model corpus.",
       "symbols": [
         "DedupResult",
         "connected_bodies",
@@ -19075,7 +19066,7 @@
       "layer": "domain",
       "name": "graph_augment",
       "package": "reconstruction",
-      "summary": "GC-CAD graph representation and self-supervised graph augmentation.",
+      "summary": "Part-graph representation and self-supervised graph augmentation.",
       "symbols": [
         "CADGraph",
         "augment",
@@ -19853,7 +19844,7 @@
       "layer": "domain",
       "name": "action_plan",
       "package": "reconstruction",
-      "summary": "Graph-CAD stage 2: decomposition graph -> ordered CAD action sequence.",
+      "summary": "Stage two: decomposition graph -> ordered CAD action sequence.",
       "symbols": [
         "Action",
         "action_histogram",
@@ -19884,7 +19875,7 @@
       "layer": "domain",
       "name": "brep_linkage",
       "package": "reconstruction",
-      "summary": "Unified B-rep <-> command-sequence linkage for Pointer-CAD.",
+      "summary": "Unified B-rep <-> command-sequence linkage.",
       "symbols": [
         "BrepState",
         "StepResult",
@@ -19905,7 +19896,7 @@
       "layer": "domain",
       "name": "candidate_selection",
       "package": "reconstruction",
-      "summary": "PS-CAD single-step selection: choosing among candidate CAD modelling steps.",
+      "summary": "Single-step selection: choosing among candidate CAD modelling steps.",
       "symbols": [
         "SelectionResult",
         "StepCandidate",
@@ -19927,7 +19918,7 @@
       "layer": "domain",
       "name": "cascade_schedule",
       "package": "reconstruction",
-      "summary": "Cascade stage schema and masked-autoregressive reveal schedule for CMT.",
+      "summary": "Cascade stage schema and masked-autoregressive reveal schedule.",
       "symbols": [
         "Stage",
         "cascade_stages",
@@ -20395,7 +20386,7 @@
       "layer": "domain",
       "name": "concept_template",
       "package": "reconstruction",
-      "summary": "Parameterised sub-sketch *concept* templates (Yang & Pan, \"Discovering Design",
+      "summary": "Parameterised sub-sketch *concept* templates.",
       "symbols": [
         "Concept",
         "ConceptInstance",
@@ -20454,7 +20445,7 @@
       "layer": "domain",
       "name": "constraint_taxonomy",
       "package": "reconstruction",
-      "summary": "SketchGraphs primitive & constraint taxonomy (Seff et al., \"SketchGraphs: A",
+      "summary": "Sketch primitive & constraint taxonomy.",
       "symbols": [
         "ConstraintSpec",
         "PrimitiveSpec",
@@ -20466,7 +20457,6 @@
       ],
       "tags": [
         "constraints",
-        "graph",
         "reconstruction",
         "sketch"
       ]
@@ -20477,7 +20467,7 @@
       "layer": "domain",
       "name": "deepcad_sketch_plane",
       "package": "reconstruction",
-      "summary": "DeepCAD sketch-plane orientation + extrusion decode (Wu, Xiao & Zheng, 2021).",
+      "summary": "Sketch-plane orientation + extrusion decode.",
       "symbols": [
         "euler_from_matrix",
         "extrude_point",
@@ -20536,7 +20526,7 @@
       "layer": "domain",
       "name": "gencad_canonical_order",
       "package": "reconstruction",
-      "summary": "Exact GenCAD/DeepCAD loop + profile canonical ordering (``cadlib/sketch.py``).",
+      "summary": "Exact loop + profile canonical ordering for sketches.",
       "symbols": [
         "Curve",
         "canonicalize_profile",
@@ -20564,7 +20554,7 @@
       "layer": "domain",
       "name": "pointer_sketch_plane",
       "package": "reconstruction",
-      "summary": "Pointer-based sketch-plane coordinate-system construction (Pointer-CAD Sec. 10.2).",
+      "summary": "Pointer-based sketch-plane coordinate-system construction.",
       "symbols": [
         "SketchFrame",
         "SketchPlaneError",
@@ -20584,7 +20574,7 @@
       "layer": "domain",
       "name": "primitives",
       "package": "reconstruction",
-      "summary": "Parametric sketch-primitive representation (Wang et al., \"Parametric Primitive",
+      "summary": "Parametric sketch-primitive representation.",
       "symbols": [
         "Primitive",
         "Sketch",
@@ -20617,7 +20607,7 @@
       "layer": "domain",
       "name": "profile_assembly",
       "package": "reconstruction",
-      "summary": "DeepCAD loop / profile assembly from a command sequence (Wu et al., 2021).",
+      "summary": "Loop / profile assembly from a command sequence.",
       "symbols": [
         "Segment",
         "canonical_loop",
@@ -20644,7 +20634,7 @@
       "layer": "domain",
       "name": "reference_plane",
       "package": "reconstruction",
-      "summary": "Reference-plane finding for OpenECAD sketches (Yuan et al., 2024, Algorithm 2).",
+      "summary": "Reference-plane finding for dependency-based sketch planes.",
       "symbols": [
         "ExtrudeFeature",
         "RefPlaneResult",
@@ -20663,7 +20653,7 @@
       "layer": "domain",
       "name": "skexgen_canonical_order",
       "package": "reconstruction",
-      "summary": "SkexGen canonical sketch ordering (``sort_faces`` / ``sort_loops`` / ``sort_curves``).",
+      "summary": "Canonical sketch ordering (``sort_faces`` / ``sort_loops`` / ``sort_curves``).",
       "symbols": [
         "bottom_left",
         "canonicalize_sketch",
@@ -20690,7 +20680,7 @@
       "layer": "domain",
       "name": "autobrep_serialize",
       "package": "reconstruction",
-      "summary": "AutoBrep B-rep tokenisation vocabulary and hierarchical serialisation format.",
+      "summary": "B-rep tokenisation vocabulary and hierarchical serialisation format.",
       "symbols": [
         "AutoBrepVocabulary",
         "BrepSequence",
@@ -20723,7 +20713,7 @@
       "layer": "domain",
       "name": "cad2program",
       "package": "reconstruction",
-      "summary": "cad2program_command_template \u2014 fixed-slot command template + quantization.",
+      "summary": "cad2program_command_template -- fixed-slot command template + quantization.",
       "symbols": [
         "Command",
         "decode_command",
@@ -20745,7 +20735,7 @@
       "layer": "domain",
       "name": "cadparser",
       "package": "reconstruction",
-      "summary": "CADParser command / token schema (Zhou et al., Table 3).",
+      "summary": "B-Rep construction command / token schema.",
       "symbols": [
         "Command",
         "command",
@@ -20772,7 +20762,7 @@
       "layer": "domain",
       "name": "cmt",
       "package": "reconstruction",
-      "summary": "Continuous B-Rep tokenization for CMT (Sec. 4.1).",
+      "summary": "Continuous B-Rep tokenization for surface/edge token sequences.",
       "symbols": [
         "bounding_box",
         "dequantize",
@@ -20793,7 +20783,7 @@
       "layer": "domain",
       "name": "deepcad_arc_macro",
       "package": "reconstruction",
-      "summary": "DeepCAD's arc macro encoding: (end point, sweep angle, ccw flag) <-> full geometry.",
+      "summary": "Arc macro encoding: (end point, sweep angle, ccw flag) <-> full geometry.",
       "symbols": [
         "Arc",
         "angle_from_vector_to_x",
@@ -20820,7 +20810,7 @@
       "layer": "domain",
       "name": "deepcad_commands",
       "package": "reconstruction",
-      "summary": "Exact DeepCAD command-sequence specification (Wu, Xiao & Zheng, 2021).",
+      "summary": "Exact canonical CAD command-sequence specification.",
       "symbols": [
         "Command",
         "command",
@@ -20846,7 +20836,7 @@
       "layer": "domain",
       "name": "deepcad_quantize",
       "package": "reconstruction",
-      "summary": "Exact DeepCAD normalisation / quantisation numerics (reference implementation).",
+      "summary": "Exact CAD normalisation / quantisation numerics (reference implementation).",
       "symbols": [
         "denormalize_sketch",
         "denumericalize_angle",
@@ -20877,7 +20867,7 @@
       "layer": "domain",
       "name": "deepcad_vector_layout",
       "package": "reconstruction",
-      "summary": "DeepCAD's on-disk vector layout: the 17-column ``(1 + N_ARGS)`` command matrix.",
+      "summary": "On-disk CAD vector layout: the 17-column ``(1 + N_ARGS)`` command matrix.",
       "symbols": [
         "arc_row",
         "arg_mask",
@@ -20907,7 +20897,7 @@
       "layer": "domain",
       "name": "gencad_quantize",
       "package": "reconstruction",
-      "summary": "Exact GenCAD/DeepCAD normalisation + quantisation pipeline (dataset processing).",
+      "summary": "Exact CAD normalisation + quantisation pipeline (dataset processing).",
       "symbols": [
         "bbox_size_from_bbox",
         "check_extent_range",
@@ -20942,7 +20932,7 @@
       "layer": "domain",
       "name": "geofusion",
       "package": "reconstruction",
-      "summary": "Hierarchical Sketch-Extrusion tree for GeoFusion-CAD (Zhou et al.).",
+      "summary": "Hierarchical Sketch-Extrusion tree representation.",
       "symbols": [
         "Curve",
         "Extrusion",
@@ -21014,7 +21004,7 @@
       "layer": "domain",
       "name": "hnc_spl_tree",
       "package": "reconstruction",
-      "summary": "Solid-Profile-Loop (S-P-L) hierarchical tree for HNC-CAD (Xu et al., ICML 2023).",
+      "summary": "Solid-Profile-Loop (S-P-L) hierarchical tree for a hierarchical CAD codebook scheme.",
       "symbols": [
         "Curve",
         "Loop",
@@ -21045,7 +21035,7 @@
       "layer": "domain",
       "name": "hnc_vector_codec",
       "package": "reconstruction",
-      "summary": "HNC-CAD's flat CAD command/parameter vectorization (Xu et al., ICML 2023).",
+      "summary": "Flat CAD command/parameter vectorization.",
       "symbols": [
         "center_of",
         "circle_cardinal_points",
@@ -21133,7 +21123,7 @@
       "layer": "domain",
       "name": "pointer_cad",
       "package": "reconstruction",
-      "summary": "Pointer-CAD token vocabulary and ID scheme (Qi, Wang et al.).",
+      "summary": "Pointer-based CAD token vocabulary and ID scheme.",
       "symbols": [
         "PointerTokenError",
         "QuantizationReport",
@@ -21168,7 +21158,7 @@
       "layer": "domain",
       "name": "ppa_quantize",
       "package": "reconstruction",
-      "summary": "Coordinate normalisation + 6-bit quantisation for PPA sketch primitives",
+      "summary": "Coordinate normalisation + 6-bit quantisation for parametric sketch primitives.",
       "symbols": [
         "BoundingBox",
         "denormalize_sketch",
@@ -21183,6 +21173,8 @@
         "sketch_bbox"
       ],
       "tags": [
+        "benchmark",
+        "parametric",
         "reconstruction",
         "sketch"
       ]
@@ -21193,7 +21185,7 @@
       "layer": "domain",
       "name": "rlcad_commands",
       "package": "reconstruction",
-      "summary": "RLCAD extended command set: sketch / extrude / **revolve** (Yin, Lu, Shen et al.).",
+      "summary": "Extended CAD command set: sketch / extrude / **revolve**.",
       "symbols": [
         "ExtrudeCommand",
         "ModelSequence",
@@ -21216,7 +21208,7 @@
       "layer": "domain",
       "name": "sketch2cad_scene",
       "package": "reconstruction",
-      "summary": "Scene-descriptor token codec (Yang, \"Sketch2CAD: 3D CAD Model Reconstruction",
+      "summary": "Scene-descriptor token codec for single-image 3D CAD reconstruction.",
       "symbols": [
         "DescriptorConfig",
         "SceneDescriptorCodec",
@@ -21239,7 +21231,7 @@
       "layer": "domain",
       "name": "sketchdnn",
       "package": "reconstruction",
-      "summary": "Composite (\"superposition\") CAD-sketch primitive encoding (SketchDNN Sec. 2).",
+      "summary": "Composite (\"superposition\") CAD-sketch primitive encoding.",
       "symbols": [
         "class_logits",
         "construction_logits",
@@ -21302,7 +21294,7 @@
       "layer": "domain",
       "name": "skexgen_decode",
       "package": "reconstruction",
-      "summary": "SkexGen token stream -> sketch-and-extrude geometry (the ``CADparser``).",
+      "summary": "Token stream -> sketch-and-extrude geometry (the CAD parser).",
       "symbols": [
         "SkexGenParseError",
         "VertexTable",
@@ -21341,7 +21333,7 @@
       "layer": "domain",
       "name": "skexgen_extrude",
       "package": "reconstruction",
-      "summary": "SkexGen extrude-branch token vector (19 tokens) and its field-flag stream.",
+      "summary": "Extrude-branch token vector (19 tokens) and its field-flag stream.",
       "symbols": [
         "decode_extrude",
         "encode_extrude",
@@ -21396,7 +21388,7 @@
       "layer": "domain",
       "name": "text2cad_tokens",
       "package": "reconstruction",
-      "summary": "Text2CAD CAD-sequence token representation (Khan et al., Table 3 / Sec. 9).",
+      "summary": "CAD-sequence token representation for text-conditioned CAD generation.",
       "symbols": [
         "Arc",
         "CadModel",
@@ -21461,7 +21453,7 @@
       "layer": "domain",
       "name": "vitruvion_constraints",
       "package": "reconstruction",
-      "summary": "Vitruvion constraint-token codec: the constraint hypergraph as a pointer stream.",
+      "summary": "Constraint-token codec: the constraint hypergraph as a pointer stream.",
       "symbols": [
         "ConstraintEdge",
         "ConstraintToken",
@@ -21493,7 +21485,7 @@
       "layer": "domain",
       "name": "vitruvion_primitives",
       "package": "reconstruction",
-      "summary": "Vitruvion primitive-token codec: the exact vocabulary, quantiser and 3-stream layout.",
+      "summary": "Primitive-token codec: the exact vocabulary, quantiser and 3-stream layout.",
       "symbols": [
         "Token",
         "clip_params",
@@ -21756,7 +21748,7 @@
       "layer": "domain",
       "name": "caid_artifact",
       "package": "spec",
-      "summary": "CAID design-artifact and design-patch contract (SimCorrect / OpenCAD).",
+      "summary": "CAID design-artifact and design-patch contract.",
       "symbols": [
         "CaidContractError",
         "apply_parameter_patch",
@@ -21803,7 +21795,7 @@
       "layer": "domain",
       "name": "clarify_ambiguity",
       "package": "spec",
-      "summary": "clarify_ambiguity -- ProCAD proactive ambiguity detection for text-to-CAD.",
+      "summary": "clarify_ambiguity -- proactive ambiguity detection for text-to-CAD.",
       "symbols": [
         "AmbiguityDetector",
         "Audit",
@@ -21834,7 +21826,7 @@
       "layer": "domain",
       "name": "clarify_dialogue",
       "package": "spec",
-      "summary": "clarify_dialogue -- the ProCAD two-round proactive clarification MDP.",
+      "summary": "clarify_dialogue -- a two-round proactive clarification MDP.",
       "symbols": [
         "ClarificationDialogue",
         "DialogueResult",
@@ -21852,7 +21844,7 @@
       "layer": "domain",
       "name": "clarify_leakage",
       "package": "spec",
-      "summary": "clarify_leakage -- detect CadQuery/Python code leakage in NL descriptions.",
+      "summary": "clarify_leakage -- detect CAD-script/Python code leakage in NL descriptions.",
       "symbols": [
         "LeakageResult",
         "check_leakage",
@@ -21874,7 +21866,7 @@
       "layer": "domain",
       "name": "clarify_metrics",
       "package": "spec",
-      "summary": "clarify_metrics -- ProCAD clarifier evaluation (Efficiency + Resolution).",
+      "summary": "clarify_metrics -- clarifier evaluation (Efficiency + Resolution).",
       "symbols": [
         "BenchmarkReport",
         "ClarifierScore",
@@ -21922,7 +21914,7 @@
       "layer": "domain",
       "name": "clarify_scaling",
       "package": "spec",
-      "summary": "clarify_scaling -- detect the Text2CAD \"scale the sketch\" failure mode.",
+      "summary": "clarify_scaling -- detect the \"scale the sketch\" failure mode.",
       "symbols": [
         "BuildStep",
         "ScalingIssue",
@@ -22248,7 +22240,7 @@
       "layer": "domain",
       "name": "kcl_grammar",
       "package": "spec",
-      "summary": "Deterministic KCL (Zoo/KittyCAD modeling language) tokeniser and grammar tables.",
+      "summary": "Deterministic KCL modeling-language tokeniser and grammar tables.",
       "symbols": [
         "Token",
         "keyword_or_word",
@@ -22289,7 +22281,7 @@
       "layer": "domain",
       "name": "nurbs_json_validator",
       "package": "spec",
-      "summary": "Validator for NURBGen's structured NURBS-surface JSON representation (NURBGen).",
+      "summary": "Validator for a structured NURBS-surface JSON representation.",
       "symbols": [
         "is_valid_face",
         "validate_face",
@@ -22368,7 +22360,7 @@
       "layer": "domain",
       "name": "plate_spec",
       "package": "spec",
-      "summary": "Plate-stack building DSL schema and validator (Gaudi-backend style).",
+      "summary": "Plate-stack building DSL schema and validator.",
       "symbols": [
         "PlateSpecError",
         "is_valid_building",
@@ -22388,7 +22380,7 @@
       "layer": "domain",
       "name": "project_object",
       "package": "spec",
-      "summary": "Versioned-namespace project object -- ported from Forma-OSS.",
+      "summary": "Versioned-namespace project object.",
       "symbols": [
         "ProjectAttributeItemMeta",
         "ProjectAttributeItemObject",
@@ -22588,7 +22580,7 @@
       "layer": "domain",
       "name": "safety_scope",
       "package": "spec",
-      "summary": "Prompt-scope safety gate for text-to-CAD briefs, mined from Forma-OSS.",
+      "summary": "Prompt-scope safety gate for text-to-CAD briefs.",
       "symbols": [
         "ScopeVerdict",
         "blocked_categories",
@@ -22764,7 +22756,7 @@
       "layer": "domain",
       "name": "zoo_cli_catalog",
       "package": "spec",
-      "summary": "Catalogue of the Zoo/KittyCAD command-line tool's command surface.",
+      "summary": "Catalogue of a CAD command-line tool's command surface.",
       "symbols": [
         "command_path_exists",
         "geometry_query_commands",
@@ -22854,7 +22846,7 @@
       "layer": "domain",
       "name": "cad_defaults",
       "package": "standards",
-      "summary": "First-pass parametric modeling defaults, ported from text-to-cad's CAD skill.",
+      "summary": "First-pass parametric modeling defaults.",
       "symbols": [
         "clearance_hole_diameter",
         "clearance_hole_radius",
@@ -22895,7 +22887,7 @@
       "layer": "domain",
       "name": "embodied_carbon",
       "package": "standards",
-      "summary": "Embodied-carbon (CO2e) material accounting for generated designs (Insights).",
+      "summary": "Embodied-carbon (CO2e) material accounting for generated designs.",
       "symbols": [
         "MaterialUse",
         "aggregate",
@@ -22918,7 +22910,7 @@
       "layer": "domain",
       "name": "embodied_carbon_ice",
       "package": "standards",
-      "summary": "ICE v3 embodied-carbon database integration (kerf), manifest + loader pattern.",
+      "summary": "ICE v3 embodied-carbon database integration, manifest + loader pattern.",
       "symbols": [
         "IceNotLoadedError",
         "ManifestEntry",
@@ -22946,7 +22938,7 @@
       "layer": "domain",
       "name": "evidence_bundle",
       "package": "standards",
-      "summary": "Provenance evidence bundle for a design spec's standards data (Anvilate).",
+      "summary": "Provenance evidence bundle for a design spec's standards data.",
       "symbols": [
         "ComponentRecord",
         "EvidenceBundle",
@@ -23016,7 +23008,7 @@
       "layer": "domain",
       "name": "iso286_fits",
       "package": "standards",
-      "summary": "ISO 286 limits-and-fits, ISO 2768 general tolerances, process capability (anvilate).",
+      "summary": "ISO 286 limits-and-fits, ISO 2768 general tolerances, and process capability.",
       "symbols": [
         "AngularTolerance",
         "Fit",
@@ -23050,7 +23042,7 @@
       "layer": "domain",
       "name": "materials_db",
       "package": "standards",
-      "summary": "Cited engineering-materials database (anvilate + cad-cae-copilot merge).",
+      "summary": "Cited engineering-materials database (two merged sources).",
       "symbols": [
         "MaterialRecord",
         "contract_density",
@@ -23139,7 +23131,7 @@
       "layer": "domain",
       "name": "servo_database",
       "package": "standards",
-      "summary": "Named RC-servo dimension database and Gridfinity envelope constants (sdfx).",
+      "summary": "Named RC-servo dimension database and storage-system envelope constants.",
       "symbols": [
         "GridfinityEnvelope",
         "ServoParameters",
@@ -23156,7 +23148,6 @@
       ],
       "tags": [
         "drawings",
-        "sdf",
         "standards"
       ]
     },
@@ -23166,7 +23157,7 @@
       "layer": "domain",
       "name": "thread_database",
       "package": "standards",
-      "summary": "Standard screw-thread / fastener dimension database (sdfx).",
+      "summary": "Standard screw-thread / fastener dimension database.",
       "symbols": [
         "ThreadParameters",
         "hex_height",
@@ -23177,7 +23168,6 @@
       "tags": [
         "drawings",
         "mechanical",
-        "sdf",
         "standards"
       ]
     },
@@ -24424,7 +24414,7 @@
       "layer": "eval",
       "name": "betti_graded",
       "package": "bench",
-      "summary": "Mesh-based Betti numbers and the CADGenBench topology-match score.",
+      "summary": "Mesh-based Betti numbers and a graded topology-match score.",
       "symbols": [
         "BettiResult",
         "MeshGateError",
@@ -24471,7 +24461,7 @@
       "layer": "eval",
       "name": "cd_tolerance_recall",
       "package": "bench",
-      "summary": "Chamfer-Distance Tolerance-Recall curve and AUC-TR (IterCAD).",
+      "summary": "Chamfer-Distance Tolerance-Recall curve and AUC-TR.",
       "symbols": [
         "Attempt",
         "auc_tr",
@@ -24602,7 +24592,7 @@
       "layer": "eval",
       "name": "constraint_editability",
       "package": "bench",
-      "summary": "Constraint-Aware Editability Benchmark metrics (HistCAD).",
+      "summary": "Constraint-Aware Editability Benchmark metrics.",
       "symbols": [
         "EditInstance",
         "conditional_pcsr",
@@ -24636,7 +24626,7 @@
       "layer": "eval",
       "name": "curvature_developability",
       "package": "bench",
-      "summary": "Developability & reconstruction metrics for NeurCADRecon.",
+      "summary": "Developability & reconstruction metrics for implicit-field CAD reconstruction.",
       "symbols": [
         "developability_ratio",
         "gauss_bonnet_defect",
@@ -24647,7 +24637,9 @@
         "mean_abs_gaussian_curvature"
       ],
       "tags": [
-        "benchmark"
+        "benchmark",
+        "implicit",
+        "sdf"
       ]
     },
     {
@@ -24699,7 +24691,7 @@
       "layer": "eval",
       "name": "edge_chamfer_recon",
       "package": "bench",
-      "summary": "PS-CAD reconstruction metrics.",
+      "summary": "Program-synthesis CAD reconstruction metrics.",
       "symbols": [
         "ReconstructionReport",
         "chamfer_distance",
@@ -24713,6 +24705,7 @@
       ],
       "tags": [
         "benchmark",
+        "dataset",
         "features",
         "format",
         "io"
@@ -24779,7 +24772,7 @@
       "layer": "eval",
       "name": "edit_taxonomy",
       "package": "bench",
-      "summary": "CAD edit-operation taxonomy and multimodal-request metrics (neuralCAD-Edit).",
+      "summary": "CAD edit-operation taxonomy and multimodal-request metrics.",
       "symbols": [
         "classify_sequence",
         "edit_operation_fscore",
@@ -24802,7 +24795,7 @@
       "layer": "eval",
       "name": "factorization_fidelity",
       "package": "bench",
-      "summary": "Reconstruction / structural metrics for Img2CAD conditional factorization.",
+      "summary": "Reconstruction / structural metrics for image-to-CAD conditional factorization.",
       "symbols": [
         "attribute_error",
         "chamfer_distance",
@@ -24814,7 +24807,8 @@
         "symmetry_chamfer"
       ],
       "tags": [
-        "benchmark"
+        "benchmark",
+        "vision"
       ]
     },
     {
@@ -24823,7 +24817,7 @@
       "layer": "eval",
       "name": "hausdorff_iogt",
       "package": "bench",
-      "summary": "CADPrompt / CADCodeVerify geometric evaluation protocol.",
+      "summary": "Vision-language CAD-code geometric evaluation protocol.",
       "symbols": [
         "aggregate",
         "bounding_box",
@@ -24834,9 +24828,7 @@
         "point_cloud_distance"
       ],
       "tags": [
-        "benchmark",
-        "llm",
-        "verify"
+        "benchmark"
       ]
     },
     {
@@ -24845,7 +24837,7 @@
       "layer": "eval",
       "name": "identity_preservation",
       "package": "bench",
-      "summary": "Edit identity-preservation and locality metrics (Liu et al., 2026, \"B-repLer:",
+      "summary": "Edit identity-preservation and locality metrics for language-guided editing",
       "symbols": [
         "edit_locality",
         "edit_report",
@@ -24861,7 +24853,7 @@
       "layer": "eval",
       "name": "interface_match",
       "package": "bench",
-      "summary": "Interface Match: keep-in / keep-out mating-feature scoring (CADGenBench).",
+      "summary": "Interface Match: keep-in / keep-out mating-feature scoring.",
       "symbols": [
         "GroupScore",
         "InterfaceResult",
@@ -24878,9 +24870,7 @@
         "pose_grid",
         "score_group"
       ],
-      "tags": [
-        "benchmark"
-      ]
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.bench.geometry.mesh_discrepancy",
@@ -24888,7 +24878,7 @@
       "layer": "eval",
       "name": "mesh_discrepancy",
       "package": "bench",
-      "summary": "Geometric and topological mesh discrepancy metrics from CADmium.",
+      "summary": "Geometric and topological mesh discrepancy metrics.",
       "symbols": [
         "Mesh",
         "MeshComparison",
@@ -24918,7 +24908,7 @@
       "layer": "eval",
       "name": "mesh_quality",
       "package": "bench",
-      "summary": "Artist-like mesh quality metrics (Meshtron, Hao et al., 2024).",
+      "summary": "Artist-like mesh quality metrics.",
       "symbols": [
         "distribution_summary",
         "edge_ratio",
@@ -25055,7 +25045,7 @@
       "layer": "eval",
       "name": "scaled_chamfer_reward",
       "package": "bench",
-      "summary": "Scaled Chamfer Distance reward with a fail-stage taxonomy (StepForge).",
+      "summary": "Scaled Chamfer Distance reward with a fail-stage taxonomy.",
       "symbols": [
         "RewardConfig",
         "RewardResult",
@@ -25093,7 +25083,7 @@
       "layer": "eval",
       "name": "step_file_metrics",
       "package": "bench",
-      "summary": "STEP-LLM evaluation metrics and the Scaled Chamfer Distance reward.",
+      "summary": "LLM-generated STEP evaluation metrics and the Scaled Chamfer Distance reward.",
       "symbols": [
         "aec_gap",
         "average_entity_count",
@@ -25123,7 +25113,7 @@
       "layer": "eval",
       "name": "topology_euler",
       "package": "bench",
-      "summary": "EvoCAD topology metrics: Euler-characteristic-based 3D similarity.",
+      "summary": "Topology metrics: Euler-characteristic-based 3D similarity.",
       "symbols": [
         "TopologyReport",
         "euler_characteristic",
@@ -25144,7 +25134,7 @@
       "layer": "eval",
       "name": "voxel_iou",
       "package": "bench",
-      "summary": "Voxel-IoU and viewpoint-error metrics from Magic3DSketch (Zang et al., 2024).",
+      "summary": "Voxel-IoU and viewpoint-error metrics for sketch-to-3D reconstruction.",
       "symbols": [
         "azimuth_mae",
         "category_mean",
@@ -26850,7 +26840,7 @@
       "layer": "eval",
       "name": "clustering_algorithms",
       "package": "bench",
-      "summary": "Classic clustering-inference algorithms for the Cluster3D benchmark.",
+      "summary": "Classic clustering-inference algorithms for the non-categorical 3D CAD",
       "symbols": [
         "agglomerative_clustering",
         "jacobi_eigen",
@@ -27410,7 +27400,7 @@
       "layer": "eval",
       "name": "autoencoder_accuracy",
       "package": "bench",
-      "summary": "DeepCAD's official autoencoder accuracy metric (``evaluation/evaluate_ae_acc.py``).",
+      "summary": "Autoencoder command/parameter accuracy metric for CAD command sequences",
       "symbols": [
         "command_accuracy",
         "evaluate_dataset",
@@ -27419,7 +27409,8 @@
         "slot_hits"
       ],
       "tags": [
-        "benchmark"
+        "benchmark",
+        "parametric"
       ]
     },
     {
@@ -27484,7 +27475,7 @@
       "layer": "eval",
       "name": "controllability",
       "package": "bench",
-      "summary": "Prediction-validity & controllability metrics for FlexCAD (Zhang et al. 2024).",
+      "summary": "Prediction-validity & controllability metrics for masked-field CAD text editing.",
       "symbols": [
         "ControllabilityReport",
         "ValidityReport",
@@ -27504,7 +27495,7 @@
       "layer": "eval",
       "name": "error_taxonomy",
       "package": "bench",
-      "summary": "FreeCAD execution-error taxonomy (Kumar et al., \"Generative AI for CAD",
+      "summary": "FreeCAD execution-error taxonomy.",
       "symbols": [
         "ErrorClassification",
         "classify",
@@ -27528,7 +27519,7 @@
       "layer": "eval",
       "name": "hierarchy_edit_consistency",
       "package": "bench",
-      "summary": "Controllability & code-consistency metrics for HNC-CAD (Xu et al., ICML 2023).",
+      "summary": "Controllability & code-consistency metrics for a hierarchical neural code",
       "symbols": [
         "changed_levels",
         "code_fix_preservation",
@@ -27548,7 +27539,7 @@
       "layer": "eval",
       "name": "invalidity_ratio",
       "package": "bench",
-      "summary": "Text2CAD Invalidity Ratio (IR) metric (Khan et al., Table 1 / Sec. 15).",
+      "summary": "Text-to-CAD Invalidity Ratio (IR) metric.",
       "symbols": [
         "ValidityReport",
         "arc_is_invalid",
@@ -27570,7 +27561,7 @@
       "layer": "eval",
       "name": "loss_masks",
       "package": "bench",
-      "summary": "Exact GenCAD loss masking + objective formulas (``utils/loss.py``, ``model_utils.py``).",
+      "summary": "Exact CAD-sequence loss masking + objective formulas (``utils/loss.py``, ``model_utils.py``).",
       "symbols": [
         "arg_loss_mask",
         "args_mask",
@@ -27604,7 +27595,7 @@
       "layer": "eval",
       "name": "multilevel_sequence_eval",
       "package": "bench",
-      "summary": "Multi-level evaluation framework for image-to-CAD-sequence prediction",
+      "summary": "Multi-level evaluation framework for image-to-CAD-sequence prediction.",
       "symbols": [
         "accuracy_cad_programs",
         "accuracy_op_types",
@@ -27631,7 +27622,7 @@
       "layer": "eval",
       "name": "parameter_accuracy",
       "package": "bench",
-      "summary": "Text2CAD-Bench parameter-level accuracy metric.",
+      "summary": "Text-to-CAD benchmark parameter-level accuracy metric.",
       "symbols": [
         "match_parameter",
         "mean_parameter_accuracy",
@@ -27649,7 +27640,7 @@
       "layer": "eval",
       "name": "pass_at_k",
       "package": "bench",
-      "summary": "Unbiased HumanEval pass@k estimator.",
+      "summary": "Unbiased pass@k estimator for code-generation style evaluation.",
       "symbols": [
         "estimate_pass_at_k",
         "macro_pass_at_k"
@@ -27664,7 +27655,7 @@
       "layer": "eval",
       "name": "reconstruction_accuracy",
       "package": "bench",
-      "summary": "Command / parameter reconstruction accuracy for ContrastCAD (Eq. 8).",
+      "summary": "Command / parameter reconstruction accuracy for a fixed-length CAD command",
       "symbols": [
         "command_accuracy",
         "parameter_accuracy",
@@ -27683,7 +27674,7 @@
       "layer": "eval",
       "name": "sequence_edit_distance",
       "package": "bench",
-      "summary": "Text2CAD-Bench CadQuery operation-sequence edit distance.",
+      "summary": "Text-to-CAD benchmark programmatic-CAD operation-sequence edit distance.",
       "symbols": [
         "levenshtein",
         "mean_sequence_similarity",
@@ -27707,7 +27698,7 @@
       "layer": "eval",
       "name": "sequence_f1",
       "package": "bench",
-      "summary": "Text2CAD CAD-sequence evaluation: primitive/extrusion F1 via loop matching.",
+      "summary": "Text-to-CAD sequence evaluation: primitive/extrusion F1 via loop matching.",
       "symbols": [
         "PrimitiveCounts",
         "SequenceEvaluation",
@@ -27728,7 +27719,7 @@
       "layer": "eval",
       "name": "sequence_length_stats",
       "package": "bench",
-      "summary": "Long-sequence length statistics for Mamba-CAD (Table 1 / Table 2).",
+      "summary": "Long-sequence length statistics for sequence-model-based CAD generation.",
       "symbols": [
         "average_length",
         "effective_length",
@@ -27744,7 +27735,7 @@
       "layer": "eval",
       "name": "soft_target_distribution",
       "package": "bench",
-      "summary": "Soft target distribution for CAD parameter prediction (Drawing2CAD, Qin et",
+      "summary": "Soft target distribution for CAD parameter prediction from vector drawings.",
       "symbols": [
         "soft_cross_entropy",
         "soft_target"
@@ -27771,7 +27762,7 @@
       "layer": "eval",
       "name": "structure_consistency",
       "package": "bench",
-      "summary": "Structure-consistency metrics for GeoFusion-CAD hierarchical CAD trees.",
+      "summary": "Structure-consistency metrics for hierarchical CAD trees.",
       "symbols": [
         "closure_valid",
         "structure_f1",
@@ -27790,7 +27781,7 @@
       "layer": "eval",
       "name": "token_accuracy",
       "package": "bench",
-      "summary": "Text2CAD's training-time token accuracy (``Cad_VLM/models/metrics.py``).",
+      "summary": "Text-to-CAD training-time token accuracy.",
       "symbols": [
         "TokenAccuracy",
         "TokenAccuracyError",
@@ -27800,9 +27791,7 @@
         "token_accuracy",
         "value_mask"
       ],
-      "tags": [
-        "benchmark"
-      ]
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.bench.sequence.tokenizer_frontier",
@@ -30007,7 +29996,7 @@
       "layer": "eval",
       "name": "best_of_n",
       "package": "judge",
-      "summary": "Best-of-N aggregation and the invalidity ratio, mined from cadrille.",
+      "summary": "Best-of-N aggregation and the invalidity ratio.",
       "symbols": [
         "Candidate",
         "RunReport",
@@ -33412,6 +33401,22 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.verifiers._metric_boolean_worker",
+      "imports": [],
+      "layer": "eval",
+      "name": "_metric_boolean_worker",
+      "package": "verifiers",
+      "summary": "Out-of-process worker for a single manifold3d metric boolean.",
+      "symbols": [
+        "main"
+      ],
+      "tags": [
+        "benchmark",
+        "csg",
+        "verify"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.verifiers.access",
       "imports": [
         "harnesscad.eval.verifiers",
@@ -33480,7 +33485,7 @@
       "layer": "eval",
       "name": "brick_buildability",
       "package": "verifiers",
-      "summary": "Buildability / assembly-order analysis for brick structures (BRICKGPT).",
+      "summary": "Buildability / assembly-order analysis for brick structures.",
       "symbols": [
         "find_buildable_order",
         "is_assembly_stable",
@@ -33505,7 +33510,7 @@
       "layer": "eval",
       "name": "brick_stability",
       "package": "verifiers",
-      "summary": "Physical stability analysis for brick structures (BRICKGPT, Section 4.2).",
+      "summary": "Physical stability analysis for brick structures.",
       "symbols": [
         "StabilityResult",
         "analyze_stability",
@@ -33531,7 +33536,7 @@
       "layer": "eval",
       "name": "brick_validity",
       "package": "verifiers",
-      "summary": "Validity check and physics-aware rollback for brick generation (BRICKGPT).",
+      "summary": "Validity check and physics-aware rollback for brick generation.",
       "symbols": [
         "RollbackResult",
         "build_with_validity_and_rollback",
@@ -33869,12 +33874,15 @@
       "package": "verifiers",
       "summary": "Metric booleans: manifold3d only, never OCCT.",
       "symbols": [
+        "BooleanBudgetResult",
         "MeshData",
         "classify_overlap",
         "common_volume",
         "intersection_volume",
+        "intersection_volume_isolated",
         "main",
         "manifold_available",
+        "manifold_to_mesh_arrays",
         "mesh_to_manifold",
         "occt_boolean_offenders",
         "shape_to_manifold",
@@ -37013,7 +37021,10 @@
     },
     {
       "dotted": "harnesscad.io.formats.onshape_json",
-      "imports": [],
+      "imports": [
+        "harnesscad.domain.geometry.sketch",
+        "harnesscad.domain.geometry.sketch.constraint_type_ids"
+      ],
       "layer": "io",
       "name": "onshape_json",
       "package": "formats",
@@ -37028,7 +37039,10 @@
         "Point",
         "Sketch",
         "SubnodeType",
+        "constraint_type_id",
+        "constraint_type_name",
         "entity_to_dict",
+        "inspect_constraint_type",
         "inspect_entity_type",
         "parameter_layout",
         "parse_entity",
