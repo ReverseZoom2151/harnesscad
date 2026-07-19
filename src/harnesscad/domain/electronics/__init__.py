@@ -10,6 +10,8 @@ seeding. HarnessCAD previously had no electronics/netlist IR at all.
 Modules:
 
 * ``hardware_ir`` -- the dataclass schema (Forma-OSS blueprint_core/models.py).
+* ``component_catalog`` -- 14 stock parts with datasheet-typed pinouts, the
+  ground truth the electrical rules need in order to be executable at all.
 * ``circuit_validation`` -- the five electrical rules
   (Forma-OSS blueprint_core/validation.py).
 * ``derive`` -- deterministic rail/bus/current/BOM derivations
@@ -23,6 +25,8 @@ modules answering the same question; these four do not compete -- they compose
 in one fixed order (parse an IR, derive from it, validate it, seed a layout).
 A router over a straight line would be a surface with nothing to select, so the
 package exports its schema and its entry points directly and nothing else.
+The catalogue is not a fifth competitor either: it feeds the front of that same
+line, supplying the typed pins the rules read.
 """
 
 from __future__ import annotations
@@ -48,6 +52,21 @@ from harnesscad.domain.electronics.hardware_ir import (
     ProjectOverview,
     ValidationIssue,
     ValidationSummary,
+)
+from harnesscad.domain.electronics.component_catalog import (
+    PIN_TYPES,
+    PROVENANCE,
+    categories,
+    component_template,
+    ground_pins,
+    instantiate,
+    part_numbers,
+    parts_for_use_case,
+    parts_in_category,
+    pin,
+    power_pins,
+    resolve,
+    use_cases,
 )
 from harnesscad.domain.electronics.circuit_validation import (
     build_validation_summary,
@@ -91,6 +110,20 @@ __all__ = [
     "ProjectOverview",
     "ValidationIssue",
     "ValidationSummary",
+    # -- component_catalog: stock parts with typed pinouts -----------------
+    "PIN_TYPES",
+    "PROVENANCE",
+    "categories",
+    "component_template",
+    "ground_pins",
+    "instantiate",
+    "part_numbers",
+    "parts_for_use_case",
+    "parts_in_category",
+    "pin",
+    "power_pins",
+    "resolve",
+    "use_cases",
     # -- circuit_validation: the five electrical rules ---------------------
     "build_validation_summary",
     "is_design_valid",
