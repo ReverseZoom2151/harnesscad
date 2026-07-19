@@ -40,15 +40,17 @@ residue, not a clash. :func:`classify_overlap` names that band explicitly
 
 ATTRIBUTION
 -----------
-The policy, the manifold3d mesh-boolean approach, the mesh<->manifold conversion
-and the sub-epsilon noise rule are taken from cadgenbench
-(``resources/cad_repos/cadgenbench-main/cadgenbench-main/src/cadgenbench/eval/booleans.py``,
-``.../eval/interface_match_viz.py`` and the policy test
-``.../tests/eval/test_interface_viz_no_occt.py``), Copyright 2026 Hugging Face,
-Apache License 2.0 -- a licence this repository's policy admits, so the
-conversion logic is adapted directly with this attribution. The OCCT
-tessellation + vertex weld and the OCCT-facing entry points are original: our
-inputs are B-rep shapes, where cadgenbench's were already meshes.
+The mesh<->manifold conversion in this module is **adapted third-party code**
+from cadgenbench, Copyright 2026 Hugging Face, Apache License 2.0 -- as are the
+policy itself, the manifold3d mesh-boolean approach, the OCCT-boolean marker set
+and the 1.0 mm^3 sub-epsilon noise rule. The full entry -- upstream, licence,
+exactly what was taken and what was changed -- is in the repository root
+``THIRD-PARTY.md``, with the licence text at
+``THIRD-PARTY-LICENSES/Apache-2.0.txt``.
+
+The OCCT tessellation + vertex weld, the OCCT-facing entry points and the
+subprocess watchdog are HarnessCAD's own code: our inputs are B-rep shapes,
+where cadgenbench's were already meshes.
 
 Deterministic and lazily imported: with no manifold3d (or no OCCT) every entry
 point returns ``None`` and the calling verifier degrades to its bounding-box

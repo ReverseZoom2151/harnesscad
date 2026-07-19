@@ -30,6 +30,15 @@ Contract (identical shape to the step_check worker)
   exercised on the actual boolean worker, not on a stand-in.
 
 Pure stdlib apart from manifold3d + numpy (already the metric path's deps).
+
+ATTRIBUTION
+-----------
+``_ingest`` below is the same mesh->manifold conversion as
+:func:`harnesscad.eval.verifiers.metric_booleans.mesh_to_manifold`, adapted
+third-party code from cadgenbench, Copyright 2026 Hugging Face, Apache License
+2.0. See the repository root ``THIRD-PARTY.md`` (licence text at
+``THIRD-PARTY-LICENSES/Apache-2.0.txt``). The subprocess isolation itself is
+HarnessCAD's own code.
 """
 
 from __future__ import annotations
