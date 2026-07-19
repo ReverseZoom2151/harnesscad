@@ -3,8 +3,7 @@
 The scar tissue every OCCT-facing CAD codebase accumulates, collected here as
 a machine-readable catalog so generation and repair can consult it BEFORE an
 operation hangs, silently no-ops, or produces an invalid solid. Each entry
-names the quirk, the trigger that provokes it, the proven workaround, and the
-exact source file the knowledge was mined from:
+names the quirk, the trigger that provokes it, and the proven workaround.
 
   * cadquery (cadquery-master): SetFuzzyValue on every boolean builder
     (``occ_impl/shapes.py``); a 0-degree revolve must be rewritten as 360

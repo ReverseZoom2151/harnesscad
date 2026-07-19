@@ -1,8 +1,7 @@
 """Deterministic backend selection over the code-CAD ecosystem catalogue.
 
-Two jobs, both grounded in ``adapters/ccc_codecad_ecosystem`` (mined from the
-curated-code-cad list) and cross-checked against what this harness can actually
-execute (``adapters/cadhub_language_registry``):
+Two jobs, both grounded in the harness's ecosystem catalogue and cross-checked
+against what the harness can actually execute:
 
 1. ``rank(Requirement)`` -- given a task's needs (a paradigm, a kernel class, an
    output format, a host language, whether internal fillets are required, whether

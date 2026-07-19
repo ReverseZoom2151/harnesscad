@@ -149,10 +149,9 @@ class Denormalizer:
         return (max(0, min(self.grid, gx)), max(0, min(self.grid, gy)))
 
 
-#: Gemini ``computer_use`` function names -> a canonical action verb, ported from
-#: ``computerUseMapper.ts``. The value is ``(verb, needs_point)``; a verb this repo
-#: does not model maps to ``None`` and is dropped (atlas logs an "unknown function"
-#: and returns null — same policy).
+#: Computer-use function names -> a canonical action verb. The value is
+#: ``(verb, needs_point)``; a verb this module does not model maps to ``None``
+#: and is dropped.
 _FUNCTION_MAP: Dict[str, Tuple[Optional[str], bool]] = {
     "click_at": ("click", True),
     "hover_at": ("hover", True),

@@ -1,7 +1,7 @@
 """Capability registry: a static, lazy, deterministic index of every HarnessCAD module.
 
-The repo carries ~1,100 product modules mined from papers and CAD repos. Most are
-correct and tested but nothing imports them -- they are unreachable islands. This
+The repo carries product modules. Most are correct and tested but nothing imports
+them -- they are unreachable islands. This
 module makes all of them *discoverable* and *dispatchable* without importing any of
 them eagerly (some depend on OCCT and would blow up at import time).
 

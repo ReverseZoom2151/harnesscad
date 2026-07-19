@@ -1,15 +1,15 @@
 """Kernel-quirk preflight over a CISP op stream: warn before OCCT bites.
 
-Two catalogs of OCCT quirks were mined and then left unwired:
+Two OCCT quirk catalogs are wired here:
 
-* :mod:`harnesscad.agents.generation.occt_quirks` -- the CLIENT-side catalog
-  (cadquery / Roshera-CAD / Zoo / OpenCAD policy), whose operation families are
+* :mod:`harnesscad.agents.generation.occt_quirks` -- the client-side catalog,
+  whose operation families are
   exactly CISP op families: ``boolean``, ``revolve``, ``loft``, ``face-query``.
   It also carries two callable predicates -- ``ring_holes_feasible`` (Roshera's
   saddle-boolean refusal formula) and ``overlap_is_near_tangent`` (OpenCAD's
   BBOX_NEAR_TANGENT preflight).
-* :mod:`harnesscad.agents.generation.occt_quirks_oce` -- the KERNEL-side
-  catalog mined from oce reviewer tags, whose families are kernel-internal
+* :mod:`harnesscad.agents.generation.occt_quirks_oce` -- the kernel-side
+  catalog, whose families are kernel-internal
   (``wire-heal``, ``pcurve``, ``seam``, ``step-import``, ...). Only ``loft``
   and ``fillet`` name operations a caller emits, so only those are reachable
   from an op stream; the rest describe repairs the kernel does to itself.

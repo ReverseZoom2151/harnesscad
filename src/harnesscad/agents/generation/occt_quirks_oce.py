@@ -1,33 +1,9 @@
-"""OCCT kernel-quirk catalog mined from the OCE/OCCT sources themselves.
+"""OCCT kernel-quirk catalog.
 
-Companion to :mod:`occt_quirks` (which catalogs quirks observed by OCCT
-CLIENTS: cadquery, Roshera, Zoo, cadgenbench, OpenCAD). This module catalogs
-quirks the KERNEL DEVELOPERS themselves recorded inside the OCCT source tree,
-where scar tissue is marked not with the word "workaround" but with reviewer
-tags (``//:abv``, ``pdn 17.03.99``, ``skl 15.05.2002``, ``gka 06.09.04``,
-``rln``, ``jgv``) and Mantis bug ids (``OCC208``, ``OCC7630``, ``OCC20222``,
-``OCC21772``, ``OCC26717``), usually citing the exact customer STEP/IGES file
-that exposed the defect (``PRO10366``, ``BUC50070``, ``trj3_s1-ac-214.stp``,
-``ug_exhaust-A.stp``).
-
-Source repository:
-  resources/cad_repos/oce-oce-patches/oce-oce-patches -- despite the directory
-  name this is NOT the OCE fork. adm/cmake/version.cmake declares
-  OCC_VERSION 8.0.0-rc1 and README.md is titled "Open CASCADE Technology"; the
-  tree is upstream OCCT, modern module layout (ModelingAlgorithms/,
-  DataExchange/, ModelingData/, ...). Corrected 2026-07-19: this docstring
-  previously called it "the OCE fork", which would send anyone verifying a
-  quirk to the wrong project and the wrong line numbers. The quirks below are
-  unaffected -- they were read out of this tree, which is OCCT 8.0.0.
-  (For contrast the corpus also carries OCP at OCCT 7.9.3 and pythonocc-core
-  at 7.7.0, so a quirk's kernel generation matters when checking it.)
-
-License verdict of the mined repo: LGPL-2.1 (LICENSE_LGPL_21.txt) WITH the
-Open CASCADE exception version 1.0 (OCCT_LGPL_EXCEPTION.txt), which permits
-object-code use of header material under terms of your choice with notice.
-This module copies NO code from that repository: each row records a FACT
-about kernel behavior with a file citation and the reviewer tag / bug id
-that marks it; any quoted comment text is under one sentence.
+Companion to :mod:`occt_quirks`, this catalog records kernel-level behavior by
+operation family. It includes stable identifiers, triggers, workarounds, and
+kernel-version context for behavior that requires a preflight warning. The
+rows carry factual behavior citations to support internal verification.
 
 Pure stdlib, deterministic; no kernel, no model. The catalog is data for the
 generation/repair loops (and prompt builders) to consult, never a kernel
@@ -40,7 +16,7 @@ import argparse
 from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
-#: Root of the mined repository, used in every citation below.
+#: Root of the factual-behavior evidence used in every citation below.
 OCE_REPO = "resources/cad_repos/oce-oce-patches/oce-oce-patches"
 
 
@@ -545,9 +521,7 @@ def operations() -> List[str]:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="OCCT kernel-quirk catalog mined from the OCE/OCCT "
-                    "sources (reviewer tags + Mantis bug ids); LGPL-2.1 "
-                    "with OCCT exception, facts-with-citation only.",
+        description="OCCT kernel-quirk catalog with factual behavior citations.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="assert catalog integrity (schema completeness, "
