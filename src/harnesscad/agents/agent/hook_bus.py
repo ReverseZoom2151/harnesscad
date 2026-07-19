@@ -1,8 +1,6 @@
 """Agent lifecycle hook bus: block / modify / observe with error isolation.
 
-Source: ``resources/cad_repos/freecad-ai-master`` (``freecad_ai/hooks/
-registry.py``). freecad-ai gives its agent loop a small, well-behaved hook
-system: five lifecycle events (``pre_tool_use``, ``post_tool_use``,
+The hook system exposes five lifecycle events (``pre_tool_use``, ``post_tool_use``,
 ``user_prompt_submit``, ``post_response``, ``file_attach``); handlers fire in
 a deterministic order; a handler returning ``{"block": True, ...}`` stops the
 chain immediately (a veto); a handler returning ``{"modify": <text>}`` has its
@@ -10,13 +8,10 @@ replacement threaded into the next handler's context; a raising handler is
 isolated (logged, skipped) so one broken hook cannot take down the loop; and
 hooks can be disabled by name without unregistering them.
 
-The original mining pass over freecad-ai (repo 46) took the tool catalogue,
-expression engine and relative-value resolver and left the hook layer
-unmined. The harness's agent loop has no interception point at all: policy
-gates are hard-wired into call sites. This module ports the hook semantics
-as a *registration-based* bus -- the source's ``importlib`` directory scan
-(exec-ing arbitrary ``hook.py`` files) is deliberately NOT ported, because
-loading executable code from a data directory is an unverified-code channel.
+The harness's agent loop needs a safe interception point instead of hard-wired
+policy gates at every call site. This module provides a registration-based bus;
+it intentionally does not scan and execute arbitrary hook files from a data
+directory, because that would create an unverified-code channel.
 Handlers are plain callables registered by the composing code; discovery
 metadata is kept so the wiring stays inspectable.
 

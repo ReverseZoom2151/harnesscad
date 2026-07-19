@@ -1,20 +1,10 @@
 """Claim-vs-evidence gating of an agent's final answer (anti-false-success).
 
-Reimplemented from **cad-cae-copilot** (``resources/cad_repos/cad-cae-copilot-main``),
-whose ``AGENTS.md`` -- sections "Backend routing status" (the ``/build``,
-``/modify``, ``/critique``, ``/explain``, ``/simulate`` command routing and the
-geometry-**mutation guard**) and "Natural-language intent resolution ('point and
-shoot')" -- specifies the mechanism. The referenced implementation files
-(``aieng-ui/backend/app/agent_autopilot/{engine,simulation_workflow,
-intent_resolution}.py``) are *not* present in the vendored snapshot; this module
-is a clean-room reimplementation of the documented behaviour, on harness terms.
-Source repo LICENSE: MIT (attribution above; no source text copied).
-
 THE MECHANISM
 -------------
 An agent that reports success it did not earn is worse than an agent that
-fails: the failure is invisible. cad-cae-copilot closes that hole by gating the
-*final answer* on what actually happened:
+fails: the failure is invisible. This gate binds the *final answer* to what
+actually happened:
 
   * **Mutation guard.** When the run's intent requires a geometry mutation
     (``/build`` -> ``create_geometry``, ``/modify`` -> ``modify_geometry``), a

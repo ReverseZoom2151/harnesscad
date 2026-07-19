@@ -1,15 +1,14 @@
-"""Namespace-aware project iteration and self-correction engine -- ported from Forma-OSS.
+"""Namespace-aware project iteration and self-correction engine.
 
-Source: Forma-OSS ``blueprint_core/iteration.py``, which revises a HardwareIR
-project through an LLM: it compacts the document for context, builds a
+It revises a project document through an LLM: compacts the document for context, builds a
 revise-the-whole-document prompt (optionally focused on one namespace), rejects
 placeholder output, reruns validation, bumps revision and per-namespace
 versions, appends a history entry, and includes a self-correction agent that
 turns stored validation issues and metadata/output findings into a
 smallest-coherent-mutation repair instruction.
 
-What is ported: the iteration metadata and self-correction plan records, the
-instruction normalizer, revision helpers, placeholder detection, document
+The implementation includes iteration metadata and self-correction plan records,
+instruction normalization, revision helpers, placeholder detection, document
 compaction (reusing the redaction from
 ``harnesscad.domain.spec.project_object``), the iteration prompt builder with
 an optional target-namespace payload block, deduplicated history appends,
@@ -19,8 +18,7 @@ that record pending instructions without pretending content changed, the
 (failed or pending operations, requested-but-not-succeeded outputs, stale
 errors after success).
 
-Generalization: Forma-OSS binds this to pydantic HardwareIR plus a concrete
-LLM provider stack; this port is generic over a plain ``dict`` document with
+The implementation is generic over a plain ``dict`` document with
 injectable functions -- ``llm`` is any callable ``prompt -> dict``,
 ``validate`` is any callable ``document -> (summary_dict, is_valid)``, and
 ``now`` is a caller-injected timestamp string, so the module stays

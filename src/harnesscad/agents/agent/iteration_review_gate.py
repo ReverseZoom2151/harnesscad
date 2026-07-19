@@ -1,9 +1,6 @@
 """Review-gated iteration contract: fail-first objections, atomic iterations.
 
-Source: ``resources/cad_repos/cad-cae-copilot-main`` (``archive/
-CAD-Agent-main/CAD-Agent-Skills/SKILL.md``, the archived "CAD Compiler"
-skill). Its modeling discipline is a deterministic state machine wrapped in
-prompt text:
+The modeling discipline is a deterministic state machine:
 
 * **Single-focus, atomic iterations.** One iteration = one scoped
   deliverable. Generate, run, and review exactly one iteration at a time; a
@@ -25,12 +22,10 @@ prompt text:
   (visual, functional, disconnected component, primitive-stack evidence) is
   recorded.
 
-The cad-cae-copilot mining passes took the CAE credibility ladder and (this
-sweep) the run-acceptance checklist; the archived iteration contract was
-unmined and nothing in the harness models it:
+Nothing else in the harness models this review-before-next-step discipline:
 :class:`~harnesscad.agents.agent.iterative_edit_policy.IterativeEditPolicy`
-is accept/rollback over candidate scores, and ``project_iteration``
-(Forma-OSS) revises documents -- neither enforces review-before-next-step or
+is accept/rollback over candidate scores, and ``project_iteration`` revises
+documents -- neither enforces review-before-next-step or
 objection-gated export.
 
 Determinism: all transitions are explicit method calls over recorded state;

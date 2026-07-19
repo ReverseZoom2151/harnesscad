@@ -1,7 +1,5 @@
-"""Lattice -- typed agent-contract manifests, ported from Forma-OSS.
+"""Lattice -- typed agent-contract manifests for composable domain agents.
 
-Source: Forma-OSS ``blueprint_core/lattice.py`` (and ``docs/lattice.md``),
-where "Lattice" is the typed contract layer for composable domain agents.
 Each domain agent publishes a portable *agent card* declaring the namespace
 it owns, the capabilities it exposes, its input/output schema contracts, the
 tools it may request, its handoff actions, and its safety and human-review
@@ -20,10 +18,9 @@ the ``AgentCard`` there is a discovery/handshake artefact for the wire;
 ``LatticeAgentCard`` here is the richer contract manifest an orchestrator
 consults before routing work.
 
-Ported with HarnessCAD house rules: dataclasses + explicit validation
-instead of pydantic; no wall clock (callers pass ``now`` strings, mirroring
-task.py's injectable clock); no uuid4 -- run ids are caller-supplied or
-derived from a deterministic counter (``f"lat_{n}"``).
+The implementation uses dataclasses and explicit validation; callers pass
+``now`` strings instead of consulting a wall clock, and run ids are
+caller-supplied or derived from a deterministic counter (``f"lat_{n}"``).
 """
 
 from __future__ import annotations
