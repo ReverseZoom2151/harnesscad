@@ -1,6 +1,24 @@
 """Versioned declarative fabrication rule packs.
 
-Derived from IntentForge (Apache-2.0).
+THIRD-PARTY DATA
+----------------
+``VENDORED_PACKS`` at the bottom of this module is **redistributed
+third-party data**, not an independent reimplementation: it is the content of
+IntentForge's four bracket rule packs
+(``src/intentforge/knowledge/packs/data/{assembly,manufacturing,mechanical,
+structural}.yaml``), transcribed from YAML into a Python dict literal so it
+loads without a YAML dependency. The rule content is unchanged.
+
+IntentForge is licensed under the **Apache License, Version 2.0**. Redistributing
+this data obliges us to pass the licence on (s4(a)), to state that we changed the
+form (s4(b)) and to keep upstream's attribution notices (s4(c)); upstream ships
+no ``NOTICE`` file, so s4(d) is inapplicable. The full entry -- what was taken,
+what changed, and where the licence text lives -- is in the repository root
+``THIRD-PARTY.md``, with the licence itself at
+``THIRD-PARTY-LICENSES/Apache-2.0.txt``.
+
+Everything else in this module -- the dataclasses, the expression interpreter and
+the evaluator -- is HarnessCAD's own code.
 
 A pack is a named, versioned bundle of *condition-expression* rules: each
 rule carries a boolean ``condition.expression`` over named design metrics
@@ -857,8 +875,14 @@ def evaluate_packs(
 
 
 # --------------------------------------------------------------------------- #
-# Vendored rule packs
+# Vendored rule packs -- THIRD-PARTY DATA, Apache-2.0
 # --------------------------------------------------------------------------- #
+# Redistributed from IntentForge (Apache License 2.0) -- see the module
+# docstring, the root THIRD-PARTY.md entry, and THIRD-PARTY-LICENSES/
+# Apache-2.0.txt.  Do NOT drop this notice while these packs remain in the file:
+# Apache-2.0 s4 requires it on redistribution, and this repository is public.
+# Removing the attribution means removing the data.
+#
 # Converted 1:1 from the YAML files; every provenance field (pack_id,
 # pack_version, metadata.migrated_from, source_reference, created_by,
 # last_updated) is preserved.  ``source`` records the original resource path.
@@ -1583,8 +1607,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     and depends_on paths, with assertions."""
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.fabrication.rule_packs",
-        description="Condition-expression fabrication rule packs "
-        "(format and evaluator ported from IntentForge, Apache-2.0).",
+        description="Condition-expression fabrication rule packs. The bundled "
+        "packs are third-party data redistributed from IntentForge under "
+        "Apache-2.0; see THIRD-PARTY.md.",
     )
     parser.add_argument(
         "--selfcheck",
