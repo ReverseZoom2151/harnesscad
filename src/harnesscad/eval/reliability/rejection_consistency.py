@@ -445,8 +445,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Rejection-consistency gate: a verbal refusal that still "
                     "exported geometry is a FALSE REFUSAL. Keys on build "
-                    "evidence, not text (reimplemented from IntentForge's "
-                    "cad_exported_on_rejection; Apache-2.0).")
+                    "evidence, not text.")
     parser.add_argument(
         "--selfcheck", action="store_true",
         help="prove a refused-but-built case is caught, a genuine refusal "

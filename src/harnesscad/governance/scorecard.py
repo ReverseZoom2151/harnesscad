@@ -35,15 +35,11 @@ just documented), a :class:`CheckResult` may carry an optional
 as that module's own corollary requires. credibility_tier is imported
 read-only; nothing here modifies it.
 
-Attribution: ported from anvilate (anvilate-main,
-``src/anvilate/scorecard.py``; MIT, (c) 2026 Clay Good). anvilate's
-``CheckStatus`` / ``ScorecardEntry`` / ``Scorecard`` (with its "No silent
-green" roll-up: FAIL if any fail, else NOT_EVALUATED if any could not run or
-there are no checks, else PASS) is reimplemented here in pure stdlib
-(dataclasses + enum in place of pydantic), renamed to the harness's
-``UNKNOWN`` vocabulary, hardened with a reason-required invariant on every
-unknown, and composed with the harness's credibility tiers. Deterministic,
-ASCII, stdlib-only; no kernel, no model.
+The scorecard is implemented in pure stdlib with dataclasses and an enum. Its
+roll-up is deterministic: FAIL if any check fails, UNKNOWN if any could not
+run or there are no checks, otherwise PASS. Every UNKNOWN requires a reason
+and composes with the harness's credibility tiers; no kernel or model is
+required.
 """
 
 from __future__ import annotations
