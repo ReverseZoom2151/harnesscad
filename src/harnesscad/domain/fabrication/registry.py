@@ -50,6 +50,7 @@ __all__ = [
     "planar_drc",
     "printability",
     "feature_minima",
+    "dxf_preflight",
     "printer_profile",
     "rule_packs",
     "difficulty",
@@ -464,6 +465,39 @@ def feature_minima(features: Sequence[Mapping[str, Any]],
 
 
 # --------------------------------------------------------------------------- #
+# Neutral-DXF structural preflight (not a DXF bytes importer)
+# --------------------------------------------------------------------------- #
+def dxf_preflight(document: Mapping[str, Any],
+                  min_circle_diameter_mm: Optional[float] = None,
+                  min_arc_radius_mm: Optional[float] = None,
+                  max_entity_density_per_mm2: Optional[float] = None) -> dict:
+    """Preflight declared DXF entities without pretending to parse a file.
+
+    ``document`` is the neutral ``{units, layers, entities}`` contract from
+    ``io.formats.dxf``.  It measures lines, circles, arcs and polylines;
+    unknown/malformed entities make the result REVIEW rather than silently
+    passing density policy.  Optional thresholds are caller policy, not hidden
+    defaults.  This is 2-D structural preflight only: it cannot certify wall
+    thickness, overhangs, watertightness, or that a circle is a physical hole.
+    """
+    from harnesscad.domain.fabrication.dxf_preflight import dxf_preflight as inspect
+    from harnesscad.io.formats.dxf import DxfDocument, Entity, Layer
+
+    raw = dict(document)
+    layers = tuple(Layer(**dict(layer)) for layer in raw.get("layers", ()))
+    entities = {
+        str(entity_id): Entity(kind=str(spec["kind"]),
+                               values=dict(spec.get("values", {})),
+                               layer=str(spec.get("layer", "0")))
+        for entity_id, spec in dict(raw.get("entities", {})).items()
+    }
+    parsed = DxfDocument(units=str(raw["units"]), layers=layers, entities=entities)
+    return inspect(parsed, min_circle_diameter_mm=min_circle_diameter_mm,
+                   min_arc_radius_mm=min_arc_radius_mm,
+                   max_entity_density_per_mm2=max_entity_density_per_mm2).to_dict()
+
+
+# --------------------------------------------------------------------------- #
 # Printer wrapper profiles (the machine the part has to survive)
 # --------------------------------------------------------------------------- #
 def printer_profile(profile: Mapping[str, Any],
@@ -613,6 +647,9 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
     ("dfam", "feature_minima", _FAB + "feature_minima",
      "per-feature FDM minima (wall, rib, hole, boss, text, gap, bridge, overhang); "
      "composes into the printability verdict (AgentSCAD)"),
+    ("dfam", "dxf_preflight", _FAB + "dxf_preflight",
+     "neutral-DXF structural preflight: measured line/circle/arc/polyline facts, "
+     "degenerate-entity failures and explicit unmeasurable REVIEW (Printability-main)"),
     ("dfam", "printer_profile", _FAB + "printer_profiles",
      "printer wrapper profiles: validated machine envelope + static G-code bounds "
      "checking, the machine side of the printability fit (text-to-cad)"),

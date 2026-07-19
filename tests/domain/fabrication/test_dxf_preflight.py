@@ -3,6 +3,7 @@
 import unittest
 
 from harnesscad.domain.fabrication.dxf_preflight import dxf_preflight
+from harnesscad.domain.fabrication import registry as fabrication
 from harnesscad.io.formats.dxf import DxfDocument, Entity, Layer
 
 
@@ -100,6 +101,19 @@ class TestDxfPreflightVerdicts(unittest.TestCase):
     def test_threshold_validation_rejects_non_positive_policy(self):
         with self.assertRaisesRegex(ValueError, "min_circle_diameter_mm must be > 0"):
             dxf_preflight(document("mm"), min_circle_diameter_mm=0)
+
+
+class TestFabricationRoute(unittest.TestCase):
+    def test_neutral_mapping_route_runs_the_same_preflight(self):
+        report = fabrication.dxf_preflight({
+            "units": "mm", "layers": [{"name": "cut"}],
+            "entities": {
+                "hole": {"kind": "CIRCLE", "layer": "cut",
+                         "values": {"center": [0, 0], "radius": 1}},
+            },
+        }, min_circle_diameter_mm=2.1)
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertIn("DXF_CIRCLE_BELOW_MIN", {f["code"] for f in report["findings"]})
 
 
 if __name__ == "__main__":
