@@ -1,13 +1,7 @@
 """Manufacturing-constrained, multi-load-case SIMP topology optimization.
 
-Ported from kerf-main ``packages/kerf-topo/src/kerf_topo/advanced.py``
-(kerf, MIT License, Copyright (c) 2026 Imran Paruk -- verified at the repo root
-``LICENSE``; the sibling ``LICENSE-CLOUD`` is proprietary but scopes only to
-``packages/kerf-cloud/**``, ``packages/kerf-billing/**`` and ``src/cloud/**``,
-none of which this port touches).
-
-kerf's ``advanced.py`` is a hand-rolled SIMP (Solid Isotropic Material with
-Penalization) topology optimizer that is pure Python end to end: a bilinear-quad
+The pure-Python optimizer uses SIMP (Solid Isotropic Material with
+Penalization): a bilinear-quad
 (Q4) plane-stress finite element solver with a banded LDL^T factorisation, a
 density filter, and a set of manufacturing constraints. It needs no numpy,
 scipy, dolfinx or OCC, which makes it portable into this harness verbatim in
@@ -1019,7 +1013,7 @@ def _selfcheck() -> int:
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Manufacturing-constrained multi-load-case SIMP "
-                    "topology optimization (ported from kerf kerf-topo)")
+                    "topology optimization")
     parser.add_argument("--selfcheck", action="store_true")
     args = parser.parse_args(argv)
     if args.selfcheck:

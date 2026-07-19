@@ -1,16 +1,13 @@
 """NURBS curve, surface and closed-loop offsetting with an honesty contract.
 
-Ported from kerf-main ``geom/offset.py`` (kerf-cad-core, GK-30/31/32), with the
-supporting routines it imports from kerf's ``geom/nurbs.py`` (``make_circle_
-nurbs``, ``make_arc_nurbs``, ``make_line_nurbs``) and ``geom/curve_toolkit.py``
-(``_chord_params``, ``_pt_knots_from_params``, ``fit_curve``, ``interp_curve``)
-folded in, since the harness has no least-squares B-spline fitter of its own.
+The module includes analytic constructors and least-squares B-spline fitting
+needed to provide exact and measured-deviation offset paths.
 
 What this module provides (kerf's public surface):
 
   * :func:`offset_curve`   -- planar curve offset by a signed distance ``d``
     along the right-side normal ``cross(plane_normal, tangent)``.  Analytic
-    exact cases (straight line, kerf's 9-point rational circle, and circular
+    exact cases (straight line, rational circle, and circular
     arcs) are detected and offset exactly with ``actual_max_deviation = 0.0``
     and no refit; general curves are sampled, offset pointwise and refit by
     least squares within ``tol``.
@@ -261,7 +258,7 @@ def _curve_tangent_at(c: CurveData, t: float) -> Optional[Vec3]:
 
 
 # ---------------------------------------------------------------------------
-# Exact constructors (ported from kerf geom/nurbs.py)
+# Exact constructors
 # ---------------------------------------------------------------------------
 
 def make_line_curve(p1: Sequence[float], p2: Sequence[float]) -> CurveData:
@@ -349,7 +346,7 @@ def make_arc_curve(center: Sequence[float], radius: float,
 
 
 # ---------------------------------------------------------------------------
-# Least-squares B-spline fitting (ported from kerf geom/curve_toolkit.py)
+# Least-squares B-spline fitting
 # ---------------------------------------------------------------------------
 
 def _chord_params(points: Sequence[Vec3]) -> List[float]:
@@ -972,7 +969,7 @@ def _fillet_arc(p_end: Vec3, p_start: Vec3, abs_d: float, d: float,
                 nrm: Vec3) -> Optional[CurveData]:
     """Tangent arc fillet of radius ``abs_d`` joining two offset endpoints.
 
-    Ported from kerf's convex-corner branch with the centre and sweep fixes
+    Convex-corner construction with corrected centre and sweep handling
     described in the module docstring: the centre sits at distance
     ``sqrt(d^2 - h^2)`` from the chord midpoint (which for straight adjacent
     segments is exactly the original corner point), and the sweep is the
@@ -1138,7 +1135,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         prog="python -m harnesscad.domain.geometry.parametric.offset_nurbs",
         description="NURBS curve / surface / closed-loop offsetting with "
                     "analytic exact cases and measured-deviation refits "
-                    "(ported from kerf-cad-core geom/offset.py).",
+                    "with exact and measured-deviation result contracts.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="offset a line, a circle, an arc, a square loop "
