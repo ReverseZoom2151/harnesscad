@@ -9829,7 +9829,7 @@
       "layer": "domain",
       "name": "prototype_readiness",
       "package": "fabrication",
-      "summary": "Looks-like prototyping-readiness gate for Sketch2Prototype image-to-3D output.",
+      "summary": "Looks-like prototyping-readiness gate for image-to-3D output.",
       "symbols": [
         "Finding",
         "check_fragmentation",
@@ -9845,7 +9845,6 @@
       ],
       "tags": [
         "fabrication",
-        "sketch",
         "vision"
       ]
     },
@@ -10037,7 +10036,7 @@
       "layer": "domain",
       "name": "workflow_feasibility",
       "package": "fabrication",
-      "summary": "Per-workflow feasibility analysis (CAMeleon's \"learning from limits\").",
+      "summary": "Per-workflow feasibility analysis (\"learning from limits\").",
       "symbols": [
         "Finding",
         "PartSpec",
