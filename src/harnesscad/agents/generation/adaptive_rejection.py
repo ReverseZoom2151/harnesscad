@@ -1,10 +1,8 @@
 """Adaptive rejection-sampling control policy with rollback regeneration.
 
-Ported from BrickGPT ``src/brickgpt/models/brickgpt.py`` (BrickGPT-main,
-Pun et al.). The harness already carries BrickGPT's VERIFIERS (bounds,
-collision, stability analogues); what was missing is its CONTROL POLICY --
-the loop that turns a per-step verifier into a reliable whole-sequence
-generator. Three mechanisms, ported faithfully:
+The harness carries bounds, collision, and stability verifiers; this control
+policy turns a per-step verifier into a reliable whole-sequence generator.
+Three mechanisms:
 
 1. **Rejection sampling with temperature escalation** (source:
    ``generate_brick_with_rejection_sampling``): sample a step, verify it,

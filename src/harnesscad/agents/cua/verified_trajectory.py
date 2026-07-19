@@ -1,11 +1,7 @@
-"""verified_trajectory — Fara-7B's GUI-trajectory pipeline, with a FREE exact oracle.
+"""Verified GUI-trajectory pipeline with an exact oracle.
 
-Fara-7B is trained on GUI trajectories, and its central problem is one HarnessCAD
-does NOT have: it cannot cheaply tell whether a trajectory actually succeeded, so it
-must *train a verifier model* (a fallible judge) to label trajectories, and it
-publishes CUAVerifierBench to measure how good that judge is. The trajectory is
-represented as a sequence of ``(observation, action)`` steps; the verifier looks at
-the whole thing and guesses a verdict.
+A trajectory is a sequence of ``(observation, action)`` steps. This module
+uses the harness's exact oracle rather than guessing a verdict from a trace.
 
 The asymmetry this module makes concrete
 ----------------------------------------

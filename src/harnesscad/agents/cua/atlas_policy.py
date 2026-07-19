@@ -1,15 +1,14 @@
-"""atlas_policy — atlas's Gemini computer-use PROMPT POLICY (the half not in coordinate).
+"""Computer-use prompt policy.
 
-Atlas (the Electron Gemini client) contributes two things. The coordinate half — the
-``0..999`` grid denormalisation and the DPI logical/physical bridge — is already
-ported and tested in :mod:`harnesscad.io.cua.coordinate` (``Denormalizer``,
-``CoordinateMapper``, ``normalize_function_call``). This module ports the OTHER half:
+The coordinate half — the ``0..999`` grid denormalisation and the DPI
+logical/physical bridge — lives in :mod:`harnesscad.io.cua.coordinate`
+(``Denormalizer``, ``CoordinateMapper``, ``normalize_function_call``). This module provides the other half:
 the *prompt policy* atlas wraps around the ``computer_use`` tool — the system
 instruction, the resolution it injects so the model grounds against the right frame,
 the declared action space, and the confirmation gate for unsafe actions.
 
-Why the policy is worth porting as its own thing
-------------------------------------------------
+Why the policy is separate
+--------------------------
 A ``computer_use`` model is only as good as the frame it is told it is looking at and
 the rules it is told to obey. Atlas gets three of these right and a CAD agent must
 not lose them:

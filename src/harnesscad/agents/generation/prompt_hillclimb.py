@@ -1,13 +1,7 @@
 """Eval-scored prompt hill-climbing: keep-best, no ratchet, infra-blind.
 
-Reimplemented from **freecad-ai**'s skill optimizer
-(``resources/cad_repos/freecad-ai-master``: ``docs/specs/
-2026-03-15-skill-optimizer-design.md`` -- the "Keep/Discard Logic", "Composite
-Score" and "Version Management" sections -- and ``freecad_ai/extensions/
-skill_evaluator.py``, whose ``OptimizationState`` and evaluate loop implement
-them). Source repo LICENSE: **LGPL-2.1** (``LICENSE-CODE``) -- so this is a
-clean-room reimplementation of the mechanism from its documented behaviour with
-citation. **No source text is copied.**
+The optimizer applies keep/discard logic, a composite score, and version
+management through a clean-room, deterministic control policy.
 
 THE CONTROL POLICY
 ------------------

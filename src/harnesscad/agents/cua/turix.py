@@ -1,11 +1,10 @@
-"""turix — TuriX's step-verification, skill-file (SOP) schema, and Brain rules.
+"""Step verification, skill-file schema, and execution rules.
 
-TuriX is a desktop computer-use agent whose three most portable ideas are all
-model-free in structure, so they come across as deterministic data + policy:
+The module uses deterministic data and policy:
 
-1. **Two-screenshot step-eval.** TuriX does not trust that an action worked because
+1. **Two-screenshot step-eval.** The evaluator does not trust that an action worked because
    it was issued; it captures a screenshot BEFORE and AFTER the action and judges the
-   step by the DIFFERENCE. Ported here as :func:`evaluate_step`: given the before/after
+   step by the DIFFERENCE. :func:`evaluate_step` receives the before/after
    observations (any hashable-into-dict state — a SetOfMarks element list, a measured
    metrics dict) it reports whether the screen CHANGED and whether the step's stated
    expectation was met. The lesson is the structure: a step with no observable effect

@@ -1,12 +1,8 @@
 """Runtime model selector and allowlist policy for LLM provider/model choice.
 
-Ported from Forma-OSS: the LLMSelector dataclass and parse/split helpers come
-from blueprint_core/selectors.py verbatim in spirit (frozen dataclass, the
-exact "provider/model" error message), and the allowlist enforcement rules
-come from blueprint_core/llm_providers.py resolve_llm_runtime_config -- a
-provider outside LLM_ALLOWED_PROVIDERS is rejected naming the allowlist, and
-without an explicit per-provider model allowlist only the default (and
-fallback) model is permitted.
+The LLMSelector dataclass and parse/split helpers use a frozen data model, and
+allowlist enforcement rejects a provider outside LLM_ALLOWED_PROVIDERS while
+requiring the default or fallback model when no per-provider allowlist exists.
 
 Gap filled: harnesscad.agents.llm.base defines the vendor-neutral LLM protocol
 and harnesscad.agents.llm.litellm_backend talks to providers, but nothing in

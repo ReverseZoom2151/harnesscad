@@ -1,14 +1,12 @@
-"""Multi-provider resilient routing with failure cooldown (Studio-OSS).
+"""Multi-provider resilient routing with failure cooldown.
 
-Mined from **Studio-OSS** (``lib/llm-clients.ts``, ``resilientChat``), built at
-hour 40 of its buildathon when the primary provider's credits ran out
-mid-demo: a provider cascade that tries each configured backend in order until
+A provider cascade tries each configured backend in order until
 one answers, with the two behaviours that make the cascade *stable* rather
 than merely retrying:
 
   * **failure cooldown** -- a provider that fails with a billing / quota /
     auth / rate-limit error is benched for a cooldown window (60 s in
-    Studio), so a dead API is not hammered on every subsequent call; other
+    the configured cooldown), so a dead API is not hammered on every subsequent call; other
     failures (transient network, empty response) are retried next call;
   * **error classification** -- only errors matching the exhaustion markers
     ("credit balance", "quota", "rate_limit", 401/403/429) trigger the bench;

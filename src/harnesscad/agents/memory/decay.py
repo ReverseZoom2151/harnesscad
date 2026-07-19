@@ -1,7 +1,6 @@
 """Reinforced-decay salience for a memory store (MemoryBank forgetting curve).
 
-Mined from CoMeT's ``MemoryNode`` schema, whose usage-driven salience fields
-carry an explicit, un-implemented policy in their doc strings:
+The usage-driven salience fields carry an explicit decay policy:
 
     strength: 'Salience strength S; retention R = exp(-Δt_days / (S * τ)).
                Bumped on recall hit.'
