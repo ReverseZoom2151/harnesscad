@@ -1,78 +1,72 @@
-"""Fillet-feasibility preflight predicate (deterministic, stdlib-only).
+"""Rolling-ball fillet feasibility preflight (deterministic, stdlib-only).
 
-Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+WHAT THIS MODULE IS
+-------------------
+A PREDICATE, and nothing else.  Given an edge, the two supports that meet
+at it, and a candidate rolling-ball radius, it answers one question before
+any modelling kernel is asked to do work:
 
-This module supplies the feasibility predicate and supported-input contract
-for an analytic rolling-ball fillet. The full rolling-ball fillet surface
-construction (quarter-cylinder fillet face for planar+planar, quarter-torus
-fillet face for planar+cylindrical, sewing and body validation) is
-DEFERRED -- this module answers, before any kernel is invoked, "can a
-rolling-ball fillet of radius r be placed on this edge at all, and if not,
-why not, and what is the largest radius that would fit?".
+    can a ball of this radius roll along this edge in contact with both
+    supports, without running off either of them?
 
-Supported behavior
+It answers with a verdict object.  It does NOT build a fillet: no fillet
+surface, no trimmed supports, no sewn body.  Constructing the quarter
+cylinder / quarter torus that the rolling ball sweeps is a separate,
+deliberately unimplemented concern, and the verdict carries no geometry --
+only the diagnostic fields listed on :class:`FilletFeasibility`.
+
+THE GEOMETRY BEHIND THE PREDICATE
+---------------------------------
+A rolling ball of radius ``r`` seated in the crease between two supports
+touches each support along a contact track offset from the edge by ``r``
+measured inside that support, perpendicular to the edge.  Feasibility is
+therefore a statement about clearance:
+
+* the crease must actually be a crease -- the supports must meet convexly
+  as seen from the solid's material side, since a ball placed against a
+  concave or tangent junction is not a fillet at all;
+* each contact track must land strictly inside its own support, so ``r``
+  must stay below that support's perpendicular clearance from the edge;
+* the ball must not outgrow the edge it rides along, nor (for a circular
+  rim on a cylinder) the cylinder's own radius or height, since a ball
+  larger than those cannot complete the sweep.
+
+Two support pairings are handled, because those are the two for which the
+clearance quantities above are elementary:
+
+    planar + planar       two planes meeting along a straight segment;
+    planar + cylindrical  a plane meeting a cylinder along a circular rim.
+
+Anything else is out of contract.
+
+REFUSAL DISCIPLINE
 ------------------
-* The supported-input taxonomy.  The predicate accepts exactly two face-pair
-  configurations at the edge (classified by isinstance on the face surface;
-  here by the analytic face dataclass type):
+An infeasible or out-of-contract request is REFUSED, never raised and
+never quietly approximated.  Every refusal carries a stable machine
+readable ``reason_code`` alongside human wording, so callers can branch on
+the cause (bad radius, wrong support pair, wrong edge shape, wrong
+convexity, or which specific bound was exceeded).  Malformed dataclass
+construction -- a two-vertex "polygon", a negative cylinder radius -- still
+raises, because that is a caller bug rather than an infeasible request.
 
-      1. planar+planar       -- both supports are planes meeting at a
-                                straight convex edge.
-      2. planar+cylindrical  -- one support is a plane, the other a
-                                cylinder, meeting at a circular rim edge.
+``max_feasible_radius`` is reported as an OPEN upper bound: it is the
+smallest of the bounds that apply to the detected case, and any radius
+strictly below it (by more than ``tol``) passes the radius tests.  It is
+0.0 when the case is unsupported or no radius could fit.
 
-  Every other pairing is refused with the message "edge supports must be
-  planar+planar or planar+cylindrical; got <A> + <B>".  The predicate never
-  raises on contract violations; it returns a structured ``{ok: False, reason}``
-  result.  This module mirrors that with :class:`FilletFeasibility`.
+INPUTS
+------
+The harness has no boundary-representation body type, so the supports are
+described analytically and minimally: :class:`PlanarFace` (a plane point,
+its outward normal, and the bounding polygon that limits its clearance),
+:class:`CylindricalFace` (axis, radius, height, and which side holds
+material), and :class:`EdgePreflight` (the edge sampled as an ordered
+polyline, plus the orientation flag needed to read convexity).  Convexity
+itself is delegated to
+:mod:`harnesscad.domain.geometry.topology.edge_convexity`.
 
-* The radius feasibility rule.  The rolling-ball radius r must satisfy
-  ``r > 0`` and ``r < min(perpendicular extent of each adjacent support
-  measured from the edge)`` so the contact lines lie strictly inside both
-  supports.  Kerf measures those extents as the span of the support from
-  the edge to its far boundary along the in-face direction perpendicular to
-  the edge (for its axis-aligned box this is ``hi[axis] - edge_at[axis]``;
-  the contact line at ``edge_at + r`` must stay strictly inside, i.e.
-  ``r < extent - tol``).  Kerf additionally requires ``r < edge length``
-  for the straight-edge case ("fillet would consume the entire edge") and,
-  for the planar+cylindrical rim case, ``r < cylinder_radius`` and
-  ``r < cylinder_height`` ("rolling ball does not fit") plus
-  ``r < cap_extent`` (kerf's cap is a full disc, so its extent equals the
-  cylinder radius; for a rim bounded by a polygon -- e.g. a hole rim in a
-  planar face -- the extent is the clearance from the rim circle to the
-  polygon boundary).
-
-* Convexity along the edge.  Kerf's contract requires the supports to meet
-  at a convex angle from the solid's interior (its box/cylinder primitives
-  guarantee this structurally).  The predicate here makes the check
-  explicit using the harness edge-convexity rule -- the sign of
-  ``dot(cross(n_a, n_b), tangent)`` with outward normals sampled on the
-  edge -- and also reports the unsigned dihedral angle between the outward
-  normals.
-
-* The structured refusal/result contract.  Kerf's ``FilletResult`` carries
-  ``ok`` and a human-readable ``reason`` plus diagnostics (``kind``,
-  ``radius``, per-case limits).  :class:`FilletFeasibility` carries
-  ``feasible``, a machine-checkable ``reason_code``, kerf's ``reason``
-  wording, the detected ``case``, the convexity label and dihedral angle,
-  the computed per-support ``limits`` and the ``max_feasible_radius``
-  (an open upper bound: any r strictly below it is radius-feasible).
-
-Adaptation notes
-----------------
-The harness has no full B-rep ``Body``/``Edge``/``Face`` types, so the
-preflight consumes a minimal analytic description mirroring exactly what
-kerf's predicate reads off its topology: the edge as a point polyline
-(:class:`EdgePreflight`) and the two adjacent supports as analytic faces
-(:class:`PlanarFace`: point + outward normal + boundary polygon;
-:class:`CylindricalFace`: axis point + direction + radius + height extent
-+ material side).  Kerf restricts planar+planar to axis-aligned box edges
-(a primitive-recognition limit, not a geometric one); this port checks
-straightness of the edge instead and measures the perpendicular extents
-against the supplied boundary polygons, which reproduces kerf's AABB-span
-measurement exactly on rectangular supports.
-
-Deterministic: pure arithmetic, no randomness, no clock.  Pure stdlib.
+Deterministic: closed-form arithmetic only -- no randomness, no clock, no
+iteration to a tolerance.
 """
 
 from __future__ import annotations
@@ -80,7 +74,7 @@ from __future__ import annotations
 import argparse
 import math
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from harnesscad.domain.geometry.topology.edge_convexity import (
     CONVEX,
@@ -106,13 +100,12 @@ __all__ = [
 
 Vec3 = Tuple[float, float, float]
 
-# Supported-input taxonomy (kerf fillet_solid_edge dispatch).
+# Detected support-pair configurations.
 CASE_PLANAR_PLANAR = "planar+planar"
 CASE_PLANAR_CYLINDRICAL = "planar+cylindrical"
 CASE_UNSUPPORTED = "unsupported"
 
-# Structured reason codes (machine-checkable companions to kerf's
-# human-readable reason strings).
+# Stable refusal codes.  Callers branch on these; the prose is advisory.
 REASON_OK = ""
 REASON_NONPOSITIVE_RADIUS = "nonpositive-radius"
 REASON_UNSUPPORTED_FACE_PAIR = "unsupported-face-pair"
@@ -125,114 +118,127 @@ REASON_RADIUS_EXCEEDS_CYLINDER_RADIUS = "radius-exceeds-cylinder-radius"
 REASON_RADIUS_EXCEEDS_CYLINDER_HEIGHT = "radius-exceeds-cylinder-height"
 REASON_DEGENERATE_INPUT = "degenerate-input"
 
-_EPS = 1e-12
+_TINY = 1e-12
+# Sampled polylines carry discretisation error far larger than the modelling
+# tolerance; shape recognition is therefore given this much slack over `tol`.
+_SHAPE_SLACK = 100.0
 
 
 # ---------------------------------------------------------------------------
-# Vector helpers
+# Minimal vector arithmetic on plain 3-tuples
 # ---------------------------------------------------------------------------
 
 
-def _v(p: Sequence[float]) -> Vec3:
-    if len(p) != 3:
-        raise ValueError("expected a 3-component point, got %d" % len(p))
-    return (float(p[0]), float(p[1]), float(p[2]))
+def _as_point(raw: Sequence[float]) -> Vec3:
+    if len(raw) != 3:
+        raise ValueError("expected a 3-component point, got %d" % len(raw))
+    return (float(raw[0]), float(raw[1]), float(raw[2]))
 
 
-def _sub(a: Vec3, b: Vec3) -> Vec3:
-    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+def _diff(head: Vec3, tail: Vec3) -> Vec3:
+    return (head[0] - tail[0], head[1] - tail[1], head[2] - tail[2])
 
 
-def _add(a: Vec3, b: Vec3) -> Vec3:
-    return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
-
-
-def _scale(a: Vec3, s: float) -> Vec3:
-    return (a[0] * s, a[1] * s, a[2] * s)
-
-
-def _dot(a: Vec3, b: Vec3) -> float:
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-
-def _cross(a: Vec3, b: Vec3) -> Vec3:
+def _walk(base: Vec3, direction: Vec3, distance: float) -> Vec3:
+    """Point reached by stepping ``distance`` along ``direction`` from base."""
     return (
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
+        base[0] + direction[0] * distance,
+        base[1] + direction[1] * distance,
+        base[2] + direction[2] * distance,
     )
 
 
-def _norm(a: Vec3) -> float:
-    return math.sqrt(_dot(a, a))
+def _flip(vec: Vec3) -> Vec3:
+    return (-vec[0], -vec[1], -vec[2])
 
 
-def _unit(a: Vec3) -> Vec3:
-    n = _norm(a)
-    if n < _EPS:
+def _dot3(u: Vec3, w: Vec3) -> float:
+    return u[0] * w[0] + u[1] * w[1] + u[2] * w[2]
+
+
+def _cross3(u: Vec3, w: Vec3) -> Vec3:
+    return (
+        u[1] * w[2] - u[2] * w[1],
+        u[2] * w[0] - u[0] * w[2],
+        u[0] * w[1] - u[1] * w[0],
+    )
+
+
+def _length(vec: Vec3) -> float:
+    return math.sqrt(_dot3(vec, vec))
+
+
+def _normalise(vec: Vec3) -> Vec3:
+    """Unit vector, or the zero vector when ``vec`` has no usable direction."""
+    mag = _length(vec)
+    if mag < _TINY:
         return (0.0, 0.0, 0.0)
-    return (a[0] / n, a[1] / n, a[2] / n)
+    return (vec[0] / mag, vec[1] / mag, vec[2] / mag)
 
 
-def _point_segment_distance(p: Vec3, a: Vec3, b: Vec3) -> float:
-    """Distance from point ``p`` to segment ``a``-``b`` (all 3D)."""
-    ab = _sub(b, a)
-    denom = _dot(ab, ab)
-    if denom < _EPS:
-        return _norm(_sub(p, a))
-    t = _dot(_sub(p, a), ab) / denom
-    if t < 0.0:
-        t = 0.0
-    elif t > 1.0:
-        t = 1.0
-    closest = _add(a, _scale(ab, t))
-    return _norm(_sub(p, closest))
+def _is_zero(vec: Vec3) -> bool:
+    return _length(vec) < _TINY
 
 
-def _point_line_distance(p: Vec3, origin: Vec3, direction: Vec3) -> float:
-    """Distance from point ``p`` to the infinite line origin + t*direction."""
-    d = _unit(direction)
-    w = _sub(p, origin)
-    along = _dot(w, d)
-    perp = _sub(w, _scale(d, along))
-    return _norm(perp)
+def _offset_from_line(probe: Vec3, anchor: Vec3, along: Vec3) -> float:
+    """Perpendicular distance from ``probe`` to the infinite line
+    ``anchor + t * along``."""
+    axis = _normalise(along)
+    spoke = _diff(probe, anchor)
+    return _length(_diff(spoke, _walk((0.0, 0.0, 0.0), axis,
+                                      _dot3(spoke, axis))))
+
+
+def _offset_from_segment(probe: Vec3, start: Vec3, end: Vec3) -> float:
+    """Perpendicular distance from ``probe`` to the finite segment
+    ``start``-``end`` (clamped to the endpoints)."""
+    span = _diff(end, start)
+    span_sq = _dot3(span, span)
+    if span_sq < _TINY:
+        return _length(_diff(probe, start))
+    where = _dot3(_diff(probe, start), span) / span_sq
+    where = min(1.0, max(0.0, where))
+    return _length(_diff(probe, _walk(start, span, where)))
 
 
 # ---------------------------------------------------------------------------
-# Preflight input types (analytic stand-ins for kerf's Face/Edge topology)
+# Analytic descriptions of the edge and its two supports
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class PlanarFace:
-    """A planar support: a point on the plane, the OUTWARD unit normal of
-    the solid at that face, and the face's boundary polygon (>= 3 vertices,
-    all on the plane).  Mirrors kerf's ``Plane`` surface plus the loop kerf
-    reads the support extent from."""
+    """A planar support.
+
+    ``origin`` is any point of the plane, ``normal`` the OUTWARD normal of
+    the solid there (it is normalised on construction), and ``boundary``
+    the face's bounding polygon -- at least three coplanar vertices.  The
+    polygon is what limits how far a contact track may travel before it
+    leaves the support.
+    """
 
     origin: Vec3
     normal: Vec3
     boundary: Tuple[Vec3, ...]
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "origin", _v(self.origin))
-        object.__setattr__(self, "normal", _unit(_v(self.normal)))
-        object.__setattr__(
-            self, "boundary", tuple(_v(p) for p in self.boundary)
-        )
+        object.__setattr__(self, "origin", _as_point(self.origin))
+        object.__setattr__(self, "normal", _normalise(_as_point(self.normal)))
+        object.__setattr__(self, "boundary",
+                           tuple(_as_point(p) for p in self.boundary))
         if len(self.boundary) < 3:
             raise ValueError("a planar face boundary needs >= 3 vertices")
 
 
 @dataclass(frozen=True)
 class CylindricalFace:
-    """A cylindrical support: axis point + direction, radius, and the
-    height extent of the face along the axis.  ``outward_radial`` is True
-    when the solid material is inside the cylinder (boss / cylinder body:
-    outward normals point away from the axis) and False for a hole (the
-    material surrounds the cylinder; outward normals point toward the
-    axis).  Mirrors kerf's ``CylinderSurface`` plus the height kerf reads
-    from the cap-to-cap distance."""
+    """A cylindrical support of the given ``radius`` and axial ``height``.
+
+    ``outward_radial`` records which side holds material: True for a solid
+    barrel or boss (outward normals point away from the axis) and False for
+    a drilled hole (material surrounds the surface, so outward normals
+    point back toward the axis).
+    """
 
     axis_point: Vec3
     axis_dir: Vec3
@@ -241,8 +247,9 @@ class CylindricalFace:
     outward_radial: bool = True
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "axis_point", _v(self.axis_point))
-        object.__setattr__(self, "axis_dir", _unit(_v(self.axis_dir)))
+        object.__setattr__(self, "axis_point", _as_point(self.axis_point))
+        object.__setattr__(self, "axis_dir",
+                           _normalise(_as_point(self.axis_dir)))
         object.__setattr__(self, "radius", float(self.radius))
         object.__setattr__(self, "height", float(self.height))
         if self.radius <= 0.0:
@@ -250,42 +257,50 @@ class CylindricalFace:
         if self.height <= 0.0:
             raise ValueError("cylinder height must be positive")
 
+    def outward_normal_at(self, probe: Vec3) -> Vec3:
+        """Outward unit normal of this support at a point on its surface."""
+        spoke = _diff(probe, self.axis_point)
+        radial = _diff(spoke, _walk((0.0, 0.0, 0.0), self.axis_dir,
+                                    _dot3(spoke, self.axis_dir)))
+        outward = _normalise(radial)
+        return outward if self.outward_radial else _flip(outward)
+
 
 @dataclass(frozen=True)
 class EdgePreflight:
-    """The candidate edge as an ordered point polyline (a straight segment
-    may be given by its two endpoints; a rim circle by a closed sampled
-    ring whose first and last points coincide).
+    """The candidate edge, sampled as an ordered polyline.
 
-    ``forward`` mirrors kerf's coedge orientation flag: the polyline must
-    traverse the edge the way face ``a``'s loop does (counter-clockwise
-    about face a's outward normal for an outer loop, clockwise for an
-    inner loop such as a hole rim); set ``forward=False`` when the
-    supplied polyline runs the other way."""
+    A straight edge may be given by its two endpoints alone; a circular rim
+    should be a closed ring whose first and last samples coincide.
+    ``forward`` states whether the polyline runs the way the FIRST support's
+    loop traverses the edge; pass ``forward=False`` when it runs the other
+    way, so that convexity is read with the correct sign.
+    """
 
     points: Tuple[Vec3, ...]
     forward: bool = True
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "points", tuple(_v(p) for p in self.points))
+        object.__setattr__(self, "points",
+                           tuple(_as_point(p) for p in self.points))
         if len(self.points) < 2:
             raise ValueError("an edge polyline needs >= 2 points")
 
 
 # ---------------------------------------------------------------------------
-# Result contract (kerf FilletResult, feasibility subset)
+# The verdict
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class FilletFeasibility:
-    """Structured feasibility verdict -- kerf's ``{ok, reason, diagnostics}``
-    refusal contract restricted to the preflight.
+    """Outcome of the preflight -- diagnostics only, never geometry.
 
     ``max_feasible_radius`` is an OPEN upper bound: any radius strictly
-    below it (by more than the tolerance) is radius-feasible for this edge;
-    it is 0.0 when no radius fits or the case is unsupported.  ``limits``
-    lists every individual bound kerf enforces for the detected case."""
+    below it (by more than the tolerance) clears every radius bound of the
+    detected case.  It is 0.0 when nothing fits or the case is unsupported.
+    ``limits`` names each individual bound that applied.
+    """
 
     feasible: bool
     reason_code: str
@@ -309,38 +324,37 @@ class FilletFeasibility:
         }
 
 
-def _refuse(
-    code: str,
-    reason: str,
-    case: str,
-    convexity: str = "",
-    dihedral_deg: float = 0.0,
-    max_feasible_radius: float = 0.0,
-    limits: Optional[Dict[str, float]] = None,
-) -> FilletFeasibility:
-    return FilletFeasibility(
-        feasible=False,
-        reason_code=code,
-        reason=reason,
-        case=case,
-        convexity=convexity,
-        dihedral_deg=dihedral_deg,
-        max_feasible_radius=max_feasible_radius,
-        limits=limits or {},
-    )
+@dataclass(frozen=True)
+class _Bound:
+    """One scalar ceiling the radius must stay under.
+
+    The radius clears the bound when ``radius < value - slack``; ``slack``
+    is the tolerance margin that keeps a contact track strictly (not just
+    barely) inside its support, and is zero for bounds where touching the
+    limit is already the failure.  ``explain`` turns the offending radius
+    into human wording.
+    """
+
+    key: str
+    value: float
+    slack: float
+    code: str
+    explain: Callable[[float], str]
+
+    def rejects(self, radius: float) -> bool:
+        return radius >= self.value - self.slack
 
 
 # ---------------------------------------------------------------------------
-# Supported-input taxonomy (kerf's isinstance dispatch + contract text)
+# Support-pair recognition
 # ---------------------------------------------------------------------------
 
 FaceType = Union[PlanarFace, CylindricalFace]
 
 
 def classify_face(face: FaceType) -> str:
-    """Classify a support as ``planar`` or ``cylindrical`` -- kerf's
-    ``_is_planar_face`` / ``_is_cylindrical_face`` isinstance checks over
-    the analytic dataclasses."""
+    """Name a support's surface kind: ``planar``, ``cylindrical``, or, for
+    anything this module does not model, the type's own name."""
     if isinstance(face, PlanarFace):
         return "planar"
     if isinstance(face, CylindricalFace):
@@ -349,397 +363,355 @@ def classify_face(face: FaceType) -> str:
 
 
 def classify_support_pair(face_a: FaceType, face_b: FaceType) -> str:
-    """Map a face pair to kerf's supported-case labels."""
-    ka = classify_face(face_a)
-    kb = classify_face(face_b)
-    if ka == "planar" and kb == "planar":
+    """Reduce an unordered pair of supports to one of the case labels."""
+    kinds = sorted((classify_face(face_a), classify_face(face_b)))
+    if kinds == ["planar", "planar"]:
         return CASE_PLANAR_PLANAR
-    if (ka == "planar" and kb == "cylindrical") or (
-        ka == "cylindrical" and kb == "planar"
-    ):
+    if kinds == ["cylindrical", "planar"]:
         return CASE_PLANAR_CYLINDRICAL
     return CASE_UNSUPPORTED
 
 
 def supported_contract() -> str:
-    """Human-readable supported-input contract (kerf
-    ``edge_supported_contract``, adapted to the preflight)."""
+    """Prose statement of what the preflight will and will not accept."""
     return (
         "fillet feasibility preflight supports two edge configurations:\n"
-        "  1. planar+planar -- both faces incident to the edge are planar\n"
-        "     supports meeting at a convex straight edge; the radius must\n"
-        "     leave the contact lines strictly inside both supports\n"
-        "     (r < min perpendicular extent) and r < edge length.\n"
-        "  2. planar+cylindrical -- one support is a plane, the other a\n"
-        "     cylinder, meeting at a circular rim; the radius must satisfy\n"
-        "     0 < r < min(cylinder_radius, cylinder_height, cap_extent).\n"
-        "All other edge configurations (other surface pairs, concave or\n"
-        "smooth edges, or radii exceeding the local limits) return a\n"
-        "structured {feasible: false, reason_code, reason} rather than\n"
-        "raising.  Rolling-ball fillet surface construction is deferred."
+        "  1. planar+planar -- two planar supports meeting convexly along a\n"
+        "     straight edge; the radius must stay under the perpendicular\n"
+        "     clearance of each support and under the edge length.\n"
+        "  2. planar+cylindrical -- a planar support meeting a cylindrical\n"
+        "     one along a circular rim; the radius must stay under the\n"
+        "     cylinder radius, the cylinder height and the rim clearance of\n"
+        "     the planar support.\n"
+        "Any other configuration -- a different surface pairing, a concave\n"
+        "or tangent junction, an edge of the wrong shape, or a radius past\n"
+        "one of the bounds above -- is refused with a structured\n"
+        "{feasible: false, reason_code, reason} verdict rather than an\n"
+        "exception.  The predicate reports feasibility only; it does not\n"
+        "construct the rolling-ball fillet surface."
     )
 
 
 # ---------------------------------------------------------------------------
-# Extent measurements (kerf's contact-line / rolling-ball fit checks)
+# Clearance measurements
 # ---------------------------------------------------------------------------
 
 
-def _planar_perpendicular_extent(
-    face: PlanarFace, edge_point: Vec3, edge_tangent: Vec3
-) -> float:
-    """Perpendicular extent of a planar support from a straight edge.
+def _planar_clearance(face: PlanarFace, seat: Vec3, tangent: Vec3) -> float:
+    """How far a planar support reaches away from a straight edge.
 
-    Kerf measures the span of the support from the edge to its far
-    boundary along the in-face direction perpendicular to the edge (for
-    its axis-aligned box: ``hi - edge_at``); the contact line at
-    ``edge_at + r`` must lie strictly inside.  Here: project the boundary
-    vertices onto ``d = unit(cross(normal, tangent))`` oriented into the
-    face, and take the farthest projection.  Exact for rectangular
-    supports (kerf's only planar+planar case)."""
-    d = _unit(_cross(face.normal, edge_tangent))
-    if d == (0.0, 0.0, 0.0):
+    The contact track sits parallel to the edge, displaced into the face
+    along ``inward = normal x tangent``.  The clearance is the largest
+    displacement any boundary vertex reaches in that direction, so a radius
+    below it keeps the track inside the polygon.  For a rectangular support
+    this is exactly the side length perpendicular to the edge.
+    """
+    inward = _normalise(_cross3(face.normal, tangent))
+    if _is_zero(inward):
         return 0.0
-    centroid = (
-        sum(p[0] for p in face.boundary) / len(face.boundary),
-        sum(p[1] for p in face.boundary) / len(face.boundary),
-        sum(p[2] for p in face.boundary) / len(face.boundary),
-    )
-    if _dot(_sub(centroid, edge_point), d) < 0.0:
-        d = _scale(d, -1.0)
-    return max(_dot(_sub(p, edge_point), d) for p in face.boundary)
+    reach = [_dot3(_diff(vertex, seat), inward) for vertex in face.boundary]
+    # `inward` may have come out pointing away from the material; the face
+    # lies wholly on one side of the edge, so the sign of the total reach
+    # tells us which.
+    return max(reach) if sum(reach) >= 0.0 else -min(reach)
 
 
-def _cap_extent(
-    plane: PlanarFace, cyl: CylindricalFace, tol: float
-) -> Optional[float]:
-    """Plane-side extent for the rim case (kerf's ``cap_extent``).
+def _rim_clearance(plane: PlanarFace,
+                   cyl: CylindricalFace) -> Optional[float]:
+    """How far the planar support reaches away from a circular rim.
 
-    For kerf's cap rim (material inside the cylinder) the cap is a full
-    disc bounded by the rim itself, so the extent equals the cylinder
-    radius -- the contact circle at radius R - r must keep R - r > 0.
-    For a hole rim (material outside the cylinder) the contact circle at
-    radius R + r moves toward the planar boundary, so the extent is the
-    in-plane clearance from the rim circle to the boundary polygon.
-    Returns None when the axis is parallel to the plane (degenerate: the
-    circular rim does not exist)."""
+    When material fills the cylinder (a barrel with a cap), the cap is the
+    disc bounded by the rim itself and its contact circle shrinks toward
+    the axis, so the reach available is the cylinder radius.  When the
+    cylinder is a hole, the cap surrounds it and the contact circle grows
+    outward, so the reach is the gap between the rim circle and the nearest
+    boundary edge of the polygon.  ``None`` when the axis lies parallel to
+    the plane, in which case no circular rim exists at all.
+    """
     if cyl.outward_radial:
         return cyl.radius
-    denom = _dot(cyl.axis_dir, plane.normal)
-    if abs(denom) < 1e-9:
+    tilt = _dot3(cyl.axis_dir, plane.normal)
+    if abs(tilt) < 1e-9:
         return None
-    s = _dot(_sub(plane.origin, cyl.axis_point), plane.normal) / denom
-    centre = _add(cyl.axis_point, _scale(cyl.axis_dir, s))
-    n = len(plane.boundary)
-    clearance = min(
-        _point_segment_distance(
-            centre, plane.boundary[i], plane.boundary[(i + 1) % n]
-        )
-        for i in range(n)
-    ) - cyl.radius
-    return clearance
+    travel = _dot3(_diff(plane.origin, cyl.axis_point), plane.normal) / tilt
+    hub = _walk(cyl.axis_point, cyl.axis_dir, travel)
+    corners = plane.boundary
+    nearest_wall = min(
+        _offset_from_segment(hub, corners[i], corners[(i + 1) % len(corners)])
+        for i in range(len(corners))
+    )
+    return nearest_wall - cyl.radius
 
 
 # ---------------------------------------------------------------------------
-# Edge-shape recognition (kerf's _is_axis_aligned_edge / _cap_rim_edge_info)
+# Edge-shape recognition
 # ---------------------------------------------------------------------------
 
 
-def _straight_edge_info(
-    edge: EdgePreflight, tol: float
-) -> Optional[Tuple[Vec3, Vec3, float]]:
-    """Return ``(start_point, unit_tangent, length)`` iff the polyline is a
-    straight segment (every interior point within tolerance of the chord),
-    otherwise None.  Generalises kerf's ``_is_axis_aligned_edge`` Line3
-    check (axis alignment was a box-primitive restriction)."""
-    p0 = edge.points[0]
-    p1 = edge.points[-1]
-    chord = _sub(p1, p0)
-    length = _norm(chord)
-    if length <= tol:
+def _as_straight_edge(edge: EdgePreflight,
+                      tol: float) -> Optional[Tuple[Vec3, Vec3, float]]:
+    """``(seat, unit tangent, length)`` when the polyline is a straight
+    segment -- every intermediate sample lying on the chord -- else None."""
+    first, last = edge.points[0], edge.points[-1]
+    chord = _diff(last, first)
+    span = _length(chord)
+    if span <= tol:
         return None
-    for p in edge.points[1:-1]:
-        if _point_line_distance(p, p0, chord) > tol * 100.0:
+    wobble = tol * _SHAPE_SLACK
+    for sample in edge.points[1:-1]:
+        if _offset_from_line(sample, first, chord) > wobble:
             return None
-    return p0, _unit(chord), length
+    return first, _normalise(chord), span
 
 
-def _rim_edge_matches(
-    edge: EdgePreflight, plane: PlanarFace, cyl: CylindricalFace, tol: float
-) -> bool:
-    """True iff the polyline is the closed circular rim where the plane
-    meets the cylinder.  Ports kerf's ``_cap_rim_edge_info`` checks: the
-    edge curve's radius must match the cylinder radius (kerf slack:
-    100 * tol), the curve must span the full circle (here: the polyline is
-    a closed ring), and it must lie in the cap plane."""
-    slack = tol * 100.0
+def _is_rim_of(edge: EdgePreflight, plane: PlanarFace, cyl: CylindricalFace,
+               tol: float) -> bool:
+    """True when the polyline traces the whole circle where the cylinder
+    meets the plane: a closed ring, every sample at the cylinder radius
+    from the axis and on the plane."""
     if len(edge.points) < 4:
         return False
-    if _norm(_sub(edge.points[0], edge.points[-1])) > slack:
+    slop = tol * _SHAPE_SLACK
+    if _length(_diff(edge.points[0], edge.points[-1])) > slop:
         return False
-    for p in edge.points:
-        if abs(_point_line_distance(p, cyl.axis_point, cyl.axis_dir)
-               - cyl.radius) > slack:
+    for sample in edge.points:
+        off_axis = _offset_from_line(sample, cyl.axis_point, cyl.axis_dir)
+        if abs(off_axis - cyl.radius) > slop:
             return False
-        if abs(_dot(_sub(p, plane.origin), plane.normal)) > slack:
+        if abs(_dot3(_diff(sample, plane.origin), plane.normal)) > slop:
             return False
     return True
 
 
-def _cylinder_outward_normal(cyl: CylindricalFace, p: Vec3) -> Vec3:
-    """Outward unit normal of the material's cylindrical face at ``p``."""
-    d = cyl.axis_dir
-    w = _sub(p, cyl.axis_point)
-    radial = _sub(w, _scale(d, _dot(w, d)))
-    n = _unit(radial)
-    if not cyl.outward_radial:
-        n = _scale(n, -1.0)
-    return n
-
-
 # ---------------------------------------------------------------------------
-# The feasibility predicate (kerf fillet_solid_edge, checks-only)
+# Verdict assembly
 # ---------------------------------------------------------------------------
 
 
-def check_fillet_feasibility(
-    edge: EdgePreflight,
-    face_a: FaceType,
-    face_b: FaceType,
-    radius: float,
-    tol: float = 1e-6,
-) -> FilletFeasibility:
-    """Preflight a rolling-ball fillet of ``radius`` on ``edge`` between
-    supports ``face_a`` and ``face_b``.
+def _refusal(code: str, reason: str, case: str, convexity: str = "",
+             dihedral_deg: float = 0.0, max_feasible_radius: float = 0.0,
+             limits: Optional[Dict[str, float]] = None) -> FilletFeasibility:
+    return FilletFeasibility(
+        feasible=False,
+        reason_code=code,
+        reason=reason,
+        case=case,
+        convexity=convexity,
+        dihedral_deg=dihedral_deg,
+        max_feasible_radius=max_feasible_radius,
+        limits=dict(limits) if limits else {},
+    )
 
-    Never raises on contract violations; always returns a structured
-    :class:`FilletFeasibility` (kerf's never-raise refusal contract).
-    The check order mirrors ``fillet_solid_edge``: radius validation,
-    case classification, edge-shape recognition, then the per-case radius
-    limits in kerf's order."""
-    # --- 0. Input validation (kerf step 0) --------------------------------
-    if not isinstance(radius, (int, float)) or isinstance(radius, bool) \
+
+def _adjudicate(radius: float, bounds: List[_Bound], case: str,
+                convexity: str, dihedral_deg: float) -> FilletFeasibility:
+    """Test the radius against every bound of a case, in order.
+
+    Both branches funnel through here, so the reported ``limits`` and
+    ``max_feasible_radius`` are always derived from exactly the bounds that
+    were enforced -- they cannot drift apart.
+    """
+    limits = {bound.key: bound.value for bound in bounds}
+    ceiling = min(bound.value for bound in bounds)
+    for bound in bounds:
+        if bound.rejects(radius):
+            return _refusal(bound.code, bound.explain(radius), case,
+                            convexity=convexity, dihedral_deg=dihedral_deg,
+                            max_feasible_radius=ceiling, limits=limits)
+    return FilletFeasibility(
+        feasible=True,
+        reason_code=REASON_OK,
+        reason="",
+        case=case,
+        convexity=convexity,
+        dihedral_deg=dihedral_deg,
+        max_feasible_radius=ceiling,
+        limits=limits,
+    )
+
+
+def _convexity_of(n_a: Vec3, n_b: Vec3, tangent: Vec3,
+                  forward: bool) -> Tuple[str, float]:
+    """Convexity label and unsigned dihedral angle (degrees) at the edge."""
+    label = classify_edge_convexity(n_a, n_b, tangent, forward=forward)
+    return label, math.degrees(dihedral_angle(n_a, n_b))
+
+
+# ---------------------------------------------------------------------------
+# The predicate
+# ---------------------------------------------------------------------------
+
+
+def check_fillet_feasibility(edge: EdgePreflight, face_a: FaceType,
+                             face_b: FaceType, radius: float,
+                             tol: float = 1e-6) -> FilletFeasibility:
+    """Decide whether a rolling-ball fillet of ``radius`` can be seated on
+    ``edge`` between the supports ``face_a`` and ``face_b``.
+
+    Returns a :class:`FilletFeasibility` in every case -- an infeasible or
+    out-of-contract request is refused with a reason code, not raised.  No
+    fillet geometry is produced or implied.
+
+    The candidate is screened in widening order: is the radius a usable
+    number, is the support pair one we model, is the edge the shape that
+    pair implies, do the supports meet convexly there, and finally does the
+    radius clear every clearance bound of the detected case.
+    """
+    if isinstance(radius, bool) or not isinstance(radius, (int, float)) \
             or radius <= 0.0:
-        return _refuse(
+        return _refusal(
             REASON_NONPOSITIVE_RADIUS,
             "radius must be a positive number, got %r" % (radius,),
             classify_support_pair(face_a, face_b),
         )
     radius = float(radius)
 
-    # --- 1. Supported-input taxonomy (kerf dispatch) ----------------------
     case = classify_support_pair(face_a, face_b)
-    if case == CASE_UNSUPPORTED:
-        return _refuse(
-            REASON_UNSUPPORTED_FACE_PAIR,
-            "edge supports must be planar+planar or planar+cylindrical; "
-            "got %s + %s"
-            % (type(face_a).__name__, type(face_b).__name__),
-            CASE_UNSUPPORTED,
-        )
-
     if case == CASE_PLANAR_PLANAR:
-        return _check_planar_planar(edge, face_a, face_b, radius, tol)
-    return _check_planar_cylindrical(edge, face_a, face_b, radius, tol)
+        return _preflight_crease(edge, face_a, face_b, radius, tol)
+    if case == CASE_PLANAR_CYLINDRICAL:
+        return _preflight_rim(edge, face_a, face_b, radius, tol)
+    return _refusal(
+        REASON_UNSUPPORTED_FACE_PAIR,
+        "edge supports must be planar+planar or planar+cylindrical; got "
+        "%s + %s" % (type(face_a).__name__, type(face_b).__name__),
+        CASE_UNSUPPORTED,
+    )
 
 
-def _check_planar_planar(
-    edge: EdgePreflight,
-    face_a: PlanarFace,
-    face_b: PlanarFace,
-    radius: float,
-    tol: float,
-) -> FilletFeasibility:
-    info = _straight_edge_info(edge, tol)
-    if info is None:
-        return _refuse(
+def _preflight_crease(edge: EdgePreflight, face_a: PlanarFace,
+                      face_b: PlanarFace, radius: float,
+                      tol: float) -> FilletFeasibility:
+    """Two planes meeting along a straight edge."""
+    straight = _as_straight_edge(edge, tol)
+    if straight is None:
+        return _refusal(
             REASON_EDGE_NOT_STRAIGHT,
-            "edge is not a straight segment (planar+planar fillet "
-            "requires the straight intersection edge of the two planes)",
+            "edge is not a straight segment; two planar supports meet along "
+            "the straight line of intersection of their planes",
             CASE_PLANAR_PLANAR,
         )
-    edge_point, tangent, edge_len = info
+    seat, tangent, edge_length = straight
 
-    # Convexity along the edge (kerf contract: supports must meet at a
-    # convex angle from the solid's interior).
-    label = classify_edge_convexity(
-        face_a.normal, face_b.normal, tangent, forward=edge.forward,
-    )
-    dihedral_deg = math.degrees(dihedral_angle(face_a.normal, face_b.normal))
+    label, dihedral_deg = _convexity_of(face_a.normal, face_b.normal, tangent,
+                                        edge.forward)
     if label != CONVEX:
-        return _refuse(
+        return _refusal(
             REASON_EDGE_NOT_CONVEX,
-            "supports must meet at a convex angle from the solid's "
-            "interior; edge classified %s" % label,
+            "a rolling ball can only be seated where the supports meet "
+            "convexly from the material side; this edge is %s" % label,
             CASE_PLANAR_PLANAR,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
+            convexity=label, dihedral_deg=dihedral_deg,
         )
 
-    ext_a = _planar_perpendicular_extent(face_a, edge_point, tangent)
-    ext_b = _planar_perpendicular_extent(face_b, edge_point, tangent)
-    limits = {
-        "support_a_extent": ext_a,
-        "support_b_extent": ext_b,
-        "edge_length": edge_len,
-    }
-    if ext_a <= tol or ext_b <= tol:
-        return _refuse(
+    reach_a = _planar_clearance(face_a, seat, tangent)
+    reach_b = _planar_clearance(face_b, seat, tangent)
+    if reach_a <= tol or reach_b <= tol:
+        return _refusal(
             REASON_DEGENERATE_INPUT,
-            "a support has no perpendicular extent from the edge "
-            "(degenerate boundary)",
+            "a support has no measurable reach away from the edge; its "
+            "boundary polygon is degenerate for this edge",
             CASE_PLANAR_PLANAR,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-            limits=limits,
+            convexity=label, dihedral_deg=dihedral_deg,
+            limits={"support_a_extent": reach_a,
+                    "support_b_extent": reach_b,
+                    "edge_length": edge_length},
         )
-    max_feasible = min(ext_a, ext_b, edge_len)
 
-    # Kerf check order: radius vs edge length first (fillet_solid_edge),
-    # then contact-line-inside-support (in _box_filleted_edge_body:
-    # contact >= extent - tol is refused, i.e. r must be < extent - tol).
-    if radius >= edge_len:
-        return _refuse(
+    # A ball wider than the edge it rides cannot complete the sweep, so that
+    # bound is stated before the two clearance bounds.
+    bounds = [
+        _Bound(
+            "edge_length", edge_length, 0.0,
             REASON_RADIUS_EXCEEDS_EDGE_LENGTH,
-            "radius %s >= edge length %s; fillet would consume the "
-            "entire edge (unsupported)" % (radius, edge_len),
-            CASE_PLANAR_PLANAR,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-            max_feasible_radius=max_feasible,
-            limits=limits,
-        )
-    for name, ext in (("a", ext_a), ("b", ext_b)):
-        if radius >= ext - tol:
-            return _refuse(
-                REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT,
-                "radius %s exceeds support %s extent (contact reaches "
-                "%.6g, max %.6g)" % (radius, name, radius, ext),
-                CASE_PLANAR_PLANAR,
-                convexity=label,
-                dihedral_deg=dihedral_deg,
-                max_feasible_radius=max_feasible,
-                limits=limits,
-            )
-
-    return FilletFeasibility(
-        feasible=True,
-        reason_code=REASON_OK,
-        reason="",
-        case=CASE_PLANAR_PLANAR,
-        convexity=label,
-        dihedral_deg=dihedral_deg,
-        max_feasible_radius=max_feasible,
-        limits=limits,
-    )
-
-
-def _check_planar_cylindrical(
-    edge: EdgePreflight,
-    face_a: FaceType,
-    face_b: FaceType,
-    radius: float,
-    tol: float,
-) -> FilletFeasibility:
-    if isinstance(face_a, PlanarFace):
-        plane, cyl = face_a, face_b
-        plane_is_a = True
-    else:
-        plane, cyl = face_b, face_a
-        plane_is_a = False
-    assert isinstance(plane, PlanarFace) and isinstance(cyl, CylindricalFace)
-
-    if not _rim_edge_matches(edge, plane, cyl, tol):
-        return _refuse(
-            REASON_EDGE_NOT_CAP_RIM,
-            "edge is not a cap-rim circular edge of the cylinder",
-            CASE_PLANAR_CYLINDRICAL,
-        )
-
-    # Convexity at a sample point on the rim.
-    p0 = edge.points[0]
-    tangent = _unit(_sub(edge.points[1], edge.points[0]))
-    n_cyl = _cylinder_outward_normal(cyl, p0)
-    if plane_is_a:
-        n_a, n_b = plane.normal, n_cyl
-    else:
-        n_a, n_b = n_cyl, plane.normal
-    label = classify_edge_convexity(n_a, n_b, tangent, forward=edge.forward)
-    dihedral_deg = math.degrees(dihedral_angle(n_a, n_b))
-    if label != CONVEX:
-        return _refuse(
-            REASON_EDGE_NOT_CONVEX,
-            "supports must meet at a convex angle from the solid's "
-            "interior; edge classified %s" % label,
-            CASE_PLANAR_CYLINDRICAL,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-        )
-
-    cap_extent = _cap_extent(plane, cyl, tol)
-    if cap_extent is None or cap_extent <= tol:
-        return _refuse(
-            REASON_DEGENERATE_INPUT,
-            "cap support has no extent from the rim (degenerate rim "
-            "clearance)",
-            CASE_PLANAR_CYLINDRICAL,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-        )
-    limits = {
-        "cylinder_radius": cyl.radius,
-        "cylinder_height": cyl.height,
-        "cap_extent": cap_extent,
-    }
-    max_feasible = min(cyl.radius, cyl.height, cap_extent)
-
-    # Kerf check order (fillet_solid_edge planar+cylindrical branch):
-    # radius vs cylinder radius, then vs cylinder height, then the cap
-    # contact circle must stay inside the cap support.
-    if radius >= cyl.radius:
-        return _refuse(
-            REASON_RADIUS_EXCEEDS_CYLINDER_RADIUS,
-            "radius %s >= cylinder radius %s; rolling ball does not fit"
-            % (radius, cyl.radius),
-            CASE_PLANAR_CYLINDRICAL,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-            max_feasible_radius=max_feasible,
-            limits=limits,
-        )
-    if radius >= cyl.height:
-        return _refuse(
-            REASON_RADIUS_EXCEEDS_CYLINDER_HEIGHT,
-            "radius %s >= cylinder height %s; rolling ball does not fit"
-            % (radius, cyl.height),
-            CASE_PLANAR_CYLINDRICAL,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-            max_feasible_radius=max_feasible,
-            limits=limits,
-        )
-    if radius >= cap_extent - tol:
-        return _refuse(
+            lambda r: "radius %s is not shorter than the edge (%s); the "
+                      "fillet would consume the whole edge"
+                      % (r, edge_length),
+        ),
+        _Bound(
+            "support_a_extent", reach_a, tol,
             REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT,
-            "radius %s exceeds cap support extent (contact reaches %.6g, "
-            "max %.6g)" % (radius, radius, cap_extent),
+            lambda r: "radius %s puts the contact track off support a, "
+                      "which reaches only %.6g from the edge" % (r, reach_a),
+        ),
+        _Bound(
+            "support_b_extent", reach_b, tol,
+            REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT,
+            lambda r: "radius %s puts the contact track off support b, "
+                      "which reaches only %.6g from the edge" % (r, reach_b),
+        ),
+    ]
+    return _adjudicate(radius, bounds, CASE_PLANAR_PLANAR, label,
+                       dihedral_deg)
+
+
+def _preflight_rim(edge: EdgePreflight, face_a: FaceType, face_b: FaceType,
+                   radius: float, tol: float) -> FilletFeasibility:
+    """A plane meeting a cylinder along a circular rim."""
+    plane_leads = isinstance(face_a, PlanarFace)
+    plane = face_a if plane_leads else face_b
+    cyl = face_b if plane_leads else face_a
+    assert isinstance(plane, PlanarFace)
+    assert isinstance(cyl, CylindricalFace)
+
+    if not _is_rim_of(edge, plane, cyl, tol):
+        return _refusal(
+            REASON_EDGE_NOT_CAP_RIM,
+            "edge is not the circular rim where the cylinder meets the "
+            "plane",
             CASE_PLANAR_CYLINDRICAL,
-            convexity=label,
-            dihedral_deg=dihedral_deg,
-            max_feasible_radius=max_feasible,
-            limits=limits,
         )
 
-    return FilletFeasibility(
-        feasible=True,
-        reason_code=REASON_OK,
-        reason="",
-        case=CASE_PLANAR_CYLINDRICAL,
-        convexity=label,
-        dihedral_deg=dihedral_deg,
-        max_feasible_radius=max_feasible,
-        limits=limits,
-    )
+    # Convexity is uniform around a rim, so one sample settles it.
+    sample = edge.points[0]
+    tangent = _normalise(_diff(edge.points[1], sample))
+    normal_cyl = cyl.outward_normal_at(sample)
+    lead, trail = ((plane.normal, normal_cyl) if plane_leads
+                   else (normal_cyl, plane.normal))
+    label, dihedral_deg = _convexity_of(lead, trail, tangent, edge.forward)
+    if label != CONVEX:
+        return _refusal(
+            REASON_EDGE_NOT_CONVEX,
+            "a rolling ball can only be seated where the supports meet "
+            "convexly from the material side; this rim is %s" % label,
+            CASE_PLANAR_CYLINDRICAL,
+            convexity=label, dihedral_deg=dihedral_deg,
+        )
+
+    reach = _rim_clearance(plane, cyl)
+    if reach is None or reach <= tol:
+        return _refusal(
+            REASON_DEGENERATE_INPUT,
+            "the planar support has no measurable reach away from the rim",
+            CASE_PLANAR_CYLINDRICAL,
+            convexity=label, dihedral_deg=dihedral_deg,
+        )
+
+    bounds = [
+        _Bound(
+            "cylinder_radius", cyl.radius, 0.0,
+            REASON_RADIUS_EXCEEDS_CYLINDER_RADIUS,
+            lambda r: "radius %s is not smaller than the cylinder radius "
+                      "(%s); the ball cannot fit against the barrel"
+                      % (r, cyl.radius),
+        ),
+        _Bound(
+            "cylinder_height", cyl.height, 0.0,
+            REASON_RADIUS_EXCEEDS_CYLINDER_HEIGHT,
+            lambda r: "radius %s is not smaller than the cylinder height "
+                      "(%s); the ball cannot fit along the barrel"
+                      % (r, cyl.height),
+        ),
+        _Bound(
+            "cap_extent", reach, tol,
+            REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT,
+            lambda r: "radius %s puts the contact circle off the planar "
+                      "support, which reaches only %.6g from the rim"
+                      % (r, reach),
+        ),
+    ]
+    return _adjudicate(radius, bounds, CASE_PLANAR_CYLINDRICAL, label,
+                       dihedral_deg)
 
 
 # ---------------------------------------------------------------------------
@@ -747,165 +719,168 @@ def _check_planar_cylindrical(
 # ---------------------------------------------------------------------------
 
 
-def _circle_polyline(
-    centre: Vec3, radius: float, n: int, ccw: bool = True
-) -> Tuple[Vec3, ...]:
-    """Closed sampled circle in the z = centre.z plane; CCW about +Z when
-    ``ccw`` else CW (inner-loop winding)."""
-    pts = []
-    for i in range(n + 1):
-        theta = 2.0 * math.pi * (i % n) / n
-        if not ccw:
-            theta = -theta
-        pts.append((
-            centre[0] + radius * math.cos(theta),
-            centre[1] + radius * math.sin(theta),
-            centre[2],
-        ))
-    return tuple(pts)
+def _ring(centre: Vec3, radius: float, samples: int,
+          ccw: bool = True) -> Tuple[Vec3, ...]:
+    """Closed sampled circle in the plane z = centre[2], wound CCW about +Z
+    when ``ccw`` and CW otherwise (the winding of an inner loop)."""
+    turn = 2.0 * math.pi / samples
+    ring = []
+    for i in range(samples + 1):
+        theta = turn * (i % samples) * (1.0 if ccw else -1.0)
+        ring.append((centre[0] + radius * math.cos(theta),
+                     centre[1] + radius * math.sin(theta),
+                     centre[2]))
+    return tuple(ring)
+
+
+def _selfcheck() -> None:
+    # --- planar+planar: the vertical edge of a 1 x 1 x 2 block -------------
+    # Both supports reach 1.0 from the edge; the edge itself is 2.0 long.
+    wall_x = PlanarFace(
+        origin=(1.0, 0.5, 1.0), normal=(1.0, 0.0, 0.0),
+        boundary=((1.0, 0.0, 0.0), (1.0, 1.0, 0.0),
+                  (1.0, 1.0, 2.0), (1.0, 0.0, 2.0)),
+    )
+    wall_y = PlanarFace(
+        origin=(0.5, 1.0, 1.0), normal=(0.0, 1.0, 0.0),
+        boundary=((0.0, 1.0, 0.0), (1.0, 1.0, 0.0),
+                  (1.0, 1.0, 2.0), (0.0, 1.0, 2.0)),
+    )
+    corner = EdgePreflight(points=((1.0, 1.0, 0.0), (1.0, 1.0, 1.0),
+                                   (1.0, 1.0, 2.0)))
+
+    seated = check_fillet_feasibility(corner, wall_x, wall_y, 0.2)
+    assert seated.feasible, seated.reason
+    assert seated.case == CASE_PLANAR_PLANAR
+    assert seated.convexity == CONVEX
+    assert abs(seated.dihedral_deg - 90.0) < 1e-9
+    assert abs(seated.max_feasible_radius - 1.0) < 1e-9
+    assert abs(seated.limits["support_a_extent"] - 1.0) < 1e-9
+    assert abs(seated.limits["support_b_extent"] - 1.0) < 1e-9
+    assert abs(seated.limits["edge_length"] - 2.0) < 1e-9
+    print("[selfcheck] planar+planar r=0.2 feasible "
+          "(bound %.3f, dihedral %.1f deg)"
+          % (seated.max_feasible_radius, seated.dihedral_deg))
+
+    too_wide = check_fillet_feasibility(corner, wall_x, wall_y, 1.5)
+    assert not too_wide.feasible
+    assert too_wide.reason_code == REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT
+    assert abs(too_wide.max_feasible_radius - 1.0) < 1e-9
+    print("[selfcheck] planar+planar r=1.5 refused: %s (bound %.3f)"
+          % (too_wide.reason_code, too_wide.max_feasible_radius))
+
+    # Past the edge length too: the edge bound is the one reported.
+    too_long = check_fillet_feasibility(corner, wall_x, wall_y, 2.5)
+    assert not too_long.feasible
+    assert too_long.reason_code == REASON_RADIUS_EXCEEDS_EDGE_LENGTH
+    print("[selfcheck] planar+planar r=2.5 refused: %s"
+          % too_long.reason_code)
+
+    # Flip one outward normal and the same edge becomes an inner corner.
+    pocket_wall = PlanarFace(origin=wall_x.origin, normal=(-1.0, 0.0, 0.0),
+                             boundary=wall_x.boundary)
+    inner = check_fillet_feasibility(corner, pocket_wall, wall_y, 0.2)
+    assert not inner.feasible
+    assert inner.reason_code == REASON_EDGE_NOT_CONVEX
+    print("[selfcheck] concave crease refused: %s" % inner.reason_code)
+
+    # A curved polyline is not a plane-plane intersection.
+    bent = EdgePreflight(points=((1.0, 1.0, 0.0), (1.2, 1.0, 1.0),
+                                 (1.0, 1.0, 2.0)))
+    assert check_fillet_feasibility(bent, wall_x, wall_y, 0.1).reason_code \
+        == REASON_EDGE_NOT_STRAIGHT
+
+    # --- planar+cylindrical: a hole rim in the top of a unit cube ---------
+    # Hole radius 0.3 centred in a 1 x 1 face: the cap reaches 0.5 - 0.3
+    # = 0.2 from the rim, so feasibility flips there.
+    top = PlanarFace(
+        origin=(0.5, 0.5, 1.0), normal=(0.0, 0.0, 1.0),
+        boundary=((0.0, 0.0, 1.0), (1.0, 0.0, 1.0),
+                  (1.0, 1.0, 1.0), (0.0, 1.0, 1.0)),
+    )
+    bore = CylindricalFace(axis_point=(0.5, 0.5, 0.0),
+                           axis_dir=(0.0, 0.0, 1.0), radius=0.3, height=1.0,
+                           outward_radial=False)
+    bore_rim = EdgePreflight(points=_ring((0.5, 0.5, 1.0), 0.3, 24,
+                                          ccw=False))
+    hole_ok = check_fillet_feasibility(bore_rim, top, bore, 0.1)
+    assert hole_ok.feasible, hole_ok.reason
+    assert hole_ok.case == CASE_PLANAR_CYLINDRICAL
+    assert hole_ok.convexity == CONVEX
+    assert abs(hole_ok.max_feasible_radius - 0.2) < 1e-9
+    assert abs(hole_ok.limits["cap_extent"] - 0.2) < 1e-9
+    hole_bad = check_fillet_feasibility(bore_rim, top, bore, 0.25)
+    assert not hole_bad.feasible
+    assert hole_bad.reason_code == REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT
+    print("[selfcheck] hole rim: r=0.1 feasible, r=0.25 refused (%s); "
+          "bound at %.3f"
+          % (hole_bad.reason_code, hole_ok.max_feasible_radius))
+
+    # --- planar+cylindrical: the cap rim of a solid barrel ----------------
+    cap_ring = _ring((0.0, 0.0, 1.0), 0.5, 24, ccw=True)
+    cap = PlanarFace(origin=(0.0, 0.0, 1.0), normal=(0.0, 0.0, 1.0),
+                     boundary=cap_ring[:-1])
+    barrel = CylindricalFace(axis_point=(0.0, 0.0, 0.0),
+                             axis_dir=(0.0, 0.0, 1.0), radius=0.5,
+                             height=1.0, outward_radial=True)
+    cap_rim = EdgePreflight(points=cap_ring)
+    cap_ok = check_fillet_feasibility(cap_rim, cap, barrel, 0.4)
+    assert cap_ok.feasible, cap_ok.reason
+    assert abs(cap_ok.max_feasible_radius - 0.5) < 1e-9
+    cap_bad = check_fillet_feasibility(cap_rim, cap, barrel, 0.6)
+    assert not cap_bad.feasible
+    assert cap_bad.reason_code == REASON_RADIUS_EXCEEDS_CYLINDER_RADIUS
+    print("[selfcheck] cap rim: r=0.4 feasible, r=0.6 refused (%s)"
+          % cap_bad.reason_code)
+
+    # A short barrel is limited by its height instead.
+    stub = CylindricalFace(axis_point=(0.0, 0.0, 0.0),
+                           axis_dir=(0.0, 0.0, 1.0), radius=0.5, height=0.2)
+    stub_bad = check_fillet_feasibility(cap_rim, cap, stub, 0.3)
+    assert stub_bad.reason_code == REASON_RADIUS_EXCEEDS_CYLINDER_HEIGHT
+
+    # --- out of contract ---------------------------------------------------
+    crossing = CylindricalFace(axis_point=(0.0, 0.0, 0.0),
+                               axis_dir=(1.0, 0.0, 0.0), radius=0.5,
+                               height=1.0)
+    unsupported = check_fillet_feasibility(cap_rim, barrel, crossing, 0.1)
+    assert not unsupported.feasible
+    assert unsupported.reason_code == REASON_UNSUPPORTED_FACE_PAIR
+    assert unsupported.case == CASE_UNSUPPORTED
+    assert "planar+planar or planar+cylindrical" in unsupported.reason
+    print("[selfcheck] cylinder+cylinder refused: %s"
+          % unsupported.reason_code)
+
+    for bad_radius in (0.0, -1.0, True):
+        nope = check_fillet_feasibility(corner, wall_x, wall_y, bad_radius)
+        assert not nope.feasible
+        assert nope.reason_code == REASON_NONPOSITIVE_RADIUS
+    print("[selfcheck] non-positive radii refused: %s"
+          % REASON_NONPOSITIVE_RADIUS)
+
+    # The verdict is diagnostics only -- no geometry rides along with it.
+    assert set(seated.to_dict()) == {
+        "feasible", "reason_code", "reason", "case", "convexity",
+        "dihedral_deg", "max_feasible_radius", "limits"}
+    assert "planar+cylindrical" in supported_contract()
+    print("[selfcheck] OK")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.geometry.features."
              "fillet_feasibility",
-        description="Fillet-feasibility preflight predicate; rolling-ball "
-                    "construction is deliberately deferred.",
+        description="Rolling-ball fillet feasibility preflight; reports "
+                    "whether a fillet could be placed, and builds nothing.",
     )
     parser.add_argument("--selfcheck", action="store_true",
-                        help="run deterministic synthetic-geometry checks "
-                             "of the feasibility predicate.")
+                        help="run the deterministic synthetic-geometry "
+                             "checks of the feasibility predicate.")
     args = parser.parse_args(list(argv) if argv is not None else None)
     if not args.selfcheck:
         parser.print_help()
         return 0
-
-    # --- planar+planar: box edge, plane pair at 90 degrees, extents 1.0 --
-    # Box [0,1]x[0,1]x[0,2]; filleted edge along +Z at (x=1, y=1), so the
-    # perpendicular extents of both supports are 1.0 and edge length is 2.
-    face_px = PlanarFace(
-        origin=(1.0, 0.5, 1.0), normal=(1.0, 0.0, 0.0),
-        boundary=((1.0, 0.0, 0.0), (1.0, 1.0, 0.0),
-                  (1.0, 1.0, 2.0), (1.0, 0.0, 2.0)),
-    )
-    face_py = PlanarFace(
-        origin=(0.5, 1.0, 1.0), normal=(0.0, 1.0, 0.0),
-        boundary=((0.0, 1.0, 0.0), (1.0, 1.0, 0.0),
-                  (1.0, 1.0, 2.0), (0.0, 1.0, 2.0)),
-    )
-    # Polyline forward per face_px's outer loop (CCW about +X).
-    box_edge = EdgePreflight(
-        points=((1.0, 1.0, 0.0), (1.0, 1.0, 1.0), (1.0, 1.0, 2.0)),
-    )
-    ok = check_fillet_feasibility(box_edge, face_px, face_py, 0.2)
-    assert ok.feasible, ok.reason
-    assert ok.case == CASE_PLANAR_PLANAR
-    assert ok.convexity == CONVEX
-    assert abs(ok.dihedral_deg - 90.0) < 1e-9
-    assert abs(ok.max_feasible_radius - 1.0) < 1e-9
-    assert abs(ok.limits["support_a_extent"] - 1.0) < 1e-9
-    assert abs(ok.limits["support_b_extent"] - 1.0) < 1e-9
-    print("[selfcheck] planar+planar r=0.2 feasible "
-          "(max_feasible=%.3f, dihedral=%.1f deg)"
-          % (ok.max_feasible_radius, ok.dihedral_deg))
-
-    bad = check_fillet_feasibility(box_edge, face_px, face_py, 1.5)
-    assert not bad.feasible
-    assert bad.reason_code == REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT, bad
-    assert abs(bad.max_feasible_radius - 1.0) < 1e-9
-    print("[selfcheck] planar+planar r=1.5 refused: %s (max_feasible=%.3f)"
-          % (bad.reason_code, bad.max_feasible_radius))
-
-    # Kerf's edge-length limit fires first when r also exceeds the edge.
-    long_bad = check_fillet_feasibility(box_edge, face_px, face_py, 2.5)
-    assert not long_bad.feasible
-    assert long_bad.reason_code == REASON_RADIUS_EXCEEDS_EDGE_LENGTH
-    print("[selfcheck] planar+planar r=2.5 refused: %s"
-          % long_bad.reason_code)
-
-    # Concave inner corner (a pocket wall: face a's outward normal points
-    # the other way) is refused per contract.
-    face_px_in = PlanarFace(
-        origin=face_px.origin, normal=(-1.0, 0.0, 0.0),
-        boundary=face_px.boundary,
-    )
-    concave = check_fillet_feasibility(box_edge, face_px_in, face_py, 0.2)
-    assert not concave.feasible
-    assert concave.reason_code == REASON_EDGE_NOT_CONVEX
-    print("[selfcheck] concave planar+planar refused: %s"
-          % concave.reason_code)
-
-    # --- planar+cylindrical: hole rim in a unit cube's top face ----------
-    # Cube [0,1]^3 with a through hole of radius 0.3 at the centre of the
-    # top face.  cap_extent = 0.5 - 0.3 = 0.2 (rim clearance to the square
-    # boundary), so feasibility flips at r = 0.2.
-    top = PlanarFace(
-        origin=(0.5, 0.5, 1.0), normal=(0.0, 0.0, 1.0),
-        boundary=((0.0, 0.0, 1.0), (1.0, 0.0, 1.0),
-                  (1.0, 1.0, 1.0), (0.0, 1.0, 1.0)),
-    )
-    hole = CylindricalFace(
-        axis_point=(0.5, 0.5, 0.0), axis_dir=(0.0, 0.0, 1.0),
-        radius=0.3, height=1.0, outward_radial=False,
-    )
-    # Hole rim is an inner loop of the top face: CW about +Z.
-    rim = EdgePreflight(
-        points=_circle_polyline((0.5, 0.5, 1.0), 0.3, 24, ccw=False),
-    )
-    ok2 = check_fillet_feasibility(rim, top, hole, 0.1)
-    assert ok2.feasible, ok2.reason
-    assert ok2.case == CASE_PLANAR_CYLINDRICAL
-    assert ok2.convexity == CONVEX
-    assert abs(ok2.max_feasible_radius - 0.2) < 1e-9
-    assert abs(ok2.limits["cap_extent"] - 0.2) < 1e-9
-    bad2 = check_fillet_feasibility(rim, top, hole, 0.25)
-    assert not bad2.feasible
-    assert bad2.reason_code == REASON_RADIUS_EXCEEDS_SUPPORT_EXTENT, bad2
-    print("[selfcheck] planar+cylindrical hole rim: r=0.1 feasible, "
-          "r=0.25 refused (%s); bound flips at %.3f"
-          % (bad2.reason_code, ok2.max_feasible_radius))
-
-    # Kerf's exact cap-rim case: cylinder body (boss), R=0.5, H=1.0 --
-    # bound is min(R, H, cap_extent=R) = 0.5, rolling-ball-does-not-fit
-    # refusal above it.
-    cap_pts = _circle_polyline((0.0, 0.0, 1.0), 0.5, 24, ccw=True)
-    cap = PlanarFace(
-        origin=(0.0, 0.0, 1.0), normal=(0.0, 0.0, 1.0), boundary=cap_pts[:-1],
-    )
-    barrel = CylindricalFace(
-        axis_point=(0.0, 0.0, 0.0), axis_dir=(0.0, 0.0, 1.0),
-        radius=0.5, height=1.0, outward_radial=True,
-    )
-    cap_rim = EdgePreflight(points=cap_pts)
-    ok3 = check_fillet_feasibility(cap_rim, cap, barrel, 0.4)
-    assert ok3.feasible, ok3.reason
-    assert abs(ok3.max_feasible_radius - 0.5) < 1e-9
-    bad3 = check_fillet_feasibility(cap_rim, cap, barrel, 0.6)
-    assert not bad3.feasible
-    assert bad3.reason_code == REASON_RADIUS_EXCEEDS_CYLINDER_RADIUS
-    print("[selfcheck] planar+cylindrical cap rim: r=0.4 feasible, "
-          "r=0.6 refused (%s)" % bad3.reason_code)
-
-    # --- unsupported face pair: two cylinders -----------------------------
-    other_cyl = CylindricalFace(
-        axis_point=(0.0, 0.0, 0.0), axis_dir=(1.0, 0.0, 0.0),
-        radius=0.5, height=1.0,
-    )
-    unsup = check_fillet_feasibility(cap_rim, barrel, other_cyl, 0.1)
-    assert not unsup.feasible
-    assert unsup.reason_code == REASON_UNSUPPORTED_FACE_PAIR
-    assert unsup.case == CASE_UNSUPPORTED
-    assert "planar+planar or planar+cylindrical" in unsup.reason
-    print("[selfcheck] cylinder+cylinder refused: %s" % unsup.reason_code)
-
-    # --- degenerate radius -------------------------------------------------
-    zero = check_fillet_feasibility(box_edge, face_px, face_py, 0.0)
-    assert not zero.feasible
-    assert zero.reason_code == REASON_NONPOSITIVE_RADIUS
-    print("[selfcheck] r=0 refused: %s" % zero.reason_code)
-
-    assert "planar+cylindrical" in supported_contract()
-    print("[selfcheck] OK")
+    _selfcheck()
     return 0
 
 
