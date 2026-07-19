@@ -1,19 +1,15 @@
 """Triangle-mesh repair toolkit: weld, unify normals, fill holes, decimate.
 
-Ported from kerf-main geom/mesh_repair.py (kerf-cad-core).
-
-kerf's mesh_repair module is a pure-Python Rhino-MeshRepair-parity toolkit
-operating on indexed triangle meshes.  This port keeps the algorithms and the
-never-raise contract intact while adapting the data model to the harness mesh
-convention used by :mod:`harnesscad.domain.geometry.mesh.polyhedron` and
+The toolkit operates on indexed triangle meshes with a never-raise contract
+and the harness mesh convention used by :mod:`harnesscad.domain.geometry.mesh.polyhedron` and
 :mod:`harnesscad.domain.geometry.mesh.halfedge`: vertices are a
 ``List[Tuple[float, float, float]]`` and triangles are a
 ``List[Tuple[int, int, int]]`` (0-based indices, CCW winding = outward
 normal).  All operations are plain functions on ``(vertices, triangles)``
 pairs -- no mesh class is introduced.
 
-Ported
-------
+Operations
+----------
 * :func:`weld_vertices` -- spatial-hash vertex welding at a tolerance;
   collapsed (degenerate) triangles are dropped during remapping.
 * :func:`unify_normals` -- BFS over the face-adjacency dual graph; each
@@ -857,7 +853,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         prog="python -m harnesscad.domain.geometry.mesh.repair_toolkit",
         description="Triangle-mesh repair toolkit: weld, unify normals, "
                     "fill holes, remove degenerates, QEM decimation "
-                    "(ported from kerf mesh_repair).",
+                    "with a never-raise contract.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="build synthetic cube meshes and prove weld / "

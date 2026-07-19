@@ -1,16 +1,15 @@
 """Fillet-feasibility preflight predicate (deterministic, stdlib-only).
 
-Ported from kerf-main ``geom/fillet_solid.py`` (kerf-cad-core): the
-FEASIBILITY PREDICATE and the SUPPORTED-INPUT CONTRACT of
-``fillet_solid_edge`` only.  The full rolling-ball fillet surface
+This module supplies the feasibility predicate and supported-input contract
+for an analytic rolling-ball fillet. The full rolling-ball fillet surface
 construction (quarter-cylinder fillet face for planar+planar, quarter-torus
 fillet face for planar+cylindrical, sewing and body validation) is
 DEFERRED -- this module answers, before any kernel is invoked, "can a
 rolling-ball fillet of radius r be placed on this edge at all, and if not,
 why not, and what is the largest radius that would fit?".
 
-What is ported, exactly as kerf computes it
--------------------------------------------
+Supported behavior
+------------------
 * The supported-input taxonomy.  Kerf accepts exactly two face-pair
   configurations at the edge (classified by isinstance on the face surface;
   here by the analytic face dataclass type):
@@ -768,9 +767,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.geometry.features."
              "fillet_feasibility",
-        description="Fillet-feasibility preflight predicate ported from "
-                    "kerf fillet_solid.py (feasibility and supported-input "
-                    "contract only; rolling-ball construction deferred).",
+        description="Fillet-feasibility preflight predicate; rolling-ball "
+                    "construction is deliberately deferred.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="run deterministic synthetic-geometry checks "

@@ -1,9 +1,6 @@
-"""Botsch-Kobbelt isotropic remeshing: split / collapse / flip / smooth.
+"""Isotropic remeshing: split / collapse / flip / smooth.
 
-Ported from kerf-main ``geom/isotropic_remesh.py`` (kerf-cad-core), the
-pure-Python fallback kerf uses when the ``instant-meshes`` binary is
-unavailable.  Algorithm follows Botsch & Kobbelt, "A Remeshing Approach to
-Multiresolution Modeling" (Symposium on Geometry Processing 2004):
+The pure-Python algorithm uses these deterministic passes:
 
 1. split every edge longer than ``4/3 * L`` at its midpoint, processed
    longest-first (kerf splits one edge per pass and rebuilds the edge map,
@@ -610,9 +607,9 @@ def _boundary_polygon(
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.geometry.mesh.isotropic_remesh",
-        description="Botsch-Kobbelt isotropic remeshing "
+        description="Isotropic remeshing "
                     "(split / collapse / flip / tangential smooth), "
-                    "ported from kerf-cad-core.",
+                    "with deterministic passes.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="remesh a coarse unit cube and an open grid "
