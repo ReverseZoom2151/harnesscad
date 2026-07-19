@@ -136,7 +136,7 @@
       "layer": "agents",
       "name": "build123d_lints",
       "package": "agent",
-      "summary": "Deterministic Build123d code lints and fillet auto-heal (Studio-OSS).",
+      "summary": "Deterministic Build123d code lints and fillet auto-heal.",
       "symbols": [
         "Build123dLint",
         "guard_fillets",
@@ -482,7 +482,7 @@
       "layer": "agents",
       "name": "progressive_escalation",
       "package": "agent",
-      "summary": "Cost-aware progressive escalation policy for a text-to-CAD pipeline.",
+      "summary": "Cost-aware progressive escalation policy for a natural-language CAD pipeline.",
       "symbols": [
         "EscalationConfig",
         "PipelineState",
@@ -5910,7 +5910,7 @@
       "layer": "data",
       "name": "asymmetric_clip",
       "package": "dataengine",
-      "summary": "Trust Region Stretch (TRS) -- asymmetric PPO clip surrogate (CAD-RL, 2026).",
+      "summary": "Trust Region Stretch (TRS) -- asymmetric PPO clip surrogate.",
       "symbols": [
         "clip_ratio",
         "is_clipped",
@@ -6049,7 +6049,7 @@
       "layer": "data",
       "name": "hard_questions",
       "package": "dataengine",
-      "summary": "ReCAD hard-question identification and RL objective routing (ReCAD, AAAI 2026).",
+      "summary": "Hard-question identification and RL objective routing.",
       "symbols": [
         "identify_hard_questions",
         "is_hard",
@@ -17773,7 +17773,7 @@
       "layer": "domain",
       "name": "brepler_linearise",
       "package": "reconstruction",
-      "summary": "Brepler B-rep face-sequence linearisation (area-descending BFS from a corner seed).",
+      "summary": "B-rep face-sequence linearisation (area-descending BFS from a corner seed).",
       "symbols": [
         "adjacency_from_edges",
         "area_descending_bfs",
@@ -17939,7 +17939,7 @@
       "layer": "domain",
       "name": "entity_features",
       "package": "reconstruction",
-      "summary": "Deterministic B-Rep entity features for joint prediction (JoinABLe).",
+      "summary": "Deterministic B-Rep entity features for joint prediction.",
       "symbols": [
         "EntityFeatureError",
         "bounding_box",
@@ -20015,7 +20015,7 @@
       "layer": "domain",
       "name": "factorization",
       "package": "reconstruction",
-      "summary": "Conditional factorization of a sketch-extrude CAD model (Img2CAD).",
+      "summary": "Conditional factorization of a sketch-extrude CAD model.",
       "symbols": [
         "assemble",
         "factorize",
@@ -20261,7 +20261,7 @@
       "layer": "domain",
       "name": "shared_attributes",
       "package": "reconstruction",
-      "summary": "Sheaf-inspired shared attribute space for Img2CAD conditional factorization.",
+      "summary": "Sheaf-inspired shared attribute space for conditional factorization.",
       "symbols": [
         "SharedAttributePrior"
       ],
@@ -39093,7 +39093,7 @@
       "layer": "io",
       "name": "server",
       "package": "surfaces",
-      "summary": "CISP server \u2014 the LSP-inspired interface that exposes the harness over JSON.",
+      "summary": "CISP server \u2014 the request/response interface exposing the harness over JSON.",
       "symbols": [
         "CISPMethodError",
         "CISPServer",
