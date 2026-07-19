@@ -5,12 +5,12 @@ a machine-readable catalog so generation and repair can consult it BEFORE an
 operation hangs, silently no-ops, or produces an invalid solid. Each entry
 names the quirk, the trigger that provokes it, and the proven workaround.
 
-  * cadquery (cadquery-master): SetFuzzyValue on every boolean builder
+  * cadquery: SetFuzzyValue on every boolean builder
     (``occ_impl/shapes.py``); a 0-degree revolve must be rewritten as 360
     (``cq.py``, "Compensate for OCCT not assuming that a 0 degree revolve
     means a 360 degree revolve"); infinite faces report a center near the
     (1e99, 1e99) sentinel.
-  * Roshera-CAD (Roshera-CAD-main ``roshera-mcp/src/tools/modify.ts``): the
+  * Ring-hole booleans: the
     cyl-cyl saddle boolean from ADJACENT INTERSECTING ring holes is a known
     open kernel bug -- refuse loudly when chord spacing
     ``2*ring_r*sin(pi/count) <= 2*hole_r`` instead of hanging. Exposed here
@@ -45,7 +45,7 @@ from typing import List, Optional, Sequence, Tuple
 #: OpenCAD's near-tangent instability threshold (ERRORS.md, BBOX_NEAR_TANGENT).
 NEAR_TANGENT_TOLERANCE = 1e-6
 
-#: cadquery's infinite-face center sentinel magnitude (occ_impl).
+#: The kernel's infinite-face center sentinel magnitude.
 INFINITE_FACE_SENTINEL = 1e99
 
 
@@ -223,7 +223,7 @@ class Feasibility:
 
 
 def ring_holes_feasible(count: int, ring_r: float, hole_r: float) -> Feasibility:
-    """Roshera's saddle-boolean refusal formula as a callable predicate.
+    """The saddle-boolean refusal formula as a callable predicate.
 
     Adjacent holes on a ring intersect when their chord spacing
     ``2*ring_r*sin(pi/count)`` is at most ``2*hole_r``; the resulting
@@ -259,13 +259,13 @@ def overlap_is_near_tangent(overlap: float,
 
 
 def is_infinite_face_center(coord: Sequence[float]) -> bool:
-    """True when a face-center coordinate carries cadquery's infinite-face
+    """True when a face-center coordinate carries the kernel's infinite-face
     sentinel (any component with magnitude >= 1e99)."""
     return any(abs(c) >= INFINITE_FACE_SENTINEL for c in coord)
 
 
 def normalize_revolve_angle(angle_degrees: float) -> float:
-    """cadquery's 0-degree revolve compensation, verbatim policy.
+    """The 0-degree revolve compensation, verbatim policy.
 
     ``angle %= 360``; a result of 0 means FULL revolution, because OCCT does
     not assume that itself.

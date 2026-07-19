@@ -1,8 +1,8 @@
-"""CISP server — the LSP-inspired interface that exposes the harness over JSON.
+"""CISP server — the request/response interface exposing the harness over JSON.
 
-CISP (CAD Interaction / Sketch Protocol) mirrors the request/response shape of
-the Language Server Protocol: a small vocabulary of typed methods, each taking a
-JSON object and returning a JSON object. The transport is line-delimited JSON
+CISP (CAD Interaction / Sketch Protocol) is a small vocabulary of typed
+methods, each taking a JSON object and returning a JSON object, in the style of
+a language server. The transport is line-delimited JSON
 (one request per line, one response per line) so it drops cleanly into an MCP
 server, a subprocess, or a stdio pipe.
 

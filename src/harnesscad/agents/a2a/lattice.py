@@ -67,8 +67,8 @@ def run_id_from_counter(counter: Callable[[], int]) -> str:
     """Build a deterministic run id ``lat_{n}`` from a counter callable.
 
     The counter is caller-owned (e.g. ``task.monotonic_counter()``) so run
-    ids are reproducible -- the Forma-OSS original used ``uuid4``, which the
-    harness forbids.
+    ids are reproducible -- ``uuid4`` is deliberately not used, since the
+    harness forbids non-deterministic identifiers.
     """
     return f"lat_{counter()}"
 
@@ -146,8 +146,8 @@ class LatticeSchemaContract:
     ) -> "LatticeSchemaContract":
         """Build a contract from plain dict schemas.
 
-        The Forma-OSS original (``from_models``) derived JSON Schemas from
-        pydantic models; the harness is stdlib-only, so callers hand over the
+        Deriving JSON Schemas from pydantic models would pull in a non-stdlib
+        dependency; the harness is stdlib-only, so callers hand over the
         schema dicts themselves (empty dicts when unconstrained).
         """
         return cls(
@@ -299,7 +299,7 @@ class LatticeRegistry:
 
     Discovery surface for the orchestrator: ``find`` matches by namespace,
     domain, capability id/label, or tool-name substring (all case-insensitive
-    substring matches, mirroring the Forma-OSS semantics). ``manifest`` emits
+    substring matches). ``manifest`` emits
     the whole registry as one JSON-serialisable dict.
     """
 

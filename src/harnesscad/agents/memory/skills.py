@@ -91,7 +91,7 @@ class SkillLibrary:
 
     def add_verified(self, skill: Skill, session_factory: Callable[[], Any],
                      params: Optional[Dict[str, Any]] = None) -> bool:
-        """Voyager gate: EXECUTE the skill's expanded ops through a fresh
+        """Verification gate: EXECUTE the skill's expanded ops through a fresh
         HarnessSession and admit it ONLY if the batch verifies (ok == True).
 
         ``session_factory`` returns a fresh session (e.g.
@@ -137,7 +137,7 @@ class SkillLibrary:
         :class:`~harnesscad.agents.memory.store.Episode`); it is frozen into a
         skill template.
 
-        This is deliberately the SAME Voyager gate as :meth:`add_verified`: the
+        This is deliberately the SAME verification gate as :meth:`add_verified`: the
         corrected ops are EXECUTED on a fresh session and the skill is admitted
         ONLY if they actually build (``ok == True``). A human saying "this is the
         fix" is not enough -- a correction that does not itself verify is

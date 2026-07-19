@@ -5,7 +5,7 @@ success:
 
   * the **verifier** passed (``verifier_ok``) -- the original gate;
   * the final answer's **claims are backed by evidence** -- the gate
-    from cad-cae-copilot and implemented in
+    implemented in
     :mod:`harnesscad.agents.agent.claims_gate`: a run whose intent required a
     geometry mutation may not answer until a mutation tool actually succeeded,
     and an answer declaring solver results may not pass unless an approved,

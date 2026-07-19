@@ -1,10 +1,10 @@
-"""Sheaf-inspired shared attribute space for Img2CAD conditional factorization.
+"""Sheaf-inspired shared attribute space for conditional factorization.
 
-The Img2CAD paper motivates its attribute predictor with a sheaf-theoretic view:
+The attribute predictor rests on a sheaf-theoretic view:
 over a base space of *labelled CAD structures*, the fibres are the continuous
 attribute-parameter spaces, and parts that share a semantic label (e.g. the four
 "leg" parts of a chair, or "backrest" across different chairs) have locally
-consistent attributes. TrAssembler exploits this by sharing information across
+consistent attributes. A predictor exploits this by sharing information across
 commands that share a semantic part name, which lets it learn from limited data.
 
 This module is the deterministic, network-free analogue of that shared space. It
@@ -14,10 +14,10 @@ command_type, position_within_part)`` across a collection of CAD models, then
 * predicts a baseline attribute assignment for a new discrete structure by reading
   the shared mean of each matching key (a deterministic Stage-2 baseline), and
 * regularizes an existing attribute prediction by blending it toward the shared
-  mean (the "consistency across the attribute space" the paper reports as
-  essential to performance).
+  mean (the consistency across the attribute space that is essential to
+  performance).
 
-The learned flow-matching TrAssembler and GMFlow remain out of scope.
+The learned flow-matching attribute network remains out of scope.
 """
 
 from __future__ import annotations

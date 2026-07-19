@@ -27,7 +27,7 @@ Command vocabulary (Table 1)::
     add_sketch(sketchplane, profile, position, size)
     add_extrude(sketch, operation, type, extent_one, extent_two)
 
-Unlike DeepCAD's flat, scaled 16-vector (``reconstruction.deepcad_command_spec``)
+Unlike the flat, scaled 16-vector encoding (``reconstruction.deepcad_command_spec``)
 this is a higher-level *named-variable script* whose coordinates live in absolute
 space and whose reference planes may depend on previously created features -- the
 properties the paper credits for editability. Pure and deterministic; the VLM

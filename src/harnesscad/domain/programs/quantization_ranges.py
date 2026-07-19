@@ -1,36 +1,45 @@
 """Parameter quantization ranges and codecs for two CAD sequence tokenizers.
 
-Both DeepCAD and SkexGen turn a continuous CAD construction sequence into a
-sequence of *discrete tokens* so a transformer can model it. The mapping from a
-float parameter to a token id is the single most consequential piece of glue in
-those pipelines: it fixes the vocabulary size, the achievable precision, and the
-failure mode when a value leaves the modelled range. This module reproduces both
-codecs as constants plus exact reimplementations, so the harness can reason
-about token-space precision without importing either project (or numpy/torch).
+Two widely used tokenizer designs turn a continuous CAD construction sequence
+into a sequence of *discrete tokens* so a transformer can model it. The mapping
+from a float parameter to a token id is the single most consequential piece of
+glue in those pipelines: it fixes the vocabulary size, the achievable precision,
+and the failure mode when a value leaves the modelled range. This module
+reproduces both codecs as constants plus exact reimplementations, so the harness
+can reason about token-space precision without importing either upstream
+pipeline (or numpy/torch).
+
+The two schemes are referred to throughout by what they do:
+
+* the **rounding codec** -- symmetric ``[-1, 1]`` input, round-to-nearest, an
+  asymmetric grid and 256 bins;
+* the **truncating codec** -- divisor ``2**b - 1``, floor, 64 bins at its
+  shipped bit width.
 
 The constants and numeric behaviour are transcribed as *facts*; no code is
 copied, and the interesting content is the *behaviour*, documented below.
 
 Five behaviours here are easy to get wrong and are what the selfcheck pins down:
 
-1. **DeepCAD's grid is asymmetric.** ``numericalize`` maps ``x -> round((x+1)/2*n)``
+1. **The rounding codec's grid is asymmetric.** ``numericalize`` maps ``x -> round((x+1)/2*n)``
    then clips to ``[0, n-1]``, while ``denumericalize`` inverts with ``q/n*2-1``.
    The forward map's natural top code is ``n`` but the vocabulary stops at
    ``n-1``, so ``x = -1`` round-trips exactly while ``x = +1`` comes back as
    ``0.9921875`` (for ``n = 256``). The low end is a fencepost; the high end is a
    clip.
 
-2. **DeepCAD clamps silently, and the guard is looser than the range.**
+2. **The rounding codec clamps silently, and the guard is looser than the range.**
    ``Extrude.numericalize`` asserts ``-2.0 <= extent <= 2.0`` but the affine map
    only covers ``[-1, 1]``; an extent of ``1.5`` passes the assert and is then
    clipped to the top bin, losing the value with no error raised.
 
-3. **SkexGen truncates, it does not round.** Its ``quantize`` computes the scaled
-   value, clips, then calls ``.astype('int32')`` -- truncation toward zero, which
-   for the clipped (non-negative) value is a floor. So SkexGen's worst-case
-   round-trip error is a *full* bin, not half a bin, and the error is one-sided
-   (the dequantized value never exceeds the input). Its divisor is ``2**b - 1``
-   rather than DeepCAD's ``n``, so the token grid spans the full range and both
+3. **The truncating codec truncates, it does not round.** Its ``quantize``
+   computes the scaled value, clips, then calls ``.astype('int32')`` --
+   truncation toward zero, which for the clipped (non-negative) value is a
+   floor. So its worst-case round-trip error is a *full* bin, not half a bin,
+   and the error is one-sided (the dequantized value never exceeds the input).
+   Its divisor is ``2**b - 1`` rather than ``n``, so the token grid spans the
+   full range and both
    endpoints are exactly representable -- though truncation can still keep the
    forward map from reaching the top token, see 5.
 
@@ -38,8 +47,9 @@ Five behaviours here are easy to get wrong and are what the selfcheck pins down:
    ``geom_utils.quantize_verts`` has no clip step at all, so an input outside
    ``[-0.5, 0.5]`` yields a token id outside ``[0, 2**b - 1]``.
 
-5. **Truncation makes the top endpoint floating-point fragile.** Because SkexGen
-   floors instead of rounding, the exactness of its top token depends on
+5. **Truncation makes the top endpoint floating-point fragile.** Because the
+   truncating codec floors instead of rounding, the exactness of its top token
+   depends on
    ``(x-min)*R/(max-min)`` landing on ``R`` and not a hair below it. It does for
    the binary-exact ranges (SKETCH_R, RADIUS_R, EXTRUDE_R, OFFSET_R), but *not*
    for ``SCALE_R = 1.4``: ``1.4*63/1.4`` evaluates to ``62.99999999999999``, so
@@ -107,7 +117,7 @@ __all__ = [
 
 
 # --------------------------------------------------------------------------
-# DeepCAD constants
+# Rounding-codec constants
 # --------------------------------------------------------------------------
 
 #: Argument vocabulary size: every quantized argument is one of 256 tokens.
@@ -150,7 +160,7 @@ EXTENT_TYPE = (
 
 @dataclass(frozen=True)
 class FieldSpec:
-    """One slot of DeepCAD's 16-dim argument vector.
+    """One slot of the rounding codec's 16-dim argument vector.
 
     ``codec`` names the mapping used to reach token space:
 
@@ -216,14 +226,14 @@ DEEPCAD_FIELDS: Tuple[FieldSpec, ...] = (
 
 
 # --------------------------------------------------------------------------
-# SkexGen constants
+# Truncating-codec constants
 # --------------------------------------------------------------------------
 
-#: Bit width the SkexGen pipeline uses at every stage (``--bit 6``),
-#: i.e. 64 tokens per quantized field -- a quarter of DeepCAD's ARGS_DIM.
+#: Bit width the truncating pipeline uses at every stage (``--bit 6``),
+#: i.e. 64 tokens per quantized field -- a quarter of the rounding ARGS_DIM.
 SKEXGEN_BIT = 6
 
-#: Symmetric/positive half-ranges each SkexGen field is quantized against.
+#: Symmetric/positive half-ranges each truncating-codec field is quantized against.
 #: SKETCH_R/RADIUS_R/EXTRUDE_R are +-R; SCALE_R is [0, R]; OFFSET_R is +-R.
 SKEXGEN_RANGES: Dict[str, Tuple[float, float]] = {
     "sketch": (-1.0, 1.0),      # SKETCH_R = 1   -- curve points, plane origin
@@ -255,11 +265,11 @@ def _check_n(n: int) -> None:
 
 
 # --------------------------------------------------------------------------
-# DeepCAD codecs
+# Rounding codecs
 # --------------------------------------------------------------------------
 
 def deepcad_quantize(x: float, n: int = ARGS_DIM) -> int:
-    """Quantize a value in ``[-1, 1]`` to a token in ``[0, n-1]`` (DeepCAD affine).
+    """Quantize a value in ``[-1, 1]`` to a token in ``[0, n-1]`` (rounding affine).
 
     Reproduces ``round((x + 1) / 2 * n)`` clipped to ``[0, n-1]``. Rounding is
     half-to-even (numpy's ``.round()`` and Python's ``round()`` agree here).
@@ -295,9 +305,9 @@ def deepcad_dequantize_plane_angle(q: int, n: int = ARGS_DIM) -> float:
 def deepcad_quantize_arc_angle(theta: float, n: int = ARGS_DIM) -> int:
     """Quantize an arc endpoint angle in ``[0, 2*pi)`` to ``[0, n-1]``.
 
-    DeepCAD quantizes ``start_angle``/``end_angle`` this way and then emits only
-    their *difference* (``Arc.to_vector``), so the repo defines no inverse for
-    this codec; none is offered here either.
+    The rounding codec quantizes ``start_angle``/``end_angle`` this way and then
+    emits only their *difference* (``Arc.to_vector``), so no inverse is defined
+    for this codec upstream; none is offered here either.
     """
     _check_n(n)
     return _clip(int(round(float(theta) / (2.0 * math.pi) * n)), 0, n - 1)
@@ -375,12 +385,12 @@ def deepcad_max_roundtrip_error(n: int = ARGS_DIM) -> float:
 
 
 # --------------------------------------------------------------------------
-# SkexGen codecs
+# Truncating codecs
 # --------------------------------------------------------------------------
 
 def skexgen_quantize(x: float, n_bits: int = SKEXGEN_BIT,
                      min_range: float = -1.0, max_range: float = 1.0) -> int:
-    """Quantize ``x`` to ``[0, 2**n_bits - 1]`` the way SkexGen's ``quantize`` does.
+    """Quantize ``x`` to ``[0, 2**n_bits - 1]`` the way the truncating ``quantize`` does.
 
     Scale, clip, then **truncate** (the source's ``.astype('int32')``). The clip
     happens first, so the truncated value is non-negative and truncation is a
@@ -406,7 +416,7 @@ def skexgen_dequantize(q: int, n_bits: int = SKEXGEN_BIT,
 
     The divisor is ``2**b - 1``, so the token grid *spans* the full range and
     both endpoints are exactly representable (``q = 0 -> min_range``,
-    ``q = 2**b - 1 -> max_range``) -- unlike DeepCAD. Whether the forward map
+    ``q = 2**b - 1 -> max_range``) -- unlike the rounding codec. Whether the forward map
     actually reaches the top token is a separate question: see note 5 in the
     module docstring and :func:`skexgen_top_token_reachable`.
 
@@ -445,7 +455,7 @@ def skexgen_top_token_reachable(n_bits: int = SKEXGEN_BIT,
     """True iff ``max_range`` itself quantizes to the top token ``2**n_bits - 1``.
 
     False when floating-point evaluation of the scale lands just below the top
-    code and truncation drops it a bin -- which is the case for SkexGen's own
+    code and truncation drops it a bin -- which is the case for the shipped
     ``SCALE_R = 1.4``. See note 5 in the module docstring.
     """
     return skexgen_quantize(max_range, n_bits, min_range, max_range) == 2 ** n_bits - 1
@@ -491,7 +501,7 @@ def _selfcheck() -> int:
     check(len(EXTRUDE_OPERATIONS) == 4 and len(EXTENT_TYPE) == 3,
           "categorical arg cardinalities")
 
-    # -- DeepCAD bin edges: exact at the low end, clipped at the high end.
+    # -- Rounding-codec bin edges: exact at the low end, clipped at the high end.
     check(deepcad_quantize(-1.0) == 0, "x=-1 is bin 0")
     check(deepcad_dequantize(0) == -1.0, "bin 0 round-trips to exactly -1.0")
     check(deepcad_quantize(1.0) == n - 1, "x=+1 clips to the top bin")
@@ -578,7 +588,7 @@ def _selfcheck() -> int:
     scaled = deepcad_sketch_normalize_scale(4.0) * 4.0
     check(abs(scaled - 95.0) < 1e-9, "any bbox normalizes to the same half-extent")
 
-    # -- SkexGen: both endpoints exact, because the divisor is 2**b - 1.
+    # -- Truncating codec: both endpoints exact, because the divisor is 2**b - 1.
     span = 2 ** SKEXGEN_BIT - 1
     check(span == 63, "6-bit vocabulary is 64 tokens (ids 0..63)")
     check(skexgen_quantize(-1.0) == 0, "min_range is token 0")
@@ -589,7 +599,7 @@ def _selfcheck() -> int:
     check(span != SKEXGEN_BIT ** 2 - 1,
           "code uses 2**b-1 (63), not the docstring's b**2-1 (35)")
 
-    # -- SkexGen truncates: one-sided error, up to a full bin.
+    # -- The truncating codec floors: one-sided error, up to a full bin.
     width = skexgen_bin_width()
     check(abs(width - 2.0 / 63.0) < 1e-12, "bin width is (max-min)/(2**b-1)")
     check(skexgen_max_roundtrip_error() == width, "worst case is a full bin")
@@ -615,7 +625,7 @@ def _selfcheck() -> int:
     check(skexgen_quantize(0.0) == 31 and skexgen_dequantize(31) < 0.0,
           "x=0 has no exact token at even vocabulary size; it floors below zero")
 
-    # -- SkexGen clamps without raising, like DeepCAD.
+    # -- The truncating codec clamps without raising, like the rounding codec.
     for bad in (5.0, -5.0):
         q = skexgen_quantize(bad)
         check(0 <= q <= span, f"SkexGen clamps {bad} into vocabulary")
@@ -658,7 +668,7 @@ def _selfcheck() -> int:
     check(SKEXGEN_RANGES["offset"] == (-0.9, 0.9),
           "OFFSET_R is 0.9, deliberately tighter than SKETCH_R")
 
-    # -- DeepCAD is 4x finer than SkexGen's shipped setting.
+    # -- The rounding codec is 4x finer than the truncating codec's shipped setting.
     check(ARGS_DIM // (2 ** SKEXGEN_BIT) == 4,
           "DeepCAD's 256 bins are 4x SkexGen's 64")
     check(deepcad_max_roundtrip_error() < skexgen_max_roundtrip_error(),

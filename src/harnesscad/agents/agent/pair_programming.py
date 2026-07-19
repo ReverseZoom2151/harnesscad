@@ -53,14 +53,14 @@ ACCEPT_TOKEN = "[NOERROR]"
 
 @dataclass(frozen=True)
 class SwitchPolicy:
-    """A parsed role-switch policy (Sec. 4.5 ablation)."""
+    """A parsed role-switch policy."""
 
     kind: str  # "err" | "fixed" | "none"
     param: int = 1
 
     @staticmethod
     def parse(spec: str) -> "SwitchPolicy":
-        """Parse ``err<eta>`` / ``fixed<k>`` / ``none`` (PairCoder's PAIRCODER_SWITCH)."""
+        """Parse a switch spec: ``err<eta>`` / ``fixed<k>`` / ``none``."""
         spec = (spec or "err1").strip().lower()
         if spec == "none":
             return SwitchPolicy("none", 0)

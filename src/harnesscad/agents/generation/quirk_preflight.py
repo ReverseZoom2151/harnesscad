@@ -5,7 +5,7 @@ Two OCCT quirk catalogs are wired here:
 * :mod:`harnesscad.agents.generation.occt_quirks` -- the client-side catalog,
   whose operation families are
   exactly CISP op families: ``boolean``, ``revolve``, ``loft``, ``face-query``.
-  It also carries two callable predicates -- ``ring_holes_feasible`` (Roshera's
+  It also carries two callable predicates -- ``ring_holes_feasible`` (the
   saddle-boolean refusal formula) and ``overlap_is_near_tangent`` (OpenCAD's
   BBOX_NEAR_TANGENT preflight).
 * :mod:`harnesscad.agents.generation.occt_quirks_oce` -- the kernel-side
@@ -112,7 +112,7 @@ def _num(value: Any, default: float = 0.0) -> float:
 def _ring_warnings(ops: Sequence[Dict[str, Any]]) -> List[QuirkWarning]:
     """Saddle-boolean check for a hole replicated around a circular pattern.
 
-    The Roshera formula needs (count, ring_radius, hole_radius); an op stream
+    The saddle-boolean formula needs (count, ring_radius, hole_radius); an op stream
     spells that as a `hole` at (x, y) off the axis plus a `circular_pattern`
     with a count. The ring radius is the hole's distance from the origin, which
     is where `circular_pattern`'s default axis stands -- so a pattern about a

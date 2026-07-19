@@ -1,6 +1,6 @@
 """Deterministic data model for the Zoo / KittyCAD text-to-CAD async API.
 
-The ``text-to-cad-blender-addon`` drives Zoo's text-to-CAD REST endpoint:
+The hosted text-to-CAD REST endpoint is driven as follows:
 
 * submit a prompt --  ``POST https://api.zoo.dev/ai/text-to-cad/{format}``
   with body ``{"prompt": ...}``, which returns an operation ``{"id", "status",
@@ -14,8 +14,8 @@ This module captures that request/response contract as a pure, offline data
 model.  It builds the request descriptors (method, url, headers, json body) and
 parses response dictionaries into structured objects.  It performs NO network
 I/O, no sleeping, and no Blender interaction -- those (and the actual HTTP
-transport / retry loop) are the external glue that lives in the addon.  What is
-transferable is the deterministic shape of the protocol: endpoint templating,
+transport / retry loop) are external glue supplied by the caller.  What this
+module captures is the deterministic shape of the protocol: endpoint templating,
 supported output formats, the ``source.{format}`` output key, and the terminal
 status semantics of the async operation.
 

@@ -11,7 +11,7 @@ naming problem* (TNP):
   permanent name* built from three things: the modeling history up to that point, the
   topological information, and the geometric information. "Modeling history,
   topological information, and geometric information together construct the native
-  permanent naming of this topological element." DeepCAD's flat sketch+extrude
+  permanent naming of this topological element." Flat sketch+extrude command
   sequences lack this, so their references cannot survive an edit.
 
 * **CADFS** (Pyatov et al., 2026), Sec. 3.1 -- Onshape FeatureScript's ``makeQuery``

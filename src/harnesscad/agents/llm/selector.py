@@ -81,7 +81,7 @@ def _env_model_var(provider: str) -> str:
 class SelectorPolicy:
     """Defaults plus allowlists governing runtime provider/model selection.
 
-    Rules (mirroring Forma-OSS resolve_llm_runtime_config):
+    Rules:
       - a missing provider/model falls back to the defaults;
       - when allowed_providers is set, any other provider is rejected with a
         ValueError naming the allowlist variable;

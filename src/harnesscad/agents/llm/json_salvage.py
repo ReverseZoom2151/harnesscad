@@ -46,7 +46,7 @@ _FORCE_CLOSED = "force-closed"
 def strip_json_markdown(text: str) -> str:
     """Strip a surrounding markdown code fence (``` or ```json) if present.
 
-    Mirrors Forma-OSS _strip_json_markdown: drop the first line when it opens
+    Drops the first line when it opens
     a fence and the last line when it closes one, otherwise return the text
     stripped of outer whitespace.
     """
@@ -66,7 +66,7 @@ def strip_json_markdown(text: str) -> str:
 def extract_json_document(text: str) -> Optional[str]:
     """Return the first complete top-level JSON object/array substring, or None.
 
-    Mirrors Forma-OSS _extract_json_document: scan for a '{' or '[' and let the
+    Scans for a '{' or '[' and lets the
     stdlib decoder attempt a raw_decode from there (which itself honours
     strings and escapes), returning the exact matched substring on success.
     """
@@ -133,8 +133,8 @@ def _closers_for(stack: Sequence[str]) -> str:
 def salvage_truncated_json(text: str) -> Tuple[Optional[Any], List[str]]:
     """Repair a truncated/malformed JSON document from the first '{' or '[' onward.
 
-    Stdlib reimplementation of the json_repair role in Forma-OSS
-    _salvage_json_text: from the first opener, walk char-by-char tracking the
+    Stdlib reimplementation of a json-repair pass: from the first opener,
+    walk char-by-char tracking the
     open-container stack and in-string state; close any unterminated string,
     drop a trailing comma or half-written token, and append the missing
     closers, then json.loads the result. Falls back to cutting at the last
@@ -223,7 +223,7 @@ def prune_last_list_item(obj: Any, path: Sequence[Any]) -> bool:
 def prune_truncated_tail(obj: Any) -> Tuple[Any, List[str]]:
     """Drop the half-written trailing list item that truncation leaves behind.
 
-    Mirrors Forma-OSS _prune_truncated_tail: after a force-closed salvage, the
+    After a force-closed salvage, the
     LAST element of the list that was being written is usually incomplete (a
     dict missing keys its siblings all have). Detect exactly that -- last item
     of a list of >= 2 dicts whose key set is a proper subset of the first
@@ -252,8 +252,8 @@ def prune_truncated_tail(obj: Any) -> Tuple[Any, List[str]]:
 def loads_with_salvage(text: str) -> Tuple[Optional[Any], List[str]]:
     """Decode provider text into a Python object, escalating through repairs.
 
-    Tries in order (mirroring the Forma-OSS _validate_structured_json ladder,
-    minus the pydantic step which belongs to the caller):
+    Tries in order (a structured-JSON validation ladder, minus the schema
+    validation step, which belongs to the caller):
       1. direct json.loads;
       2. json.loads after stripping markdown fences;
       3. json.loads of the first embedded complete JSON document;
@@ -283,8 +283,8 @@ def loads_with_salvage(text: str) -> Tuple[Optional[Any], List[str]]:
     # Accept an extracted document only when it starts at the FIRST opener in
     # the text (i.e. it really is the top-level document with prose around it).
     # An extraction starting later means the top-level document is broken and
-    # the "complete" match is just an inner fragment; Forma-OSS relies on
-    # downstream pydantic validation to reject such fragments, here we must
+    # the "complete" match is just an inner fragment. An implementation with a
+    # downstream schema validator could let that reject such fragments; here we must
     # prefer salvage of the real document instead.
     extracted = extract_json_document(stripped)
     starts = [idx for idx in (stripped.find("{"), stripped.find("[")) if idx != -1]

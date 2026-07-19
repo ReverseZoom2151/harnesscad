@@ -1,7 +1,7 @@
 """HarnessMemory — the one memory the agent that builds parts actually has.
 
 The parts were all here and none of them were plugged in. ``MemoryStore``
-(four types), ``SkillLibrary`` (Voyager, execution-verified), ``ErrorNotebook``
+(four types), ``SkillLibrary`` (execution-verified), ``ErrorNotebook``
 (corrective few-shot), ``decay`` (Ebbinghaus reinforced forgetting) and
 ``reflexion.heuristic_reflect`` (diagnostics -> reusable insight) all existed,
 were tested, and were unreachable from ``core.harness.AgentHarness``. This module
@@ -455,7 +455,7 @@ class HarnessMemory:
         """Attach a SkillLibrary and promote each skill to an oracle-verified
         exemplar — a cold-start memory that is still measured, not asserted.
 
-        The SkillLibrary's own gate is ``apply_ops(...).ok`` (Voyager). That is a
+        The SkillLibrary's own gate is ``apply_ops(...).ok``. That is a
         weaker gate than ours: it proves the ops applied, not that the resulting
         SOLID is real. So each skill is expanded, built on a fresh session, and
         run through the SAME oracle a live run must pass. A skill whose geometry

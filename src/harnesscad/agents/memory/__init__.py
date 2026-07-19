@@ -1,7 +1,7 @@
 """memory — the grounding layer (blueprint sec.8).
 
 Four memory types (MemoryStore: working / episodic / semantic / procedural) plus
-a Voyager-style, execution-verified SkillLibrary of parametric CAD skills that
+an execution-verified SkillLibrary of parametric CAD skills that
 grows monotonically. Dependency-free (stdlib only); retrieval uses an embedding-
 free similarity with a pluggable interface for a real embedder later.
 """

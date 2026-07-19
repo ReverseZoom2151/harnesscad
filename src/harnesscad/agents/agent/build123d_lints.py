@@ -1,11 +1,9 @@
-"""Deterministic Build123d code lints and fillet auto-heal (Studio-OSS).
+"""Deterministic Build123d code lints and fillet auto-heal.
 
-This code-validation pass
-``app/api/generate/route.ts`` and the auto-heal path in
-``app/api/compile/route.ts``). Studio wraps its model-generated Build123d code
-in two deterministic safety layers that this module ports:
+This code-validation pass wraps model-generated Build123d code in two
+deterministic safety layers, applied before and after the compile step:
 
-**Pre-execution lints** for the failure modes its 48-hour run kept hitting:
+**Pre-execution lints** for the failure modes seen most often in practice:
 
   * ``SUBTRACT_BEFORE_BASE`` -- a boolean subtraction appears before any 3D
     base solid is assigned ("subtract from nothing");
@@ -26,7 +24,7 @@ in two deterministic safety layers that this module ports:
 every fillet/chamfer line and re-run -- the user still gets a solid when the
 rest of the model is valid. Also the preventive variant: wrap each unguarded
 ``x = fillet(...)`` assignment in try/except falling back to the unfilleted
-shape, exactly the defensive pattern Studio's prompt demands.
+shape, which is the defensive pattern the generation prompt demands.
 
 This complements :mod:`harnesscad.agents.agent.code_repair_rules` (CadQuery /
 FreeCAD dialect rules); Build123d is a distinct dialect with distinct failure

@@ -1,24 +1,23 @@
-"""Conditional factorization of a sketch-extrude CAD model (Img2CAD).
+"""Conditional factorization of a sketch-extrude CAD model.
 
-This is the deterministic core of the Img2CAD paper's distinctive contribution:
-*VLM-assisted conditional factorization*. The image-to-CAD task is factored into
-two conditional sub-problems::
+This is the deterministic core of *VLM-assisted conditional factorization*. The
+image-to-CAD task is factored into two conditional sub-problems::
 
     P(CAD | image) = P(structure | image) * P(attributes | structure, image)
 
     Stage 1 (discrete):   the global base structure -- the part decomposition and
                           the ordered CAD command *types* per part, with semantic
-                          part labels. (Predicted by a VLM in the paper.)
+                          part labels. (Predicted by a VLM.)
     Stage 2 (continuous): the continuous attribute values for every command,
-                          conditioned on the Stage-1 structure. (Predicted by the
-                          TrAssembler flow-matching network in the paper.)
+                          conditioned on the Stage-1 structure. (Predicted by a
+                          flow-matching network.)
 
 This module implements the deterministic pieces around that factorization: the
 factored representation itself, splitting a full CAD model into its discrete
 structure + continuous attribute tensor, the deterministic assembly of factored
 predictions back into a CAD model, and a canonical structure signature used to
-match / deduplicate base structures across shapes. The learned VLM and TrAssembler
-are out of scope.
+match / deduplicate base structures across shapes. The learned VLM and
+attribute-prediction network are out of scope.
 
 A CAD model is represented as a list of parts::
 
@@ -137,7 +136,7 @@ def structure_signature(structure) -> str:
     """Canonical string signature of a discrete base structure.
 
     Two shapes with the same part labels and per-part command-type sequences share
-    a signature -- the basis for the paper's observation that many objects share
+    a signature -- the basis for the observation that many objects share
     sub-structures (e.g. four-leg chairs). Order-sensitive within a part; parts are
     taken in given order.
     """

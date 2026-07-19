@@ -37,7 +37,7 @@ __all__ = [
     "main",
 ]
 
-#: The lifecycle events freecad-ai defines, unchanged.
+#: The lifecycle events this bus defines.
 VALID_EVENTS: Tuple[str, ...] = (
     "pre_tool_use",
     "post_tool_use",

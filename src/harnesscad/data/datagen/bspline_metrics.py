@@ -1,26 +1,23 @@
 """B-Spline geometric-property metrics and augmentation statistics.
 
-Chen, Shu, Hong, Taber, Li & Klenk, *Learning From Design Procedure To Generate
-CAD Programs for Data Augmentation* (NeurIPS 2025 Workshop), Sec. 4.1-4.3.
-
-The paper evaluates whether the augmentation enriches organic (B-Spline)
+These metrics evaluate whether the augmentation enriches organic (B-Spline)
 geometry using a small set of deterministic geometric proxies:
 
-  * per-object **B-Spline ratio** (Eq. 1):
+  * per-object **B-Spline ratio**:
         beta_i = [ (f_bi / f_i) + (e_bi / e_i) ] / 2
     where f_i / f_bi are faces / B-Spline faces and e_i / e_bi are curves /
     B-Spline curves;
-  * dataset **geometric properties** (Table 1): avg #STEP-lines, avg #faces,
+  * dataset **geometric properties**: avg #STEP-lines, avg #faces,
     avg #curves, % of objects with any B-Spline face, % with any B-Spline curve,
     and mean B-Spline ratio;
-  * **diversity of shape complexity** (Fig. 3): the distribution of per-object
-    B-Spline ratios across bins -- the paper's method spreads more evenly over
-    the [0, 1] range than the DeepCAD-derived baselines (which pile up at 0).
+  * **diversity of shape complexity**: the distribution of per-object
+    B-Spline ratios across bins -- a well-spread augmentation covers the
+    [0, 1] range evenly, while the baseline corpora pile up at 0.
 
 This module computes those metrics from the synthesised programs produced by
 ``datagen.designproc_program_synthesis`` (or from any object exposing face/curve
 counts), plus an augmentation-vs-baseline comparison and a validity/diversity
-gate. The learned generation model is external; these are the paper's proxy
+gate. The learned generation model is external; these are structural proxy
 metrics only. Pure functions; stdlib only; no randomness, no wall clock.
 """
 
@@ -33,12 +30,12 @@ from harnesscad.data.datagen.program_synthesis import program_totals
 
 
 # ---------------------------------------------------------------------------
-# Per-object B-Spline ratio (Eq. 1)
+# Per-object B-Spline ratio
 # ---------------------------------------------------------------------------
 
 def bspline_ratio(faces: int, bspline_faces: int,
                   curves: int, bspline_curves: int) -> float:
-    """B-Spline ratio beta = [(f_b/f) + (e_b/e)] / 2 (paper Eq. 1).
+    """B-Spline ratio beta = [(f_b/f) + (e_b/e)] / 2.
 
     A face/curve group with zero elements contributes a zero sub-ratio (rather
     than a division error). Result lies in ``[0, 1]``.
@@ -62,7 +59,7 @@ def program_bspline_ratio(program: Sequence[dict]) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Dataset geometric properties (Table 1)
+# Dataset geometric properties
 # ---------------------------------------------------------------------------
 
 def _mean(xs: Sequence[float]) -> float:
@@ -70,7 +67,7 @@ def _mean(xs: Sequence[float]) -> float:
 
 
 def geometric_properties(programs: Sequence[Sequence[dict]]) -> Dict[str, float]:
-    """Compute the Table-1 geometric properties for a set of programs.
+    """Compute the dataset geometric properties for a set of programs.
 
     Returns a dict with:
       ``n``, ``avg_lines``, ``avg_faces``, ``avg_curves``,
@@ -109,7 +106,7 @@ def geometric_properties(programs: Sequence[Sequence[dict]]) -> Dict[str, float]
 
 
 # ---------------------------------------------------------------------------
-# Diversity of shape complexity (Fig. 3): B-Spline-ratio histogram
+# Diversity of shape complexity: B-Spline-ratio histogram
 # ---------------------------------------------------------------------------
 
 def ratio_histogram(ratios: Sequence[float], n_bins: int = 10) -> List[int]:
@@ -131,8 +128,8 @@ def ratio_histogram(ratios: Sequence[float], n_bins: int = 10) -> List[int]:
 def distribution_entropy(hist: Sequence[int]) -> float:
     """Shannon entropy (bits) of a histogram -- a scalar diversity measure.
 
-    An evenly-spread distribution (the paper's goal, Fig. 3) has high entropy;
-    a spike at a single bin (the DeepCAD baselines piling up at ratio 0) has
+    An evenly-spread distribution (the goal) has high entropy; a spike at a
+    single bin (the baseline corpora piling up at ratio 0) has
     entropy 0. Normalised is available via :func:`normalized_diversity`.
     """
     total = sum(hist)
@@ -178,9 +175,9 @@ def program_is_valid(program: Sequence[dict], require_bspline: bool = False,
     """Structural validity stand-in for a synthesised program.
 
     A program is admitted if it exports, has at least ``min_faces`` faces and
-    (optionally) retains B-Spline geometry. The paper's real gate additionally
-    compiles to a watertight B-rep with OpenCascade / DTGBrepGen validity --
-    that geometric check is external.
+    (optionally) retains B-Spline geometry. A full gate would additionally
+    compile the program to a watertight B-rep and check solid validity -- that
+    geometric check is external.
     """
     if not program:
         return False
@@ -201,12 +198,12 @@ def filter_valid(programs: Sequence[Sequence[dict]],
 
 
 # ---------------------------------------------------------------------------
-# Augmentation-vs-baseline comparison (Table 1 / Table 2 style)
+# Augmentation-vs-baseline comparison
 # ---------------------------------------------------------------------------
 
 def augmentation_gain(baseline: Sequence[Sequence[dict]],
                       augmented: Sequence[Sequence[dict]]) -> dict:
-    """Compare augmented programs against a baseline set (paper Tables 1-2).
+    """Compare augmented programs against a baseline set.
 
     Returns the two property blocks plus deltas on the headline metrics
     (mean B-Spline ratio, fraction with B-Spline faces/curves, diversity).

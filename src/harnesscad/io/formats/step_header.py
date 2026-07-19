@@ -2,9 +2,9 @@
 
 A part-21 file's ``HEADER`` section is not free-form: ISO 10303-21 clause 8.2
 mandates exactly three records, in order -- ``FILE_DESCRIPTION``, ``FILE_NAME``
-and ``FILE_SCHEMA`` -- each with a fixed attribute layout (see ruststep's
-``header.rs``, which hard-codes these three entities because "there is a schema
-for the HEADER section, but we do not generate this structure from it").
+and ``FILE_SCHEMA`` -- each with a fixed attribute layout. The layout is stable
+enough that parsers conventionally hard-code these three entities rather than
+generating them from the header schema.
 
 :mod:`formats.stepllm_parser` parses the header into an *unstructured* list of
 :class:`~formats.stepllm_parser.Typed` records; it never exposes the schema

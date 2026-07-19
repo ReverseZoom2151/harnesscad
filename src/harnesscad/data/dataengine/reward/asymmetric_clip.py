@@ -1,4 +1,4 @@
-"""Trust Region Stretch (TRS) -- asymmetric PPO clip surrogate (CAD-RL, 2026).
+"""Trust Region Stretch (TRS) -- asymmetric PPO clip surrogate.
 
 Standard PPO / GRPO constrains the policy update with a *symmetric* clip
 ``clip(r_t, 1 - eps, 1 + eps)`` to keep the new policy close to the reference.
@@ -6,8 +6,8 @@ In CAD code generation, where many valid reasoning trajectories exist for a
 single design, this symmetric constraint prematurely collapses exploration and
 the model converges to narrow, near-deterministic policies (mode collapse).
 
-CAD-RL's **Trust Region Stretch** (Eq. 7) *relaxes* and *asymmetrically widens*
-the clip bounds to allow larger updates and encourage trajectory diversity::
+The **trust-region stretch** *relaxes* and *asymmetrically widens* the clip
+bounds to allow larger updates and encourage trajectory diversity::
 
     L_TRS = E_t[ min( r_t * A_t, clip(r_t, eps_low, eps_high) * A_t ) ]
 
@@ -17,7 +17,7 @@ with, e.g., ``eps_low = 0.6`` and ``eps_high = 1.8`` (versus PPO's symmetric
 
 This differs from the repository's existing PPO-style surrogates:
 
-  * ``dataengine.cadrille_drcppo`` -- standard *symmetric* PPO clip plus CPPO
+  * ``dataengine.cadrille_drcppo`` -- standard *symmetric* PPO clip plus
     top-|A| token selection.
   * ``dataengine.export`` GRPO -- symmetric clip with std-normalised advantage.
 
@@ -51,7 +51,7 @@ def clip_ratio(ratio: float, eps_low: float = DEFAULT_EPS_LOW,
 def trs_token_objective(ratio: float, advantage: float,
                         eps_low: float = DEFAULT_EPS_LOW,
                         eps_high: float = DEFAULT_EPS_HIGH) -> float:
-    """Per-token TRS surrogate ``min(r*A, clip(r)*A)`` (Eq. 7)."""
+    """Per-token TRS surrogate ``min(r*A, clip(r)*A)``."""
     r = float(ratio)
     a = float(advantage)
     unclipped = r * a

@@ -2,12 +2,11 @@
 
 The Zoo / KittyCAD text-to-CAD API returns generated CAD files (glb, stl, obj,
 ...) as a single base64-encoded string embedded in the JSON operation result.
-The ``text-to-cad-blender-addon`` decodes that payload with the peculiar
-expression::
+Such a payload is decoded with the peculiar expression::
 
     base64.urlsafe_b64decode(outputs.strip("=") + "===")
 
-which mirrors the official ``kittycad.py`` ``Base64Data`` model.  The reason is
+which is also what the API's own client model does.  The reason is
 that the transmitted string may carry incorrect, missing, or extra ``=``
 padding; stripping all trailing ``=`` and then appending three ``=`` produces a
 buffer whose first complete 4-character group re-establishes the correct

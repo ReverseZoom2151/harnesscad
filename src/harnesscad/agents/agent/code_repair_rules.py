@@ -4,8 +4,8 @@ The module applies a robustness rule:
 *deterministic* pre-execution validator plus an error-classification table that
 turns a raw kernel exception into (a) an actionable hint and (b), where the fix
 is unambiguous, a rewritten source string the loop can re-run **without another
-model call**. CadAgent's own docstring: "This module has NO FreeCAD imports and
-is fully testable in isolation."
+model call**. The module has no CAD-kernel imports and is fully testable in
+isolation.
 
 That property is exactly what makes it a harness piece: the repair is a pure
 function of ``(exception_type, exception_message, source)``, so it is
@@ -15,8 +15,7 @@ the large class of failures that need no reasoning at all -- a missing ``Part.``
 prefix, an in-place ``translate`` whose result was assigned, a boolean op whose
 new shape was dropped.
 
-This is a generalized reimplementation over CadAgent's rules for the two CAD
-dialects it targets:
+The rule set is generalized over the two CAD dialects the harness targets:
 
 * **CadQuery** (``cq.Workplane`` chains): method-not-standalone, wrong translate
   arity (tuple vs args), extrude-before-2D, cylinder ``(height, radius)`` order.
@@ -73,7 +72,7 @@ class RepairSuggestion:
 
 
 def precheck_syntax(code: str) -> Tuple[bool, str]:
-    """Compile-check ``code`` without executing it (CadAgent ``pre_validate_code``).
+    """Compile-check ``code`` without executing it.
 
     Returns ``(ok, message)``; on a SyntaxError the message points at the line
     and offset with a caret, so a repair loop can report *where* before spending

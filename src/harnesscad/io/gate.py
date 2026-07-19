@@ -1151,7 +1151,7 @@ def check(model: Any, path: Optional[str] = None, *, source: Any = None,
           validation_body: str = "Body") -> GateReport:
     """Measure the artifact and judge it. Never raises, never writes; pure.
 
-    ``validation_rules`` optionally supplies a freecad-ai VALIDATION.md
+    ``validation_rules`` optionally supplies a VALIDATION.md document
     (eval/verifiers/validation_rules_md.py): a declarative per-body acceptance
     contract -- bbox, volume formula, solid count, validity -- run against this
     gate's own measurement, with ``validation_params`` binding its parameter

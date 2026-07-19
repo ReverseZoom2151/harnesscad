@@ -15,15 +15,13 @@ file's declared global tolerance:
   * ``UNCERTAINTY_MEASURE_WITH_UNIT(LENGTH_MEASURE(t), #u, ...)`` -- the
     file's ``distance_accuracy_value`` global tolerance, converted to mm.
 
-Policy sources:
-  * cadquery importer (cadquery-master ``occ_impl/importers/__init__.py``):
-    sets ``xstep.cascade.unit`` so OCCT rescales from the file's declared
-    unit to a fixed target -- i.e. ALWAYS resolve the declared unit, never
-    assume; this module is the kernel-free analogue producing the explicit
-    factor.
-  * kerf (kerf-main ``io/step_reader.py``): resolves
-    ``UNCERTAINTY_MEASURE_WITH_UNIT`` from the DATA section (its reader
-    treats it as a first-class entity rather than noise).
+Policy:
+  * The OCCT-based importer sets ``xstep.cascade.unit`` so the kernel rescales
+    from the file's declared unit to a fixed target -- i.e. ALWAYS resolve the
+    declared unit, never assume; this module is the kernel-free analogue,
+    producing the explicit factor instead of applying it.
+  * ``UNCERTAINTY_MEASURE_WITH_UNIT`` is resolved from the DATA section and
+    treated as a first-class entity rather than noise.
 
 Reuses (imports, does not rewrite) the harness's part-21 parser
 ``harnesscad.io.formats.step``. Pure stdlib, deterministic; no kernel.

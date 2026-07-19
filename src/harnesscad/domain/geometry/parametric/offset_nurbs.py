@@ -177,7 +177,7 @@ def _validate_distance(d: float) -> float:
 
 
 def _normalise_plane_normal(plane_normal: Optional[Sequence[float]]) -> Vec3:
-    """kerf's plane-normal handling: default +z, pad short vectors, unit."""
+    """Plane-normal handling: default +z, pad short vectors, unit."""
     if plane_normal is None:
         return (0.0, 0.0, 1.0)
     vals = [float(c) for c in plane_normal][:3]
@@ -257,7 +257,7 @@ def _curve_tangent_at(c: CurveData, t: float) -> Optional[Vec3]:
 # ---------------------------------------------------------------------------
 
 def make_line_curve(p1: Sequence[float], p2: Sequence[float]) -> CurveData:
-    """Straight segment as a degree-1 NURBS (kerf ``make_line_nurbs``)."""
+    """Straight segment as a degree-1 NURBS."""
     return CurveData((_v3(p1), _v3(p2)), (1.0, 1.0), 1, (0.0, 0.0, 1.0, 1.0))
 
 
@@ -266,9 +266,9 @@ def make_circle_curve(center: Sequence[float], radius: float,
                       y_axis: Optional[Sequence[float]] = None) -> CurveData:
     """Exact full circle: the standard rational quadratic 9-point NURBS.
 
-    Four quadratic rational Bezier segments (Piegl & Tiller sec. 7.5), ported
-    from kerf ``make_circle_nurbs``: on-circle quadrant points and square-
-    corner shoulder points, weights ``[1, s, 1, s, 1, s, 1, s, 1]`` with
+    Four quadratic rational Bezier segments (Piegl & Tiller sec. 7.5):
+    on-circle quadrant points and square-corner shoulder points, with
+    weights ``[1, s, 1, s, 1, s, 1, s, 1]`` where
     ``s = sqrt(2)/2`` and knots ``[0,0,0, 1/4,1/4, 1/2,1/2, 3/4,3/4, 1,1,1]``.
     """
     ctr = _v3(center)
@@ -288,7 +288,7 @@ def make_arc_curve(center: Sequence[float], radius: float,
                    start_angle: float, end_angle: float,
                    x_axis: Optional[Sequence[float]] = None,
                    y_axis: Optional[Sequence[float]] = None) -> CurveData:
-    """Exact rational quadratic circular arc (kerf ``make_arc_nurbs``).
+    """Exact rational quadratic circular arc.
 
     Piegl & Tiller sec. 7.3 (A7.1): the sweep is split into
     ``ceil(|dtheta| / 90deg)`` exact rational quadratic Bezier segments whose
@@ -345,7 +345,7 @@ def make_arc_curve(center: Sequence[float], radius: float,
 # ---------------------------------------------------------------------------
 
 def _chord_params(points: Sequence[Vec3]) -> List[float]:
-    """Chord-length parameter sequence in [0, 1] (kerf ``_chord_params``)."""
+    """Chord-length parameter sequence in [0, 1]."""
     n = len(points)
     if n == 1:
         return [0.0]
@@ -449,7 +449,7 @@ def _basis_matrix(ts: Sequence[float], degree: int, knots: Sequence[float],
 
 
 def interp_curve_points(points: Sequence[Vec3], degree: int = 3) -> CurveData:
-    """Interpolate a B-spline curve through ``points`` (kerf ``interp_curve``).
+    """Interpolate a B-spline curve through ``points``.
 
     Chord-length parameterisation, Piegl & Tiller averaging knots (9.3.6),
     collocation solve.
@@ -470,7 +470,7 @@ def interp_curve_points(points: Sequence[Vec3], degree: int = 3) -> CurveData:
 
 def fit_curve_points(points: Sequence[Vec3], degree: int = 3,
                      tolerance: float = 1e-3, max_ctrl: int = 64) -> dict:
-    """Least-squares B-spline fit to ``points`` (kerf ``fit_curve``).
+    """Least-squares B-spline fit to ``points``.
 
     Piegl-Tiller knot placement; the control-point count grows from
     ``degree + 1`` until the max deviation at the data parameters is within
@@ -512,7 +512,7 @@ def fit_curve_points(points: Sequence[Vec3], degree: int = 3,
                 "num_ctrl": num_ctrl,
                 "reason": "tolerance %g not achieved; best deviation %.4g"
                           % (tolerance, dev)}
-    except Exception as exc:  # kerf: never raise from fit_curve
+    except Exception as exc:  # never raise from the fit routine
         return {"ok": False, "curve": None, "deviation": float("inf"),
                 "num_ctrl": 0, "reason": str(exc)}
 
@@ -541,7 +541,7 @@ def _collinear_control_points(c: CurveData) -> Optional[Vec3]:
 
 
 def _is_rational_circle(c: CurveData) -> Optional[Tuple[Vec3, float]]:
-    """kerf's structural detector for the exact 9-point rational circle.
+    """Structural detector for the exact 9-point rational circle.
 
     degree 2, 9 control points, weights ``[1, s, 1, s, 1, s, 1, s, 1]``
     (s = sqrt(2)/2, +-1e-9), 4 quadrant points equidistant from their
@@ -571,7 +571,7 @@ def _detect_circular_arc(c: CurveData, nrm: Vec3
     Returns ``(centre, radius, x_axis, y_axis, sweep)`` such that the curve
     coincides (within 1e-9 relative) with ``centre + r*(cos(a) X + sin(a) Y)``
     for ``a`` in ``[0, sweep]``, or None.  Full closed circles are left to the
-    structural circle detector / general path, matching kerf.
+    structural circle detector / general path.
     """
     K = 33
     _, pts = _sample_curve_pts(c, K)
@@ -645,9 +645,9 @@ def offset_curve(curve, d: float, *, tol: float = 1e-4,
                  num_samples: int = 200) -> dict:
     """Planar curve offset by signed distance ``d`` along the right normal.
 
-    Sign convention (kerf's): the right-side normal of the tangent ``T`` in
+    Sign convention: the right-side normal of the tangent ``T`` in
     plane ``N`` is ``R = normalise(cross(N, T))``; ``d > 0`` moves along
-    ``+R``.  Analytic circle/arc results follow kerf's radius convention
+    ``+R``.  Analytic circle/arc results follow the radius convention
     ``r_new = r + d`` (positive ``d`` grows the radius).
 
     Returns ``{"ok", "curve", "actual_max_deviation", "reason", "analytic"}``.
@@ -661,7 +661,7 @@ def offset_curve(curve, d: float, *, tol: float = 1e-4,
     d = _validate_distance(d)
     nrm = _normalise_plane_normal(plane_normal)
 
-    # Validate the input curve is non-degenerate (kerf's 3-point check).
+    # Validate the input curve is non-degenerate (3-point check).
     t0, t1 = _curve_param_range(c)
     p0 = _eval_curve(c, t0)
     p_mid = _eval_curve(c, (t0 + t1) * 0.5)
@@ -740,7 +740,7 @@ def offset_curve(curve, d: float, *, tol: float = 1e-4,
         approx = result["curve"]
         actual_dev = float(result["deviation"])
     else:
-        # kerf fallback: interpolate through all offset points, then measure
+        # Fallback: interpolate through all offset points, then measure
         # the residual at the chord parameter values.
         approx = interp_curve_points(offset_pts, degree=fit_degree)
         ts_ip = _chord_params(offset_pts)
@@ -779,7 +779,7 @@ def _is_planar_surface(s: SurfaceData) -> Optional[Tuple[Vec3, Vec3]]:
 
 
 def _is_sphere_surface(s: SurfaceData) -> Optional[Tuple[Vec3, float]]:
-    """kerf's structural detector for the rational revolution sphere.
+    """Structural detector for the rational revolution sphere.
 
     degree (2,2); first and last v-columns collapsed to the two poles; the
     middle v-row's weight-1 control points form the equator.  Returns
@@ -1016,7 +1016,7 @@ def offset_loop(curves: Sequence, d: float, *,
         segments get straight connector lines through the intersection.
 
     Returns ``{"ok", "curves", "perimeter", "reason"}``; ``perimeter`` is
-    the chord-length sum over 50 samples per output segment (kerf's measure).
+    the chord-length sum over 50 samples per output segment.
     """
     if not curves:
         raise ValueError("curves list is empty")

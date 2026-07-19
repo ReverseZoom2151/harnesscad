@@ -1,17 +1,17 @@
-"""ReCAD hard-question identification and RL objective routing (ReCAD, AAAI 2026).
+"""Hard-question identification and RL objective routing.
 
-Before RL training, ReCAD partitions the training set into *easy* and *hard*
-questions and routes each to a different GRPO objective (Eq. 11-12):
+Before RL training, the training set is partitioned into *easy* and *hard*
+questions and each is routed to a different GRPO objective:
 
   * For each question ``q`` it samples ``N`` solutions with the current policy,
     scores each, and takes the **maximum** reward over the group.
 
-  * ``1_hard(q) = 1`` iff ``max{ R(q_i) } < tau_h`` (paper: ``tau_h = 0.8``),
+  * ``1_hard(q) = 1`` iff ``max{ R(q_i) } < tau_h`` (``tau_h = 0.8``),
     else 0.  Intuitively a question is "hard" when even the best of ``N`` rollouts
     still fails to reach the reward threshold -- the policy cannot solve it on its
     own.
 
-  * The final training objective (Eq. 11) is a per-question mixture::
+  * The final training objective is a per-question mixture::
 
         L_RL(q) = 1_hard(q) * J_guided(q; C)  +  (1 - 1_hard(q)) * J_grpo(q)
 

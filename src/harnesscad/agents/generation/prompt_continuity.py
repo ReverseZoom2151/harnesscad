@@ -94,7 +94,7 @@ class ContinuityReview:
 class PromptContinuityReviewer:
     """Audits prompts for continuity obligations and repairs the failures.
 
-    The repair follows the Forma-OSS supersede-with-child pattern: the failing
+    The repair follows a supersede-with-child pattern: the failing
     prompt is never mutated in place; a revised prompt is produced under a
     deterministic child id (f"{job_id}-r1") so callers can record the original
     job as superseded.
@@ -281,7 +281,7 @@ class PromptContinuityReviewer:
 
         Job ids are derived from the seed index (f"{job_id_prefix}-{index}"),
         and each failing prompt's repaired child id is f"{job_id}-r1" -- the
-        supersede-with-child pattern from Forma-OSS, minus the JSONL queue.
+        supersede-with-child pattern, minus the JSONL queue.
         """
         seeds = tuple(seeds)
         reviews: List[ContinuityReview] = []
@@ -310,7 +310,7 @@ def default_cad_prompt_seeds(
 ) -> Tuple[PromptSeed, ...]:
     """Ten CAD-adapted stages around a named anchor part.
 
-    Adapted from Forma-OSS default_prompt_seeds (which targeted an
+    Adapted from a generic prompt-seed sequence (which targeted an
     electromechanical monitor); here the stages follow a CAD part from
     overview through geometry, mechanics, fabrication, docs, visuals,
     validation, manufacturing, iteration, and release.

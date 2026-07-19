@@ -63,7 +63,7 @@ _EMPTY = (None, "", [], {})
 
 @dataclass(frozen=True)
 class PromptCompactionResult:
-    """Outcome of a compaction attempt (same shape as the Forma-OSS result)."""
+    """Outcome of a compaction attempt."""
 
     prompt: str
     original_length: int

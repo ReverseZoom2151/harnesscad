@@ -1,8 +1,8 @@
-"""Deterministic B-Rep entity features for joint prediction (JoinABLe).
+"""Deterministic B-Rep entity features for joint prediction.
 
 Every B-Rep face and edge of a body becomes a node whose feature vector is
 derived *deterministically* from the entity's geometry -- no learning involved.
-The feature vector JoinABLe feeds its graph network per entity is:
+The per-entity feature vector fed to the graph network is:
 
 * ``entity_types``  -- one-hot over the 16 surface/curve types (plane, cylinder,
   cone, sphere, torus, elliptical cylinder/cone, NURBS surface; line, arc,
@@ -57,7 +57,7 @@ __all__ = [
     "candidate_label_matrix",
 ]
 
-#: Surface types, then curve types -- the one-hot order used by JoinABLe.
+#: Surface types, then curve types -- the canonical one-hot order.
 SURFACE_TYPES = (
     "PlaneSurfaceType",
     "CylinderSurfaceType",
@@ -231,7 +231,7 @@ def bounding_box(points):
 def common_scale(points1, points2, epsilon=1e-6):
     """Single scale factor bringing both bodies inside the unit box.
 
-    Follows JoinABLe: the factor is ``0.999999 / max(|coordinate|)`` over the
+    The factor is ``0.999999 / max(|coordinate|)`` over the
     pooled bounding boxes of the two bodies, so both are scaled identically and
     relative placement is preserved.
     """
@@ -247,7 +247,7 @@ def common_scale(points1, points2, epsilon=1e-6):
 def scale_features(scale, points=None, areas=None, lengths=None):
     """Apply a common scale to points and to the area / length features.
 
-    Areas and lengths are linear measures in JoinABLe's feature vector and are
+    Areas and lengths are linear measures in the feature vector and are
     scaled by the same factor as the coordinates.
     """
     scale = float(scale)

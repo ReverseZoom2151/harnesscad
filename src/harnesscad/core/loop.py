@@ -59,7 +59,7 @@ from harnesscad.eval.verifiers.verify import (Diagnostic, Severity, VerifyReport
 VERIFY_LEVELS = ("core", "full")
 
 #: The loop lifecycle events a `hook_bus.HookBus` may be registered against.
-#: Deliberately NOT the freecad-ai tool-call vocabulary hook_bus ships as its
+#: Deliberately NOT the generic tool-call vocabulary hook_bus ships as its
 #: default -- these are the points THIS loop actually has:
 #:   "iteration_start" -- before an op is handed to the backend;
 #:   "plan_accepted"   -- the op applied and regenerated cleanly;

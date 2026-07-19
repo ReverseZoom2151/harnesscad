@@ -1,12 +1,11 @@
-"""Cost-aware progressive escalation policy for a text-to-CAD pipeline.
+"""Cost-aware progressive escalation policy for a natural-language CAD pipeline.
 
 The module's headline design rule is a
 *progressive* pipeline: one generation call on the happy path, a repair attempt
 that runs **only after a validation failure**, and a visual (VLM) repair that
-runs **only when the user explicitly requests it**. The AgentSCAD README states
-it plainly -- "one LLM call generates structured CAD intent and OpenSCAD by
-default. Repair runs only after validation failure, and visual repair runs only
-when the user requests it."
+runs **only when the user explicitly requests it**. Stated plainly: one model
+call generates structured CAD intent and geometry by default; repair runs only
+after a validation failure, and visual repair runs only when the user asks.
 
 The transferable, model-free core is the *escalation decision*: given the
 outcome of the current stage (a validation report + a cost budget + whether the
@@ -14,7 +13,7 @@ user asked for visual repair), decide the next stage deterministically. This
 module is that decision as a small state machine, with explicit cost accounting
 so the "cost-aware defaults" claim is checkable rather than aspirational.
 
-The state machine (AgentSCAD's runtime):
+The state machine:
 
     INTAKE -> GENERATE -> RENDER -> VALIDATE -> (deliver | escalate)
 
@@ -36,8 +35,8 @@ Design rules that make this a *harness* piece and not a demo:
     failing does not keep paying for the same repair forever.
 *   **Uncertainty is not a pass.** A skipped visual check (no provider) is
     recorded as uncertainty and routed to HUMAN_REVIEW, never silently treated
-    as success (AgentSCAD: "Missing visual provider support is treated as
-    uncertainty, not as a blocking pass").
+    as success: missing visual provider support is treated as uncertainty,
+    not as a blocking pass.
 
 stdlib-only, absolute imports.
 """
@@ -61,7 +60,7 @@ __all__ = [
     "run_policy",
 ]
 
-# Ordered pipeline stages (AgentSCAD's execute-cad-job state machine).
+# Ordered pipeline stages of the CAD-job state machine.
 INTAKE = "INTAKE"
 GENERATE = "GENERATE"
 RENDER = "RENDER"
@@ -101,11 +100,11 @@ DEFAULT_STAGE_COST: Dict[Stage, float] = {
 
 @dataclass(frozen=True)
 class ValidationCheck:
-    """One deterministic validation result (AgentSCAD's ValidationCheck).
+    """One deterministic validation result.
 
     ``passed`` is the outcome; ``is_critical`` marks a check whose failure must
-    block delivery and trigger repair (AgentSCAD's mesh/manifold/hole checks are
-    critical; drafting hints are not).
+    block delivery and trigger repair (mesh/manifold/hole checks are critical;
+    drafting hints are not).
     """
 
     rule_id: str
@@ -129,7 +128,7 @@ class EscalationConfig:
     """Policy configuration.
 
     ``budget`` is total spend allowed for the whole run. ``visual_repair_requested``
-    gates the (expensive) VLM stage -- AgentSCAD never runs it unprompted.
+    gates the (expensive) VLM stage -- it never runs unprompted.
     ``vision_available`` reflects whether a vision provider is configured; when a
     visual repair is wanted but unavailable, the run routes to HUMAN_REVIEW.
     """

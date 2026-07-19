@@ -4,7 +4,7 @@ OCP generates the Python bindings for Open CASCADE by enumerating the OCCT
 headers module by module (its ``ocp.toml`` lists the modules to wrap and the
 namespaces to exclude). The generated bindings themselves are out of scope for a
 stdlib harness, but the *inventory* they encode is not: an LLM that writes
-CadQuery / OCC / pythonocc code hallucinates class and method names, and the
+CadQuery or raw OCCT binding code hallucinates class and method names, and the
 cheapest deterministic guard is to check every generated symbol against a
 catalog of what the kernel actually exports.
 

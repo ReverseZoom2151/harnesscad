@@ -1,6 +1,6 @@
 """Compiler-review refine loop (CRM).
 
-CRM wraps a text-to-CAD generator in a
+CRM wraps a natural-language-to-CAD generator in a
 ``generate -> compile-review -> refine`` loop. The compiler classifies each
 failure (format / geometry / extrusion / boolean), renders a feedback message,
 and the generator is re-prompted with that diagnostic appended. Unlike a VLM
@@ -47,7 +47,7 @@ def build_refine_prompt(base_prompt: str, result: ReviewResult,
                         *, minimal_diff: bool = False) -> str:
     """Append the compiler diagnostic to the base prompt for a refine pass.
 
-    With ``minimal_diff=True`` the AgentSCAD repair discipline
+    With ``minimal_diff=True`` the minimal-diff repair discipline
     (:mod:`harnesscad.agents.agent.minimal_diff_repair`) is appended: fix only
     the failed check, leave what passes alone, preserve the intent features.
     Off by default, so the loop's existing output is unchanged.
@@ -85,7 +85,7 @@ def run_refine_loop(
 ) -> RefineResult:
     """Run the CRM generate -> review -> refine loop.
 
-    ``generate(prompt) -> op_sequence`` is the (injected) text-to-CAD generator.
+    ``generate(prompt) -> op_sequence`` is the (injected) CAD generator.
     Each pass reviews the produced sequence with the deterministic structural
     compiler; on a passing review the loop stops, otherwise the diagnostic is
     appended to the prompt and the generator is called again, up to

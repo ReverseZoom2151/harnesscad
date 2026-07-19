@@ -1,14 +1,13 @@
-"""Brepler B-rep face-sequence linearisation (area-descending BFS from a corner seed).
+"""B-rep face-sequence linearisation (area-descending BFS from a corner seed).
 
-Deterministic re-encoding of the ordering Brepler imposes on the faces of a solid
-before serialising it (``data/prepare_data.py``). A B-rep is an unordered graph of
-faces; an autoregressive / diffusion model needs a *canonical linear order*.
-Brepler produces one with a graph traversal that is fully deterministic and does
-not depend on any learned weights:
+Deterministic ordering imposed on the faces of a solid before serialising it. A
+B-rep is an unordered graph of faces; an autoregressive / diffusion model needs a
+*canonical linear order*. This module produces one with a graph traversal that is
+fully deterministic and does not depend on any learned weights:
 
-1.  **Corner seed.** Pick the seed face whose representative point (Brepler uses
-    the centre sample of each face's UV grid) is closest to a fixed spatial
-    corner -- ``(-1, -1, -1)`` in Brepler's normalised cube::
+1.  **Corner seed.** Pick the seed face whose representative point (the centre
+    sample of each face's UV grid) is closest to a fixed spatial
+    corner -- ``(-1, -1, -1)`` in the normalised cube::
 
         length = ||face_centre - (-1,-1,-1)||
         id_min = argmin(length)
@@ -24,8 +23,8 @@ not depend on any learned weights:
             nbrs.sort(key=lambda n: -area[n])          # largest neighbour first
             seen.update(nbrs); to_visit.extend(nbrs)
 
-    (Brepler marks neighbours seen at enqueue time; equal-area neighbours keep
-    ascending-id order, matching Brepler's stable sort over ``np.where`` output.)
+    (Neighbours are marked seen at enqueue time; equal-area neighbours keep
+    ascending-id order, from a stable sort over the neighbour list.)
 
 The result is a permutation of the face ids: the order in which faces are written
 to the sequence. This module owns that permutation. It is *distinct* from the
@@ -33,10 +32,10 @@ existing :mod:`harnesscad.domain.reconstruction.brep.coedge_walk` (a local
 half-edge traversal) and from the token quantisers: this is the global
 face-visitation order, the backbone the tokens hang off.
 
-Beyond Brepler's connected-solid assumption this module is total: if the graph is
+Beyond the connected-solid assumption this module is total: if the graph is
 disconnected, once a component is exhausted the next component is seeded by the
 same corner rule over the remaining faces (documented extension; on a connected
-graph the output is identical to Brepler).
+graph the output is the plain single-component order).
 
 Stdlib only, deterministic. No wall clock, no randomness.
 """
@@ -85,7 +84,7 @@ def corner_seed(
     points: Mapping[Hashable, Sequence[float]],
     corner: Sequence[float] = DEFAULT_CORNER,
 ) -> Hashable:
-    """Face whose representative point is closest to ``corner`` (Brepler ``id_min``).
+    """Face whose representative point is closest to ``corner``.
 
     Ties in distance are broken by natural ordering of the face id, keeping the
     seed deterministic.
@@ -145,7 +144,7 @@ def linearise_faces(
     corner: Sequence[float] = DEFAULT_CORNER,
     seed: Hashable | None = None,
 ) -> list:
-    """Return the Brepler linear face order (a permutation of the adjacency keys).
+    """Return the linear face order (a permutation of the adjacency keys).
 
     Parameters
     ----------
@@ -157,7 +156,7 @@ def linearise_faces(
     seed      : explicit seed face id, overriding the corner rule.
 
     Handles disconnected graphs by re-seeding each remaining component with the
-    same corner rule; on a connected graph this reproduces Brepler exactly.
+    same corner rule; on a connected graph this is the plain traversal order.
     """
     faces = list(adjacency.keys())
     if not faces:
