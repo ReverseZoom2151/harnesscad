@@ -1,0 +1,16 @@
+The adversarial snippets in this directory are ORIGINAL reimplementations of
+an attack taxonomy, not copies of any third-party file.
+
+The taxonomy (os.system / subprocess / eval / exec / __import__ / open /
+socket / shutil.rmtree / pathlib / sys / ctypes / pickle / threading /
+multiprocessing, plus benign CadQuery) was observed in spatialhero
+(github: spatialhero), tests/fixtures/sample_codes.py, whose DANGEROUS_CODE
+fixture is a literal os.system("rm -rf /") beside a CadQuery box.
+
+spatialhero DECLARES the MIT License (setup.py OSI classifier + README badge)
+but ships NO LICENSE file in the checkout. Under the vendoring policy that is
+treated as no-LICENSE: nothing is copied verbatim. The attack CATEGORIES are
+facts ("a snippet that calls os.system"); the snippet text here, and every
+benign CadQuery / build123d / FreeCAD snippet, is original.
+
+See MANIFEST.json for per-file SHA-256 sums and byte counts.

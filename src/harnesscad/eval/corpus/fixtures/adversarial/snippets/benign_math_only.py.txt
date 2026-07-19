@@ -1,0 +1,2 @@
+import math
+diagonal = math.sqrt(10 ** 2 + 20 ** 2)

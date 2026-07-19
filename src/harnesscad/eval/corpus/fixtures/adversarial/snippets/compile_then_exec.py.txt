@@ -1,0 +1,1 @@
+code = compile("1+1", "<s>", "eval")

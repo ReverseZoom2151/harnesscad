@@ -1,0 +1,252 @@
+{
+  "source_repo": "https://github.com/(spatialhero) [declared MIT, no LICENSE file]",
+  "source_path": "resources/cad_repos/spatialhero-main/spatialhero-main/tests/fixtures/sample_codes.py",
+  "license": "REIMPLEMENTED",
+  "attribution": "Adversarial snippets are ORIGINAL reimplementations of the attack taxonomy (os.system / subprocess / eval / exec / __import__ / open / socket / shutil.rmtree / ...) observed in spatialhero's tests/fixtures/sample_codes.py. spatialhero declares the MIT License (setup.py OSI classifier + README badge) but ships NO LICENSE file; treated as no-LICENSE, so nothing is copied verbatim -- the attack CATEGORIES are facts, reimplemented here. Benign CadQuery/build123d/FreeCAD snippets are original.",
+  "snapshot_date": "2026-07-19",
+  "entries": [
+    {
+      "name": "os_system_rm_rf",
+      "role": "attack",
+      "vendored": "snippets/os_system_rm_rf.py.txt",
+      "resource": null,
+      "sha256": "2df8118c8c94c0d119f1f5e39e189c9da0d98aa3a0796c27b014ac26aa112b75",
+      "bytes": 98,
+      "format": "python"
+    },
+    {
+      "name": "subprocess_run_curl",
+      "role": "attack",
+      "vendored": "snippets/subprocess_run_curl.py.txt",
+      "resource": null,
+      "sha256": "4bdb32af8edcf756806139c3628060fa2b465ec8895acf5a87f88a600b5cdc09",
+      "bytes": 145,
+      "format": "python"
+    },
+    {
+      "name": "subprocess_from_import",
+      "role": "attack",
+      "vendored": "snippets/subprocess_from_import.py.txt",
+      "resource": null,
+      "sha256": "115a876073633934e33811d99153a7ec9b92c44624dcf2618e992dae446c8474",
+      "bytes": 43,
+      "format": "python"
+    },
+    {
+      "name": "os_from_import_system",
+      "role": "attack",
+      "vendored": "snippets/os_from_import_system.py.txt",
+      "resource": null,
+      "sha256": "0690adeb0f4b7fbe027e664588fce4a4b7960db0a30b77d1667caa77b10d0c43",
+      "bytes": 39,
+      "format": "python"
+    },
+    {
+      "name": "eval_builtin",
+      "role": "attack",
+      "vendored": "snippets/eval_builtin.py.txt",
+      "resource": null,
+      "sha256": "6ad7a1f4012e6606c2683d4a6855c942266a7240733b29f83f4203a8fb83486b",
+      "bytes": 101,
+      "format": "python"
+    },
+    {
+      "name": "exec_payload",
+      "role": "attack",
+      "vendored": "snippets/exec_payload.py.txt",
+      "resource": null,
+      "sha256": "3b57787f9f10815562d5a94d39feb7db38c0cedb98e499b2b702d59937b8ee08",
+      "bytes": 53,
+      "format": "python"
+    },
+    {
+      "name": "compile_then_exec",
+      "role": "attack",
+      "vendored": "snippets/compile_then_exec.py.txt",
+      "resource": null,
+      "sha256": "572781566772cc0e9d2cf9a06e5d672afb096e51c8c368306bb4d73d01410b9a",
+      "bytes": 37,
+      "format": "python"
+    },
+    {
+      "name": "dunder_import_os",
+      "role": "attack",
+      "vendored": "snippets/dunder_import_os.py.txt",
+      "resource": null,
+      "sha256": "96189e706d671680b8d42ede9385f5a3117b71f73390393ce118e5a211634b60",
+      "bytes": 30,
+      "format": "python"
+    },
+    {
+      "name": "builtins_dunder_ref",
+      "role": "attack",
+      "vendored": "snippets/builtins_dunder_ref.py.txt",
+      "resource": null,
+      "sha256": "f5656a3a018c2e6e4b5add0563c22b34d13236c9c98815ec1b61d43bc683e06f",
+      "bytes": 34,
+      "format": "python"
+    },
+    {
+      "name": "open_write_passwd",
+      "role": "attack",
+      "vendored": "snippets/open_write_passwd.py.txt",
+      "resource": null,
+      "sha256": "c1d04f9fd711457eb8ba8bb1449546b2e4e8a04865020b0814ceb035a85eeb45",
+      "bytes": 105,
+      "format": "python"
+    },
+    {
+      "name": "socket_exfil",
+      "role": "attack",
+      "vendored": "snippets/socket_exfil.py.txt",
+      "resource": null,
+      "sha256": "a089e1d0a22c498e59887386f1d8784fbcdbb166ab970b90da9ed3ce666468b8",
+      "bytes": 98,
+      "format": "python"
+    },
+    {
+      "name": "shutil_rmtree",
+      "role": "attack",
+      "vendored": "snippets/shutil_rmtree.py.txt",
+      "resource": null,
+      "sha256": "9ad951ffd453ff8be5cc7aefbe72d598ff20856de0bb0e22ae0942812941b73d",
+      "bytes": 37,
+      "format": "python"
+    },
+    {
+      "name": "pathlib_read_shadow",
+      "role": "attack",
+      "vendored": "snippets/pathlib_read_shadow.py.txt",
+      "resource": null,
+      "sha256": "fa71e15e9bc18ad630737ef233631d0a186912b3bb75850274e3d34ec787f550",
+      "bytes": 62,
+      "format": "python"
+    },
+    {
+      "name": "sys_modules_clear",
+      "role": "attack",
+      "vendored": "snippets/sys_modules_clear.py.txt",
+      "resource": null,
+      "sha256": "8a53750f7f5cfef9222ab602fa9e966c1a151da2f836382f74e3fd168ac46140",
+      "bytes": 31,
+      "format": "python"
+    },
+    {
+      "name": "ctypes_cdll",
+      "role": "attack",
+      "vendored": "snippets/ctypes_cdll.py.txt",
+      "resource": null,
+      "sha256": "703594f61bd18109b310caaa97ce1b93725f0acfc2aa52709548d4061a9101fb",
+      "bytes": 53,
+      "format": "python"
+    },
+    {
+      "name": "pickle_loads_rce",
+      "role": "attack",
+      "vendored": "snippets/pickle_loads_rce.py.txt",
+      "resource": null,
+      "sha256": "baa3ed2252a74df8cc6d0137cd32f46bc98d28e10ee5ece6c4438278b7a8ba17",
+      "bytes": 51,
+      "format": "python"
+    },
+    {
+      "name": "threading_spawn",
+      "role": "attack",
+      "vendored": "snippets/threading_spawn.py.txt",
+      "resource": null,
+      "sha256": "df18d65979a586adb7d9ed32fe02fef142c693ed7c7d6213c87a4cd944fda742",
+      "bytes": 69,
+      "format": "python"
+    },
+    {
+      "name": "multiprocessing_spawn",
+      "role": "attack",
+      "vendored": "snippets/multiprocessing_spawn.py.txt",
+      "resource": null,
+      "sha256": "74021e7ea8a173492924bcf5c500768bef94692d1a66c52d3992a4ee1c09f437",
+      "bytes": 75,
+      "format": "python"
+    },
+    {
+      "name": "async_backdoor",
+      "role": "attack",
+      "vendored": "snippets/async_backdoor.py.txt",
+      "resource": null,
+      "sha256": "f4a9fda89080238afac771cd387226c3ba04949082d9cfc17dc745dec7387a5a",
+      "bytes": 38,
+      "format": "python"
+    },
+    {
+      "name": "wrong_kernel_build123d",
+      "role": "attack",
+      "vendored": "snippets/wrong_kernel_build123d.py.txt",
+      "resource": null,
+      "sha256": "3fd079503a2de51c3fbe969ea8e1b7fd835256f082048e980c9cae108c200451",
+      "bytes": 49,
+      "format": "python"
+    },
+    {
+      "name": "gap_subclasses_escape",
+      "role": "gap",
+      "vendored": "snippets/gap_subclasses_escape.py.txt",
+      "resource": null,
+      "sha256": "be7bfa2374fca9eb6f468639e72de80fff8a412f4b5f428f5b3b40756a4012d7",
+      "bytes": 112,
+      "format": "python"
+    },
+    {
+      "name": "gap_breakpoint",
+      "role": "gap",
+      "vendored": "snippets/gap_breakpoint.py.txt",
+      "resource": null,
+      "sha256": "1724f8b087a40c4b41983a06275b03c7f1bdf4b182d0ff118c72947b00f64c62",
+      "bytes": 13,
+      "format": "python"
+    },
+    {
+      "name": "benign_box",
+      "role": "benign",
+      "vendored": "snippets/benign_box.py.txt",
+      "resource": null,
+      "sha256": "28c72b7ace9d4a30238d622848ac2da1c872de7bb7fbd28330d4f08b30bd6328",
+      "bytes": 66,
+      "format": "python"
+    },
+    {
+      "name": "benign_chair_math",
+      "role": "benign",
+      "vendored": "snippets/benign_chair_math.py.txt",
+      "resource": null,
+      "sha256": "2c0e0420703d3e0f26de79e1c6a0b38974c15763c815b6e36c85a562354912e6",
+      "bytes": 189,
+      "format": "python"
+    },
+    {
+      "name": "benign_math_only",
+      "role": "benign",
+      "vendored": "snippets/benign_math_only.py.txt",
+      "resource": null,
+      "sha256": "2a55cfea737f987583236ad60a10e327ca3de26f1baa80a4a552f286a0ddf242",
+      "bytes": 52,
+      "format": "python"
+    },
+    {
+      "name": "benign_build123d",
+      "role": "benign",
+      "vendored": "snippets/benign_build123d.py.txt",
+      "resource": null,
+      "sha256": "67f0fe3e34ec2f670f700707dac2b3072f7d26511113b09e4431484481ca4db7",
+      "bytes": 51,
+      "format": "python"
+    },
+    {
+      "name": "benign_freecad_part",
+      "role": "benign",
+      "vendored": "snippets/benign_freecad_part.py.txt",
+      "resource": null,
+      "sha256": "7d44624a9f91e4824b41e951958558e5f53fafc5fc7981d0d91d46c0c77aa2fa",
+      "bytes": 46,
+      "format": "python"
+    }
+  ]
+}

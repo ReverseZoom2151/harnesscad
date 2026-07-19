@@ -1,0 +1,2 @@
+import threading
+threading.Thread(target=print, args=("x",)).start()

@@ -19,6 +19,10 @@ imports the highest-value REAL fixtures found in the resources tree
   fleet-audit-style precision corpus for BOM verifiers (MIT, vendored).
 * :mod:`.step_canaries` -- pythonocc-core and ruststep STEP/BREP parse canaries
   (LGPL / permissive: manifest-only, SHA-256 verified, nothing vendored).
+* :mod:`.adversarial_code` -- an attack/benign/gap corpus for the pre-execution
+  code-safety gate, whose ``--selfcheck`` RUNS ``check_cad_code`` over every
+  case (spatialhero taxonomy, reimplemented: MIT-declared but no LICENSE file,
+  nothing vendored verbatim).
 
 Every loader is reachable through this hub: :data:`LOADERS` names them,
 :func:`loader` returns one by name, and :func:`availability` is the per-source
@@ -70,6 +74,7 @@ LOADERS: Tuple[str, ...] = (
     "birdhouse_nversion",
     "cadclaw_bom",
     "step_canaries",
+    "adversarial_code",
 )
 
 
@@ -240,6 +245,7 @@ def availability() -> Dict[str, Dict[str, int]]:
 # resources/ tree optional.
 # --------------------------------------------------------------------------- #
 
+from harnesscad.eval.corpus.fixtures import adversarial_code     # noqa: E402
 from harnesscad.eval.corpus.fixtures import birdhouse_nversion   # noqa: E402
 from harnesscad.eval.corpus.fixtures import brepnet_steps        # noqa: E402
 from harnesscad.eval.corpus.fixtures import cad_coder_heldout    # noqa: E402
@@ -257,6 +263,7 @@ _MODULES: Dict[str, object] = {
     "birdhouse_nversion": birdhouse_nversion,
     "cadclaw_bom": cadclaw_bom,
     "step_canaries": step_canaries,
+    "adversarial_code": adversarial_code,
 }
 
 assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"

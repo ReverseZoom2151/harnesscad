@@ -1,0 +1,2 @@
+import Part
+result = Part.makeBox(10, 10, 10)

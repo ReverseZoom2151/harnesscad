@@ -1,0 +1,2 @@
+f = __builtins__["eval"]
+f("1+1")

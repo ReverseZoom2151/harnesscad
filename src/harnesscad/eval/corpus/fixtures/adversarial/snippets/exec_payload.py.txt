@@ -1,0 +1,2 @@
+payload = "import os; os.system('id')"
+exec(payload)

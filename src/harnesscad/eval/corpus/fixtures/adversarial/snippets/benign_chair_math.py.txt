@@ -1,0 +1,6 @@
+import cadquery as cq
+import math
+angle = math.radians(45)
+seat = cq.Workplane("XY").box(40, 40, 2)
+leg = cq.Workplane("XY").box(3, 3, 45).translate((0, 0, -22.5))
+result = seat.union(leg)

