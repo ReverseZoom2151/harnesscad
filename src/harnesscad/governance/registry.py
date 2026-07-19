@@ -320,6 +320,13 @@ _ROUTES: Tuple[Tuple[str, str, str, str], ...] = (
      "stage evidence -> claim -> check -> gate decision, with rollback"),
     ("audit", "closure", _GOV + "audit.closure",
      "does the corpus register resolve to real files?"),
+    # The two honesty axes, which compose: how strong is the evidence, and did
+    # every check actually run. A scorecard may be green on run-state while
+    # still bounded to the weakest tier on evidence.
+    ("honesty", "credibility", _GOV + "credibility_tier",
+     "rank evidence strength; never upgrade a claim past what was run"),
+    ("honesty", "scorecard", _GOV + "scorecard",
+     "roll up checks tri-state: an unknown check is never rendered green"),
 )
 
 
