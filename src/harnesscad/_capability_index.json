@@ -28342,6 +28342,8 @@
       "imports": [
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.corpus.discipline_examples",
+        "harnesscad.eval.corpus.discipline_examples.corroboration_briefs",
         "harnesscad.eval.corpus.spec",
         "harnesscad.eval.corpus.spec.Brief",
         "harnesscad.eval.selftest.probe",
@@ -28359,6 +28361,7 @@
         "Corroboration",
         "corroborate",
         "corroborate_all",
+        "corroborate_discipline_examples",
         "format_text"
       ],
       "tags": []
@@ -28395,23 +28398,27 @@
         "harnesscad.core.cisp.ops.Primitive",
         "harnesscad.domain.programs.fluent_builder",
         "harnesscad.domain.programs.fluent_builder.Part",
-        "harnesscad.domain.programs.fluent_builder.Sketch"
+        "harnesscad.domain.programs.fluent_builder.Sketch",
+        "harnesscad.eval.corpus.spec",
+        "harnesscad.eval.corpus.spec.Brief",
+        "harnesscad.eval.corpus.spec.Source",
+        "harnesscad.eval.corpus.spec.Split"
       ],
       "layer": "eval",
       "name": "discipline_examples",
       "package": "corpus",
-      "summary": "OpenCAD's discipline-tagged examples. A PORT RECORD -- NOT A BENCHMARK SPLIT.",
+      "summary": "OpenCAD discipline examples: a fidelity record with an explicit truth boundary.",
       "symbols": [
         "DisciplineExample",
         "all_examples",
+        "corroboration_briefs",
         "example_by_id",
         "generate_example_script",
         "main",
+        "trusted_examples",
         "verify_example"
       ],
-      "tags": [
-        "benchmark"
-      ]
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.corpus.fixtures.adversarial_code",

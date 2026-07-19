@@ -1,89 +1,24 @@
-"""OpenCAD's discipline-tagged examples. A PORT RECORD -- NOT A BENCHMARK SPLIT.
+"""OpenCAD discipline examples: a fidelity record with an explicit truth boundary.
 
-Source: OpenCAD-Examples (resources/cad_repos/OpenCAD-Examples-main). That repo
-organises its example scripts by DISCIPLINE -- hardware (mounting bracket, PCB
-carrier), software (HMI panel), firmware (programmer fixture), device (cable
-grommet) -- plus an agents/ example that generates example-style code
-deterministically when no LLM is configured. What is ported here is all five
-example parts, at their exact dimensions, PLUS that deterministic no-LLM
-code-generation mode (:func:`generate_example_script`).
+OpenCAD-Examples contributes five scripts across hardware, software, firmware,
+and device disciplines. All five are retained as source-faithful records and as
+inputs to the deterministic no-LLM script generator. Only three are safe to turn
+into corpus briefs:
 
-WHY THIS MODULE IS IMPORTED BY NOTHING, ON PURPOSE
---------------------------------------------------
-It is an orphan in the module graph and that is the HONEST state, not a wiring
-debt. It was written to look like a third brief source next to
-:mod:`harnesscad.eval.corpus.analytic` and :mod:`harnesscad.eval.corpus.standards`,
-and it cannot be one. Three reasons, in order of how much they cost to learn:
+* the HMI panel, whose closed form now adds back the exact lens shared by its
+  overlapping 9 mm and 3 mm holes;
+* the programmer fixture; and
+* the cable grommet.
 
-1.  **It would break the dev/heldout invariant for nothing.**
-    :mod:`harnesscad.eval.corpus.dev` states it plainly: every brief there is a
-    call into ``analytic`` or ``standards``, so the DIFFERENCE between dev and
-    heldout is a set of NUMBERS -- not a second hand-written file that can drift
-    into a different opinion about what correct means. This module is that second
-    hand-written file. And the three examples it COULD express exactly (panel,
-    fixture, grommet) are already ``analytic.plate_with_holes`` and
-    ``analytic.tube`` with different constants -- so the trade on offer is: spend
-    the invariant, receive a ``discipline`` tag that :class:`~.spec.Brief` has no
-    field for and no grader reads.
+The mounting bracket is RETIRED from scoring because its top-edge-only fillet has
+no stated closed-form volume. The PCB carrier is RETIRED because its requested
+0.4 mm reinforcement lowers to no CISP operation, so its stream does not build
+the part described by its text. Retired records remain visible, but cannot become
+a benchmark reference by accident.
 
-2.  **Two of the five expectations are NOT the volume of the part the ops build.**
-    Measured on cadquery (exact OCCT B-rep, volume tolerance 1e-9), against the
-    numbers stored below:
-
-      * ``opencad-hardware-mounting-bracket`` -- 8793.5270 built vs 8833.4514
-        stored, 4.5e-3 relative, 4.5 MILLION times the tolerance. The part carries
-        ``Fillet(('>Z',), 0.75)`` and the closed form here excludes it. There is no
-        cheat available: ``analytic.filleted_plate`` gets an exact answer from
-        Steiner's formula only for an ALL-edge fillet on a solid box, and this is a
-        top-edge-only fillet on a five-hole plate. That volume is not in closed
-        form, so this example cannot state one.
-      * ``opencad-software-hmi-panel`` -- 22610.8806 built vs 22570.4869 stored,
-        1.8e-3 relative. THE STORED NUMBER IS WRONG. Its 9 mm hole at (104, 50) and
-        its 3 mm hole at (108, 58) are 8.944 mm apart and OVERLAP; ``w*h - sum(pi*r^2)``
-        subtracts the shared lens twice. The lens is 13.4645 mm2, times the 3 mm
-        depth is 40.3936 mm3 -- and the built-minus-stored gap is 40.3937 mm3.
-        The defect is left in place deliberately: it is evidence for point 3, and
-        deciding whether the port keeps OpenCAD's overlapping geometry or restates
-        the formula is a call for a human, not a silent edit.
-
-    ``opencad-hardware-pcb-carrier`` measures exact (1.2e-16) but only because
-    ``Part.offset`` lowers to a NAMED NO-OP (CISP has no 2D face-offset op), so the
-    stream does not build the 0.4 mm reinforcement its own brief text asks for.
-    Three of five examples are therefore not a part that matches its prompt, its
-    stored volume, or both -- and ``run.py``'s step 2 is the reference self-test:
-    a corpus whose reference solution fails its own grader is measuring the
-    engine's bugs and billing them to the model.
-
-3.  **Its grader shares the answer key's blind spot.** :func:`verify_example` does
-    not measure geometry. It re-derives ``w*h - sum(pi*r^2)`` from the recorded ops
-    and compares that to a stored number computed by ``w*h - sum(pi*r^2)``. So the
-    panel's 40 mm3 error passes the check, loudly and green, because ONE HAND WROTE
-    BOTH SIDES -- the exact failure :mod:`harnesscad.eval.corpus` exists to remove
-    ("Fleet and corpus shared the blind spot, because one hand wrote both"). Only an
-    independent kernel found it. A ``--selfcheck`` pass here means "the arithmetic
-    is self-consistent", and it must not be read as "the parts are right".
-
-Rooting it in :data:`harnesscad.registry.ROOTS` for having ``main()`` and
-``--selfcheck`` would be the same dishonesty in a different costume: every module in
-this campaign has those by convention, and ROOTS means "imported by nothing because
-it IS the entry point". This is not an entry point. It is a record.
-
-WHAT IT ACTUALLY IS, AND WHAT IT IS STILL GOOD FOR
---------------------------------------------------
-A fidelity record of the OpenCAD port: the five example dimensions, verbatim, and
-proof that :mod:`harnesscad.domain.programs.fluent_builder` lowers them to op
-streams whose arithmetic matches OpenCAD's own numbers. It is also the ONLY caller
-of that builder anywhere in the tree -- the fluent surface's sole exercise.
-
-An honest route exists and is not yet earned. Points 2 and 3 describe a real
-instrument: closed form vs. an independent B-rep kernel is what
-:mod:`harnesscad.eval.corpus.consensus` does for a living, and it is how the panel
-bug surfaced. Wire this module there -- as a corroboration input, never as a brief
-source -- once the bracket has a defensible volume and the panel's formula handles
-overlapping holes. Until then it is imported by nothing, and saying so in this
-docstring is the accurate answer rather than the tidy one.
-
-Stdlib only, deterministic, no clock, no randomness.
+``corroboration_briefs`` exposes only the verified trio as analytic DEV briefs;
+``consensus.corroborate_discipline_examples`` is the real consumer. They are
+corroboration inputs, not a new dev split or a substitute for held-out data.
 """
 
 from __future__ import annotations
@@ -102,11 +37,16 @@ from harnesscad.core.cisp.ops import (
     Primitive,
 )
 from harnesscad.domain.programs.fluent_builder import Part, Sketch
+from harnesscad.eval.corpus.spec import Brief, Source, Split
 
 __all__ = [
     "DisciplineExample",
     "DISCIPLINES",
+    "TRUSTED",
+    "RETIRED",
     "all_examples",
+    "trusted_examples",
+    "corroboration_briefs",
     "example_by_id",
     "verify_example",
     "generate_example_script",
@@ -115,6 +55,8 @@ __all__ = [
 
 PI = math.pi
 DISCIPLINES = ("hardware", "software", "firmware", "device")
+TRUSTED = "trusted"
+RETIRED = "retired"
 
 # Relative tolerance for the closed-form cross-check (pure arithmetic on both
 # sides, so this only absorbs float rounding).
@@ -123,17 +65,21 @@ _REL_TOL = 1e-9
 
 @dataclass(frozen=True)
 class DisciplineExample:
-    """One OpenCAD example: discipline tag, brief, builder, closed-form truth."""
+    """One OpenCAD record, with scoring eligibility stated rather than implied."""
 
     example_id: str
     discipline: str  # hardware | software | firmware | device
     title: str
     brief: str
     build: Callable[[], Part] = field(compare=False)
-    expected_area_mm2: float = 0.0   # plate profile area (annulus for grommet)
-    expected_volume_mm3: float = 0.0
+    expected_area_mm2: Optional[float] = None
+    expected_volume_mm3: Optional[float] = None
     hole_count: int = 0
     depth: float = 0.0
+    bbox_mm: Tuple[float, float, float] = (1.0, 1.0, 1.0)
+    genus: Optional[int] = None
+    truth_status: str = TRUSTED
+    retirement_reason: str = ""
 
 
 # --------------------------------------------------------------------------- #
@@ -215,18 +161,35 @@ def _plate_expectation(
     return area, area * depth
 
 
+def _circle_lens_area(r1: float, r2: float, distance: float) -> float:
+    """Exact intersection area of two disks, with the disjoint/contained cases."""
+    if distance >= r1 + r2:
+        return 0.0
+    if distance <= abs(r1 - r2):
+        return PI * min(r1, r2) ** 2
+    a1 = math.acos((distance * distance + r1 * r1 - r2 * r2) / (2.0 * distance * r1))
+    a2 = math.acos((distance * distance + r2 * r2 - r1 * r1) / (2.0 * distance * r2))
+    radical = (-distance + r1 + r2) * (distance + r1 - r2)
+    radical *= (distance - r1 + r2) * (distance + r1 + r2)
+    return r1 * r1 * a1 + r2 * r2 * a2 - 0.5 * math.sqrt(max(0.0, radical))
+
+
 # --------------------------------------------------------------------------- #
 # the corpus
 # --------------------------------------------------------------------------- #
 def all_examples() -> List[DisciplineExample]:
-    """The five OpenCAD examples, discipline-tagged, with closed-form truth."""
-    bracket_area, bracket_vol = _plate_expectation(80, 30, (3, 3, 3, 3, 5), 4)
+    """All five source-faithful examples, including explicitly retired records."""
     carrier_area, carrier_vol = _plate_expectation(
         90, 60, (2.2, 2.2, 2.2, 2.2, 7), 3
     )
     panel_area, panel_vol = _plate_expectation(
         120, 70, (6, 6, 6, 6, 6, 9, 3, 3), 3
     )
+    # The encoder (r=9 at 104,50) overlaps the indicator (r=3 at 108,58).
+    # Subtracting every disk independently removes their shared lens twice.
+    panel_lens = _circle_lens_area(9.0, 3.0, math.hypot(4.0, 8.0))
+    panel_area += panel_lens
+    panel_vol += panel_lens * 3.0
     fixture_area, fixture_vol = _plate_expectation(
         70, 40, (2.5, 2.5, 2.5, 2.5, 4, 4, 4), 5
     )
@@ -243,10 +206,16 @@ def all_examples() -> List[DisciplineExample]:
             "3 mm-radius fastener holes at the corners and one 5 mm-radius "
             "centre hole, top edges filleted 0.75 mm.",
             build=_build_mounting_bracket,
-            expected_area_mm2=bracket_area,
-            expected_volume_mm3=bracket_vol,
+            expected_area_mm2=None,
+            expected_volume_mm3=None,
             hole_count=5,
             depth=4.0,
+            bbox_mm=(80.0, 30.0, 4.0),
+            truth_status=RETIRED,
+            retirement_reason=(
+                "top-edge-only 0.75 mm fillet has no stated closed-form volume; "
+                "the former pre-fillet number was not the built part's volume"
+            ),
         ),
         DisciplineExample(
             example_id="opencad-hardware-pcb-carrier",
@@ -258,9 +227,15 @@ def all_examples() -> List[DisciplineExample]:
             "centre, with a 0.4 mm reinforcement offset.",
             build=_build_pcb_carrier,
             expected_area_mm2=carrier_area,
-            expected_volume_mm3=carrier_vol,
+            expected_volume_mm3=None,
             hole_count=5,
             depth=3.0,
+            bbox_mm=(90.0, 60.0, 3.0),
+            truth_status=RETIRED,
+            retirement_reason=(
+                "the requested 0.4 mm reinforcement lowers to no CISP operation, "
+                "so the reference stream omits a requested feature"
+            ),
         ),
         DisciplineExample(
             example_id="opencad-software-hmi-panel",
@@ -275,6 +250,8 @@ def all_examples() -> List[DisciplineExample]:
             expected_volume_mm3=panel_vol,
             hole_count=8,
             depth=3.0,
+            bbox_mm=(120.0, 70.0, 3.0),
+            genus=7,
         ),
         DisciplineExample(
             example_id="opencad-firmware-programmer-fixture",
@@ -289,6 +266,8 @@ def all_examples() -> List[DisciplineExample]:
             expected_volume_mm3=fixture_vol,
             hole_count=7,
             depth=5.0,
+            bbox_mm=(70.0, 40.0, 5.0),
+            genus=7,
         ),
         DisciplineExample(
             example_id="opencad-device-cable-grommet",
@@ -302,8 +281,45 @@ def all_examples() -> List[DisciplineExample]:
             expected_volume_mm3=grommet_vol,
             hole_count=1,
             depth=10.0,
+            bbox_mm=(28.0, 28.0, 10.0),
+            genus=1,
         ),
     ]
+
+
+def trusted_examples() -> List[DisciplineExample]:
+    """Records whose prompt, stream, and independent closed form all agree."""
+    return [example for example in all_examples() if example.truth_status == TRUSTED]
+
+
+def corroboration_briefs(split: str = Split.DEV) -> Tuple[Brief, ...]:
+    """The verified OpenCAD trio as analytic inputs for differential corroboration.
+
+    This does not alter ``dev.BRIEFS``: these are a named, opt-in corroboration
+    set. The OpenCAD file supplies dimensions; the volume is independently
+    derived by geometry, including the panel's disk-union correction.
+    """
+    briefs = []
+    for example in trusted_examples():
+        assert example.expected_volume_mm3 is not None
+        briefs.append(
+            Brief(
+                id="discipline_" + example.example_id,
+                split=split,
+                source=Source.ANALYTIC,
+                citation=(
+                    "OpenCAD-Examples %s; volume independently derived from the "
+                    "stated primitive geometry" % example.example_id
+                ),
+                text=example.brief,
+                reference=tuple(example.build().ops()),
+                volume=example.expected_volume_mm3,
+                bbox=example.bbox_mm,
+                genus=example.genus,
+                note="OpenCAD discipline record used only for differential corroboration.",
+            )
+        )
+    return tuple(briefs)
 
 
 def example_by_id(example_id: str) -> DisciplineExample:
@@ -319,31 +335,23 @@ def example_by_id(example_id: str) -> DisciplineExample:
 # the grader the answer key must pass
 # --------------------------------------------------------------------------- #
 def verify_example(example: DisciplineExample) -> Tuple[bool, float, str]:
-    """Recompute the closed-form volume FROM THE RECORDED OPS and compare.
+    """Cross-check a *trusted* record's closed form against its lowered stream.
 
-    NOT AN INDEPENDENT CHECK, and it must not be quoted as one. This re-derives
-    ``w*h - sum(pi*r^2)`` and compares it to a stored number that was computed by
-    ``w*h - sum(pi*r^2)``: both sides share every assumption, so it catches a
-    drifted dimension or a broken lowering and CANNOT catch a wrong formula. It
-    reports the HMI panel green while that panel's stored volume is 40.3936 mm3
-    wrong (overlapping holes, lens subtracted twice -- see the module docstring),
-    and it ignores Fillet entirely, which is why the bracket's stored number is not
-    the bracket's volume. An exact B-rep kernel found both; this function found
-    neither.
-
-    Walks the example's lowered op stream: each Extrude closes a profile whose
-    area is the sum of its AddRectangle areas; each through Hole subtracts a
-    ``pi*(d/2)^2 * depth`` cylinder from the last extrude -- ASSUMING HOLES DO NOT
-    OVERLAP, which in this corpus is false; each cylinder Primitive contributes
-    ``pi*r^2*h``; a Boolean cut subtracts the tool body's volume. Returns
-    ``(ok, recomputed_volume, detail)``.
+    Retired records never green-light: their missing truth is a finding, not a
+    zero or a tolerance to tune. For planar through-holes this handles pairwise
+    disk overlap exactly and refuses a triple-overlap configuration rather than
+    pretending pairwise inclusion-exclusion is enough.
     """
+    if example.truth_status != TRUSTED or example.expected_volume_mm3 is None:
+        return False, 0.0, "retired: " + example.retirement_reason
+
     part = example.build()
     ops = part.ops()
 
     volume = 0.0
     rect_area = 0.0
     last_depth = 0.0
+    holes: List[Tuple[float, float, float]] = []
     body_volumes: List[float] = []  # per body, in emission order (f1, f2, ...)
     for op in ops:
         if isinstance(op, AddRectangle):
@@ -354,11 +362,23 @@ def verify_example(example: DisciplineExample) -> Tuple[bool, float, str]:
             volume += body
             rect_area = 0.0
             last_depth = op.distance
+            holes = []
         elif isinstance(op, Hole):
             if not op.through:
                 return (False, volume, "blind holes are outside this grader")
             r = op.diameter / 2.0
             volume -= PI * r * r * last_depth
+            overlaps = []
+            for x, y, prior_r in holes:
+                distance = math.hypot(op.x - x, op.y - y)
+                if distance < r + prior_r:
+                    overlaps.append((prior_r, distance))
+            if len(overlaps) > 1:
+                return (False, volume, "triple-or-higher hole overlap is not supported")
+            if overlaps:
+                prior_r, distance = overlaps[0]
+                volume += _circle_lens_area(prior_r, r, distance) * last_depth
+            holes.append((op.x, op.y, r))
         elif isinstance(op, Primitive):
             if op.shape != "cylinder":
                 return (False, volume, "non-cylinder primitive %r" % op.shape)
@@ -377,9 +397,8 @@ def verify_example(example: DisciplineExample) -> Tuple[bool, float, str]:
             if tool_index < 0 or tool_index >= len(body_volumes):
                 return (False, volume, "tool ref %r out of range" % op.tool)
             volume -= 2.0 * body_volumes[tool_index]
-        # Fillet contributes a rounding correction the closed form here
-        # deliberately excludes (OpenCAD's expectations are pre-fillet, and
-        # the stored expectation matches); everything else is a no-op note.
+        elif type(op).__name__ == "Fillet":
+            return False, volume, "fillet has no closed-form volume in this corpus"
 
     expected = example.expected_volume_mm3
     ok = math.isclose(volume, expected, rel_tol=_REL_TOL)
@@ -530,30 +549,30 @@ def _selfcheck() -> int:
     assert len(examples) == 5
     assert {e.discipline for e in examples} == set(DISCIPLINES)
 
-    header = "%-38s %-9s %5s %6s %14s %14s  %s" % (
-        "example_id", "disc", "holes", "depth", "area mm2", "volume mm3", "verify"
+    header = "%-38s %-9s %-8s %5s %6s %14s  %s" % (
+        "example_id", "disc", "truth", "holes", "depth", "volume mm3", "verify"
     )
     print(header)
     print("-" * len(header))
-    failures = 0
     for example in examples:
         ok, recomputed, detail = verify_example(example)
-        if not ok:
-            failures += 1
         print(
-            "%-38s %-9s %5d %6g %14.4f %14.4f  %s"
+            "%-38s %-9s %-8s %5d %6g %14s  %s"
             % (
                 example.example_id,
                 example.discipline,
+                example.truth_status,
                 example.hole_count,
                 example.depth,
-                example.expected_area_mm2,
-                example.expected_volume_mm3,
-                "OK" if ok else "FAIL (%s)" % detail,
+                ("%.4f" % example.expected_volume_mm3)
+                if example.expected_volume_mm3 is not None else "--",
+                "OK" if ok else detail,
             )
         )
-        # The answer key must pass its own grader.
-        assert ok, "%s: %s" % (example.example_id, detail)
+        if example.truth_status == TRUSTED:
+            assert ok, "%s: %s" % (example.example_id, detail)
+        else:
+            assert not ok and detail.startswith("retired:"), detail
         # hole_count must match the recorded ops too.
         part = example.build()
         ops = part.ops()
@@ -588,13 +607,17 @@ def _selfcheck() -> int:
     else:
         raise AssertionError("unmatched brief should raise ValueError")
 
-    assert failures == 0
-    print("SELFCHECK OK: the arithmetic is SELF-CONSISTENT -- all 5 examples")
-    print("agree with a stored number derived from the same formula. This is NOT")
-    print("evidence the parts are right: the bracket's number excludes its fillet")
-    print("and the HMI panel's is 40.3936 mm3 wrong (overlapping holes, lens")
-    print("subtracted twice). Both are invisible from here by construction; an")
-    print("exact B-rep kernel found them. See the module docstring.")
+    trusted = trusted_examples()
+    briefs = corroboration_briefs()
+    assert len(trusted) == len(briefs) == 3
+    assert {e.example_id for e in trusted} == {
+        "opencad-software-hmi-panel",
+        "opencad-firmware-programmer-fixture",
+        "opencad-device-cable-grommet",
+    }
+    print("SELFCHECK OK: 3 independently stated records are corroboration-ready;")
+    print("the bracket and PCB carrier remain source-faithful but explicitly retired")
+    print("from scoring because their reference stream cannot support their text.")
     return 0
 
 

@@ -281,22 +281,20 @@ class TestOrphanDetectorSeesDynamicDispatch(unittest.TestCase):
 #: may only go down. (The old, AST-only detector reported 336; 292 of those were
 #: alive and dispatched by importlib.)
 #:
-#: 44 -> 1. Two thirds of the last drop was the detector being wrong again rather
+#: 44 -> 0. Two thirds of the last drop was the detector being wrong again rather
 #: than modules being wired: it discarded the import edges of every package
 #: __init__ (so hub-wired modules read as dead) and indexed vendored fixture data
 #: as capabilities (so data read as dead code). Both are fixed in registry.py and
 #: pinned by tests above. The rest was real wiring -- the geometry surface, the
 #: standards/spec/vision routes, the corpus and benchmark hubs.
 #:
-#: The 1 that remains is eval.corpus.discipline_examples, and it is deliberate.
-#: An independent kernel measured its briefs and found two of five stated volumes
-#: are not the volume of the part the ops build (one formula double-subtracts the
-#: overlap of two intersecting holes), while its own verify_example passes them
-#: green by re-deriving the same formula that produced them. Wiring it would put
-#: briefs known to be wrong into the reference self-test. It stays an orphan, with
-#: the defects documented in its docstring, until the numbers are earned. An
-#: honest orphan is worth more than a route that launders a broken brief.
-ORPHAN_CEILING = 1
+#: The last orphan, eval.corpus.discipline_examples, was repaired rather than
+#: rooted: its bracket and PCB-carrier records are explicitly retired, its HMI
+#: panel now accounts for the overlapping-hole lens, and consensus imports only
+#: the three independently defensible records through corroboration_briefs().
+#: That makes the route real without laundering the two unsafe references into a
+#: benchmark. The ceiling therefore reaches its intended zero-debt state.
+ORPHAN_CEILING = 0
 
 
 class TestStats(unittest.TestCase):

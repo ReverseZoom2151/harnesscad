@@ -45,7 +45,12 @@ from harnesscad.eval.corpus.spec import Brief
 from harnesscad.eval.selftest.probe import (GEOMETRIC_BACKENDS, Observation,
                                             available, observe, tolerance)
 
-__all__ = ["Corroboration", "corroborate", "corroborate_all"]
+__all__ = [
+    "Corroboration",
+    "corroborate",
+    "corroborate_all",
+    "corroborate_discipline_examples",
+]
 
 
 @dataclass
@@ -137,6 +142,21 @@ def corroborate_all(briefs: Sequence[Brief],
                     backends: Optional[Sequence[str]] = None
                     ) -> List[Corroboration]:
     return [corroborate(b, backends) for b in briefs]
+
+
+def corroborate_discipline_examples(
+    backends: Optional[Sequence[str]] = None,
+) -> List[Corroboration]:
+    """Corroborate only the verified OpenCAD discipline records.
+
+    The loader is intentionally local: consensus remains usable without pulling
+    the optional OpenCAD record at import time, while this real call path makes
+    the record reachable in the capability graph. Retired examples cannot enter
+    because ``corroboration_briefs`` constructs briefs from trusted records only.
+    """
+    from harnesscad.eval.corpus.discipline_examples import corroboration_briefs
+
+    return corroborate_all(corroboration_briefs(), backends)
 
 
 def format_text(results: Sequence[Corroboration]) -> str:
