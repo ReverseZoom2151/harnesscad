@@ -78,7 +78,14 @@ ANNOTATION_COLORS: Tuple[str, ...] = (
     "yellow",
 )
 
-_DATUM_LETTER_RE = re.compile(r"^[A-Z]$")
+#: A datum letter is exactly one capital -- and `$` is not the way to say so.
+#: Python's `$` also matches just before a trailing newline, so `^[A-Z]$`
+#: accepted "A\n" while correctly rejecting "AB". These strings arrive as JSON
+#: from a vision model, so "A\n" is representable and reachable; it then flowed
+#: into DatumAnnotation.datum_letter and through the FCF datumReferences filter,
+#: where it would never match the "A" it was meant to reference. \A and \Z are
+#: absolute anchors and have no newline exception.
+_DATUM_LETTER_RE = re.compile(r"\A[A-Z]\Z")
 
 
 # --------------------------------------------------------------------------- #

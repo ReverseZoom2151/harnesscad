@@ -504,17 +504,17 @@ class ParseDatumTests(unittest.TestCase):
                 parse_annotation(_base_raw("datum", datumLetter=bad), 0), bad
             )
 
-    # BUG: _DATUM_LETTER_RE = re.compile(r"^[A-Z]$") -- in Python "$" also
-    # matches immediately before a trailing newline, so a datum letter of
-    # "A\n" (perfectly representable in JSON) is wrongly accepted. Exact
-    # reproducing input: parse_annotation({"type": "datum", "datumLetter":
-    # "A\n", "boundingBox": {...}}, 0) returns a DatumAnnotation instead of
-    # None. Fix would be r"\A[A-Z]\Z". Same flaw affects FCF datumReferences.
-    @unittest.expectedFailure
+    # REGRESSION GUARD. _DATUM_LETTER_RE was r"^[A-Z]$", and Python's "$" also
+    # matches immediately before a trailing newline -- so "A\n" was accepted as
+    # a datum letter while "AB" was correctly rejected. That string is
+    # representable in the JSON a vision model returns, so it was reachable
+    # from untrusted input, and it then flowed through the FCF datumReferences
+    # filter where it could never match the "A" it meant to reference. Fixed to
+    # r"\A[A-Z]\Z" (absolute anchors, no newline exception). These two tests
+    # found it; they stay so it cannot come back.
     def test_datum_letter_with_trailing_newline_should_be_rejected(self):
         self.assertIsNone(parse_annotation(_base_raw("datum", datumLetter="A\n"), 0))
 
-    @unittest.expectedFailure
     def test_datum_reference_with_trailing_newline_should_be_rejected(self):
         ann = parse_annotation(
             _base_raw(
