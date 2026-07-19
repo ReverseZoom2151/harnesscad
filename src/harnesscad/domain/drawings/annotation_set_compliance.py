@@ -1,8 +1,5 @@
 """annotation_set_compliance -- set-level ASME Y14.5-2018 compliance rules.
 
-Ported from the CAD-Annotator reference repo (artifacts/api-server/src/lib/
-compliance-engine.ts and artifacts/cad-annotator/src/lib/compliance-summary.ts).
-
 Harness gap filled: harnesscad.domain.drawings.gdt already validates a SINGLE
 GD&T feature-control frame (datum-less form controls, modifier legality per
 characteristic, datum precedence within one frame) -- those per-frame checks
@@ -15,7 +12,7 @@ sense over a whole annotation set from a drawing:
     declared by a datum annotation somewhere in the set;
   * MMC_LMC_APPLICABILITY -- MMC/LMC only for position/concentricity/symmetry;
   * TOLERANCE_POSITIVE -- FCF tolerance values must be positive;
-  * DUPLICATE_DATUM_LETTER (new, not in the TS source) -- two datum
+  * DUPLICATE_DATUM_LETTER -- two datum
     annotations declaring the same letter is an error;
 
 plus the compliance summary counts (errors / warnings / passing per

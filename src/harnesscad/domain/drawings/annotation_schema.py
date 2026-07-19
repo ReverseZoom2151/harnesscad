@@ -1,17 +1,13 @@
 """annotation_schema -- typed enriched-annotation schema + tolerant LLM-JSON parser.
 
-Ported from the CAD-Annotator reference repo (artifacts/api-server/src/lib/
-compliance-engine.ts type definitions and gdt-prompts.ts response parsing).
-
-CAD-Annotator's vision pipeline asks a model to return structured drawing
-annotations as JSON: five annotation types (dimension, fcf, datum,
+The vision pipeline accepts structured drawing annotations as JSON: five annotation types (dimension, fcf, datum,
 surface_finish, note) each with a percentage-coordinate bounding box, a
 confidence score, and type-specific sub-fields. The model output is untrusted,
 so every field is validated tolerantly: malformed annotations are silently
 dropped, missing ids/colors/confidences receive deterministic fallbacks, and
 numeric ranges are clamped.
 
-Harness gap filled: harnesscad already parses raw OCR callout *text*
+HarnessCAD already parses raw OCR callout *text*
 (harnesscad.domain.drawings.annotation_parser) and validates individual GD&T
 feature-control frames (harnesscad.domain.drawings.gdt -- per-frame checks live
 there and are NOT duplicated here). What was missing is the typed schema for a

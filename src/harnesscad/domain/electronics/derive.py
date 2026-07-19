@@ -1,9 +1,6 @@
-"""Deterministic Hardware IR derivations, mined from Forma-OSS.
+"""Deterministic Hardware IR derivations.
 
-Ported from Forma-OSS ``blueprint_core/agents/orchestrator.py`` (the helper
-utilities ``extract_power_rails``, ``extract_buses``, ``estimate_current_draw``
-and the deterministic BOM cost step / ``_component_bom_payload``), converted
-from pydantic to the stdlib dataclass IR in
+The helpers operate over the stdlib dataclass IR in
 ``harnesscad.domain.electronics.hardware_ir``.
 
 Gap filled: HarnessCAD previously had no electronics/netlist IR at all, so it

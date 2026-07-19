@@ -1,13 +1,12 @@
 """gdt_prompts -- deterministic prompt builders for staged GD&T drawing analysis.
 
-Ported from the CAD-Annotator reference repo (artifacts/api-server/src/lib/
-gdt-prompts.ts and artifacts/api-server/src/routes/analyze.ts). Provides:
+Provides:
 
   * ``GDT_SYSTEM_PROMPT`` -- the staged GD&T extraction system prompt that
     embeds the enriched-annotation JSON schema (5 annotation types, percentage
     bounding boxes, confidence rules, color-per-type convention);
-  * ``BASELINE_SYSTEM_PROMPT`` / ``DETAILED_SYSTEM_PROMPT`` -- the simpler and
-    thorough generic drawing-analysis prompts from the analyze route;
+  * ``BASELINE_SYSTEM_PROMPT`` / ``DETAILED_SYSTEM_PROMPT`` -- simpler and
+    thorough generic drawing-analysis prompts;
   * ``build_focused_requery_prompt`` -- the per-type focused re-examination
     prompt used by the confidence-gated re-query stage
     (harnesscad.domain.drawings.requery).

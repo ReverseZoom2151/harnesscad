@@ -1,14 +1,12 @@
 """requery -- confidence-gated re-query of low-confidence drawing annotations.
 
-Ported from the CAD-Annotator reference repo (artifacts/api-server/src/lib/
-requery-service.ts), vision-model-free core. When a vision model returns an
-annotation with confidence below 0.6, CAD-Annotator crops the bounding-box
-region from the original image (with 15 percent padding), re-asks the model
-with a focused per-type prompt, and applies a decision rule: replace the
+When a vision model returns an annotation with confidence below 0.6, the
+pipeline crops the bounding-box region from the original image (with 15 percent
+padding), re-asks the model with a focused per-type prompt, and applies a decision rule: replace the
 original when the re-query is confident enough, otherwise keep the
 higher-confidence reading flagged for human review.
 
-This port keeps every pure part -- percent-to-pixel crop geometry, the
+The implementation keeps every pure part -- percent-to-pixel crop geometry, the
 confidence threshold, the replace-or-flag decision rule, and the response
 merge that preserves the original id and bounding box -- and injects the only
 impure part (the vision call) as an optional callable. Without a vision

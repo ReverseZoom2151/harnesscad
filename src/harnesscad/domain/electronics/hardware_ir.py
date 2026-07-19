@@ -1,8 +1,7 @@
-"""Typed Hardware IR for device-level electronics briefs, mined from Forma-OSS.
+"""Typed Hardware IR for device-level electronics briefs.
 
-Ported from Forma-OSS ``blueprint_core/models.py`` (the pydantic Hardware IR,
-documented in ``docs/hardware-ir.md``), converted to stdlib dataclasses with
-tolerant ``to_dict``/``from_dict`` round-tripping: missing keys fall back to
+Stdlib dataclasses provide tolerant ``to_dict``/``from_dict`` round-tripping:
+missing keys fall back to
 defaults, unknown keys are ignored, so partially-populated agent output still
 loads.
 
@@ -13,7 +12,7 @@ pins together, buses, power rails, MCU pin mappings, assembly steps with
 danger flags, and mechanical placement notes that bridge back into the
 geometric world (positions/sizes in millimetres).
 
-Design notes carried over from the source:
+Design notes:
 
 * ``FunctionalRequirements.missing_info`` is the anti-guess clarification
   hook -- unknowns are recorded as questions instead of being invented.

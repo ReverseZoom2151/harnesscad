@@ -1,13 +1,9 @@
 """dfm_review -- Design for Manufacturability review over enriched annotations.
 
-Ported from the CAD-Annotator reference repo (artifacts/api-server/src/lib/
-dfm-reviewer.ts), with the deterministic side EXPANDED. The TS module ran one
-deterministic pre-check (datum scheme completeness) and delegated everything
-else to an LLM; this port keeps the LLM path optional (an injected callable)
-and adds three more deterministic checks so a review is useful with no model
-at all:
+The LLM path is optional (an injected callable), and deterministic checks keep
+the review useful with no model at all:
 
-  * datum scheme completeness (< 3 unique datum letters -> warning, ported);
+  * datum scheme completeness (< 3 unique datum letters -> warning);
   * missing tolerance (dimensions with neither plus nor minus tolerance);
   * surface finish consistency (Ra-vs-tightest-tolerance rule-of-thumb table);
   * over-tolerancing (FCF tolerance below a typical machining capability floor).

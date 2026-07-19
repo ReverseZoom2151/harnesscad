@@ -1,11 +1,7 @@
-"""Deterministic mechanical placement enrichment, mined from Forma-OSS.
+"""Deterministic mechanical placement enrichment.
 
-Ported from Forma-OSS ``blueprint_core/agents/orchestrator.py``
-(``build_mechanical_render_data`` and its helpers ``_infer_render_dimensions``,
-``_placement_layer``, ``_placement_size``, ``_placement_position``,
-``_row_position``, ``_dominant_axis``, ``_offset_for_axis``,
-``_is_enclosure_component``), converted from pydantic to the stdlib dataclass
-IR in ``harnesscad.domain.electronics.hardware_ir``.
+The heuristics operate over the stdlib dataclass IR in
+``harnesscad.domain.electronics.hardware_ir``.
 
 Gap filled: HarnessCAD previously had no electronics/netlist IR at all, so its
 device-level briefs had no bridge from a typed BOM into a spatial layout.
