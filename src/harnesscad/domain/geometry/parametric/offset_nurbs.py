@@ -5,7 +5,7 @@ Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
 The module includes analytic constructors and least-squares B-spline fitting
 needed to provide exact and measured-deviation offset paths.
 
-What this module provides (kerf's public surface):
+What this module provides:
 
   * :func:`offset_curve`   -- planar curve offset by a signed distance ``d``
     along the right-side normal ``cross(plane_normal, tangent)``.  Analytic
@@ -22,7 +22,7 @@ What this module provides (kerf's public surface):
     ``|d|``; concave corners are extended / trimmed to the intersection of the
     adjacent offset segments.
 
-Honesty contract (kerf's): every approximating result reports the measured
+Honesty contract: every approximating result reports the measured
 ``actual_max_deviation`` against the dense offset samples in its result dict
 ``{"ok": bool, "curve"/"surface": ..., "actual_max_deviation": float,
 "reason": str, "analytic": str}``; analytic exact paths report ``0.0`` and
@@ -30,50 +30,43 @@ name the case taken in the ``"analytic"`` flag (``"line"``, ``"circle"``,
 ``"arc"``, ``"plane"``, ``"sphere"``, or ``""`` for the general refit path).
 :func:`offset_loop` returns ``{"ok", "curves", "perimeter", "reason"}``.
 
-Adaptations from kerf (documented, everything else is a faithful port):
+Implementation notes:
 
-  * numpy removed; pure stdlib, deterministic.
+  * Pure stdlib, deterministic; no numpy.
   * Curves are the harness plain-data 4-tuple ``(control_points, weights,
     degree, knots)`` and surfaces the 6-tuple ``(poles, weights, deg_u, deg_v,
     knots_u, knots_v)``; evaluation reuses
     :mod:`harnesscad.domain.geometry.parametric.nurbs_curve`
     (``curve_point`` / ``curve_derivatives``) and
     :mod:`harnesscad.domain.geometry.parametric.nurbs_surface`
-    (``surface_point`` / ``surface_normal``) instead of kerf's ``de_boor`` /
-    ``surface_evaluate``.  2-D control points are lifted to z=0; results are
-    always 3-D.
-  * Tangents along the general offset path use the analytic NURBS derivative
-    (kerf used ``np.gradient`` over the samples), with a finite-difference
-    fallback at cusps.
+    (``surface_point`` / ``surface_normal``).  2-D control points are lifted
+    to z=0; results are always 3-D.
+  * Tangents along the general offset path use the analytic NURBS derivative,
+    with a finite-difference fallback at cusps.
   * A straight-line analytic case (translate the control net, exact for any
     degree with a collinear net) and a circular-arc analytic case (circum-
-    centre detection verified against dense samples at 1e-9) are added next
-    to kerf's structural 9-point-circle detector, so line/circle/arc offsets
-    are all exact with no refit.  The analytic circle/arc branch keeps kerf's
-    convention that ``d > 0`` always grows the radius (``r_new = r + d``)
-    regardless of parameterisation orientation.
-  * Two kerf loop-fillet defects are corrected so corner arcs are tangent and
-    gap-free: the fillet centre is placed at ``mid + sqrt(d^2 - h^2) *
-    sag_dir`` (kerf used the sagitta ``d - sqrt(d^2 - h^2)``, putting the
-    centre off the true corner), and the arc sweep is the short-way signed
-    angle in (-pi, pi] (kerf forced the sweep sign from ``d``, which routed
-    arcs the long way around).  Concave corners between straight segments are
-    trimmed exactly to the intersection (kerf appended an extension line and
-    left a gap); non-line segments keep kerf's extend-with-connector scheme
-    but the connector to the next segment start is added so the loop closes.
-  * kerf's surface refit fitted rows with Piegl-Tiller knots but re-evaluated
-    them on mismatched uniform knots; this port uses one consistent
-    uniform-parameter tensor-product least-squares fit (same knot vectors for
-    fitting and the returned surface), keeping the reported deviation honest.
-  * kerf's ``offset_curve_3d`` (geodesic offset on a surface) is not ported:
-    it depends on kerf's closest-point surface inversion, which the harness
-    does not have yet.
+    centre detection verified against dense samples at 1e-9) join the
+    structural 9-point-circle detector, so line/circle/arc offsets are all
+    exact with no refit.  The analytic circle/arc branch uses the convention
+    that ``d > 0`` always grows the radius (``r_new = r + d``) regardless of
+    parameterisation orientation.
+  * The loop fillet places the corner arc centre at ``mid + sqrt(d^2 - h^2) *
+    sag_dir`` and sweeps the short-way signed angle in (-pi, pi], so corner
+    arcs are tangent and gap-free.  Concave corners between straight segments
+    are trimmed exactly to the intersection; non-line segments use an
+    extend-with-connector scheme with the connector to the next segment start
+    added so the loop closes.
+  * The surface refit uses one consistent uniform-parameter tensor-product
+    least-squares fit (same knot vectors for fitting and the returned
+    surface), keeping the reported deviation honest.
+  * A geodesic offset on a surface (``offset_curve_3d``) is not provided: it
+    depends on a closest-point surface inversion the harness does not have yet.
 
 Relation to ``parametric/path_offset.py``: that module offsets 2-D
-*polylines* with mitered corners (SolidPython port); this module offsets
-*NURBS* curves and surfaces, handles exact conics analytically, inserts true
-rational arc fillets rather than discretised ones, and reports a measured
-deviation for every approximate result.
+*polylines* with mitered corners; this module offsets *NURBS* curves and
+surfaces, handles exact conics analytically, inserts true rational arc
+fillets rather than discretised ones, and reports a measured deviation for
+every approximate result.
 
 Pure stdlib, deterministic.
 """

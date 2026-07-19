@@ -1,32 +1,29 @@
-"""Derive parametric handle positions by walking a CSG tree (paper Section 4.1-4.2).
+"""Derive parametric handle positions by walking a CSG tree.
 
-This implements the two retrieval features the paper builds on top of the handle
-grids:
+This provides two retrieval features built on top of the handle grids:
 
-* **Position** (Section 4.1, Figure 2). "Given a determined handle of a selected
-  node, the application can define the position of the handle in terms of the
-  variables used in the code. The application iterates on the CSG tree to locate
-  the selected node. Then, the selected node provides the definition of the
-  position of the handle relative to the node's centre. Later, the application
-  iterates on translate nodes in the branch of the selected node, adding their
-  definitions to the position of the handle." That is: walk from the root down to
-  the target node, summing every ``translate`` vector on the path, then add the
-  handle's offset — all as :class:`~programs.paramgeom_linform.LinearForm`
-  arithmetic, giving a parametric position relative to the CSG root ``[0,0,0]``.
+* **Position**. Given a chosen handle on a selected node, define the position of
+  the handle in terms of the variables used in the code. Walk the CSG tree to
+  locate the selected node; that node supplies the definition of the handle
+  position relative to the node's centre. Then walk the translate nodes in the
+  branch of the selected node, adding their definitions to the handle position.
+  That is: walk from the root down to the target node, summing every ``translate``
+  vector on the path, then add the handle's offset -- all as
+  :class:`~programs.paramgeom_linform.LinearForm` arithmetic, giving a parametric
+  position relative to the CSG root ``[0,0,0]``.
 
-* **Delta vector** (Section 4.2, Figure 4). The vector between two handles,
-  ``destination - origin``, "allowing users to determine the necessary
-  transformation to align the origin and destination points". Worked example
-  from the paper: aligning a sphere handle to a cylinder-top handle yields
+* **Delta vector**. The vector between two handles, ``destination - origin``,
+  giving the transformation needed to align the origin and destination points.
+  Worked example: aligning a sphere handle to a cylinder-top handle yields
   ``[r_top - r_sphere, 0, thickness + h_stem + h_top]``.
 
 The tree model here is deliberately small and deterministic: :class:`TransformNode`
 carries a translate offset and children; :class:`PrimitiveNode` is a leaf that
 owns a named handle grid. Non-translate transforms (rotate/scale) are supported
-as opaque pass-throughs that break linear derivation, matching the paper's stated
-limitation that only ``translate`` accumulates cleanly. The paper's SymPy
-simplification step is subsumed by :class:`LinearForm`'s canonical form (trivial
-``translate 0`` contributions simply vanish).
+as opaque pass-throughs that break linear derivation, reflecting the limitation
+that only ``translate`` accumulates cleanly. Symbolic simplification is subsumed
+by :class:`LinearForm`'s canonical form (trivial ``translate 0`` contributions
+simply vanish).
 
 Pure stdlib, deterministic.
 """
@@ -110,7 +107,7 @@ def accumulate_translations(path: Sequence[Node]) -> Vec3:
     """Sum the translate offsets along ``path`` (root..node), as a Vec3.
 
     Raises :class:`DerivationError` if the path crosses a non-linear transform,
-    mirroring the paper's limitation that only ``translate`` accumulates.
+    mirroring the limitation that only ``translate`` accumulates.
     """
     total = _ZERO_VEC
     for node in path:
@@ -135,8 +132,8 @@ def derive_position(root: Node, node_id: str, handle_name: str) -> Vec3:
         raise DerivationError(f"node {node_id!r} not found in tree")
     node = path[-1]
     if not isinstance(node, PrimitiveNode):
-        # Non-primitive nodes carry a single handle at the node's position
-        # (paper Section 5): the accumulated translation is the position.
+        # Non-primitive nodes carry a single handle at the node's position:
+        # the accumulated translation is the position.
         if handle_name not in ("center", "node"):
             raise DerivationError(
                 f"non-primitive node {node_id!r} only exposes a 'center' handle"

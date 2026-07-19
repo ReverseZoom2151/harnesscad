@@ -1,11 +1,10 @@
 """Deterministic source-text editing operations for a CAD script editor.
 
-Reimplemented, stdlib-only and Qt-free, from the pure text-transformation
-logic embedded in CQ-editor's ``CodeEditor`` widget (block comment toggling,
-block indent/unindent, and end-of-line detection).  The original code drove a
-``QPlainTextEdit`` document with ``QTextCursor`` operations; here the same
-algorithms operate on plain Python line lists and byte strings so they are
-deterministic and testable without a GUI toolkit.
+A stdlib-only, toolkit-free implementation of the text transformations a code
+editor widget performs: block comment toggling, block indent/unindent, and
+end-of-line detection.  Rather than driving a rich-text document through cursor
+operations, these algorithms work on plain Python line lists and byte strings so
+they are deterministic and testable without a GUI.
 
 All functions are pure: they take input and return new values without mutating
 their arguments and without touching any global state.
@@ -18,7 +17,7 @@ COMMENT = "# "
 def detect_eol(raw):
     """Detect the end-of-line convention used in a byte string.
 
-    Mirrors CQ-editor's file-load EOL sniffing: a Windows ``\\r\\n`` wins over a
+    Mirrors the usual file-load EOL sniffing: a Windows ``\\r\\n`` wins over a
     lone ``\\r`` (classic Mac), which wins over the Unix ``\\n`` default.
 
     :param raw: file contents as ``bytes``.
@@ -60,8 +59,7 @@ def unindent_lines(lines):
     """Remove one leading indent unit from every line that has one.
 
     Only a full four-space prefix is stripped; a line indented with fewer
-    spaces (or a tab) is left unchanged, matching CQ-editor's
-    ``remove_line_start`` which only strips an exact prefix match.
+    spaces (or a tab) is left unchanged: only an exact prefix match is stripped.
 
     :param lines: iterable of line strings.
     :returns: a new list of lines.
@@ -83,7 +81,7 @@ def _is_commented(line):
 def toggle_comment_block(lines):
     """Toggle line comments across a block of lines.
 
-    Reproduces CQ-editor's ``toggle_comment`` semantics:
+    The toggle semantics are:
 
     * Blank lines are ignored entirely.
     * If the block mixes commented and uncommented (non-blank) lines, every
@@ -129,9 +127,8 @@ def toggle_comment_block(lines):
 def line_number_gutter_digits(line_count):
     """Return the digit width needed to render line numbers for *line_count*.
 
-    Deterministic reimplementation of CQ-editor's gutter-width digit count
-    (there computed via a float-multiply loop); here done with pure integer
-    arithmetic.  At least one column is always reserved.
+    Deterministic gutter-width digit count, done with pure integer arithmetic
+    rather than a float-multiply loop.  At least one column is always reserved.
 
     :param line_count: number of lines in the document.
     :returns: number of decimal digits in ``max(1, line_count)``.

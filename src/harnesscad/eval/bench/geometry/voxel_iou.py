@@ -1,21 +1,21 @@
-"""Voxel-IoU and viewpoint-error metrics from Magic3DSketch (Zang et al., 2024).
+"""Voxel-IoU and viewpoint-error metrics for sketch-to-3D reconstruction.
 
-Magic3DSketch reports two deterministic quantitative metrics against ShapeNet
+This reports two deterministic quantitative metrics against a ShapeNet-style
 ground truth:
 
-* **Voxel IoU** (Tables 1, 3, 7): a reconstructed shape and the ground-truth
+* **Voxel IoU**: a reconstructed shape and the ground-truth
   shape are voxelised onto a common occupancy grid and scored by the volumetric
   Jaccard index |A AND B| / |A OR B|.  This is the headline reconstruction
-  fidelity number ("VoxelIoU up").
+  fidelity number.
 
-* **Viewpoint error** (Table 2): the network's predicted camera pose (elevation
+* **Viewpoint error**: the network's predicted camera pose (elevation
   and azimuth Euler angles) is compared with the ground-truth pose by mean
-  absolute error (MAE, reported in the table) -- and, as used in the training
-  loss L_v (paper Eq. 4), by mean squared error over the pose vector.  Azimuth
-  is an angle on a circle, so this module offers a circular MAE that accounts
-  for wrap-around (e.g. 350 deg vs 10 deg differ by 20 deg, not 340).
+  absolute error (MAE) -- and, as used in a training loss term, by mean
+  squared error over the pose vector.  Azimuth is an angle on a circle, so
+  this module offers a circular MAE that accounts for wrap-around (e.g.
+  350 deg vs 10 deg differ by 20 deg, not 340).
 
-The paper also averages per-category scores into a single "mean" column; a
+Per-category scores are also averaged into a single "mean" column; a
 category-mean helper is provided.
 
 Everything is stdlib-only and deterministic.  Occupancy grids are given as sets

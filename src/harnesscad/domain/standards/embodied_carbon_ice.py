@@ -1,27 +1,24 @@
-"""ICE v3 embodied-carbon database integration (kerf), manifest + loader pattern.
+"""ICE v3 embodied-carbon database integration, manifest + loader pattern.
 
-Integrates the material lookup layer of kerf's LCA package (kerf-lca,
-``materials.py``; kerf is MIT licensed, (c) 2026 Imran Paruk) which fronts the
-Inventory of Carbon and Energy (ICE) v3.0 database by Circular Ecology and the
-University of Bath:
+Integrates a material lookup layer that fronts the Inventory of Carbon and
+Energy (ICE) v3.0 database by Circular Ecology and the University of Bath:
 
     https://circularecology.com/embodied-carbon-footprint-database.html
 
-License rationale (manifest + loader): while kerf's *code* is MIT, the
-underlying ICE v3.0 *dataset* carries its own terms that do not clearly permit
-redistribution of the numeric values. This module therefore vendors **no**
-CO2e-per-kg factors and **no** recycled-content/recyclability percentages.
+License rationale (manifest + loader): the underlying ICE v3.0 *dataset* carries
+its own terms that do not clearly permit redistribution of the numeric values.
+This module therefore vendors **no** CO2e-per-kg factors and **no**
+recycled-content/recyclability percentages.
 It embeds only a MANIFEST -- facts about the dataset's shape: material keys,
 human-readable labels, categories, alias lists and source metadata -- and a
 LOADER that reads the actual numbers at runtime from a locally available copy
-of kerf's ``ice_v3.json`` (never shipped with this package). The JSON is
-located via, in priority order:
+of the ``ice_v3.json`` dataset file (never shipped with this package). The JSON
+is located via, in priority order:
 
 1. an explicit ``path`` argument to :func:`load_ice`;
 2. the ``HARNESSCAD_ICE_V3`` environment variable;
-3. the default in-repo resources path
-   ``resources/cad_repos/kerf-main/kerf-main/packages/kerf-lca/src/kerf_lca/data/ice_v3.json``
-   resolved relative to this module's location.
+3. the default in-repo resources path resolved relative to this module's
+   location.
 
 Degrade behaviour (documented choice): when the dataset is not loaded,
 value-bearing lookups **raise** the typed :class:`IceNotLoadedError` rather
@@ -29,13 +26,13 @@ than returning ``None`` -- an absent database is an environment condition the
 caller should distinguish from "material not found" (which *does* return
 ``None``). Availability is queryable via :func:`is_available` without raising.
 
-Name resolution mirrors kerf's ``lookup_material``: case-insensitive match on
+Name resolution follows a ``lookup_material`` order: case-insensitive match on
 key, then label, then alias, then shortest containing label/alias substring.
 Alias resolution works from the manifest alone, so :func:`resolve_key` never
 needs the dataset.
 
 This module *extends* :mod:`harnesscad.domain.standards.embodied_carbon` (the
-Insights accounting port): :func:`combined_carbon_intensity` prefers a loaded
+general CO2e accounting table): :func:`combined_carbon_intensity` prefers a loaded
 ICE v3 factor and falls back to that module's ``DEFAULT_CO2E`` table.
 
 Stdlib only, deterministic.
@@ -117,7 +114,7 @@ def _e(key: str, label: str, category: str, *aliases: str) -> ManifestEntry:
     return ManifestEntry(key=key, label=label, category=category, aliases=aliases)
 
 
-#: Manifest of the ICE v3 dataset as shipped with kerf-lca: keys, labels,
+#: Manifest of the ICE v3 dataset: keys, labels,
 #: categories and aliases only. CO2e and recycled-content numbers are loaded
 #: at runtime and are intentionally absent here.
 ICE_MANIFEST: Dict[str, ManifestEntry] = {
@@ -242,7 +239,7 @@ _DATA: Optional[Dict[str, dict]] = None
 
 
 def default_ice_path() -> pathlib.Path:
-    """The in-repo default location of kerf's ice_v3.json.
+    """The in-repo default location of the ICE v3 ``ice_v3.json`` dataset.
 
     Resolved relative to this module: ``<repo>/src/harnesscad/domain/standards``
     -> four parents up is the repo root.
@@ -323,7 +320,7 @@ def manifest_categories() -> List[str]:
 def resolve_key(name: str) -> Optional[str]:
     """Resolve a material name to its manifest key, or None.
 
-    Mirrors kerf's lookup order (case-insensitive): exact key, exact label,
+    Mirrors the lookup order (case-insensitive): exact key, exact label,
     exact alias, then substring against labels and aliases where the shortest
     containing candidate wins (ties break by candidate text then key, for a
     deterministic result). Works from the manifest alone; the ICE dataset

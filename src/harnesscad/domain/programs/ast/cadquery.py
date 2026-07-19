@@ -1,24 +1,22 @@
 """CadQuery-subset structured program (AST): build / serialize / parse / validate.
 
-Paper 171 -- *Text-to-CadQuery: A New Paradigm for CAD Generation with Scalable
-Large Model Capabilities* (Xie & Ju, ASU, 2025). The paper's central idea is to
-make the text-to-CAD **target** ordinary CadQuery Python code (a real, pure-Python
-CAD API) instead of a bespoke command sequence, so that pretrained LLMs -- already
-fluent in Python -- can emit executable 3D-generative code directly (Sec. 1, and
-the modeling examples in Appendix A.2 / A.3).
+The central idea is to make the text-to-CAD **target** ordinary CadQuery Python
+code (a real, pure-Python CAD API) instead of a bespoke command sequence, so that
+pretrained LLMs -- already fluent in Python -- can emit executable 3D-generative
+code directly.
 
-This module is the deterministic core the paper leaves implicit: a *structured
-representation* of the CadQuery subset the paper actually uses. Rather than treat
-generated CadQuery as an opaque string, we model it as a small typed AST -- a list
-of variable assignments, each a **method chain** rooted at ``cq.Workplane(plane)``
-or a previously-defined variable, e.g.::
+This module is the deterministic core that approach leaves implicit: a *structured
+representation* of the CadQuery subset in use. Rather than treat generated CadQuery
+as an opaque string, we model it as a small typed AST -- a list of variable
+assignments, each a **method chain** rooted at ``cq.Workplane(plane)`` or a
+previously-defined variable, e.g.::
 
     part_1 = cq.Workplane("XY").moveTo(0.0, 0.0).lineTo(0.75, 0.0).close().extrude(0.5)
     result = part_1
 
-The subset of chain methods mirrors exactly the operations that appear in the
-paper's CadQuery examples (Appendix A.2/A.3) and its stated abstractions "box, arc,
-circle, and extrude" (Sec. 2): ``box``, ``cylinder``, ``sphere``, ``rect``,
+The subset of chain methods mirrors exactly the operations that appear in common
+CadQuery examples and the core abstractions "box, arc, circle, and extrude":
+``box``, ``cylinder``, ``sphere``, ``rect``,
 ``circle``, ``moveTo``, ``lineTo``, ``line``, ``threePointArc``, ``radiusArc``,
 ``close``, ``extrude``, ``cut``, ``cutBlind``, ``union``, ``intersect``, ``fillet``,
 ``chamfer``, ``hole``, ``center``, ``workplane``, ``faces``, ``edges``,
@@ -35,11 +33,12 @@ The module provides four deterministic capabilities:
   * **validate** -- structural checks (:func:`validate`): known methods, argument
     arity, workplane plane names, and use-before-definition of variables.
 
-Pure stdlib (``ast`` only). No CadQuery/OCCT is imported or executed -- this is a
-static representation, distinct from :mod:`backends.cadquery_backend` (which drives
-the real kernel) and from :mod:`datagen.cadquery_codegen` (a one-shot CISP-dict
-string emitter with no AST, parser or validator). It is the CadQuery analogue of
-:mod:`programs.openecad_script` (paper 138's editable DSL, a different language).
+Pure stdlib (``ast`` only). No CadQuery or B-rep kernel is imported or executed --
+this is a static representation, distinct from :mod:`backends.cadquery_backend`
+(which drives the real kernel) and from :mod:`datagen.cadquery_codegen` (a one-shot
+CISP-dict string emitter with no AST, parser or validator). It is the CadQuery
+analogue of :mod:`programs.openecad_script` (an editable DSL for a different
+language).
 """
 
 from __future__ import annotations
@@ -48,10 +47,9 @@ import ast
 from dataclasses import dataclass, field
 
 # --- allowed CadQuery-subset chain methods -> (min positional, max positional) --
-# The subset covers exactly the operations used in the paper's CadQuery examples
-# (Appendix A.2/A.3) plus the robust-arc alternative it recommends (radiusArc,
-# Appendix A.4). Tuple-valued arguments (e.g. threePointArc points) count as one
-# positional argument each.
+# The subset covers exactly the operations used in common CadQuery examples plus
+# the robust-arc alternative (radiusArc). Tuple-valued arguments (e.g.
+# threePointArc points) count as one positional argument each.
 CHAIN_METHODS: dict[str, tuple[int, int]] = {
     "box": (3, 4),
     "cylinder": (2, 3),
@@ -59,8 +57,8 @@ CHAIN_METHODS: dict[str, tuple[int, int]] = {
     "rect": (2, 3),
     "circle": (1, 1),
     # CadQuery's signature is moveTo(x=0, y=0), so nought/one/two positional
-    # args are all legal; the corpus in resources/cadbible/cadquery-contrib
-    # calls it with one. A (2, 2) arity here rejected valid programs.
+    # args are all legal; real-world programs commonly call it with one. A
+    # (2, 2) arity here rejected valid programs.
     "moveTo": (0, 2),
     "lineTo": (2, 2),
     "line": (2, 2),

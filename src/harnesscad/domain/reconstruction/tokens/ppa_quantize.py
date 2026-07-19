@@ -1,14 +1,11 @@
-"""Coordinate normalisation + 6-bit quantisation for PPA sketch primitives
-(Wang et al., "Parametric Primitive Analysis of CAD Sketches with Vision
-Transformer", IEEE T-II 2024).
+"""Coordinate normalisation + 6-bit quantisation for parametric sketch primitives.
 
-The paper (Sec. III-A, "Quantization") states: *"The primitive parameters are
-quantized into 6-bit integers, and the boolean flags are encoded as 1 (true) or 0
-(false)."* -- i.e. every coordinate is mapped onto one of ``2**6 = 64`` discrete
-levels. The accuracy protocol (Eq. 23) then allows a coordinate error within a
-threshold ``eta = 1`` "out of 64 levels" to count as correct, and Table XV reports a
-*quantisation error* (the Chamfer gap introduced purely by integerising the
-floats).
+Every primitive parameter is quantized into a 6-bit integer, and the boolean flags
+are encoded as 1 (true) or 0 (false) -- i.e. every coordinate is mapped onto one of
+``2**6 = 64`` discrete levels. An accuracy protocol then allows a coordinate error
+within a threshold ``eta = 1`` "out of 64 levels" to count as correct, and a
+*quantisation error* metric reports the Chamfer gap introduced purely by
+integerising the floats.
 
 This module implements the deterministic pieces:
 
@@ -34,7 +31,7 @@ from dataclasses import dataclass
 
 from harnesscad.domain.reconstruction.sketch import primitives as pp
 
-# 6-bit quantisation -> 64 levels (paper: "quantized into 6-bit integers").
+# 6-bit quantisation -> 64 levels (quantized into 6-bit integers).
 DEFAULT_BITS = 6
 
 

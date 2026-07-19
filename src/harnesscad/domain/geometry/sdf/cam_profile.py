@@ -1,7 +1,6 @@
-"""Exact 2D signed distance fields for mechanical cam profiles (sdfx).
+"""Exact 2D signed distance fields for mechanical cam profiles.
 
-Reimplementation of the cam generators from deadsy/sdfx (``sdf/cams.go``).  Two
-classic radial cam profiles, each an *exact* 2D SDF (closed-form nearest-feature
+Two classic radial cam profiles, each an *exact* 2D SDF (closed-form nearest-feature
 distance) plus a design-parameter constructor that solves the geometry from
 follower lift / duration / maximum diameter:
 
@@ -12,8 +11,8 @@ follower lift / duration / maximum diameter:
 
 Both are symmetric about the y-axis with the base circle centered at the origin
 and the nose on the +y axis.  ``evaluate((x, y))`` returns the signed distance
-(negative inside).  These are genuine manufacturing cam curves not present in
-the harness's SDF stack (curv / libfive / sdf-csg provide no cam primitive).
+(negative inside).  These are genuine manufacturing cam curves not otherwise
+present in the SDF primitive set.
 
 Pure stdlib, deterministic.
 """

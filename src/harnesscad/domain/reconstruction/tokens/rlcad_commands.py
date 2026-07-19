@@ -1,10 +1,10 @@
-"""RLCAD extended command set: sketch / extrude / **revolve** (Yin, Lu, Shen et al.).
+"""Extended CAD command set: sketch / extrude / **revolve**.
 
-DeepCAD (:mod:`reconstruction.deepcad_command_spec`) and every mainstream CAD
-command dataset are *extrude-only*. RLCAD's contribution is a command vocabulary
-that also carries a **revolution** operation. This module is the deterministic,
-network-agnostic representation of that extended DSL (paper Sec. 4, the grammar
-box on p.3)::
+The mainstream CAD command vocabularies (see
+:mod:`reconstruction.deepcad_command_spec`) are *extrude-only*. The contribution of
+this command set is a vocabulary that also carries a **revolution** operation. This
+module is the deterministic, network-agnostic representation of that extended DSL,
+whose grammar is::
 
     M := G ; [X]
     X := E | R
@@ -20,13 +20,13 @@ non-coplanar planes); the revolve operation ``R`` takes a **single** revolve-
 eligible face that the kernel geometrically parses into an axis, angle and
 profile.
 
-RLCAD also defines a flat *action* encoding for the RL policy (Sec. 5.3):
-``a = (f_s, f_e, o_t, a_t)`` where ``o_t`` is the Boolean op, ``a_t`` the action
-type (extrude/revolve), and -- crucially -- ``f_s != f_e`` for extrusion but
-``f_s == f_e`` for revolution ("the start and end faces differ for extrusion but
-coincide for revolution", p.1). This module encodes/decodes that 4-tuple, checks
-its structural validity, and serialises the DSL. The learned policy is out of
-scope. Pure stdlib, deterministic.
+The command set also defines a flat *action* encoding for a reinforcement-learning
+policy: ``a = (f_s, f_e, o_t, a_t)`` where ``o_t`` is the Boolean op, ``a_t`` the
+action type (extrude/revolve), and -- crucially -- ``f_s != f_e`` for extrusion but
+``f_s == f_e`` for revolution: the start and end faces differ for extrusion but
+coincide for revolution. This module encodes/decodes that 4-tuple, checks its
+structural validity, and serialises the DSL. The learned policy is out of scope.
+Pure stdlib, deterministic.
 """
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ Action = Tuple[int, int, str, str]
 
 
 def encode_action(command: Command) -> Action:
-    """Encode a command to the RL action 4-tuple ``(f_s, f_e, o_t, a_t)``."""
+    """Encode a command to the policy action 4-tuple ``(f_s, f_e, o_t, a_t)``."""
     if isinstance(command, ExtrudeCommand):
         return (command.start_face, command.end_face, command.op, EXTRUDE)
     if isinstance(command, RevolveCommand):

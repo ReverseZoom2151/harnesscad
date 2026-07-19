@@ -1,10 +1,10 @@
-"""Parametric handle grids for CAD primitives (paper Section 4 + Appendix Table 4).
+"""Parametric handle grids for CAD primitives.
 
-To let a user *retrieve* the parametric definition of a point on an object, the
-paper decorates every primitive with a grid of named "handles". Each handle's
-position is expressed symbolically, relative to the primitive's centre, in terms
-of the primitive's size parameters — so that when the size is a variable the
-handle position is itself a parametric (linear) expression. From the paper:
+To let a user *retrieve* the parametric definition of a point on an object, every
+primitive is decorated with a grid of named "handles". Each handle's position is
+expressed symbolically, relative to the primitive's centre, in terms of the
+primitive's size parameters -- so that when the size is a variable the handle
+position is itself a parametric (linear) expression:
 
 * **Cube (27 points)** — a 3x3x3 grid: 1 centre, 8 corners, 6 face-centres,
   12 edge-midpoints.
@@ -20,9 +20,9 @@ handle position is itself a parametric (linear) expression. From the paper:
 
 Every handle offset is a triple of :class:`~programs.paramgeom_linform.LinearForm`
 values (dx, dy, dz), so ``size`` parameters may be given as numbers *or* as
-variable names. These offsets are exactly the "definition of the position of the
-handle relative to the node's centre" that the paper's Position feature adds to
-the accumulated translations (see :mod:`programs.paramgeom_position`).
+variable names. These offsets are exactly the definition of the position of the
+handle relative to the node's centre that the Position feature adds to the
+accumulated translations (see :mod:`programs.paramgeom_position`).
 
 Pure stdlib, deterministic.
 """
@@ -159,8 +159,8 @@ def square_handles(size_x: Dim, size_y: Dim) -> Dict[str, Offset]:
 
 
 def circle_handles(diameter: Dim) -> Dict[str, Offset]:
-    """5 handles for a circle: centre plus the 4 axis extremes (paper: 9-pt grid,
-    but a circle keeps only centre + 4 axis-aligned boundary points)."""
+    """5 handles for a circle: centre plus the 4 axis extremes (a full grid would
+    be 9 points, but a circle keeps only centre + 4 axis-aligned boundary points)."""
     xs = _axis_offsets(diameter)
     ys = _axis_offsets(diameter)
     zero = LinearForm.const(0)

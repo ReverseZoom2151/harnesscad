@@ -1,7 +1,7 @@
 """Bounding-box dimensional-accuracy metric for generated CAD solids.
 
-Ported from SpatialHero (``utils/cad_utils.py``: ``measure_dimensions``), a
-text-to-CAD reward system. This measures a solid's realised **bounding-box**
+Deterministic re-implementation of a bounding-box dimensional-accuracy reward
+used by a text-to-CAD reward system. This measures a solid's realised **bounding-box**
 extents (width / depth / height / bbox-volume) and scores them against a
 target-dimensions dict via bounded relative error.
 
@@ -30,7 +30,7 @@ def measure_bbox_dimensions(
 ) -> Dict[str, float]:
     """Realised extents from an axis-aligned bounding box.
 
-    Convention (matching SpatialHero): ``width`` spans x, ``depth`` spans y,
+    Convention: ``width`` spans x, ``depth`` spans y,
     ``height`` spans z, ``volume`` is the bbox product.
     """
     width = max_x - min_x

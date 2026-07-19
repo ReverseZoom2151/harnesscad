@@ -1,6 +1,6 @@
 """Compression and reconstruction-error metrics for wavelet shape encoding.
 
-From *Make-A-Shape* (Hui, Sanghi, Rampini et al., 2024), Tables 1 & 8 and
+Tables 1 & 8 and
 Sec. 4.  The paper evaluates its wavelet-tree representation with two families
 of numbers, both fully deterministic:
 

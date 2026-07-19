@@ -1,30 +1,30 @@
-"""Controllability & code-consistency metrics for HNC-CAD (Xu et al., ICML 2023).
+"""Controllability & code-consistency metrics for a hierarchical neural code
+representation of CAD models.
 
-HNC-CAD's headline claims are *controllability* (edits at any hierarchy level
+The headline claims being tested are *controllability* (edits at any hierarchy level
 propagate sensibly) and *instance-agnostic design patterns* (data mapped to the same
 code share high-level patterns while ignoring instance detail). This module turns
 those claims into deterministic, learning-free metrics over the code tree of
 :mod:`generation.hnc_code_control`:
 
 * :func:`code_fix_preservation` -- given a :class:`ControlMask` and the before/after
-  code trees, the fraction of *fixed* code nodes that survived unchanged. HNC's
-  design-preserving edit (Sec. 6.4) requires this to be 1.0.
+  code trees, the fraction of *fixed* code nodes that survived unchanged. The
+  design-preserving edit ideal requires this to be 1.0.
 
 * :func:`edit_locality` -- for a single-level edit, checks that only the edited level
-  (and, for structural edits, its descendant scope) changed. Encodes the paper's
+  (and, for structural edits, its descendant scope) changed. Encodes the
   hierarchy: loop codes -> shape geometry, profile codes -> 2D loop dimension /
-  positioning, solid codes -> extrusion height / 3D combination (Sec. 6.4).
+  positioning, solid codes -> extrusion height / 3D combination.
 
 * :func:`instance_agnostic_consistency` -- a silhouette-style score over
   (feature, code) pairs: items sharing a code should be closer to each other than to
-  items with other codes (Sec. 6.5 / Fig. 12). Higher = cleaner instance-agnostic
-  patterns.
+  items with other codes. Higher = cleaner instance-agnostic patterns.
 
-* codebook-diversity summaries used in the paper's evaluation (Sec. 6.2):
-  :func:`uniqueness_rate` (fraction of generated code trees that appear once) and
-  :func:`novelty_rate` (fraction absent from a training reference set).
+* codebook-diversity summaries: :func:`uniqueness_rate` (fraction of generated code
+  trees that appear once) and :func:`novelty_rate` (fraction absent from a training
+  reference set).
 
-Distinct from :mod:`bench.flexcad_controllability`, which checks *flat text-token*
+Distinct from other controllability metric modules that check *flat text-token*
 preservation for one concrete model; here we operate on the abstract *neural-code
 tree* and its three-level controls. Pure stdlib, deterministic.
 """
@@ -51,7 +51,7 @@ def code_fix_preservation(mask: ControlMask, after: CodeTree) -> float:
 
     The ``mask`` carries the *before* serialization; we compare its fixed code nodes
     against the same positions in ``serialize(after)``. Returns 1.0 when every frozen
-    code survived (the HNC design-preserving ideal). ``<SEP>`` markers are ignored.
+    code survived (the design-preserving ideal). ``<SEP>`` markers are ignored.
     """
     after_els = serialize(after)
     before_els = mask.elements
@@ -111,7 +111,7 @@ def edit_locality(before: CodeTree, after: CodeTree, edit_level: str) -> bool:
     return changed_levels(before, after) <= _DESCENDANTS[edit_level]
 
 
-# --- instance-agnostic design-pattern consistency (Sec. 6.5) ---------------
+# --- instance-agnostic design-pattern consistency ---------------------------
 def _euclid(a: Vector, b: Vector) -> float:
     return sum((x - y) * (x - y) for x, y in zip(a, b)) ** 0.5
 
@@ -151,7 +151,7 @@ def instance_agnostic_consistency(items: list[tuple[Vector, int]]) -> float:
     return total / n
 
 
-# --- code-tree diversity summaries (Sec. 6.2) ------------------------------
+# --- code-tree diversity summaries ------------------------------------------
 def _canonical(tree: CodeTree) -> tuple[object, ...]:
     return tuple(
         e if e == "<SEP>" else (e.level, e.code) for e in serialize(tree)

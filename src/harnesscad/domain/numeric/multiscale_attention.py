@@ -1,6 +1,6 @@
-"""Multi-scale adaptive fusion and hierarchical window attention (MamTiff-CAD).
+"""Multi-scale adaptive fusion and hierarchical window attention .
 
-The MamTiff-CAD denoiser is a **Multi-Scale Transformer (MST)** whose every
+The denoiser is a **Multi-Scale Transformer (MST)** whose every
 layer runs three parallel attention branches with window sizes 64 / 128 / 256 to
 capture "local geometric constraints, medium-range topological dependencies, and
 global semantic coherence" (Sec. 3.3), then combines them with an **Adaptive

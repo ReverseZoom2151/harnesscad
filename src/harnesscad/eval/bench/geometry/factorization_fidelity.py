@@ -1,19 +1,19 @@
-"""Reconstruction / structural metrics for Img2CAD conditional factorization.
+"""Reconstruction / structural metrics for image-to-CAD conditional factorization.
 
-Deterministic implementations of the evaluation quantities reported in the Img2CAD
-paper (You et al.), together with two metrics specific to the conditional-
+Deterministic implementations of a set of evaluation quantities for image-to-CAD
+reconstruction, together with two metrics specific to the conditional-
 factorization decomposition:
 
-Geometric / structural (paper Sec. 6.2, 6.5):
+Geometric / structural:
 
 * ``chamfer_distance``      -- bidirectional mean nearest-neighbour distance between
-                               two point sets (the paper's CD, symmetrised).
+                               two point sets (the reference CD, symmetrised).
 * ``symmetry_chamfer``      -- Chamfer distance between a point set and its mirror
                                reflection over a chosen axis plane through the
-                               origin (paper's symmetry Chamfer, X-axis by default).
+                               origin (a symmetry Chamfer, X-axis by default).
 * ``num_scc``               -- number of strongly connected components: connect two
                                points when their Euclidean distance is below a
-                               threshold (0.05 in the paper) and count components.
+                               threshold (0.05 by default) and count components.
 
 Factorization-specific:
 

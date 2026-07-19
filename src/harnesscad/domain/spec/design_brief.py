@@ -1,22 +1,21 @@
 """Natural-language CAD brief IR with deterministic default resolution.
 
-Ported from **text-to-cad** (the improved ``.agents/skills/cad`` skill), whose
-workflow converts a user's prose into an *internal CAD brief* -- a fixed
-note-taking scaffold (``assets/design-brief-template.md``) with a defined set of
-fields (Model, Task type, Units, Coordinate convention, Overall dimensions,
-Functional features, Manufacturing assumptions, Positioning/mating, STEP paths,
-Validation targets, Assumptions) -- and then proceeds under an explicit set of
-*default assumptions* (units = mm, origin = part centre, base plane = XY, up =
-+Z, closed positive-volume solids, standard hole clearances, cosmetic fillet
-sizes) rather than interrogating the user.
+A natural-language CAD workflow converts a user's prose into an *internal CAD
+brief* -- a fixed note-taking scaffold with a defined set of fields (Model, Task
+type, Units, Coordinate convention, Overall dimensions, Functional features,
+Manufacturing assumptions, Positioning/mating, STEP paths, Validation targets,
+Assumptions) -- and then proceeds under an explicit set of *default assumptions*
+(units = mm, origin = part centre, base plane = XY, up = +Z, closed
+positive-volume solids, standard hole clearances, cosmetic fillet sizes) rather
+than interrogating the user.
 
 This module makes that scheme a concrete, checkable IR:
 
 * :class:`CADBrief` -- the typed brief with the template's fields;
 * :func:`parse_brief` -- parse the ``- Key: value`` scaffold into a brief;
-* :func:`resolve_defaults` -- fill unstated fields from the skill's documented
+* :func:`resolve_defaults` -- fill unstated fields from the documented
   defaults, recording per-field *provenance* (stated vs inferred vs missing);
-* :func:`clearance_for` -- the skill's M3/M4/M5 normal-clearance table
+* :func:`clearance_for` -- the M3/M4/M5 normal-clearance table
   (3.4/4.5/5.5 mm) as a deterministic lookup;
 * :func:`completeness` -- a report of which critical fields are stated, inferred
   or still missing -- the checkable "is this brief buildable?" gate.

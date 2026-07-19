@@ -1,14 +1,13 @@
-"""Geometric state-space forward scan for GeoFusion-CAD's G-Mamba block.
+"""Geometric state-space forward scan for a linear-time sequence block.
 
-GeoFusion-CAD replaces quadratic self-attention with a *linear-time* geometric
-state-space model (the "G-Mamba" / GSM-SSD block, Sec. 4.3, Alg. 1, App. B). The
-*learned* kernel generator ``f_geom`` (a 2-3 layer MLP) is external, but every
-numerical operation that consumes its output is a **deterministic linear
-recurrence** and is implemented here.
+The block replaces quadratic self-attention with a *linear-time* geometric
+state-space model. The *learned* kernel generator ``f_geom`` (a 2-3 layer MLP)
+is external, but every numerical operation that consumes its output is a
+**deterministic linear recurrence** and is implemented here.
 
 Given per-token *diagonal* kernels ``A_k, B_k, C_k, G_k`` (each a length-``d``
-vector -- "all operators are diagonal and thus element-wise", Eq. 24), the
-discrete-time selective-scan update (Eq. 15 / Eq. 4) is::
+vector -- all operators are diagonal and thus element-wise), the
+discrete-time selective-scan update is::
 
     h_{k+1}  = A_k (*) h_k + B_k (*) Z_k
     Zout_k   = C_k (*) h_k + G_k (*) Z_k
@@ -17,18 +16,19 @@ where ``(*)`` is the Hadamard (element-wise) product. This module provides:
 
 * :func:`selective_scan` -- the core O(Ld) forward recurrence above;
 * :func:`curvature_descriptor` -- ``r_k`` (0 for a line, ``1/R`` for a circular
-  arc of radius ``R``, discrete angular deviation for a general curve, Sec. B.2);
+  arc of radius ``R``, discrete angular deviation for a general curve);
 * :func:`conditioning_vector` -- ``Delta_k = [s_k, d_k, r_k]``, the geometric
-  conditioning input to ``f_geom`` (Eq. 12);
+  conditioning input to ``f_geom``;
 * :func:`hierarchical_pe` -- ``Pi_k = PE(p_k, sigma_k, tau_k)``, the sinusoidal
-  hierarchical positional embedding (Eq. 13), which is deterministic;
-* :func:`depthwise_conv1d` -- the DWConv local-smoothness operator (Eq. 20/29);
-* :func:`geometric_state_mixer` -- the GSM gated fusion
-  ``hhat = W2 (h (*) sigma(z))`` with ``[h, z] = W1 h_in`` (Eq. 16-19), where the
+  hierarchical positional embedding, which is deterministic;
+* :func:`depthwise_conv1d` -- the depthwise-convolution local-smoothness
+  operator;
+* :func:`geometric_state_mixer` -- the gated fusion
+  ``hhat = W2 (h (*) sigma(z))`` with ``[h, z] = W1 h_in``, where the
   linear weights are supplied explicitly (the learned part is a plain matmul);
-* :func:`film_modulate` -- the optional diffusion-time FiLM kernel modulation
-  ``kernels <- psi_t (*) kernels`` (Eq. 21);
-* :func:`gmamba_flops` -- the analytic ``O(Ld)`` operation count (App. B.6),
+* :func:`film_modulate` -- the optional diffusion-time feature-wise linear
+  kernel modulation ``kernels <- psi_t (*) kernels``;
+* :func:`gmamba_flops` -- the analytic ``O(Ld)`` operation count,
   used to verify linear (not quadratic) scaling.
 
 Vectors are plain ``tuple[float, ...]``; a sequence is a ``tuple`` of such
@@ -67,9 +67,9 @@ def sigmoid(x: float) -> float:
 
 def selective_scan(z_seq: Seq, a_seq: Seq, b_seq: Seq, c_seq: Seq, g_seq: Seq,
                    h0: Vec | None = None) -> tuple[Seq, Vec]:
-    """Deterministic geometry-conditioned selective scan (Eq. 4 / Eq. 15).
+    """Deterministic geometry-conditioned selective scan.
 
-    Parameters mirror the paper: ``z_seq`` are the input token features ``Z_k``;
+    ``z_seq`` are the input token features ``Z_k``;
     ``a_seq, b_seq, c_seq, g_seq`` are the per-token diagonal kernels
     ``A_k, B_k, C_k, G_k``. All must be sequences of equal length ``L`` with a
     common hidden width ``d``. ``h0`` is the initial state (defaults to zeros).
@@ -95,11 +95,11 @@ def selective_scan(z_seq: Seq, a_seq: Seq, b_seq: Seq, c_seq: Seq, g_seq: Seq,
     return tuple(outputs), h
 
 
-# --- geometric conditioning (Sec. B.2) --------------------------------------
+# --- geometric conditioning -------------------------------------------------
 
 def curvature_descriptor(kind: str, radius: float | None = None,
                          angular_deviation: float | None = None) -> float:
-    """Local curvature descriptor ``r_k`` (Sec. B.2).
+    """Local curvature descriptor ``r_k``.
 
     * ``line``   -> ``0`` (straight segment has zero curvature);
     * ``arc`` / ``circle`` -> ``1 / R`` for radius ``R`` (> 0);
@@ -117,9 +117,9 @@ def curvature_descriptor(kind: str, radius: float | None = None,
 
 
 def conditioning_vector(scale: float, depth: int, curvature: float) -> Vec:
-    """Geometric conditioning vector ``Delta_k = g(s_k, d_k, r_k)`` (Eq. 12).
+    """Geometric conditioning vector ``Delta_k = g(s_k, d_k, r_k)``.
 
-    ``g`` is a learned MLP in the paper; the deterministic *input packing*
+    ``g`` is a learned MLP; the deterministic *input packing*
     ``[scale, depth, curvature]`` fed to it is returned here so callers can drive
     an external ``f_geom`` or the identity default.
     """
@@ -128,10 +128,9 @@ def conditioning_vector(scale: float, depth: int, curvature: float) -> Vec:
 
 def hierarchical_pe(parent_type: int, sibling_index: int, role: int,
                     dim: int) -> Vec:
-    """Sinusoidal hierarchical positional embedding ``Pi_k = PE(p, sigma, tau)``
-    (Eq. 13).
+    """Sinusoidal hierarchical positional embedding ``Pi_k = PE(p, sigma, tau)``.
 
-    Deterministic transformer-style sinusoidal encoding of the integer position
+    Deterministic sinusoidal encoding of the integer position
     ``pos = parent_type * P^2 + sibling_index * P + role`` (with a large base
     ``P`` so the three fields do not alias), producing a ``dim``-vector.
     """
@@ -148,15 +147,15 @@ def hierarchical_pe(parent_type: int, sibling_index: int, role: int,
     return tuple(enc)
 
 
-# --- DWConv (Eq. 20 / 29) ---------------------------------------------------
+# --- depthwise convolution --------------------------------------------------
 
 def depthwise_conv1d(z_seq: Seq, kernel: Vec, bias: Vec | None = None) -> Seq:
     """Depthwise (per-channel) 1D convolution with a shared temporal ``kernel``.
 
     Each of the ``d`` feature channels is convolved independently along the
     sequence with the same length-``K`` kernel (causal, left-padded with zeros),
-    "preserving local geometric smoothness while reducing computational
-    overhead" (Sec. 4.3.2). Complexity ``O(K L d)`` = ``O(Ld)`` for constant K.
+    preserving local geometric smoothness while keeping computational overhead
+    low. Complexity ``O(K L d)`` = ``O(Ld)`` for constant K.
     """
     length = len(z_seq)
     if length == 0:
@@ -185,11 +184,11 @@ def depthwise_conv1d(z_seq: Seq, kernel: Vec, bias: Vec | None = None) -> Seq:
     return tuple(out)
 
 
-# --- Geometric State Mixer (Eq. 16-19) --------------------------------------
+# --- Geometric State Mixer --------------------------------------------------
 
 def geometric_state_mixer(a_k: Vec, b_k: Vec, z_k: Vec,
                           w1: tuple[Vec, ...], w2: tuple[Vec, ...]) -> Vec:
-    """Geometric State Mixer gated fusion for one token (Eq. 16-19).
+    """Geometric State Mixer gated fusion for one token.
 
     ``h_in = (A_k (*) B_k) (*) Z_k`` (element-wise; the diagonal form of the
     ``(A (*) B)^T Z`` mixing), then ``[h, z] = W1 @ h_in`` split into two halves,
@@ -212,22 +211,22 @@ def _matvec(mat: tuple[Vec, ...], vec: Vec) -> Vec:
     return tuple(sum(row[i] * vec[i] for i in range(len(vec))) for row in mat)
 
 
-# --- diffusion-time FiLM (Eq. 21) -------------------------------------------
+# --- diffusion-time feature-wise modulation ---------------------------------
 
 def film_modulate(kernels: tuple[Vec, ...], psi: Vec) -> tuple[Vec, ...]:
-    """Modulate a tuple of diagonal kernels by a diffusion-time gate ``psi_t``
-    (Eq. 21): ``kernel <- psi_t (*) kernel`` for every kernel."""
+    """Modulate a tuple of diagonal kernels by a diffusion-time gate ``psi_t``:
+    ``kernel <- psi_t (*) kernel`` for every kernel."""
     return tuple(_hadamard(k, psi) for k in kernels)
 
 
-# --- complexity (App. B.6) --------------------------------------------------
+# --- complexity -------------------------------------------------------------
 
 def gmamba_flops(length: int, dim: int, dwc_kernel: int = 3) -> int:
-    """Analytic scalar-op count of one G-Mamba block: ``O(Ld)`` (App. B.6).
+    """Analytic scalar-op count of one state-space block: ``O(Ld)``.
 
     Returns the exact number of multiply/adds so a test can assert it grows
-    *linearly* (not quadratically) in ``length`` -- the defining advantage over a
-    Transformer's ``O(L^2 d)`` attention.
+    *linearly* (not quadratically) in ``length`` -- the defining advantage over
+    quadratic ``O(L^2 d)`` self-attention.
     """
     scan = length * dim * 4          # A,B,C,G element-wise ops per token
     dwc = length * dim * dwc_kernel  # depthwise conv

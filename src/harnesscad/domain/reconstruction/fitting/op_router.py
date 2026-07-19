@@ -1,24 +1,24 @@
-"""Sketch2CAD (SIGGRAPH Asia 2020) operation vocabulary and branch router.
+"""Sketch-driven operation vocabulary and branch router.
 
-Sketch2CAD decomposes sequential CAD modelling into four sketch-triggered
+Sequential CAD modelling is decomposed into four sketch-triggered
 operations applied *in context* to the current shape.  A tiny classifier reads
 (user stroke, context normal map, context depth map) and predicts the operation
 type; the predicted type then selects one of four regression sub-networks, each
 of which emits exactly the parameter maps its operation needs.  When the five
-graphs are merged into one (``combine_whole_graph.py``), a single forward pass
-produces every branch's maps and the classifier decides which are consumed.
+graphs are merged into one, a single forward pass produces every branch's maps
+and the classifier decides which are consumed.
 
 The vocabulary, the per-operation parameter requirements and the routing rule
-are deterministic bookkeeping and are reimplemented here:
+are deterministic bookkeeping and are implemented here:
 
-  * :data:`OP_SPECS` — the four operations with the guiding curve each one
+  * :data:`OP_SPECS` -- the four operations with the guiding curve each one
     regresses, whether the curve head is a masked regression or a sigmoid
     heat map, whether the operation needs an offset (distance/direction/sign)
     and whether it is additive, subtractive or shape-preserving;
-  * :func:`softmax` / :func:`route` — classifier logits to a :class:`Routing`
+  * :func:`softmax` / :func:`route` -- classifier logits to a :class:`Routing`
     decision (operation, confidence, margin, the branch outputs to read and the
     ones to ignore);
-  * :func:`select_branch_outputs` — pull just the routed branch's maps out of a
+  * :func:`select_branch_outputs` -- pull just the routed branch's maps out of a
     combined-graph output dict, exactly what a caller of the merged network does;
   * :func:`required_parameters` — what the downstream geometric decoder must
     produce for that operation to be applicable.

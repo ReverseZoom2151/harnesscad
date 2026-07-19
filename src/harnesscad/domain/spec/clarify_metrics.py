@@ -1,7 +1,7 @@
-"""clarify_metrics -- ProCAD clarifier evaluation (Efficiency + Resolution).
+"""clarify_metrics -- clarifier evaluation (Efficiency + Resolution).
 
-Appendix G of the paper defines two metrics for the clarifying agent, both
-"cast as a set-matching problem" that the paper delegates to an LLM-as-judge.
+Two metrics define the clarifying agent's quality, both cast as a set-matching
+problem that is normally delegated to an LLM-as-judge.
 Because the clarification questions and issues in :mod:`clarify_ambiguity` carry
 stable feature *keys*, the same matching can be computed deterministically:
 
@@ -13,8 +13,7 @@ stable feature *keys*, the same matching can be computed deterministically:
     clarified specification resolves the ground-truth ambiguities: ``1`` fully,
     ``0.5`` partially (a subset of multiple issues fixed), ``0`` unresolved.
 
-The paper's special-case rules on the ``is_misleading`` flag are also
-implemented (Appendix G):
+Special-case rules on the ``is_misleading`` flag are also implemented:
   * unambiguous prompt flagged ambiguous -> both scores 0;
   * unambiguous prompt correctly accepted -> both scores 1;
   * ambiguous prompt flagged unambiguous -> both scores 0.

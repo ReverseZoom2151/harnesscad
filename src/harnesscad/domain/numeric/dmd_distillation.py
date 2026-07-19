@@ -1,6 +1,6 @@
-"""Deterministic Dual-Teacher DMD distillation schedule (Turbo3D, Hu et al. 2024).
+"""Deterministic Dual-Teacher DMD distillation schedule .
 
-Turbo3D distils a slow many-step multi-view (MV) diffusion teacher into a fast
+The schedule distils a slow many-step multi-view (MV) diffusion teacher into a fast
 4-step, 4-view student using Distribution Matching Distillation (DMD, Yin et al.
 2024) extended with a **dual teacher**: an MV teacher (view consistency) and a
 single-view (SV) teacher (photo-realism). The learned generator / score networks
@@ -13,11 +13,11 @@ deterministic bookkeeping that this module implements:
     mapping a distilled few-step generator applies at inference.
 
   * ``dmd_gradient`` -- the DMD update direction is the difference of the two
-    score functions ``s_real - s_fake`` (Yin et al. Eq. 6). Given the (caller
+    score functions ``s_real - s_fake`` . Given the (caller
     supplied) real/teacher and fake/student scores, the per-element gradient is a
     closed-form subtraction, optionally scaled by a normalising weight.
 
-  * ``dual_teacher_gradient`` -- the dual-teacher objective (Turbo3D Eq. 7):
+  * ``dual_teacher_gradient`` -- the dual-teacher objective :
     the MV-DMD gradient plus ``lambda`` times the mean of the K per-view SV-DMD
     gradients. ``lambda = 1`` in the paper. This module computes that weighted
     combination deterministically from the supplied MV and per-view SV gradients.
@@ -46,7 +46,7 @@ def few_step_timesteps(total_steps: int, num_steps: int) -> List[int]:
     A few-step DMD student is trained to jump along the teacher's schedule at a
     small fixed set of timesteps. This returns ``num_steps`` evenly spaced,
     distinct timesteps of ``1 .. total_steps`` in *decreasing* order, always
-    starting at the terminal step ``total_steps`` (pure noise). Turbo3D uses
+    starting at the terminal step ``total_steps`` (pure noise). The schedule uses
     ``num_steps = 4`` against a ``total_steps = 1000`` teacher.
     """
     if total_steps < 1:
@@ -68,7 +68,7 @@ def step_reduction_factor(teacher_steps: int, student_steps: int) -> float:
     """Multiplicative denoiser-evaluation speedup ``teacher / student``.
 
     The dominant inference cost is the number of denoiser evaluations, so the
-    step-count ratio is the first-order speedup of distillation (Turbo3D reports
+    step-count ratio is the first-order speedup of distillation (This schedule reports
     the distilled model is ~50x faster than the many-step MV teacher).
     """
     if teacher_steps <= 0 or student_steps <= 0:
@@ -84,7 +84,7 @@ def dmd_gradient(
     score_fake: Sequence[float],
     weight: float = 1.0,
 ) -> List[float]:
-    """DMD update direction ``weight * (s_real - s_fake)`` (Yin et al. Eq. 6).
+    """DMD update direction ``weight * (s_real - s_fake)`` .
 
     ``score_real`` is the frozen teacher score and ``score_fake`` the trained
     student-distribution score, evaluated at the same noised sample. The DMD
@@ -97,14 +97,14 @@ def dmd_gradient(
 
 
 # --------------------------------------------------------------------------- #
-# Dual-teacher combination (Turbo3D Eq. 7)
+# Dual-teacher combination
 # --------------------------------------------------------------------------- #
 def dual_teacher_gradient(
     mv_gradient: Sequence[float],
     sv_gradients: Sequence[Sequence[float]],
     lam: float = 1.0,
 ) -> List[float]:
-    """Combine MV and per-view SV DMD gradients (Turbo3D Eq. 7).
+    """Combine MV and per-view SV DMD gradients .
 
     ``mv_gradient`` is the multi-view DMD gradient (from :func:`dmd_gradient` on
     the MV scores, treating all K views jointly). ``sv_gradients`` is the list of
@@ -139,7 +139,7 @@ def compounding_collapse_indicator(
 ) -> float:
     """Diversity-retention proxy in ``[0, 1]`` from per-view score magnitudes.
 
-    Turbo3D reports "compounding mode collapse" when distilling the MV teacher
+    This schedule reports "compounding mode collapse" when distilling the MV teacher
     alone: outputs collapse to a narrow synthetic mode, so per-view variation
     shrinks. This returns the coefficient-of-variation-style ratio
     ``min / max`` of the supplied non-negative per-view magnitudes: ``1`` means

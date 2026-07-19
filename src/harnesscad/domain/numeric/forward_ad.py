@@ -1,6 +1,6 @@
-"""Forward-mode automatic differentiation over the f-rep IR, after libfive.
+"""Forward-mode automatic differentiation over the f-rep IR.
 
-libfive's derivative evaluator carries, alongside each intermediate value, its
+The derivative evaluator carries, alongside each intermediate value, its
 partial derivatives with respect to ``x``, ``y`` and ``z``.  Propagating those
 through the chain rule as the graph is evaluated yields the *exact* gradient
 ``(df/dx, df/dy, df/dz)`` at a point in a single pass -- no finite differences,

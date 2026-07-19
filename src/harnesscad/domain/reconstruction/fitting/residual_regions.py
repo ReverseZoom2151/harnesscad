@@ -1,14 +1,14 @@
-"""PS-CAD geometric-guidance computation: local-geometry-difference detector.
+"""Geometric-guidance computation: local-geometry-difference detector.
 
-Implements the deterministic ``p_ref`` computation from PS-CAD (Yang et al. 2024,
-Sec. 4 "Geometric Guidance Computation").  Given the target point cloud
+Implements the deterministic ``p_ref`` computation for geometric guidance.
+Given the target point cloud
 ``p_full`` (a complete input CAD model) and a point cloud ``p_prev`` sampled from
 the current partial reconstruction ``O_{t-1}``, the module identifies the *distinct
 regions* between the two clouds -- the local geometry where the current
 reconstruction differs from the target -- and clusters the high-residual points
 into local regions that still need work.
 
-The paper trains a segmentation network to predict binary masks ``M`` on
+A learned variant trains a segmentation network to predict binary masks ``M`` on
 ``p_full`` and ``p_prev``.  This module realises the same geometric definition
 deterministically with a bidirectional nearest-neighbour residual test:
 
@@ -19,8 +19,8 @@ deterministically with a bidirectional nearest-neighbour residual test:
     ``p_full`` is farther than a threshold -- auxiliary construction geometry
     that will not remain in the final model.
 
-``p_ref`` is the concatenation ``M_full(p_full) + M_prev(p_prev)`` (Eq. in
-Sec. 4).  The learned network is intentionally out of scope; everything here is
+``p_ref`` is the concatenation ``M_full(p_full) + M_prev(p_prev)``.
+The learned network is intentionally out of scope; everything here is
 closed-form and stdlib-only.
 """
 
@@ -71,7 +71,7 @@ class ResidualGuidance:
 
     @property
     def p_ref(self):
-        """``p_ref`` = concatenation of the two distinct regions (Sec. 4)."""
+        """``p_ref`` = concatenation of the two distinct regions."""
         return self.missing + self.auxiliary
 
     @property
@@ -83,12 +83,12 @@ class ResidualGuidance:
 
 
 def compute_pref(p_full, p_prev, *, threshold):
-    """Compute the PS-CAD residual guidance ``p_ref`` between target and state.
+    """Compute the residual guidance ``p_ref`` between target and state.
 
     ``p_full`` is the target cloud, ``p_prev`` the current-reconstruction cloud.
     Returns a :class:`ResidualGuidance` holding both masks and both distinct
     regions.  When ``p_prev`` is empty the whole target is "missing", which is
-    exactly the first-iteration behaviour in the paper.
+    exactly the intended first-iteration behaviour.
     """
     full_mask = distinct_mask(p_full, p_prev, threshold=threshold)
     prev_mask = distinct_mask(p_prev, p_full, threshold=threshold)
@@ -145,8 +145,8 @@ def cluster_residual_regions(points, *, radius):
     Two points join the same region when they are within ``radius`` of each
     other (single-linkage / connected components via union-find).  Returns the
     regions sorted by descending size then lexicographic centroid, so the order
-    is fully deterministic.  These regions are the "parts that still need the
-    most work" highlighted in Fig. 1 of the paper.
+    is fully deterministic.  These regions are the parts that still need the
+    most work.
     """
     if radius <= 0:
         raise ValueError("radius must be positive")

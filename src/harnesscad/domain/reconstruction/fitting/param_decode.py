@@ -1,29 +1,29 @@
-"""Sketch2CAD (SIGGRAPH Asia 2020) map -> operation-parameter decoding.
+"""Map -> operation-parameter decoding for sketch-driven modelling.
 
-The Sketch2CAD regression networks never emit CAD parameters directly: they emit
-*image-space maps* over the current viewport — a stitching-face heat map, a
+The regression networks never emit CAD parameters directly: they emit
+*image-space maps* over the current viewport -- a stitching-face heat map, a
 guiding-curve map, and (for the offsetting operations) offset distance /
-direction / sign fields — which the modelling client turns into a concrete CAD
+direction / sign fields -- which the modelling client turns into a concrete CAD
 operation against the current shape.  That lifting step is pure geometry and is
 what this module implements.
 
 Pipeline (all deterministic, stdlib-only):
 
-  1. :func:`decode_stitching_face` — threshold the face heat map, keep the
+  1. :func:`decode_stitching_face` -- threshold the face heat map, keep the
      largest 4-connected component (peak region), and read the context normal
      and depth maps inside it to get a supporting plane: the mean unit normal
      plus a plane point unprojected from the region's depth-weighted centroid.
      Robust to stray high pixels because only the dominant component survives.
-  2. :func:`extract_curve_pixels` — threshold the guiding-curve map, optionally
+  2. :func:`extract_curve_pixels` -- threshold the guiding-curve map, optionally
      intersected with the stroke mask (``1 - user_stroke``), which is the same
      masking the training losses apply.
-  3. :func:`lift_curve_to_plane` — cast a camera ray through each curve pixel
+  3. :func:`lift_curve_to_plane` -- cast a camera ray through each curve pixel
      and intersect it with the stitching-face plane.  This is how a 2D stroke
      drawn "in context" becomes a 3D base/profile/offset curve.
-  4. :func:`decode_offset` — aggregate the offset distance/direction/sign fields
+  4. :func:`decode_offset` -- aggregate the offset distance/direction/sign fields
      over the curve pixels (mean distance, mean normalised direction, majority
      sign) into a single signed offset vector.
-  5. :func:`decode_operation` — glue: given a routed operation
+  5. :func:`decode_operation` -- glue: given a routed operation
      (:mod:`reconstruction.s2cadsig_op_router`) and its maps, produce an
      :class:`OperationParameters` record ready to be applied to the shape.
 

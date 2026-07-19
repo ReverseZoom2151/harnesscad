@@ -1,16 +1,16 @@
-"""Cascade stage schema and masked-autoregressive reveal schedule for CMT.
+"""Cascade stage schema and masked-autoregressive reveal schedule.
 
-CMT (Sec. 4.3) generates a B-Rep with a *cascade* of two masked autoregressive
-networks that embed the "edges contour surfaces" prior:
+A B-Rep is generated with a *cascade* of two masked autoregressive networks that
+embed the "edges contour surfaces" prior:
 
-  1. **edge** MAR generates the edge tokens from the condition embedding;
-  2. **surface** MAR generates the surface tokens conditioned on the condition
-     embedding *and* the generated edges.
+  1. the **edge** stage generates the edge tokens from the condition embedding;
+  2. the **surface** stage generates the surface tokens conditioned on the
+     condition embedding *and* the generated edges.
 
-Each MAR follows the vanilla MAR/MaskGIT recipe: at inference a subset of tokens
-is revealed per step following a cosine schedule, "generating one token at a
-time" when the number of sampling steps equals the sequence length. The paper
-ablates 64/32, 32/16, 16/8, ... steps.
+Each stage follows the standard masked-autoregressive recipe: at inference a
+subset of tokens is revealed per step following a cosine schedule, generating
+one token at a time when the number of sampling steps equals the sequence
+length. Typical step budgets are 64/32, 32/16, 16/8, and so on.
 
 The neural transformer + diffusion decoder are external. What is deterministic --
 and implemented here -- is (a) the cascade stage graph and its dependency
@@ -31,7 +31,7 @@ class Stage:
 
 
 def cascade_stages() -> tuple[Stage, ...]:
-    """The CMT cascade: edge first, then surface conditioned on edges."""
+    """The cascade: edge first, then surface conditioned on edges."""
     return (Stage("edge", ()), Stage("surface", ("edge",)))
 
 
@@ -51,13 +51,13 @@ def validate_stage_order(order: tuple[Stage, ...]) -> bool:
 def cosine_reveal_counts(n: int, steps: int) -> tuple[int, ...]:
     """How many tokens to reveal at each of ``steps`` steps for ``n`` tokens.
 
-    Follows the MaskGIT/MAR cosine schedule: the masked fraction after step
+    Follows the cosine reveal schedule: the masked fraction after step
     ``i`` (1-based) is ``cos(pi/2 * i/steps)``, so the cumulative number of
-    revealed tokens is ``round(n * (1 - cos(pi/2 * i/steps)))``. As the paper
-    always uses ``steps <= n``, every step reveals at least one token and enough
-    tokens are held back for the remaining steps; per-step counts sum to ``n``.
-    With ``steps == n`` every clamp collapses to exactly one token per step,
-    matching the paper's default "generating one token at a time".
+    revealed tokens is ``round(n * (1 - cos(pi/2 * i/steps)))``. As ``steps <= n``
+    always holds, every step reveals at least one token and enough tokens are
+    held back for the remaining steps; per-step counts sum to ``n``. With
+    ``steps == n`` every clamp collapses to exactly one token per step, the
+    default of generating one token at a time.
     """
     if n < 0:
         raise ValueError("n must be non-negative")
@@ -90,7 +90,7 @@ def mar_schedule(n: int, steps: int, seed: int = 0) -> tuple[tuple[int, ...], ..
 
     Returns a tuple with one entry per step, each a tuple of the token indices
     revealed at that step. With ``steps == n`` every step reveals exactly one
-    token (the paper's default "one token at a time").
+    token (the default of one token at a time).
     """
     counts = cosine_reveal_counts(n, steps)
     order = reveal_order(n, seed)

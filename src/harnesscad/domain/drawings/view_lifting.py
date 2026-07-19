@@ -1,12 +1,11 @@
 """cad2program_view_lifting — lift matched orthographic views to 3D boxes.
 
-CAD2PROGRAM (Wang et al., AAAI 2025) reconstructs a 3D parametric model from the
-orthographic views of a 2D CAD drawing.  The learned VLM reads the raster
-drawing; but once each view has been reduced to a set of axis-aligned rectangles
-(one per prismatic component), *lifting* those rectangles back to a 3D
-axis-aligned box is a classical, deterministic geometry operation — the "recover
-3D solids from orthographic projections" line of work the paper cites (Idesawa
-1973; Wesley & Markowsky 1981).
+A 3D parametric model can be reconstructed from the orthographic views of a 2D
+CAD drawing.  A learned VLM reads the raster drawing; but once each view has been
+reduced to a set of axis-aligned rectangles (one per prismatic component),
+*lifting* those rectangles back to a 3D axis-aligned box is a classical,
+deterministic geometry operation from the "recover 3D solids from orthographic
+projections" line of work.
 
 This module implements that lifting for box-composed (prismatic) solids, which is
 distinct from :mod:`drawings.creft_view_consistency` (which only *checks* whether

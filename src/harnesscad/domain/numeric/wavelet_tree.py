@@ -1,6 +1,6 @@
 """Wavelet-tree representation: subband filtering, packing, adaptive masks.
 
-From *Make-A-Shape* (Hui, Sanghi, Rampini et al., 2024), Secs. 4-6.  On top of
+Secs. 4-6.  On top of
 the raw multi-level 3D DWT (see ``numeric.makeashape_wavelet_transform``), the
 paper builds a compact **wavelet-tree representation** through three
 deterministic constructions, all implemented here:

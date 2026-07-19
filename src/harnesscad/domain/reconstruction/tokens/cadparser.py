@@ -1,6 +1,6 @@
-"""CADParser command / token schema (Zhou et al., Table 3).
+"""B-Rep construction command / token schema.
 
-CADParser models a B-Rep construction workflow as a fixed-width command sequence
+This schema models a B-Rep construction workflow as a fixed-width command sequence
 ``S = (C1, C2, ..., C_Nc)`` where each command ``Ci = (ti, pi)`` carries a command
 *type* ``ti`` and a fixed-length parameter vector ``pi``. This module is the
 deterministic, network-agnostic part of that representation: the token vocabulary,
@@ -8,10 +8,10 @@ the fixed ``PARAM_LEN``-slot parameter layout, the "stack all parameters into on
 vector, unused slots = -1" packing rule, fixed-length ``NC`` padding, and the
 one-hot index construction feeding the (learned) embedding matrices.
 
-The learned embeddings, encoder and decoder are out of scope (research-heavy).
-Everything here is pure and deterministic so a workflow round-trips exactly.
+The learned embeddings, encoder and decoder are out of scope. Everything here is
+pure and deterministic so a workflow round-trips exactly.
 
-Command types and their parameters (Table 3)::
+Command types and their parameters::
 
     <SOS>                                   (no params)
     L (Line)         x, y                    line endpoint
@@ -27,9 +27,8 @@ Command types and their parameters (Table 3)::
     <PAD>                                    (no params)
     <EOS>                                    (no params)
 
-The paper reports the parameter vector as R^19 and a 12-way command one-hot but
-does not enumerate the individual slot offsets; the union of named slots below is
-reconstructed to honour both stated invariants (fixed 19-length vector with
+The parameter vector is an R^19 vector paired with a 12-way command one-hot; the
+union of named slots below honours both invariants (a fixed 19-length vector with
 unused = -1, and a stable command-type index) exactly.
 """
 
@@ -55,7 +54,7 @@ N_COMMAND_TYPES = len(COMMAND_TYPES)
 _NO_PARAM = frozenset({SOS, EOS, PAD})
 
 # Commands whose parameter footprint is defined to equal another command's
-# (Table 3: "Ec = E", "Rc = R", "Cf = F"); they differ only in command type.
+# ("Ec = E", "Rc = R", "Cf = F"); they differ only in command type.
 COMMAND_ALIASES: dict[str, str] = {"Ec": "E", "Rc": "R", "Cf": "F"}
 
 
@@ -101,7 +100,7 @@ def param_names(command_type: str) -> tuple[str, ...]:
 
 @dataclass(frozen=True)
 class Command:
-    """A single CADParser command ``Ci = (ti, pi)``.
+    """A single construction command ``Ci = (ti, pi)``.
 
     ``params`` maps a subset of :data:`PARAM_SLOTS` names to values; unlisted
     slots are the sentinel -1 when packed into the fixed vector.
@@ -135,8 +134,8 @@ def command(type: str, **params: float) -> Command:
 def to_vector(cmd: Command) -> tuple[float, ...]:
     """Pack a command's parameters into the fixed ``PARAM_LEN`` vector.
 
-    Unused slots hold :data:`UNUSED` (-1). This is the paper's "stack the whole of
-    the parameters from all the CAD commands into one vector" rule.
+    Unused slots hold :data:`UNUSED` (-1). This is the "stack the whole of the
+    parameters from all the CAD commands into one vector" rule.
     """
     vector = [UNUSED] * PARAM_LEN
     for name in param_names(cmd.type):
@@ -154,7 +153,7 @@ def from_vector(command_type: str, vector: tuple[float, ...]) -> Command:
 
 
 # --- fixed-length sequence packing -----------------------------------------
-NC_DEFAULT = 32  # paper sets NC = 32 from its dataset statistics
+NC_DEFAULT = 32  # NC = 32, from dataset statistics
 
 
 def pad_sequence(commands: list[Command], nc: int = NC_DEFAULT,
@@ -190,14 +189,14 @@ def sequence_matrix(commands: list[Command], nc: int = NC_DEFAULT,
 
 # --- one-hot / index construction (feeds the learned embeddings) -----------
 def command_onehot(command_type: str) -> tuple[int, ...]:
-    """12/13-way command-type one-hot (paper's delta_ic indicator vector)."""
+    """12/13-way command-type one-hot (the delta_ic indicator vector)."""
     vector = [0] * N_COMMAND_TYPES
     vector[COMMAND_INDEX[command_type]] = 1
     return tuple(vector)
 
 
 # Continuous params are quantised to 256 levels; a 257th index encodes the
-# sentinel -1 (paper: embedding dimension 2^8 + 1 = 257).
+# sentinel -1 (embedding dimension 2^8 + 1 = 257).
 N_QUANT_LEVELS = 256
 PARAM_ONEHOT_DIM = N_QUANT_LEVELS + 1  # == 257
 _UNUSED_INDEX = 0  # index reserved for the -1 sentinel
@@ -209,7 +208,7 @@ def param_index(value: float, n_levels: int = N_QUANT_LEVELS,
 
     The sentinel -1 maps to index 0; a quantised level ``q in 0..n_levels-1`` maps
     to ``q + 1``. Continuous values are clamped to ``[low, high]`` and quantised
-    into ``n_levels`` uniform bins (DeepCAD's 2x2x2-cube normalisation, 256 levels).
+    into ``n_levels`` uniform bins (a 2x2x2-cube normalisation, 256 levels).
     """
     if value == UNUSED:
         return _UNUSED_INDEX

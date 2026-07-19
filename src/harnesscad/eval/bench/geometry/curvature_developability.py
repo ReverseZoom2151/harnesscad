@@ -1,21 +1,21 @@
-"""Developability & reconstruction metrics for NeurCADRecon.
+"""Developability & reconstruction metrics for implicit-field CAD reconstruction.
 
-Deterministic evaluation metrics derived from **NeurCADRecon** (Dong et al.,
-ACM TOG 2024).  The paper's headline reconstruction metrics (Chamfer, F1,
-Normal-Consistency) require a full mesh, but its *developability* claim -- that
+Deterministic evaluation metrics for a curvature-regularised neural
+reconstruction pipeline. Headline reconstruction metrics (Chamfer, F1,
+Normal-Consistency) require a full mesh, but the *developability* claim -- that
 CAD surfaces are piecewise developable, ``K -> 0`` -- has closed-form scalar
 proxies that this module computes from per-point ``(grad, hess)`` samples:
 
 * **Developability ratio** -- fraction of surface points with ``|K| <= tol``;
   a perfectly developable (CAD) surface scores 1.0.
-* **Mean / max absolute Gaussian curvature** -- the aggregate ``L_Gauss`` the
-  paper minimises, and its worst-case counterpart.
+* **Mean / max absolute Gaussian curvature** -- the aggregate ``L_Gauss`` term
+  such a pipeline minimises, and its worst-case counterpart.
 * **Gaussian-curvature RMSE / MAE** against an analytic reference (e.g. a
   sphere's ``1/r^2``), for validating a reconstruction's curvature field.
 * **Gauss-Bonnet defect** -- for a closed surface, ``integral(K dA)`` must equal
-  ``2 pi * chi`` (Sec. 5, "the k_Gauss distribution must conform to the
-  Gauss-Bonnet theorem"); a sphere gives ``4 pi``.  The defect measures how far
-  an estimated curvature field strays from that topological constraint.
+  ``2 pi * chi`` (the curvature distribution must conform to the Gauss-Bonnet
+  theorem); a sphere gives ``4 pi``.  The defect measures how far an estimated
+  curvature field strays from that topological constraint.
 
 Gaussian curvature is *reused* from :mod:`geometry.flatcad_weingarten`.
 stdlib-only, deterministic.

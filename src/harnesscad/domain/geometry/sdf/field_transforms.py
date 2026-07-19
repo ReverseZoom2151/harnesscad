@@ -42,7 +42,7 @@ def _clamp(v: float, lo: float, hi: float) -> float:
 
 
 def _mod(a: float, b: float) -> float:
-    """Curv/GLSL ``mod``: result has the sign of ``b`` (floored division)."""
+    """GLSL-style ``mod``: result has the sign of ``b`` (floored division)."""
     return a - b * floor(a / b)
 
 

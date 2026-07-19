@@ -2,7 +2,7 @@
 
 CodeToCAD lets a user write dimensions as strings -- ``"2mm + 1m"``, ``"6in + 2ft"``,
 ``"90deg + 0.5rad"`` -- and normalises them to SI base units (metres, radians).  The
-upstream implementation does this with a regex substitution followed by ``eval()``,
+upstream implementation does this with a regex substitution followed by ``eval``,
 which is neither safe nor able to type-check the arithmetic (it happily returns
 ``m**2`` for ``1mm * 1in``).
 
@@ -10,7 +10,7 @@ This module reimplements the idea properly and deterministically:
 
 * a tokeniser that recognises decimal numbers, imperial fractions (``"1/2in"``),
   mixed numbers (``"1-1/2in"``), percentages (``"50%"``), unit suffixes and the
-  operators ``+ - * / ( )``;
+  operators ``+ - * / ``;
 * a recursive-descent parser (no ``eval``, no ``__builtins__`` exposure);
 * a small dimensional-analysis layer: a :class:`Quantity` carries a *kind*
   (``scalar`` / ``length`` / ``angle`` / ``percent``) and the evaluator rejects

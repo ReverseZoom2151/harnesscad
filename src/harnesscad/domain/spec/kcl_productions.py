@@ -1,19 +1,16 @@
 """KCL production-rule grammar and recursive-descent structural checker.
 
-Reimplementation of the KCL *phrase* grammar from Zoo's ``modeling-app``
-(MIT, (c) 2023 The Zoo Authors), transliterated from the Lezer grammar at
-``packages/codemirror-lang-kcl/src/kcl.grammar``.  The grammar rules
-themselves are facts about the KCL language; this module restates them as a
-Python production table plus a hand-written recursive-descent checker -- it
-copies no source text from the reference file.
+An implementation of the KCL *phrase* grammar.  The grammar rules themselves
+are facts about the KCL language; this module states them as a Python
+production table plus a hand-written recursive-descent checker.
 
 Relationship to :mod:`harnesscad.domain.spec.kcl_grammar`
 ---------------------------------------------------------
-That module is the *lexical* layer: a lossless tokeniser mirrored from the
-Rust ``kcl-syntax`` crate, with token kinds, keywords and AST vocabulary.
+That module is the *lexical* layer: a lossless tokeniser, with token kinds,
+keywords and AST vocabulary.
 This module is the *syntactic* layer on top of it:
 
-*   :data:`PRODUCTIONS` -- every production rule from ``kcl.grammar``
+*   :data:`PRODUCTIONS` -- every production rule of the phrase grammar
     (statement kinds, the expression grammar, types, imports, annotations),
     written as ``rule -> tuple of alternatives`` in EBNF-ish notation.
 *   :data:`PRECEDENCE` -- the ``@precedence`` block, tightest binding first,
@@ -24,7 +21,7 @@ This module is the *syntactic* layer on top of it:
     declared operator levels) and returns typed diagnostics.  It builds no
     AST and evaluates nothing.
 
-Disambiguation notes (the Lezer grammar is GLR; this checker is LL with two
+Disambiguation notes (the source grammar is GLR; this checker is LL with two
 small lookahead decisions, both documented here):
 
 *   ``sketch`` is only treated as the ``SketchBlockExpression`` keyword when

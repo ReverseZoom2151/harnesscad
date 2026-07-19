@@ -3,11 +3,11 @@
 Training-free feature replacement: during denoising the preserved-region latents
 and attention key/value tokens are overwritten by their cached inverted
 counterparts, while the edited region is denoised freely. This module implements
-the deterministic replacement operators of the paper:
+the deterministic replacement operators of this approach:
 
-- structure-stage latent blend (eq. 4):
+- structure-stage latent blend:
       z <- M (x) z_new + (1 - M) (x) z_hat
-- sparse-latent hard replacement (eq. 5):
+- sparse-latent hard replacement:
       for u in Omega_keep:  z[u] <- z_hat[u]
 - attention key/value replacement (eqs. 6-7):
       K <- W (x) K_new + (1 - W) (x) K_cache
@@ -31,7 +31,7 @@ def blend_vectors(new, preserved, w):
 
 
 def blend_latents(new_map, preserved_map, mask):
-    """Per-voxel masked blend (eq. 4).
+    """Per-voxel masked blend.
 
     For every coordinate in ``new_map`` the weight ``mask[coord]`` (default 0.0,
     i.e. fully preserved) selects between the freshly denoised latent and the
@@ -49,7 +49,7 @@ def blend_latents(new_map, preserved_map, mask):
 
 
 def hard_replace(latents, cached, keep_set):
-    """Hard preserved-region replacement (eq. 5).
+    """Hard preserved-region replacement.
 
     Returns a copy of ``latents`` with every coordinate in ``keep_set``
     overwritten by its cached inverted latent.

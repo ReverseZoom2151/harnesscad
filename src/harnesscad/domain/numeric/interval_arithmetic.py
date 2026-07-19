@@ -1,6 +1,6 @@
-"""Interval arithmetic and an interval evaluator over the f-rep IR, after libfive.
+"""Interval arithmetic and an interval evaluator over the f-rep IR.
 
-To render a shape, libfive walks an octree and asks, for each box
+To render a shape, the mesher walks an octree and asks, for each box
 ``[x0,x1] x [y0,y1] x [z0,z1]``, "could the surface ``f = 0`` pass through
 here?".  It answers by *interval arithmetic*: evaluating ``f`` with each
 variable replaced by its whole coordinate range, obtaining a conservative
@@ -15,10 +15,10 @@ That test is what makes the octree cheap: whole sub-trees are pruned without
 ever meshing them.  This module implements
 
 * :class:`Interval` -- a rounded-outward interval with the full operator set
-  libfive supports (``+ - * /``, ``square``, ``sqrt``, ``abs``, ``min``,
+  the IR supports (``+ - * /``, ``square``, ``sqrt``, ``abs``, ``min``,
   ``max``, ``recip``, ``sin``, ``cos``, ``exp``, ``log``, ``pow``, ``mod``,
   ``atan``, ``atan2``), each guaranteed to *enclose* the true range;
-* :func:`eval_interval` -- an evaluator that maps a :mod:`geometry.libfive_frep_ir`
+* :func:`eval_interval` -- an evaluator that maps an f-rep IR
   graph to an :class:`Interval` over a box;
 * :func:`classify` -- the EMPTY / FILLED / AMBIGUOUS pruning decision.
 
@@ -45,7 +45,7 @@ class Interval:
 
     Every operation returns an interval guaranteed to contain the true image of
     the operand ranges (the fundamental theorem of interval arithmetic).  A
-    ``maybe_nan`` flag mirrors libfive: it records that the true value could be
+    ``maybe_nan`` flag records that the true value could be
     undefined (e.g. ``sqrt`` of a range dipping below zero), which forces the
     region to be treated as AMBIGUOUS.
     """
@@ -94,7 +94,7 @@ class Interval:
 
     def __truediv__(self, o: "Interval") -> "Interval":
         # If the denominator straddles zero the result is unbounded; be
-        # conservative (libfive does exactly this).
+        # conservative and return the whole extended real line.
         if o.lo <= 0.0 <= o.hi:
             return Interval(-math.inf, math.inf, True)
         recips = (1.0 / o.lo, 1.0 / o.hi)
@@ -191,7 +191,7 @@ class Interval:
     @staticmethod
     def atan2(y: "Interval", x: "Interval") -> "Interval":
         # Conservative: sample the corners; if the box contains the origin the
-        # angle is unbounded within [-pi, pi] (matches libfive's origin case).
+        # angle is unbounded within [-pi, pi].
         if x.lo <= 0.0 <= x.hi and y.lo <= 0.0 <= y.hi:
             return Interval(-math.pi, math.pi, y.maybe_nan or x.maybe_nan)
         corners = [math.atan2(yy, xx)

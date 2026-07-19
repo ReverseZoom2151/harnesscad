@@ -1,18 +1,18 @@
-"""CADReview error generator — deterministically inject the eight error types.
+"""Error generator -- deterministically inject the eight error types.
 
-CADReview's dataset is built by *mutating* correct CAD programs: annotators take
-a known-good program and introduce exactly one error of a known type in a known
+An error benchmark is built by *mutating* correct CAD programs: take a
+known-good program and introduce exactly one error of a known type in a known
 block, producing an (erroneous program, error type, block ID) triple. That
 mutation step is a deterministic program transformation, so it is fully
-reproducible without any annotator — this module is that fault injector.
+reproducible -- this module is that fault injector.
 
 Given a correct OpenSCAD program, :func:`inject` applies one of the eight
 mutations from :mod:`cadreview_taxonomy` and returns the mutated source together
 with the ground-truth :class:`InjectedError` (error type + block ID, following
 the same block-ID convention that :mod:`cadreview_detect` reports). This gives a
 self-checking benchmark: inject a known error, run the detector, and the
-detector's ``(type, block_id)`` must equal the injected ground truth — which is
-exactly the "Acc" metric the paper scores (:mod:`cadreview_review`).
+detector's ``(type, block_id)`` must equal the injected ground truth -- which is
+exactly the "Acc" metric scored by :mod:`cadreview_review`.
 
 Mutations are seeded (``random.Random(seed)``) so a given (program, type, seed)
 always yields the same erroneous program. :func:`injectable_types` reports which

@@ -1,11 +1,10 @@
-"""PS-CAD single-step selection: choosing among candidate CAD modelling steps.
+"""Single-step selection: choosing among candidate CAD modelling steps.
 
-Implements the deterministic selection strategies from PS-CAD (Yang et al. 2024,
-Sec. 6 "Single-Step Selection" and the ablation in Tab. 3).  The single-step
+Implements the deterministic single-step selection strategies.  The single-step
 reconstruction module produces multiple candidate CAD modelling steps
 ``(o_i^t, l_i^t)`` -- one per planar prompt -- and a selection module picks the
-best.  The paper's ``f-dec`` selection network is learned, but three of the four
-compared strategies are fully deterministic and geometric:
+best.  The learned selection network is external, but three of the four compared
+strategies are fully deterministic and geometric:
 
   * ``"geo"``  -- greedy selection by the lowest Chamfer distance between the
     candidate's executed point cloud and the target ``p_full``;
@@ -13,7 +12,7 @@ compared strategies are fully deterministic and geometric:
     bounding-box volume (main structure first);
   * ``"rand"`` -- seeded random selection (baseline).
 
-The learned module is supervised with the geometric fitness score of Eq. 8:
+The learned module is supervised with the geometric fitness score
 ``sc_gt = IoU(bbox(o_i^t), bbox(o_gt^t))`` when the Boolean flags match, else 0.
 That fitness function *is* deterministic given a reference step, so we also
 provide a ``"bbox_iou"`` strategy that ranks candidates by their bounding-box
@@ -54,8 +53,8 @@ def bbox_volume(box):
 def bbox_iou(box_a, box_b):
     """3D (or n-D) axis-aligned bounding-box intersection-over-union.
 
-    This is the ``IoU(bbox(.), bbox(.))`` quantity used as the fitness target in
-    Eq. 5 and Eq. 8 of the paper.  Returns 0.0 for disjoint boxes.
+    This is the ``IoU(bbox(.), bbox(.))`` quantity used as the fitness target.
+    Returns 0.0 for disjoint boxes.
     """
     lo_a, hi_a = box_a
     lo_b, hi_b = box_b
@@ -101,7 +100,7 @@ class StepCandidate:
 
 
 def fitness_score(candidate_box, reference_box, candidate_bool, reference_bool):
-    """PS-CAD ground-truth fitness ``sc_gt`` (Eq. 8).
+    """Ground-truth fitness ``sc_gt``.
 
     Bounding-box IoU between the candidate and reference executed shapes, gated
     to 0 when the Boolean operations disagree.
@@ -142,7 +141,7 @@ def select_candidate(candidates, *, strategy="bbox_iou", target_cloud=None,
     * ``"heur"``    picks the largest bounding-box volume.
     * ``"rand"``    seeded random choice.
     * ``"bbox_iou"`` needs ``reference_box`` (and optionally ``reference_bool``);
-      maximises the Eq. 8 fitness against the reference.
+      maximises the bounding-box fitness against the reference.
 
     Returns a :class:`SelectionResult`.
     """

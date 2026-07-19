@@ -1,19 +1,17 @@
-"""clarify_leakage -- detect CadQuery/Python code leakage in NL descriptions.
+"""clarify_leakage -- detect CAD-script/Python code leakage in NL descriptions.
 
-The ProCAD data-annotation pipeline generates natural-language descriptions
-from ground-truth CadQuery programs, which risks *leaking* raw code into the
-text. Appendix J.2 ("Data Leakage Check") specifies a precise, rule-based
-auditor: the description may (and should) repeat the same *geometric
-information* -- dimensions, coordinate tuples, plane names, feature ordering --
-but any CadQuery/Python *surface form* (API tokens, method-call syntax,
-imports, code identifiers) is leakage.
+A data-annotation pipeline that generates natural-language descriptions from
+ground-truth CAD-script programs risks *leaking* raw code into the text. This
+module is a precise, rule-based auditor: the description may (and should) repeat
+the same *geometric information* -- dimensions, coordinate tuples, plane names,
+feature ordering -- but any CAD-script/Python *surface form* (API tokens,
+method-call syntax, imports, code identifiers) is leakage.
 
-This module implements that checker deterministically (stdlib-only), reproducing
-the paper's HARD-FAIL rules (A-D) and its explicit allow-list, including the
-"NEW RULE" that the bare English words ``origin`` / ``workplane`` are allowed
-and only leak when in code form (``cq.Workplane``, ``Workplane(``, a method
-chain). It returns the paper's JSON shape ``{contains_code, detected_code_snippets,
-explanation}``.
+The checker is deterministic (stdlib-only), applying HARD-FAIL rules (A-D) and
+an explicit allow-list, including the rule that the bare English words
+``origin`` / ``workplane`` are allowed and only leak when in code form
+(``cq.Workplane``, ``Workplane(``, a method chain). It returns the JSON shape
+``{contains_code, detected_code_snippets, explanation}``.
 """
 from __future__ import annotations
 
@@ -21,7 +19,7 @@ import re
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-# -- A) CadQuery / API surface form ---------------------------------------- #
+# -- A) CAD-script / API surface form -------------------------------------- #
 _IMPORT_RE = re.compile(r"\bimport\s+cadquery\b|\bfrom\s+cadquery\b", re.I)
 _CQ_ALIAS_RE = re.compile(r"\bcq\.\w+")
 _WORKPLANE_CALL_RE = re.compile(r"\b(?:cq\.)?Workplane\s*\(")
@@ -66,7 +64,7 @@ class LeakageResult:
 def check_leakage(description: str,
                   original_identifiers: Optional[List[str]] = None
                   ) -> LeakageResult:
-    """Audit ``description`` for CadQuery/Python code leakage.
+    """Audit ``description`` for CAD-script/Python code leakage.
 
     ``original_identifiers`` are variable/function names from the source script
     (rule D): if any appear verbatim (and are not the generic English words
@@ -80,7 +78,7 @@ def check_leakage(description: str,
             if frag and frag not in snippets:
                 snippets.append(frag)
 
-    # A) CadQuery / API surface form.
+    # A) CAD-script / API surface form.
     add(_IMPORT_RE, description)
     add(_CQ_ALIAS_RE, description)
     add(_WORKPLANE_CALL_RE, description)

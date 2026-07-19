@@ -1,6 +1,6 @@
-"""Vitruvion constraint-token codec: the constraint hypergraph as a pointer stream.
+"""Constraint-token codec: the constraint hypergraph as a pointer stream.
 
-Vitruvion (Seff et al., ICLR 2022 -- ``img2cad/constraint_data.py``) models the
+This codec models the
 constraint hypergraph *without* any graph machinery: it flattens it into a second token
 stream whose reference tokens **point into the primitive token stream** produced by
 ``reconstruction.vitruvion_primitive_tokens``.  Nodes are primitives (or their
@@ -31,18 +31,19 @@ Three streams again (``val`` / ``coord`` / ``pos``), where:
 
 Two rules that change what is learnable, and are easy to miss:
 
-  * **External constraints are dropped.**  Any edge referencing node ``0`` (SketchGraphs'
-    "external" node, i.e. a constraint against another feature of the part) is skipped.
+  * **External constraints are dropped.**  Any edge referencing node ``0`` (the sketch
+    graph's "external" node, i.e. a constraint against another feature of the part) is
+    skipped.
   * **References are emitted in sorted node order**, not in the designer's argument
     order.  Argument roles are therefore *not* recoverable from the token stream: for an
     asymmetric constraint (``Midpoint``: point vs. line) the model only learns the
-    unordered member set.  Every constraint type Vitruvion keeps is either symmetric or
+    unordered member set.  Every constraint type kept here is either symmetric or
     has its roles inferable from the member types, so this is consistent -- but a decoder
     must not assume the first reference is the first argument.
 
 Constraints whose label is not in the vocabulary (dimensional/valued constraints:
-distance, angle, diameter, ...) are dropped: Vitruvion models only the *categorical*
-constraints.
+distance, angle, diameter, ...) are dropped: only the *categorical* constraints are
+modelled.
 
 Pure stdlib.
 """
@@ -90,7 +91,7 @@ class ConstraintToken(enum.IntEnum):
 # Argument-slot ids for the first and second reference of a constraint.
 CONSTRAINT_COORD_TOKENS = [NON_COORD_TOKEN + 1, NON_COORD_TOKEN + 2]  # [2, 3]
 
-MAX_TOKEN_LENGTH = 130  # Vitruvion's ConstraintDataConfig default
+MAX_TOKEN_LENGTH = 130  # constraint-data configuration default
 
 EXTERNAL_NODE = 0
 

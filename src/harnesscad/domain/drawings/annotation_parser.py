@@ -1,8 +1,6 @@
 """annomap_parser — 2D drawing-annotation schema + deterministic callout parser.
 
-Khan et al., "Context-Aware Mapping of 2D Drawing Annotations to 3D CAD Features
-Using LLM-Assisted Reasoning for Manufacturing Automation" formalise the mapping
-problem over two pre-extracted structured sets (Sec. III):
+The mapping problem is formalised over two pre-extracted structured sets:
 
   * a **3D AFR feature set** ``F3D = {f_i}`` where ``f_i = (t_i, p_i, c_i, k_i)``
     is a feature type, geometric parameters, an AFR confidence and optional
@@ -12,9 +10,8 @@ problem over two pre-extracted structured sets (Sec. III):
     context (bbox, neighbours, associated views).
 
 The VLM *semantic-enrichment* step that turns a cropped image + OCR into a typed
-descriptor (Sec. IV-B) is a learned, proprietary model — logged as
-research-heavy/external. But the deterministic *symbolic* parse of the OCR text
-itself — turning tokens such as ``"Ø10"``, ``"M8x1.25"``, ``"R5"``, ``"4X Ø6.5"``,
+descriptor is a learned model handled elsewhere. But the deterministic
+*symbolic* parse of the OCR text itself — turning tokens such as ``"Ø10"``, ``"M8x1.25"``, ``"R5"``, ``"4X Ø6.5"``,
 ``"10 +0.1/-0.0"`` or ``"Ra 3.2"`` into a typed :class:`DrawingEntity` with a
 normalized entity type, a nominal value, a symmetric/asymmetric tolerance band and
 an inferred target feature category — is a pure, reproducible string operation.
@@ -31,10 +28,10 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 
 # --------------------------------------------------------------------------- #
-# Schema (Eq. 1 / Eq. 2)
+# Schema (entity + feature sets)
 # --------------------------------------------------------------------------- #
 
-# Normalized 2D entity types (u_j in Eq. 2).
+# Normalized 2D entity types (u_j).
 ENTITY_DIAMETER = "diameter"
 ENTITY_RADIUS = "radius"
 ENTITY_LINEAR = "linear"        # a plain length/width/depth dimension
@@ -53,7 +50,7 @@ _KNOWN_ENTITY_TYPES = frozenset({
     ENTITY_DATUM, ENTITY_NOTE,
 })
 
-# Inferred target 3D feature category per entity type (drives Sec. IV-C type
+# Inferred target 3D feature category per entity type (drives the type
 # compatibility). ``None`` means "no single preferred target".
 _TARGET_FEATURE: Dict[str, Optional[str]] = {
     ENTITY_DIAMETER: "hole",
@@ -99,7 +96,7 @@ class Tolerance:
 
 @dataclass
 class DrawingEntity:
-    """A parsed 2D drawing entity (e_j in Eq. 2).
+    """A parsed 2D drawing entity (e_j).
 
     - ``entity_type``    : normalized u_j (one of the ``ENTITY_*`` constants).
     - ``raw_text``       : the original OCR token tau_j.
@@ -107,7 +104,7 @@ class DrawingEntity:
                            entity carries no scalar (a bare datum / note).
     - ``unit``           : measurement unit ("mm" / "deg" / "").
     - ``tolerance``      : parsed :class:`Tolerance` (defaults to exact 0/0).
-    - ``target_feature`` : inferred 3D feature category (Sec. IV-B).
+    - ``target_feature`` : inferred 3D feature category.
     - ``multiplicity``   : ``n`` from an ``nX`` pattern indication (default 1).
     - ``symbol``         : the leading symbol if any ("Ø", "R", "M", ...).
     - ``extra``          : type-specific extras (thread pitch, gdt symbol, etc.).
@@ -145,7 +142,7 @@ class DrawingEntity:
 
 @dataclass
 class CADFeature:
-    """A recognised 3D CAD feature (f_i in Eq. 1).
+    """A recognised 3D CAD feature (f_i).
 
     - ``feature_type`` : t_i (e.g. "hole", "slot", "pocket", "fillet").
     - ``params``       : p_i, a mapping of geometric properties -> value
@@ -335,7 +332,7 @@ def parse_callout(text: str, entity_id: str = "",
                   context: Optional[Dict[str, object]] = None) -> DrawingEntity:
     """Parse a single OCR callout string into a typed :class:`DrawingEntity`.
 
-    This is the deterministic symbolic core of the paper's enrichment step: it
+    This is the deterministic symbolic core of the enrichment step: it
     normalises the entity type, extracts the nominal value + unit, the tolerance
     band, the pattern multiplicity (``nX``) and the inferred target feature —
     everything except the learned VLM inference of ambiguous bare numbers.

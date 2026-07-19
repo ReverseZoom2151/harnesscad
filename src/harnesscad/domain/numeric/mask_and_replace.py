@@ -1,9 +1,9 @@
-"""VQ-Diffusion "mask-and-replace" hybrid transition for VQ-CAD (Sec. 3.2.1, Eq. 7).
+""""Mask-and-replace" hybrid transition for vector-quantised CAD code diffusion.
 
-VQ-CAD (Wang et al., CAGD 2024) runs a discrete diffusion over the VQ code tree
-using the *mask-and-replace* strategy of VQ-Diffusion (Gu et al., 2022). This is a
-genuinely distinct transition from the two standard discrete-diffusion families
-already in the repo (``numeric.sketchdnn_categorical_diffusion`` supplies the pure
+A discrete diffusion runs over the vector-quantised code tree using the
+*mask-and-replace* strategy. This is a genuinely distinct transition from the two
+standard discrete-diffusion families already in the repo
+(``numeric.sketchdnn_categorical_diffusion`` supplies the pure
 *uniform*/Multinomial matrix and the pure *absorbing*/[MASK] matrix). Mask-and-replace
 is a **hybrid** of the two, applied over ``K`` real code categories plus one extra
 ``[MASK]`` category (index ``K``). For a real token ``i`` the forward transition is:
@@ -23,7 +23,7 @@ the row-sum constraint
 so given a per-step ``(alpha_t, gamma_t)`` schedule, ``beta_t = (1 - alpha_t -
 gamma_t) / K`` is fixed.
 
-The key deterministic content of VQ-Diffusion is its **closed-form cumulative**
+The key deterministic content of this transition is its **closed-form cumulative**
 schedule: the product ``Qbar_t = Q_1 ... Q_t`` keeps the same mask-and-replace form
 with cumulative rates
 

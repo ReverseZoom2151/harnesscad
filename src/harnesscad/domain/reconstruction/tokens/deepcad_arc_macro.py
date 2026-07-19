@@ -1,9 +1,4 @@
-"""DeepCAD's arc macro encoding: (end point, sweep angle, ccw flag) <-> full geometry.
-
-Source: ``cadlib/curves.py`` (``Arc.from_vector``, ``Arc.to_vector``,
-``Arc.clock_sign``, ``Arc.get_angles_counterclockwise``, ``Arc.bbox``,
-``sample_points``) and ``cadlib/math_utils.py`` (``angle_from_vector_to_x``) of the
-DeepCAD reference code (Wu, Xiao & Zheng, ICCV 2021).
+"""Arc macro encoding: (end point, sweep angle, ccw flag) <-> full geometry.
 
 ``reconstruction.deepcad_command_spec`` records that an ``Arc`` command carries
 ``(x, y, alpha, f)`` and ``reconstruction.deepcad_profile_assembly`` chains endpoints
@@ -104,7 +99,7 @@ def clock_sign(start: Sequence[float], mid: Sequence[float],
 
 def arc_from_macro(start: Sequence[float], end: Sequence[float],
                    sweep_angle: float, flag: int) -> Arc:
-    """Decode ``(start, end, alpha, f)`` into full arc geometry (``Arc.from_vector``).
+    """Decode ``(start, end, alpha, f)`` into full arc geometry.
 
     ``sweep_angle`` is in radians (the caller de-quantises ``alpha`` first, e.g. with
     ``deepcad2_numericalize.denumericalize_sweep``). Raises ``ValueError`` for a
@@ -121,7 +116,7 @@ def arc_from_macro(start: Sequence[float], end: Sequence[float],
     radius = (chord / 2) / sin_half
 
     mid_chord = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2)
-    # cross(s2e, +z) = (s2e.y, -s2e.x) -- the reference's np.cross(s2e, [0,0,1])[:2].
+    # cross(s2e, +z) = (s2e.y, -s2e.x) -- the left normal of the chord direction.
     vertical = (s2e[1] / chord, -s2e[0] / chord)
     if flag == 0:
         vertical = (-vertical[0], -vertical[1])
@@ -151,7 +146,7 @@ def arc_to_macro(start: Sequence[float], mid: Sequence[float],
 def angles_counterclockwise(center: Sequence[float], start: Sequence[float],
                             mid: Sequence[float], end: Sequence[float],
                             eps: float = 1e-8) -> tuple[float, float]:
-    """The reference's ``get_angles_counterclockwise``: the ccw span ``(a_s, a_e)``.
+    """The reference ccw-span computation: the ccw span ``(a_s, a_e)``.
 
     Both angles are measured from +x. ``a_s`` is allowed to go negative (the span is
     shifted by ``-2pi``) so that the arc's mid point always lies strictly between

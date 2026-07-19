@@ -1,4 +1,4 @@
-"""Unbiased HumanEval pass@k estimator."""
+"""Unbiased pass@k estimator for code-generation style evaluation."""
 
 from math import comb
 

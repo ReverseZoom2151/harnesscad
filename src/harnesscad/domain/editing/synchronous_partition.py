@@ -1,13 +1,13 @@
-"""Synchronous Technology partial conversion (Section 4.3 of Zou 2025).
+"""Synchronous Technology partial conversion.
 
 Synchronous Technology (Siemens NX) improves on the Dual-Modes approach (4.2) by
 doing a *partial* rather than whole-model conversion to dumb B-rep. Features are
 separated into two groups:
 
-* **direct-edit features** — converted to B-rep so direct editing applies;
-* **ordinary features** — kept parametric.
+* **direct-edit features** -- converted to B-rep so direct editing applies;
+* **ordinary features** -- kept parametric.
 
-Two structural rules the paper states:
+Two structural rules this approach states:
 
 1. the direct-edit features are placed *before* the ordinary features in the
    model history;
@@ -89,7 +89,7 @@ class SyncPartition:
         """Ordinary features that would *not* need converting but for the cascade.
 
         The direct-edit set is the union of intentionally-moved features and
-        their forced predecessors; the meaningful metric the paper flags is the
+        their forced predecessors; the meaningful metric this approach flags is the
         collateral count. Here we report the total number of features that have
         lost parametric control (the direct-edit set size), which the tests
         compare against the intended target count.

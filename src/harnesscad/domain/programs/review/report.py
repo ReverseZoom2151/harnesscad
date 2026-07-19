@@ -1,22 +1,21 @@
-"""CADReview review report + diagnostic scorer.
+"""Review report + diagnostic scorer.
 
-This ties the pipeline together into the artifact the paper's review task emits,
-and the metric it is scored by.
+This ties the pipeline together into the artifact the review task emits, and the
+metric it is scored by.
 
-* REVIEW REPORT — the paper's closed-source-MLLM prompt (Table 10) requires the
-  review to be returned as a structured record with exactly four fields:
-  ``"error type"``, ``"erroneous code block ID"``, ``"feedback"``, and
-  ``"correct code"``. :class:`ReviewReport` is that record.
+* REVIEW REPORT -- the review is returned as a structured record with exactly
+  four fields: ``"error type"``, ``"erroneous code block ID"``, ``"feedback"``,
+  and ``"correct code"``. :class:`ReviewReport` is that record.
   :func:`build_report` runs detection (:mod:`cadreview_detect`) + correction
-  (:mod:`cadreview_correct`) and fills it in, generating a concise (<=75-word,
-  per the paper's feedback requirement) natural-language ``feedback`` string in
-  the paper's house style ("The 3D model shows a deviation in the rotation of
-  the component ... Please correct the rotation in Block 2 ..."). For a program
-  that already matches the reference, it draws from the paper's ten predefined
-  "no error" feedback lines (Table 8), selected deterministically by seed.
+  (:mod:`cadreview_correct`) and fills it in, generating a concise (<=75-word)
+  natural-language ``feedback`` string in a consistent house style ("The 3D
+  model shows a deviation in the rotation of the component ... Please correct
+  the rotation in Block 2 ..."). For a program that already matches the
+  reference, it draws from ten predefined "no error" feedback lines, selected
+  deterministically by seed.
 
-* DIAGNOSTIC SCORER — the paper's accuracy metric ("Acc") and RL error-diagnostic
-  reward V_d (Eq. 2) both credit a review only when BOTH the error type AND the
+* DIAGNOSTIC SCORER -- the accuracy metric ("Acc") and the error-diagnostic
+  reward V_d both credit a review only when BOTH the error type AND the
   erroneous block ID are correct. :func:`diagnostic_reward` is V_d;
   :func:`score_dataset` aggregates it into Acc over a benchmark, alongside the
   looser type-only and block-only accuracies for diagnosis.
@@ -34,7 +33,7 @@ from harnesscad.domain.programs.review.correct import Correction, correct
 from harnesscad.domain.programs.review.detect import Detection, Review, detect
 from harnesscad.domain.programs.review.taxonomy import ErrorType, NO_ERROR
 
-#: The paper's ten predefined feedback lines for a correct program (Table 8).
+#: Ten predefined feedback lines for a correct program.
 PREDEFINED_FEEDBACK: Tuple[str, ...] = (
     "The 3D rendering captures the essence of the design blueprint with "
     "remarkable precision and fidelity.",
@@ -89,7 +88,7 @@ def _cap_words(text: str, limit: int = 75) -> str:
 
 
 def generate_feedback(det: Detection, seed: int = 0) -> str:
-    """A concise (<=75-word) feedback string in the paper's house style."""
+    """A concise (<=75-word) feedback string in a consistent house style."""
     if det.error_type.id == NO_ERROR.id:
         rng = random.Random(seed)
         return PREDEFINED_FEEDBACK[rng.randrange(len(PREDEFINED_FEEDBACK))]
@@ -104,7 +103,7 @@ def generate_feedback(det: Detection, seed: int = 0) -> str:
 
 @dataclass
 class ReviewReport:
-    """The structured review record (paper Table 10 output schema)."""
+    """The structured review record (output schema)."""
 
     error_type: str
     block_id: Optional[int]
@@ -113,7 +112,7 @@ class ReviewReport:
     suggestions: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
-        # Keys mirror the paper's required JSON output exactly.
+        # Keys mirror the required JSON output exactly.
         return {
             "error type": self.error_type,
             "erroneous code block ID": self.block_id,
@@ -152,7 +151,7 @@ def _norm_type(t) -> Optional[str]:
 
 
 def diagnostic_reward(pred_type, pred_block, gold_type, gold_block) -> int:
-    """The paper's V_d (Eq. 2): 1 iff BOTH error type AND block ID are correct."""
+    """V_d: 1 iff BOTH error type AND block ID are correct."""
     type_ok = _norm_type(pred_type) == _norm_type(gold_type)
     block_ok = pred_block == gold_block
     return 1 if (type_ok and block_ok) else 0
@@ -162,7 +161,7 @@ def score_dataset(preds: Sequence[Tuple], golds: Sequence[Tuple]) -> dict:
     """Aggregate accuracy over a benchmark.
 
     ``preds`` / ``golds`` are sequences of ``(error_type, block_id)`` tuples.
-    Returns Acc (both correct — the paper's rigorous metric), plus type-only and
+    Returns Acc (both correct -- the rigorous metric), plus type-only and
     block-only accuracy for diagnosis."""
     if len(preds) != len(golds):
         raise ValueError("preds and golds must be the same length")

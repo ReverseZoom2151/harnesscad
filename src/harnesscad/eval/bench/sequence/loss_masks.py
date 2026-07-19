@@ -1,7 +1,7 @@
-"""Exact GenCAD loss masking + objective formulas (``utils/loss.py``, ``model_utils.py``).
+"""Exact CAD-sequence loss masking + objective formulas (``utils/loss.py``, ``model_utils.py``).
 
-Both GenCAD objectives are deterministic once the logits are given, and both hinge on
-*which tokens are counted* -- a detail no paper-level module carries. Reproduced here
+Both objectives below are deterministic once the logits are given, and both hinge on
+*which tokens are counted* -- a detail that is easy to get wrong. Reproduced here
 verbatim so a decoder's reported command/argument accuracy is comparable with the
 reference implementation.
 
@@ -21,9 +21,10 @@ reference implementation.
 
 **CCIP contrastive loss** (``CCIPLoss``, open_clip-style): symmetric cross-entropy of
 ``logit_scale * A @ B.T`` against ``labels = arange(batch)``, averaged over the two
-directions. Note it is *not* the NT-Xent of ``bench.contrastcad_contrastive`` (which
-contrasts dropout views of one modality): here the two modalities are the batch's
-image and CAD embeddings, and the positives are the diagonal.
+directions. Note it is *not* the NT-Xent used elsewhere in this package for
+contrastive losses (which contrasts dropout views of one modality): here the two
+modalities are the batch's image and CAD embeddings, and the positives are the
+diagonal.
 
 Pure standard library, deterministic.
 """
@@ -33,7 +34,7 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Sequence, Tuple
 
-# --- command vocabulary (GenCAD macro.py) ------------------------------------
+# --- command vocabulary (macro.py) -------------------------------------------
 ALL_COMMANDS = ("Line", "Arc", "Circle", "EOS", "SOL", "Ext")
 LINE_IDX = 0
 ARC_IDX = 1

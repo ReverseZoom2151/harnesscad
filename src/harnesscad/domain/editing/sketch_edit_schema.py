@@ -1,9 +1,9 @@
-"""Multimodal refinement schema for mrCAD (McCarthy, Vaduguru et al., 2025).
+"""Multimodal refinement schema for sketch refinement (McCarthy, Vaduguru et al., 2025).
 
-From *Multimodal Refinement of Computer-aided Designs* (mrCAD), Sec. 2.1-2.2.
-This module encodes the paper's deterministic grammar as immutable data:
+From *Multimodal Refinement of Computer-aided Designs* , Sec. 2.1-2.2.
+This module encodes the deterministic grammar as immutable data:
 
-State grammar (Sec. 2.1)::
+State grammar::
 
     D      -> {Curve, ...}
     Curve  -> Line | Circle | Arc
@@ -11,12 +11,12 @@ State grammar (Sec. 2.1)::
     Circle -> c(P, P)        // points on diameter
     Arc    -> a(P, P, P)     // start, mid, end
 
-Action grammar / typed edit vocabulary (Sec. 2.2)::
+Action grammar / typed edit vocabulary::
 
     Action -> make_curve Curve | remove_curve Curve | move_curve Curve Vxy
             | move_point P P   | delete_point P
 
-Message grammar (Sec. 2.2)::
+Message grammar::
 
     Message -> <Text, Drawing>
     Text    -> [char, ...] | empty
@@ -33,13 +33,13 @@ from typing import Tuple
 
 Point = Tuple[float, float]
 
-# Curve arity per the grammar (Sec. 2.1).
+# Curve arity per the grammar.
 _ARITY = {"line": 2, "circle": 2, "arc": 3}
 
 
 @dataclass(frozen=True)
 class Curve:
-    """A CAD curve defined by its control points (Sec. 2.1).
+    """A CAD curve defined by its control points.
 
     ``kind`` is ``"line"`` (2 endpoints), ``"circle"`` (2 diameter points), or
     ``"arc"`` (start, mid, end). Points are stored as a canonical tuple so that
@@ -137,7 +137,7 @@ class Design:
 
 
 # ---------------------------------------------------------------------------
-# Typed edit-operation vocabulary (Sec. 2.2 Action grammar).
+# Typed edit-operation vocabulary.
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class MakeCurve:
@@ -171,23 +171,23 @@ class DeletePoint:
     op: str = "delete_point"
 
 
-#: The complete typed edit vocabulary (Sec. 2.2).
+#: The complete typed edit vocabulary.
 EDIT_VOCABULARY = ("make_curve", "remove_curve", "move_curve", "move_point", "delete_point")
 
 
 # ---------------------------------------------------------------------------
-# Message: <Text, Drawing> (Sec. 2.2).
+# Message: <Text, Drawing>.
 # ---------------------------------------------------------------------------
 Stroke = Tuple[Point, ...]
 
 
 @dataclass(frozen=True)
 class Message:
-    """A multimodal designer instruction ``<Text, Drawing>`` (Sec. 2.2).
+    """A multimodal designer instruction ``<Text, Drawing>``.
 
     ``text`` is a possibly-empty string; ``strokes`` is a possibly-empty tuple
     of polyline strokes (each a tuple of points), the deterministic stand-in for
-    the paper's SVG drawing.
+    the SVG drawing.
     """
 
     text: str = ""
@@ -210,7 +210,7 @@ class Message:
     def modality(self) -> str:
         """Classify as ``multimodal`` / ``text`` / ``drawing`` / ``empty``.
 
-        Mirrors the modality tallies in Sec. 5.2 (Fig. 6A).
+        Mirrors the modality tallies in Sec. 5.2.
         """
         t, d = self.has_text, self.has_drawing
         if t and d:
@@ -222,11 +222,11 @@ class Message:
         return "empty"
 
     def stroke_count(self) -> int:
-        """Number of non-empty strokes (Sec. 5.2 drawing-sparsity measure)."""
+        """Number of non-empty strokes."""
         return sum(1 for s in self.strokes if len(s) > 0)
 
     def ink(self) -> float:
-        """Total drawn path length -- the paper's amount of digital 'ink'."""
+        """Total drawn path length -- the amount of digital 'ink'."""
         total = 0.0
         for s in self.strokes:
             for (x0, y0), (x1, y1) in zip(s, s[1:]):
@@ -240,7 +240,7 @@ class Message:
 # Small closed-class verb set used to detect imperative refinement directives
 # (Sec. 5.2, Fig. 6B: refinement text expresses actions/directives, mostly
 # imperative verbs). This is a deterministic lexical heuristic, not a parser
-# model; the paper used Stanza, which we deliberately do not depend on.
+# model; this approach used Stanza, which we deliberately do not depend on.
 _IMPERATIVE_VERBS = frozenset({
     "make", "move", "remove", "delete", "draw", "add", "connect", "extend",
     "shrink", "enlarge", "rotate", "shift", "straighten", "curve", "close",
@@ -250,13 +250,13 @@ _IMPERATIVE_VERBS = frozenset({
 
 @dataclass(frozen=True)
 class Instruction:
-    """A parsed representation of a :class:`Message` (Sec. 5.2 analysis).
+    """A parsed representation of a :class:`Message`.
 
-    Captures the deterministic features the paper studies: modality, tokenised
+    Captures the deterministic features this approach studies: modality, tokenised
     text, the leading (root) word, whether it is an imperative verb, stroke
-    count, and ink. ``is_refinement_like`` flags directive text -- the paper's
+    count, and ink. ``is_refinement_like`` flags directive text -- the
     finding that refinement instructions head with imperative verbs whereas
-    generation instructions usually do not (Fig. 6B).
+    generation instructions usually do not.
     """
 
     modality: str

@@ -1,23 +1,23 @@
-"""STEP-LLM evaluation metrics and the Scaled Chamfer Distance reward.
+"""LLM-generated STEP evaluation metrics and the Scaled Chamfer Distance reward.
 
-The paper (Shi et al., DATE 2026, Sec. 4.1 / 3.3) evaluates generated STEP files
-with a small set of metrics and trains with a geometric RL reward. The learned
-model, OpenCASCADE-based renderability, and the FPFH+RANSAC/ICP registration are
-external / non-deterministic and are *not* reimplemented here. The deterministic
-pieces are:
+Deterministic re-implementation of an evaluation protocol that scores generated
+STEP files with a small set of metrics and trains with a geometric RL reward.
+The learned model, OpenCASCADE-based renderability, and the FPFH+RANSAC/ICP
+registration are external / non-deterministic and are *not* reimplemented here.
+The deterministic pieces are:
 
   * **Completion Rate (CR)** - whether a file terminates with the standardized
-    ``END-ISO-10303-21;`` line (Sec. 4.1).
+    ``END-ISO-10303-21;`` line.
   * **Entity count / Average Entity Count (AEC)** - a proxy for design
     complexity; a generated file's count should match the ground-truth
-    distribution (Tables 1-2).
+    distribution.
   * **Chamfer Distance (CD)** - Eq. (1), the bidirectional mean squared nearest
     neighbour distance between two point clouds.
   * **Scaled Chamfer Distance (SCD)** - Eq. (2), CD after centroid alignment and
     normalization by the ground-truth RMS scale factor. (The optional global
     registration and ICP refinement stages are noted but omitted as external.)
-  * **Geometric reward** - Eq. (3), the CAD-Coder-style piecewise-linear reward
-    with a lower/upper SCD threshold.
+  * **Geometric reward** - Eq. (3), a piecewise-linear reward with a
+    lower/upper SCD threshold.
 
 Point clouds are plain lists of ``(x, y, z)`` tuples; everything is stdlib-only
 and deterministic.

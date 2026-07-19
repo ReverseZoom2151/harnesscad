@@ -1,21 +1,21 @@
-"""Text2CAD-Bench parameter-level accuracy metric.
+"""Text-to-CAD benchmark parameter-level accuracy metric.
 
-Deterministic parametric-CAD accuracy scorer for Text2CAD-Bench (Wang et al.,
-"Text2CAD-Bench"). The benchmark's first design principle is *Unambiguous Ground
-Truth*: "each text description corresponds to a unique, fully-specified CAD model
-with all geometric parameters explicitly defined" (Section 3.1). This module
-scores how well a model's recovered parameters (dimensions such as length,
-width, height, radius, diameter, wall thickness, chamfer size, and categorical
-choices such as the workplane) match the fully-specified ground truth.
+Deterministic parametric-CAD accuracy scorer for a text-to-CAD benchmark whose
+design goal is unambiguous ground truth: each text description corresponds to a
+unique, fully-specified CAD model with all geometric parameters explicitly
+defined. This module scores how well a model's recovered parameters (dimensions
+such as length, width, height, radius, diameter, wall thickness, chamfer size,
+and categorical choices such as the workplane) match the fully-specified ground
+truth.
 
-This is a *parameter-level* metric complementing the paper's geometric metrics
-(Chamfer Distance / IoU) and the executability metric (Invalidity Rate). Unlike
-Chamfer Distance, it diagnoses *which* named parameters a model got right, and
-unlike IR it credits partial correctness. It is DISTINCT from
-``bench/cadtests_assertions`` (boolean unit-test assertions, paper 169): here we
-compute a graded per-parameter match with relative/absolute tolerance over a
-parameter dictionary, plus a parametric-validity check (all required parameters
-present and inside declared valid ranges).
+This is a *parameter-level* metric complementing geometric metrics (such as
+Chamfer distance / IoU) and an executability metric (invalidity rate). Unlike
+Chamfer distance, it diagnoses *which* named parameters a model got right, and
+unlike an invalidity-rate metric it credits partial correctness. It is DISTINCT
+from a boolean unit-test-assertion style check: here we compute a graded
+per-parameter match with relative/absolute tolerance over a parameter
+dictionary, plus a parametric-validity check (all required parameters present
+and inside declared valid ranges).
 
 Parameters and model outputs are injected. No wall clock, no randomness.
 """
@@ -95,8 +95,8 @@ def parameter_accuracy(predicted, truth, rel_tol=DEFAULT_REL_TOL,
 def parametric_validity(predicted, required, ranges=None):
     """Check the *fully-specified* + *in-range* validity of a prediction.
 
-    Mirrors the benchmark's authoring constraint that all geometric parameters
-    are fully specified and physically sensible.
+    Mirrors a common benchmark authoring constraint that all geometric
+    parameters are fully specified and physically sensible.
 
     predicted : mapping name -> value.
     required  : iterable of parameter names that must be present (non-None).

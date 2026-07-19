@@ -1,32 +1,30 @@
-"""A2Z scan-annotation primitives (Jena et al., 2026, "A2Z-10M+: Geometric Deep
-Learning with A-to-Z BRep Annotations for AI-Assisted CAD Modeling and Reverse
-Engineering").
+"""Scan-annotation primitives pairing scan-like meshes with B-Rep labels.
 
-A2Z pairs high-resolution scan-like meshes with BRep labels. The learned
-foundation model is out of scope, but three of its data-processing rules are
-fully deterministic and stdlib-only, and none of them is covered by the existing
-chain-complex / coedge-walk modules:
+This representation pairs high-resolution scan-like meshes with B-Rep labels. The
+learned foundation model is out of scope, but three of its data-processing rules
+are fully deterministic and stdlib-only, and none of them is covered by the
+existing chain-complex / coedge-walk modules:
 
-* **Tiny-loop (hole) classification (Sec. 3.1, Step-II).** A loop is a candidate
-  tiny hole when the dataset has more than two loops (``|L| > 2``) and the loop's
-  perimeter, relative to the largest loop perimeter, falls below a threshold
-  ``tau_h``: ``L_ell / L_max < tau_h``. These small openings are the ones a
-  short-range scanner fails to capture. :func:`classify_tiny_loops`.
+* **Tiny-loop (hole) classification.** A loop is a candidate tiny hole when the
+  dataset has more than two loops (``|L| > 2``) and the loop's perimeter,
+  relative to the largest loop perimeter, falls below a threshold ``tau_h``:
+  ``L_ell / L_max < tau_h``. These small openings are the ones a short-range
+  scanner fails to capture. :func:`classify_tiny_loops`.
 
-* **Proximity-aware soft-label membership (Sec. 3.2).** Instead of a hard
-  nearest-neighbour assignment, each scan point aggregates SPH-style weights over
-  a multi-scale neighbourhood and takes the ``arg max`` of the resulting
-  probability, so a nearby-but-not-nearest candidate is not silently dropped.
+* **Proximity-aware soft-label membership.** Instead of a hard nearest-neighbour
+  assignment, each scan point aggregates SPH-style weights over a multi-scale
+  neighbourhood and takes the ``arg max`` of the resulting probability, so a
+  nearby-but-not-nearest candidate is not silently dropped.
   :func:`soft_label_membership` reproduces the weighting
   ``omega_i = sum_k w_k * W_k`` and the normalised ``p_i`` / ``arg max`` rule.
 
-* **Sketch-artist skill schedule (Sec. 3.3).** A single scalar ``kappa`` in
-  ``{1..5}`` sets the hand-drawn distortion amplitude via ``alpha(kappa) =
-  (6 - kappa) / 5`` and a base magnitude ``A0 = alpha * c_L * L``; lower skill
-  means larger deviation. :func:`skill_amplitude`.
+* **Sketch-artist skill schedule.** A single scalar ``kappa`` in ``{1..5}`` sets
+  the hand-drawn distortion amplitude via ``alpha(kappa) = (6 - kappa) / 5`` and
+  a base magnitude ``A0 = alpha * c_L * L``; lower skill means larger deviation.
+  :func:`skill_amplitude`.
 
 All routines are deterministic. Inputs are plain numbers / tuples so the rules
-stay independent of any particular mesh or BRep encoding.
+stay independent of any particular mesh or B-Rep encoding.
 """
 
 from __future__ import annotations
@@ -46,9 +44,9 @@ def classify_tiny_loops(
 ) -> List[int]:
     """Return indices of loops classified as tiny holes.
 
-    Reproduces the paper's rule (Step-II): with ``|L| > 2`` loops, a loop is a
-    tiny hole when ``L_ell / L_max < tau_h``. With two or fewer loops the rule is
-    inactive and no loop is flagged. ``tau_h`` must be in ``(0, 1]``.
+    With ``|L| > 2`` loops, a loop is a tiny hole when ``L_ell / L_max < tau_h``.
+    With two or fewer loops the rule is inactive and no loop is flagged.
+    ``tau_h`` must be in ``(0, 1]``.
     """
     if not 0.0 < tau_h <= 1.0:
         raise ValueError("tau_h must be in (0, 1]")
@@ -67,7 +65,7 @@ def sph_poly6_weight(distance: float, radius: float) -> float:
     """Normalised SPH poly6 kernel weight ``(1 - (d/h)^2)^3`` for ``d <= h``.
 
     A monotone-decreasing compactly-supported smoothing weight (zero beyond the
-    support radius ``h``), the family A2Z uses for its proximity-aware labels.
+    support radius ``h``), the family used for the proximity-aware labels.
     """
     if radius <= 0.0:
         raise ValueError("radius must be positive")
@@ -116,12 +114,12 @@ def soft_label_membership(
 
 
 def skill_amplitude(kappa: int, length: float, c_l: float = 5e-3) -> Dict[str, float]:
-    """Sketch-artist skill-to-amplitude schedule (Sec. 3.3).
+    """Sketch-artist skill-to-amplitude schedule.
 
     ``kappa in {1..5}`` (1 = crude hand drawing, 5 = professional). Returns
     ``alpha = (6 - kappa) / 5`` and the base deviation magnitude
     ``A0 = alpha * c_l * length``. Lower skill -> larger ``alpha`` -> larger
-    ``A0``. ``c_l`` is the per-length coefficient (paper: ~1e-3..1e-2).
+    ``A0``. ``c_l`` is the per-length coefficient (typically ~1e-3..1e-2).
     """
     if kappa not in (1, 2, 3, 4, 5):
         raise ValueError("kappa must be an integer in {1..5}")

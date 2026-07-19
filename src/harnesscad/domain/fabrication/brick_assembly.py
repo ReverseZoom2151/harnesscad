@@ -5,7 +5,7 @@ structure that is not *buildable*: bricks must stay in bounds, not overlap, rest
 on support, and connect down to the ground. Those are exactly the deterministic,
 kernel-free checks a verifier-first harness wants -- so this module provides the
 brick representation and its four structural predicates, with the physics-solver
-(Gurobi) stability model deliberately left out (that needs a licensed LP solver;
+stability model deliberately left out (that needs a licensed LP solver;
 see "What is skipped" below).
 
 A :class:`Brick` is a 1-unit-tall axis-aligned box on the lattice, addressed by
@@ -18,16 +18,16 @@ its footprint ``(h, w)`` and its minimum corner ``(x, y, z)``. A
 * :meth:`~BrickStructure.has_floating_bricks` -- every off-ground brick touches
   another brick directly below or above,
 * :meth:`~BrickStructure.is_connected` -- every brick reaches the ground through
-  a chain of stud connections (union-find, no networkx).
+  a chain of stud connections (union-find, no external graph library).
 
-The BrickGPT text format (``"HxW (x,y,z)"`` per line) round-trips through
+The line-based brick text format (``"HxW (x,y,z)"`` per line) round-trips through
 :func:`parse_text` / :meth:`~BrickStructure.to_text`, so a model's raw output
 can be parsed, validated, and turned into a re-promptable diagnostic
 deterministically.
 
-What is skipped: the Gurobi physics-based stability score (needs a commercial LP
-solver) and the LDraw / rendering path (needs the LDraw parts library). The
-connectivity check is BrickGPT's own licence-free fallback for stability.
+What is skipped: the physics-based stability score (needs a commercial LP
+solver) and the rendering path (needs an external parts library). The
+connectivity check is a licence-free fallback for stability.
 
 Stdlib-only. No numpy: the occupancy grid is a ``set`` of occupied voxels.
 """
@@ -195,7 +195,7 @@ class BrickStructure:
 
 
 def parse_text(text: str, world_dim: int = 20) -> BrickStructure:
-    """Parse BrickGPT text-format lines into a :class:`BrickStructure`.
+    """Parse brick text-format lines into a :class:`BrickStructure`.
 
     Blank lines are ignored; a malformed line raises ``ValueError`` (the
     ``format`` failure mode a caller would feed back to the generator).

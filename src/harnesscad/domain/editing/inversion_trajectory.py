@@ -7,10 +7,10 @@ the unedited region to its source features. This module provides:
 
 - ``InversionCache``: per-timestep store/lookup of latents and K/V tokens;
 - ``reinject``: overwrite preserved coordinates with the cached inverted latents
-  at a given step (eq. 5), built on ``editing.voxhammer_preserve.hard_replace``;
+  at a given step, built on ``editing.voxhammer_preserve.hard_replace``;
 - ``taylor_flow_step``: the second-order Taylor-improved Euler rectified-flow
   update (eqs. 1-2) used for high-fidelity inversion/denoising;
-- ``late_cfg``: the late-time classifier-free guidance schedule (eq. 3), active
+- ``late_cfg``: the late-time classifier-free guidance schedule, active
   only for ``t`` inside ``[t_lo, t_hi]``;
 - ``linear_schedule``: the discrete time schedule ``0 = s0 < ... < sT = 1``.
 
@@ -98,7 +98,7 @@ def taylor_flow_step(x, t, dt, f):
 
 
 def late_cfg(f_cond, f_neg, omega, t, t_lo=0.5, t_hi=1.0):
-    """Late-time classifier-free guidance (eq. 3).
+    """Late-time classifier-free guidance.
 
     For ``t`` in ``[t_lo, t_hi]`` returns ``(1+omega)*f_cond - omega*f_neg``;
     otherwise returns ``f_cond`` unchanged. Gating guidance to late steps keeps

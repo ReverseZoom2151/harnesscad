@@ -1,12 +1,11 @@
-"""Sketch2CAD (SIGGRAPH Asia 2020) multi-channel training-block codec.
+"""Multi-channel training-block codec for sketch-to-CAD samples.
 
-The Sketch2CAD data pipeline stores every (context, stroke, operation) sample as
+This data pipeline stores every (context, stroke, operation) sample as
 a single zlib-compressed block of ``H x W x 17`` little-endian float32 values in
-row-major, channel-interleaved order.  The C++ custom TensorFlow op
-``DecodeBlock`` (``networkTraining/libs/decode_block_op.cc``) inflates that
+row-major, channel-interleaved order.  A block-decode step inflates that
 stream and splits it into a 6-channel *input* tensor and a 15-channel *label*
 tensor, deriving four of the label channels on the fly.  All of that is pure,
-deterministic data marshalling; this module reimplements it in stdlib Python.
+deterministic data marshalling implemented here in stdlib Python.
 
 Raw channel layout (17)::
 
@@ -166,10 +165,7 @@ def _curve_labels(base: float, profile: float, offset: float) -> Tuple[float, fl
 
 
 def split_block(values: Sequence[float], shape: BlockShape) -> Tuple[List[float], List[float]]:
-    """Split raw values into (input_data 6ch, label_data 15ch), flat and interleaved.
-
-    Reimplements ``DecodeBlockOp::Compute``.
-    """
+    """Split raw values into (input_data 6ch, label_data 15ch), flat and interleaved."""
     if len(values) != shape.size:
         raise BlockFormatError("value count does not match shape")
     inp: List[float] = [0.0] * (shape.pixels * NUM_INPUT_CHANNELS)

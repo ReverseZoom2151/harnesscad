@@ -1,15 +1,15 @@
-"""Refinement round/turn state machine for mrCAD (Sec. 2.2 'Playing the Game').
+"""Refinement round/turn state machine for sketch refinement.
 
 Implements the deterministic transition function and rollout structure:
 
   * ``apply_action(D, a)`` -- the typed transition for a single edit, with the
-    paper's shared-control-point semantics ("If multiple curves share the same
+     shared-control-point semantics ("If multiple curves share the same
     control point, moving the point would modify all the curves, and deleting
-    the point would delete all the curves", Sec. 2.2).
-  * ``apply_actions(D, A)`` -- ``A(D) = (a_n o ... o a_1)(D)`` (Sec. 2.2).
+    the point would delete all the curves").
+  * ``apply_actions(D, A)`` -- ``A(D) = (a_n o ... o a_1)(D)``.
   * :class:`Round` -- a tuple ``r_i = (D_i, m_i, A_i, D'_i)`` where ``D'_i = A_i(D_i)``.
   * :class:`Rollout` / :class:`RefinementSession` -- a sequence of rounds with the
-    invariant ``D_1 = {}`` and ``D_i = D'_{i-1}`` (Sec. 2.2), plus a win check
+    invariant ``D_1 = {}`` and ``D_i = D'_{i-1}``, plus a win check
     ``Delta(D'_n, D*) < theta``.
 
 Pure stdlib, deterministic; no rendering and no learned maker/designer model.
@@ -67,7 +67,7 @@ def apply_actions(design: Design, actions: Sequence[Action]) -> Design:
 
 @dataclass(frozen=True)
 class Round:
-    """A single round ``r_i = (D_i, m_i, A_i, D'_i)`` (Sec. 2.2)."""
+    """A single round ``r_i = (D_i, m_i, A_i, D'_i)``."""
 
     index: int
     design: Design           # D_i (state before the maker acts)
@@ -77,13 +77,13 @@ class Round:
 
     @property
     def is_generation(self) -> bool:
-        """Round 1 is the generation round; rounds 2+ are refinement (Sec. 6.3)."""
+        """Round 1 is the generation round; rounds 2+ are refinement."""
         return self.index == 1
 
 
 @dataclass
 class Rollout:
-    """A sequence of rounds ``R = [r_1, ..., r_n]`` with ``D_1 = {}`` (Sec. 2.2)."""
+    """A sequence of rounds ``R = [r_1, ..., r_n]`` with ``D_1 = {}``."""
 
     rounds: Tuple[Round, ...] = ()
 
@@ -117,7 +117,7 @@ class Rollout:
 
 
 class RefinementSession:
-    """Stateful driver for a rollout enforcing ``D_i = D'_{i-1}`` (Sec. 2.2).
+    """Stateful driver for a rollout enforcing ``D_i = D'_{i-1}``.
 
     Starts from the empty design ``D_1 = {}``. Each :meth:`play_round` supplies a
     designer message and a maker action sequence; the transition is applied and a
@@ -157,5 +157,5 @@ def won(
     threshold: float,
     distance: Callable[[Design, Design], float],
 ) -> bool:
-    """A game is won if ``Delta(D'_n, D*) < theta`` (Sec. 2.2)."""
+    """A game is won if ``Delta(D'_n, D*) < theta``."""
     return distance(design, target) < threshold

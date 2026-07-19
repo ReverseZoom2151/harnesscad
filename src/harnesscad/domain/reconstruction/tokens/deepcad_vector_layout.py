@@ -1,19 +1,17 @@
-"""DeepCAD's on-disk vector layout: the 17-column ``(1 + N_ARGS)`` command matrix.
+"""On-disk CAD vector layout: the 17-column ``(1 + N_ARGS)`` command matrix.
 
-Source: ``cadlib/macro.py`` plus the ``to_vector``/``from_vector`` methods of
-``Loop``, ``Profile``, ``Extrude`` and ``CADSequence`` in the DeepCAD reference code
-(Wu, Xiao & Zheng, ICCV 2021). This is the exact layout of the released
-``cad_vec`` arrays in the DeepCAD ``.h5`` dataset.
+This is the exact layout of the released ``cad_vec`` arrays in the reference ``.h5``
+dataset.
 
 Why this is not ``reconstruction.deepcad_command_spec``
 -------------------------------------------------------
-That module models the *paper's* presentation: six command types in the order
+That module models the *canonical* presentation: six command types in the order
 ``(SOL, Line, Arc, Circle, Ext, EOS)``, a named 16-slot parameter dict, and one-hot
 encodings. The released *code and data* use a different, load-bearing convention that
 any consumer of the real ``.h5`` files must match:
 
 * command indices ``Line=0, Arc=1, Circle=2, EOS=3, SOL=4, Ext=5`` -- **not** the
-  paper's ordering; a mismatch silently permutes every command;
+  canonical ordering; a mismatch silently permutes every command;
 * one flat row ``[cmd, x, y, alpha, f, r, theta, phi, gamma, px, py, pz, s,
   e1, e2, b, u]`` of width ``1 + 16 = 17``, unused slots holding ``PAD_VAL = -1``;
 * ``CMD_ARGS_MASK``, the 6x16 0/1 matrix saying which slots each command actually
@@ -31,7 +29,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-# --- command vocabulary, in the REFERENCE CODE's order (macro.py) -----------
+# --- command vocabulary, in the REFERENCE CODE's order ----------------------
 ALL_COMMANDS: tuple[str, ...] = ("Line", "Arc", "Circle", "EOS", "SOL", "Ext")
 LINE_IDX = 0
 ARC_IDX = 1

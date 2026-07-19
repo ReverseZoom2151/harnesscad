@@ -1,11 +1,11 @@
-"""Sketch2CAD (SIGGRAPH Asia 2020) incremental modelling state machine.
+"""the state machine  incremental modelling state machine.
 
-Sketch2CAD is *sequential*: every stroke is interpreted against the current
+This state machine is *sequential*: every stroke is interpreted against the current
 shape, the predicted operation is applied to a face of that shape, and the
 result becomes the context for the next stroke.  The bookkeeping that makes this
-loop work — which faces of the current model are available to stitch onto, which
+loop work -- which faces of the current model are available to stitch onto, which
 face a decoded operation actually refers to, what each operation consumes and
-produces, and how to undo/redo/replay the history — is deterministic, and is
+produces, and how to undo/redo/replay the history -- is deterministic, and is
 what this module implements.
 
 The session tracks *topology and plane bookkeeping*, not an exact B-rep (the
@@ -17,15 +17,15 @@ operation sequence consistent and replayable.
 
 Per-operation effects (see :mod:`reconstruction.s2cadsig_op_router`):
 
-  * ``extrusion`` — consumes the stitching face, produces a cap face translated
+  * ``extrusion`` -- consumes the stitching face, produces a cap face translated
     by the offset vector (same normal) plus a lateral shell entry.
-  * ``addSub`` — with a positive sign behaves like ``extrusion``; with a negative
+  * ``addSub`` -- with a positive sign behaves like ``extrusion``; with a negative
     sign it is a pocket: the stitching face survives (material removed inside the
     base curve) and a floor face is produced at ``point + offset_vector`` with an
     inverted normal.
-  * ``sweep`` — consumes the stitching face and produces an end-cap face at the
+  * ``sweep`` -- consumes the stitching face and produces an end-cap face at the
     end of the sweep path (offset vector), same normal.
-  * ``bevel`` — modifies the stitching face: the face survives (shrunk) and one
+  * ``bevel`` -- modifies the stitching face: the face survives (shrunk) and one
     bevel face is produced, anchored at the base-curve centroid with the same
     supporting normal (the kernel resolves its true slope from the adjacent face).
 
@@ -119,7 +119,7 @@ class Step:
 
 
 class ModelingSession:
-    """Sequential Sketch2CAD modelling state: faces + operation history."""
+    """Sequential modelling state: faces + operation history."""
 
     def __init__(self, seed_faces: Sequence[Tuple[Vec3, Vec3]] = ()) -> None:
         self._faces: Dict[int, SessionFace] = {}

@@ -1,21 +1,22 @@
-"""Architectural primitive geometry for Sketch2CAD (Yang, EPFL 2023).
+"""Architectural primitive geometry for sketch-to-CAD reconstruction.
 
-The paper (Sec. III-A-1, Fig. 4) selects seven shapes by "architectural form
-analysis" of typical residential buildings::
+Seven shapes are selected by architectural form analysis of typical
+residential buildings::
 
     Cube, Cylinder, Pyramid, Shed, Hip, A-Frame, Mansard
 
 The learned transformer only predicts a scene descriptor -- a shape *type* plus
 position, rotation (yaw, pitch) and size. The actual 3D geometry is reconstructed
-downstream by a Grasshopper program that reads those parameters. This module is that
-deterministic *shape -> B-rep-like geometry* lifting, built in pure stdlib so the
-descriptor can be turned into concrete vertices / edges without Rhino.
+downstream by a visual-programming environment that reads those parameters. This
+module is that deterministic *shape -> B-rep-like geometry* lifting, built in
+pure stdlib so the descriptor can be turned into concrete vertices / edges
+without a proprietary modelling application.
 
 Each shape is generated in a canonical unit form centred on the origin footprint,
 scaled by ``size = (sx, sy, sz)`` (sx, sy = footprint, sz = height), rotated by
 ``yaw`` (about +Z) then ``pitch`` (about +X) in degrees, and translated to
-``position``. The result is a :class:`Mesh` of vertices + edges (the wire-frame the
-paper renders) plus quad/tri faces.
+``position``. The result is a :class:`Mesh` of vertices + edges (the rendered
+wire-frame) plus quad/tri faces.
 
 The roof shapes are the distinguishing pieces:
 

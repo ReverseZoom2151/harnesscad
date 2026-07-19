@@ -1,7 +1,7 @@
-"""AutoBrep B-rep tokenisation vocabulary and hierarchical serialisation format.
+"""B-rep tokenisation vocabulary and hierarchical serialisation format.
 
-Deterministic re-encoding of the token *format* used by AutoBrep (a multimodal
-autoregressive B-rep generator). AutoBrep flattens a solid's boundary
+Deterministic re-encoding of a token *format* for a multimodal
+autoregressive B-rep generator, which flattens a solid's boundary
 representation into a single integer token stream over a contiguous vocabulary.
 The trained FSQ codebooks that supply the *values* of geometry codes are a model
 artifact, but the vocabulary layout and the nested container grammar are a fixed,
@@ -9,7 +9,7 @@ config-derived specification -- built here in full.
 
 VOCABULARY LAYOUT (contiguous integer ranges)
 ---------------------------------------------
-AutoBrep's ``AutoBrepModel`` (``models/autoregressive.py``) composes the vocabulary
+The model composes the vocabulary
 from four blocks in this exact order, parameterised by ``bit`` (position
 quantisation bits), ``max_face`` (id capacity) and two codebook sizes::
 
@@ -28,7 +28,7 @@ so the ranges are::
     [face_z_pad, face_z_pad+surf)        -> SURFACE  (a surface geometry code)
     [.. ,        num_tokens)             -> EDGE     (an edge geometry code)
 
-The 21 structural flags come from ``data/token_mapping.py`` (``MMTokenIndex``):
+The 21 structural flags (``MMTokenIndex``) are:
 begin/end markers for the whole sequence (BOS/EOS), text (BOT/EOT), a CAD B-rep
 (BOC/EOC), a level (BOL/EOL), a face (BOF/EOF), a geometry prompt (BOGEOM/EOGEOM),
 meta (BOM/EOM), a point cloud (BOPC/EOPC), four complexity tokens and a dummy.
@@ -52,8 +52,8 @@ range while an edge's lives in the EDGE range: the parser reads position tokens
 greedily (POSITION range), a SURFACE token closes a face header, and each edge
 group opens with an ID token and closes with an EDGE token.
 
-Position quantisation mirrors ``utils.quantize`` (round-half-to-even mapping of a
-``[-1, 1]`` coordinate to ``[0, 2**bit - 1]``) and its inverse ``dequantize``.
+Position quantisation is a round-half-to-even mapping of a ``[-1, 1]`` coordinate
+to ``[0, 2**bit - 1]``, together with its inverse dequantisation.
 
 Stdlib only, deterministic. Generation of geometry-code *values* is external;
 this module owns the layout, the (de)serialisation and structural validation.
@@ -83,7 +83,7 @@ __all__ = [
 
 
 class MMTokenIndex(IntEnum):
-    """AutoBrep structural flag tokens (``data/token_mapping.py``)."""
+    """Structural flag tokens."""
 
     BOS = 0
     EOS = 1
@@ -120,9 +120,9 @@ class TokenKind:
 
 @dataclass(frozen=True)
 class AutoBrepVocabulary:
-    """The contiguous integer vocabulary layout, from AutoBrep's hyperparameters.
+    """The contiguous integer vocabulary layout, from the model's hyperparameters.
 
-    Defaults reproduce AutoBrep's shipped configuration (``bit=10``,
+    Defaults reproduce a shipped configuration (``bit=10``,
     ``max_face=100``, ``surf_codebook_size = edge_codebook_size = 10000``).
     """
 
@@ -131,7 +131,7 @@ class AutoBrepVocabulary:
     surf_codebook_size: int = 10000
     edge_codebook_size: int = 10000
 
-    # --- derived block sizes / offsets (AutoBrepModel.__init__) ---
+    # --- derived block sizes / offsets ---
     @property
     def flag_pad(self) -> int:
         return len(MMTokenIndex.__members__)
@@ -219,19 +219,19 @@ class AutoBrepVocabulary:
 
 
 def quantize_coord(x: float, bit: int = 10, lo: float = -1.0, hi: float = 1.0) -> int:
-    """Quantise a coordinate in ``[lo, hi]`` to ``[0, 2**bit - 1]`` (AutoBrep utils.quantize)."""
+    """Quantise a coordinate in ``[lo, hi]`` to ``[0, 2**bit - 1]``."""
     rng = 2 ** bit - 1
     q = (x - lo) * rng / (hi - lo)
     if q < 0.0:
         q = 0.0
     elif q > rng:
         q = float(rng)
-    # round-half-to-even, matching numpy's default .round() used with apply_round.
+    # round-half-to-even, matching numpy's default .round() behaviour.
     return int(round(q))
 
 
 def dequantize_coord(q: int, bit: int = 10, lo: float = -1.0, hi: float = 1.0) -> float:
-    """Inverse of :func:`quantize_coord` (AutoBrep utils.dequantize)."""
+    """Inverse of :func:`quantize_coord`."""
     rng = 2 ** bit - 1
     return q * (hi - lo) / rng + lo
 
@@ -270,7 +270,7 @@ class BrepSequence:
 
 
 def serialize(brep: BrepSequence, vocab: AutoBrepVocabulary | None = None) -> list[int]:
-    """Flatten a :class:`BrepSequence` into AutoBrep's bracketed token stream."""
+    """Flatten a :class:`BrepSequence` into the bracketed token stream."""
     v = vocab or AutoBrepVocabulary()
     out: list[int] = [v.flag(MMTokenIndex.BOC)]
     for level in brep.levels:

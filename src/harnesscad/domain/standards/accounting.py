@@ -4,9 +4,9 @@
 finished design that were unreachable:
 
   * :mod:`standards.embodied_carbon` -- the embodied-carbon (CO2e) tally over a
-    bill of materials (Insights): total the CO2e and rank the worst offenders.
+    bill of materials: total the CO2e and rank the worst offenders.
   * :mod:`standards.evidence_bundle` -- the cited-provenance roll-up over a
-    design spec (Anvilate): every standards record the part leans on, hashed into
+    design spec: every standards record the part leans on, hashed into
     a review-ready bundle, with a gate for anything the databases cannot vouch
     for.
 

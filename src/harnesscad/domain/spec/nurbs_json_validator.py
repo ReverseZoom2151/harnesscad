@@ -1,16 +1,15 @@
-"""Validator for NURBGen's structured NURBS-surface JSON representation (NURBGen).
+"""Validator for a structured NURBS-surface JSON representation.
 
-Mined from *NURBGen: High-Fidelity Text-to-CAD Generation through LLM-Driven NURBS
-Modeling*. NURBGen fine-tunes an LLM to emit each B-Rep face as a JSON object of
-NURBS parameters -- poles (control points), ``u_knots``/``v_knots``,
-``u_mults``/``v_mults``, ``u_degree``/``v_degree``, periodic flags and ``weights``
-(paper Fig. 2) -- which is then converted to B-Rep with pythonOCC. A generated JSON
-is only convertible if these fields are mutually consistent; NURBGen's usefulness
-therefore hinges on a deterministic validity check, which is what this module ports.
+A text-to-CAD pipeline can fine-tune an LLM to emit each B-Rep face as a JSON
+object of NURBS parameters -- poles (control points), ``u_knots``/``v_knots``,
+``u_mults``/``v_mults``, ``u_degree``/``v_degree``, periodic flags and
+``weights`` -- which is then converted to B-Rep by a geometry kernel. A generated
+JSON is only convertible if these fields are mutually consistent, so a
+deterministic validity check is essential; that is what this module provides.
 
 :func:`validate_face` returns the list of structural errors in one face object
 (empty == valid). :func:`validate_model` validates a whole ``{"face_0": {...}, ...}``
-document. The consistency rules follow the OpenCASCADE ``Geom_BSplineSurface``
+document. The consistency rules follow the geometry kernel's B-spline-surface
 contract:
 
 *   poles form a rectangular ``n_u x n_v`` grid of ``d``-vectors;

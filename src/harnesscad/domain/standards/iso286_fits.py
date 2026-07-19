@@ -66,7 +66,7 @@ class ToleranceRangeError(ValueError):
 # ---------------------------------------------------------------------------
 # ISO 286-1 standard tolerance grades (IT grades).
 #
-# Embedded from anvilate iso286_grades.yaml.  Each row covers basic sizes over
+# Embedded factual table of IT-grade widths.  Each row covers basic sizes over
 # the previous row's bound up to and including up_to_mm; the dict maps the IT
 # grade number to the standard tolerance (total zone width) in micrometres.
 # Exact tabulated integers, IT5-IT16, over 0 up to and including 500 mm.
@@ -93,7 +93,7 @@ _IT_GRADES: Tuple[Tuple[float, Dict[int, int]], ...] = (
 # ---------------------------------------------------------------------------
 # ISO 286-1 fundamental deviations (grade-independent shaft letters).
 #
-# Embedded from anvilate iso286_deviations.yaml.  Ranges match the IT table.
+# Embedded factual table of fundamental deviations.  Ranges match the IT table.
 # "es" maps a clearance shaft letter (d/e/f/g) to its upper deviation in
 # micrometres (negative); the uppercase holes D..G mirror it via the general
 # rule EI = -es.  "ei" maps a transition/interference shaft letter to its
@@ -121,7 +121,7 @@ _DEVIATIONS: Tuple[Tuple[float, Dict[str, int], Dict[str, int]], ...] = (
     (500, {"d": -230, "e": -135, "f": -68, "g": -20}, {"m": 23, "n": 40, "p": 68, "k": 5}),
 )
 
-# Letter classification (mirrors anvilate iso286.py).
+# Letter classification.
 _BASIS_LETTERS = frozenset({"h"})  # zero fundamental deviation
 _CLEARANCE_LETTERS = frozenset({"d", "e", "f", "g"})  # negative shaft es
 _SYMMETRIC_LETTERS = frozenset({"js"})  # zone centered on basic size, +/-IT/2
@@ -156,7 +156,7 @@ _ISO286_SOURCE = "ISO 286-1 standard tolerance grades and fundamental deviations
 # ---------------------------------------------------------------------------
 # ISO 2768-1 general tolerances.
 #
-# Embedded from anvilate iso2768_linear.yaml / iso2768_angular.yaml.  Linear:
+# Embedded factual tables of linear and angular general tolerances.  Linear:
 # permissible +/- deviations in mm by nominal size range and class (f fine,
 # m medium, c coarse, v very coarse); None means the class is undefined for
 # that range; dimensions below 0.5 mm need an explicit tolerance.  Angular:
@@ -193,7 +193,7 @@ _ISO2768_SOURCE = "ISO 2768-1 general tolerances (via anvilate)"
 # ---------------------------------------------------------------------------
 # Manufacturing process tolerance capability.
 #
-# Embedded from anvilate process_capability.yaml.  The finest total tolerance
+# Embedded factual table of process capability.  The finest total tolerance
 # band (mm, i.e. twice a symmetric +/- deviation) a process can reasonably
 # hold under good conditions -- deliberately conservative SCREENING ESTIMATES
 # so a check only fails clearly-unachievable tolerances.

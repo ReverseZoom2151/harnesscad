@@ -1,4 +1,4 @@
-"""Winding-number point-in-mesh test and Kahan mass properties (Manifold).
+"""Winding-number point-in-mesh test and Kahan mass properties.
 
 The robust way to decide whether a point is inside a closed triangle mesh -- the
 one a mesh boolean relies on to classify a triangle of A as inside/outside B --
@@ -7,20 +7,19 @@ subtends at the query point and divide by ``4*pi``.  For a closed, outward-
 oriented 2-manifold the sum is an integer: the number of times the surface wraps
 the point (``1`` strictly inside a simple solid, ``0`` outside), and it is
 robust to the exact ray-vs-vertex degeneracies that break naive even/odd ray
-casting.  Manifold uses the same solid-angle idea and computes its mass
-properties (``Manifold::Impl::GetProperty`` in ``src/properties.cpp``) with
-Kahan-compensated summation for numerical stability.
+casting.  A mesh-boolean kernel uses the same solid-angle idea and computes its
+mass properties with Kahan-compensated summation for numerical stability.
 
 This module provides, in stdlib Python:
 
-* :func:`solid_angle` -- the Van Oosterom-Strackee signed solid angle of a
+* :func:`solid_angle` -- the signed solid angle of a
   triangle seen from a point (the numerically stable ``atan2`` form);
 * :func:`winding_number` -- the generalised winding number of a point w.r.t. a
   triangle mesh (sum of solid angles / ``4*pi``);
 * :func:`is_inside` -- the boolean inside test (rounded winding number != 0),
   the exact classification a mesh boolean needs;
 * :func:`signed_volume` / :func:`surface_area` -- Kahan-compensated mass
-  properties over a triangle mesh, matching Manifold's ``GetProperty``.
+  properties over a triangle mesh.
 
 Overlap with the harness: ``geometry.angelcad_polyhedron`` computes a *plain-sum*
 signed volume and area of an explicit polyhedron, and ``bench.cgb_mesh_betti``
@@ -73,7 +72,7 @@ def _norm(a):
 def solid_angle(p: Vec3, a: Vec3, b: Vec3, c: Vec3) -> float:
     """Signed solid angle subtended by triangle ``(a, b, c)`` at point ``p``.
 
-    Uses the Van Oosterom-Strackee formula:
+    Uses the signed solid-angle formula:
 
         tan(Omega / 2) = det[A, B, C]
                          / (|A||B||C| + (A.B)|C| + (B.C)|A| + (C.A)|B|)
@@ -127,7 +126,7 @@ def signed_volume(vertices: Sequence[Vec3], tris: Sequence[Tri]) -> float:
     """Signed volume of the mesh via Kahan-compensated tetrahedron summation.
 
     Positive when the triangles are wound outward (CCW seen from outside).
-    Matches Manifold's ``GetProperty(Volume)``: each triangle contributes
+    Each triangle contributes
     ``dot(v0, cross(v1, v0 -> ... )) / 6`` with Kahan compensation.
     """
     value = 0.0

@@ -1,10 +1,8 @@
-"""clarify_ambiguity -- ProCAD proactive ambiguity detection for text-to-CAD.
+"""clarify_ambiguity -- proactive ambiguity detection for text-to-CAD.
 
-Implements the ambiguity *detection taxonomy* and rule-based classifier from
-"Clarify Before You Draw: Proactive Agents for Robust Text-to-CAD Generation"
-(Yuan et al.). The paper's clarifying agent audits a prompt *before* code
-synthesis and decides ``is_misleading`` by checking for three issue classes
-(Appendix J.1, "Clarification Generation" system prompt):
+Implements an ambiguity *detection taxonomy* and rule-based classifier. The
+clarifying agent audits a prompt *before* code synthesis and decides
+``is_misleading`` by checking for three issue classes:
 
   1. Ambiguous / under-specified dimensions -- vague size descriptions without
      specific measurements, or a required slot left blank.
@@ -16,8 +14,8 @@ synthesis and decides ``is_misleading`` by checking for three issue classes
 This is deterministic and stdlib-only. It is *not* the existing
 ``spec.interview`` (which ranks generic requirement gaps like material/tolerance
 for a fabrication brief). Here we audit a structured CAD build specification for
-the paper's three geometric ambiguity classes and emit the *minimum* set of
-targeted clarification questions, mirroring the two-round policy of the paper.
+the three geometric ambiguity classes and emit the *minimum* set of
+targeted clarification questions, using a two-round policy.
 
 The canonical structured spec (:class:`CADSpec`) and the issue / question value
 objects are defined here and reused by the sibling ``clarify_*`` modules.
@@ -32,10 +30,10 @@ from typing import Dict, List, Optional, Tuple
 # Canonical structured CAD specification
 # --------------------------------------------------------------------------- #
 
-#: Every valid workplane string the paper's descriptions use.
+#: Every valid workplane string the descriptions use.
 VALID_PLANES = ("XY", "YZ", "ZX", "XZ", "YX", "ZY")
 
-#: Extrusion directions the paper's "Build description" always states.
+#: Extrusion directions a "Build description" always states.
 VALID_DIRECTIONS = ("positive_normal", "negative_normal", "both")
 
 

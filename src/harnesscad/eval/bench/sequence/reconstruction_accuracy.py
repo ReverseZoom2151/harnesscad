@@ -1,11 +1,11 @@
-"""Command / parameter reconstruction accuracy for ContrastCAD (Eq. 8).
+"""Command / parameter reconstruction accuracy for a fixed-length CAD command
+autoencoder benchmark.
 
-Jung, Kim & Kim, *ContrastCAD* (2024), Section 5.3.2 (following DeepCAD).
+To score how faithfully an autoencoder reconstructs a construction sequence,
+this metric computes two position-aligned accuracies over the fixed-length
+sequence:
 
-To score how faithfully an autoencoder reconstructs a construction sequence, the
-paper reports two position-aligned accuracies over the fixed-length sequence:
-
-    ACC_cmd   = (1/N) * sum_k  I[ t_k == t_hat_k ]                       (Eq. 8)
+    ACC_cmd   = (1/N) * sum_k  I[ t_k == t_hat_k ]
 
     ACC_param = (1/T) * sum_k sum_l  I[ |p_{k,l} - p_hat_{k,l}| < eta ]
                                      * I[ t_k == t_hat_k ]
@@ -18,7 +18,7 @@ type* are eligible (a parameter on a mistyped command is never counted).
 This differs from the repository's ``bench/command_metrics.py`` (a tolerant
 *set-matching F1* per curve family): here the comparison is strictly
 **position-aligned** and split into a command-type accuracy and a tolerant,
-type-gated parameter accuracy, exactly as ContrastCAD / DeepCAD define them.
+type-gated parameter accuracy.
 
 Commands use the quantised-integer dict representation of
 ``datagen/contrastcad_rre.py``. Fully deterministic, stdlib only.
@@ -28,9 +28,9 @@ from __future__ import annotations
 
 from typing import Sequence
 
-# The 16 parameter slots of DeepCAD/ContrastCAD Table 1, in a fixed order so a
-# command's parameters compare position-by-position. A command that omits a slot
-# is treated as the sentinel (unused) for both sequences.
+# The 16 fixed parameter slots of the CAD command representation, in a fixed
+# order so a command's parameters compare position-by-position. A command that
+# omits a slot is treated as the sentinel (unused) for both sequences.
 PARAM_SLOTS = (
     "x", "y", "theta", "c", "r",
     "alpha", "beta", "gamma",
@@ -46,7 +46,7 @@ def _param_vector(cmd) -> list:
 
 
 def command_accuracy(actual: Sequence[dict], expected: Sequence[dict]) -> float:
-    """ACC_cmd: fraction of positions whose command type matches (Eq. 8).
+    """ACC_cmd: fraction of positions whose command type matches.
 
     Both sequences must be the same (padded) length ``N``.
     """
@@ -61,7 +61,7 @@ def command_accuracy(actual: Sequence[dict], expected: Sequence[dict]) -> float:
 
 def parameter_accuracy(actual: Sequence[dict], expected: Sequence[dict],
                        eta: int = 3) -> float:
-    """ACC_param: type-gated, tolerant parameter accuracy (Eq. 8).
+    """ACC_param: type-gated, tolerant parameter accuracy.
 
     A parameter counts as correct only when its command type is right *and* its
     quantised value is within ``eta`` of the target. The denominator ``T`` is the

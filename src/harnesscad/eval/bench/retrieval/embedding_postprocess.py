@@ -1,11 +1,9 @@
 """Embedding post-processing for 3D object-retrieval systems.
 
-Van den Herrewegen et al., *Fine-Tuning 3D Foundation Models for Geometric
-Object Retrieval* (2024), Stage 2: the fine-tuned encoder maps every object to a
-512-d latent vector, and retrieval is done by nearest-neighbour search under
-**cosine distance** ("we do a nearest neighbour search with the cosine distance
-[...] in vector space", Section 4.1). Cosine search is exactly L2-normalisation
-followed by an inner-product ranking.
+A common pipeline stage for a fine-tuned geometric encoder: the encoder maps
+every object to a fixed-length latent vector, and retrieval is done by
+nearest-neighbour search under **cosine distance**. Cosine search is exactly
+L2-normalisation followed by an inner-product ranking.
 
 The learned encoder is research-heavy/external. The vector post-processing that
 turns raw embeddings into retrieval-ready features is deterministic and

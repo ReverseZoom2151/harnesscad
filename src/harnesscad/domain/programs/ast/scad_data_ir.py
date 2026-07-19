@@ -17,18 +17,18 @@ serialisable, hashable-after-freezing, diffable, and walkable without any
 class. ``postwalk`` is a generic bottom-up transform for structural rewrites.
 * **Radian rotation convention.** ``rotate`` stores its angle in
   *radians*; the emitter converts to degrees on the way out (OpenSCAD wants
-  degrees).  SolidPython passes the angle through untouched -- a genuinely
-  different transform handling.
+  degrees).  An object-tree emitter passes the angle through untouched -- a
+  genuinely different transform handling.
 * **Special-variable dynamic binding.**  ``with_fn`` / ``with_fa`` / ``with_fs``
   / ``with_center`` are context managers; ``circle`` / ``sphere`` / ``cylinder``
   resolve ``$fn`` / ``$fa`` / ``$fs`` and ``center`` from the active binding at
-  construction time, mirroring scad-clj's dynamic ``*fn*`` vars.  The object-tree
-  emitter has no such ambient resolution.
+  construction time, mirroring the dynamic ``*fn*`` vars of a Lisp-style CAD
+  DSL.  The object-tree emitter has no such ambient resolution.
 * **module / library emission.**  ``include`` / ``use`` / ``import_`` / ``call``
   / ``call_module`` / ``define_module`` render OpenSCAD's library-call surface.
-* ``excise`` -- scad-clj's "difference from the *last* node" operator.
+* ``excise`` -- a "difference from the *last* node" operator.
 
-The emitter (:func:`write_scad`) reproduces scad-clj's ``write-expr``
+The emitter (:func:`write_scad`) uses a ``write-expr`` style of
 formatting: two-space indentation per depth, ``name (...) {\\n ... }\\n`` block
 layout, the ``$fa=.., $fn=.., $fs=..`` special-variable prefix on curved
 primitives, and the polygon / polyhedron point layout.  Floats are formatted
@@ -129,15 +129,15 @@ def deg_to_rad(degrees: float) -> float:
 # =========================================================================
 # = Dynamic special-variable bindings ($fn / $fa / $fs / center)          =
 # =========================================================================
-# scad-clj uses Clojure dynamic vars (*fn* *fa* *fs* *center*).  In eager
-# Python the faithful idiom is a thread-local binding stack that constructors
-# read while a `with_*` block is active.
+# A Lisp-style CAD DSL expresses these as dynamic vars (*fn* *fa* *fs*
+# *center*).  In eager Python the faithful idiom is a thread-local binding
+# stack that constructors read while a `with_*` block is active.
 class _Dyn(threading.local):
     def __init__(self) -> None:
         self.fn: Any = None
         self.fa: Any = None
         self.fs: Any = None
-        self.center: bool = True  # scad-clj default *center* is true
+        self.center: bool = True  # the default *center* is true
 
 
 _DYN = _Dyn()
@@ -186,7 +186,7 @@ def _fargs() -> Dict[str, Any]:
 # = Constructors (return inert data)                                      =
 # =========================================================================
 def _flatten(block: Sequence[Any]) -> List[Any]:
-    """Flatten a block argument list the way scad-clj's :list handler does.
+    """Flatten a block argument list the way the ``:list`` handler does.
 
     A child may be a single node, or a list/tuple *of* nodes (e.g. from
     ``union(*shapes)`` where ``shapes`` is itself a list)."""
@@ -290,7 +290,7 @@ def rotatec(v: Sequence[float], *block: Any) -> Node:
 
 
 def rotate(*args: Any) -> Node:
-    """scad-clj rotate: number head -> (angle, axis) form, else vector form.
+    """rotate: a number head selects the (angle, axis) form, else vector form.
 
     The angle is in RADIANS and converted to degrees by the emitter."""
     if args and isinstance(args[0], (int, float)):
@@ -354,7 +354,7 @@ def difference(*block: Any) -> Node:
 def excise(*nodes: Any) -> Node:
     """Like difference, but the subtraction is from the LAST node.
 
-    ``excise(a, b, target)`` == ``target - (a + b)`` in scad-clj terms."""
+    ``excise(a, b, target)`` == ``target - (a + b)``."""
     flat = _flatten(nodes)
     return difference(flat[-1], *flat[:-1])
 
@@ -447,7 +447,7 @@ def call_module(module: str, *args: Any) -> Node:
 
 
 def define_module(module: str, *body: Any) -> Node:
-    # body = (arg1, arg2, ..., block-node); scad-clj puts params then the block.
+    # body = (arg1, arg2, ..., block-node); params come first, then the block.
     return (":define-module", {"module": module}, list(body))
 
 
@@ -468,7 +468,7 @@ def fs(x: float) -> Node:
 # = Generic tree walk                                                     =
 # =========================================================================
 def postwalk(f: Any, node: Any) -> Any:
-    """Bottom-up structural transform, after clojure.walk/postwalk.
+    """Bottom-up structural transform.
 
     Rebuilds *node*, replacing every subnode (and finally the node itself)
     with ``f(subnode)``.  Dicts and coordinate lists are walked too."""
@@ -542,7 +542,7 @@ def _points_2d(points: Sequence[Sequence[float]]) -> str:
 
 
 def _write_expr(depth: int, node: Any) -> List[str]:
-    # A plain sequence of nodes (scad-clj :list) -- flatten.
+    # A plain sequence of nodes (a ``:list``) -- flatten.
     if isinstance(node, (list, tuple)) and node and _is_node(node[0]):
         out: List[str] = []
         for sub in node:
@@ -656,7 +656,7 @@ def _e_rotatev(depth: int, node: Node) -> List[str]:
 
 def _e_rotatec(depth: int, node: Node) -> List[str]:
     x, y, z = node[1]
-    # scad-clj uses no spaces after commas in the vector rotate form.
+    # no spaces after commas in the vector rotate form.
     head = "rotate ([" + _n(rad_to_deg(x)) + "," + _n(rad_to_deg(y)) + "," \
         + _n(rad_to_deg(z)) + "])"
     return _block_wrap(depth, head, node[2:])
@@ -893,5 +893,5 @@ _EMITTERS = {
 
 
 def write_scad(*block: Any) -> str:
-    """Render one or more nodes to OpenSCAD source text (scad-clj write-scad)."""
+    """Render one or more nodes to OpenSCAD source text."""
     return "".join(_emit_block(0, _flatten(block)))

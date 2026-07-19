@@ -1,9 +1,9 @@
-"""Drawing-space <-> canvas-space viewport transforms (from the ``arcs`` CAD system).
+"""Drawing-space <-> canvas-space viewport transforms.
 
-``arcs/src/window/utils.rs`` builds the affine matrix that maps *drawing space*
-(y-up, real units, unbounded) onto *canvas space* (y-down, pixels, window-sized)
-from just two viewport parameters -- the drawing-space point the window is
-centred on and the number of pixels per drawing unit:
+The affine matrix maps *drawing space* (y-up, real units, unbounded) onto
+*canvas space* (y-down, pixels, window-sized) from just two viewport parameters
+-- the drawing-space point the window is centred on and the number of pixels per
+drawing unit:
 
     drawing_units_per_pixel = 1 / pixels_per_drawing_unit
     x_basis = ( 1,  0) * dupp
@@ -14,20 +14,20 @@ centred on and the number of pixels per drawing unit:
                         | y_basis.x  y_basis.y  0 |
                         | origin.x   origin.y   1 |
 
-and the drawing -> canvas direction is its inverse. ``arcs/src/components/
-dimension.rs`` complements it with the ``Dimension`` enum: a length is either
-pinned in *pixels* (stroke widths, handles -- constant on screen at any zoom) or
-expressed in *drawing units* (real geometry -- scales with the zoom).
+and the drawing -> canvas direction is its inverse. A companion ``Dimension``
+enum classifies a length as either pinned in *pixels* (stroke widths, handles --
+constant on screen at any zoom) or expressed in *drawing units* (real geometry --
+scales with the zoom).
 
 The harness had no world<->screen viewport model: ``vision.cvcad_pixel_calibration``
 is a camera/pixel-scale estimator and ``drawings.cad2program_canvas_layout`` lays
 out sheets; neither gives an invertible, zoomable, pannable viewport. This module
-adds it, plus zoom/pan, visible-bounds and zoom-to-fit, which the Rust source
-leaves to the application.
+adds it, plus zoom/pan, visible-bounds and zoom-to-fit, which are left to the
+application.
 
 Affines are 6-tuples ``(a, b, c, d, e, f)`` acting as
-``x' = a*x + c*y + e``, ``y' = b*x + d*y + f`` (the same row-major order euclid
-uses). Pure standard library, deterministic.
+``x' = a*x + c*y + e``, ``y' = b*x + d*y + f`` (row-major order). Pure standard
+library, deterministic.
 """
 
 from __future__ import annotations

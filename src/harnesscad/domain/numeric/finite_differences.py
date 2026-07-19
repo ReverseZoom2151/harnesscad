@@ -1,22 +1,20 @@
 """Finite-difference gradient / Hessian / mixed-stencil for a sampled SDF.
 
-Deterministic differential operators distilled from **FlatCAD: Fast Curvature
-Regularization of Neural SDFs for CAD Models** (Yin, Plocharski, Wlodarczyk,
-Kida & Musialski, 2024/2025).  FlatCAD's *learned* contribution is a SIREN
-network trained with an off-diagonal Weingarten penalty -- that training is
-research-heavy and lives outside this repo.  What is fully deterministic is the
-closed-form finite-difference machinery the paper uses to *evaluate* the
-mixed second derivative of any signed-distance field ``f: R^3 -> R`` without
-assembling a full Hessian.
+Deterministic differential operators for curvature regularization of neural
+signed-distance fields.  A learned surface model can be trained with an
+off-diagonal second-fundamental-form penalty; that training is research-heavy
+and lives outside this repo.  What is fully deterministic is the closed-form
+finite-difference machinery used to *evaluate* the mixed second derivative of
+any signed-distance field ``f: R^3 -> R`` without assembling a full Hessian.
 
 This module implements those samplers for an arbitrary callable ``f``:
 
-* ``central_gradient``   -- second-order central difference of grad f (Eq. for
-  the unit-gradient / Eikonal quantity ||grad f||).
+* ``central_gradient``   -- second-order central difference of grad f, the
+  basis for the unit-gradient / Eikonal quantity ||grad f||.
 * ``central_hessian``    -- the full symmetric 3x3 Hessian by central
   differences (diagonal three-point stencil, off-diagonal four-point stencil).
-* ``mixed_stencil_uv``   -- FlatCAD Section 4.1 symmetric mixed-difference
-  stencil ``D^(c)_uv`` (Eq. 9): six SDF queries plus ``f00`` that converge to
+* ``mixed_stencil_uv``   -- the symmetric mixed-difference
+  stencil ``D^(c)_uv``: six SDF queries plus ``f00`` that converge to
   ``u^T H_f v`` with **O(h^2)** truncation error (the odd powers cancel).
 * ``forward_mixed_uv`` / ``backward_mixed_uv`` -- the one-sided ``O(h)`` halves
   whose average is the symmetric stencil.
@@ -93,7 +91,7 @@ def central_hessian(f: SDF, x: Sequence[float], h: float = 1e-3) -> Mat3:
 
 def forward_mixed_uv(f: SDF, x: Sequence[float], u: Vec3, v: Vec3,
                      h: float = 1e-3, f00: float | None = None) -> float:
-    """One-sided forward mixed difference ``D^(+)_uv`` (FlatCAD Sec. 4.1).
+    """One-sided forward mixed difference ``D^(+)_uv``.
 
     ``(f(x+h(u+v)) - f(x+hu) - f(x+hv) + f00) / h^2 = u^T H v + O(h)``.
     """
@@ -110,7 +108,7 @@ def forward_mixed_uv(f: SDF, x: Sequence[float], u: Vec3, v: Vec3,
 
 def backward_mixed_uv(f: SDF, x: Sequence[float], u: Vec3, v: Vec3,
                       h: float = 1e-3, f00: float | None = None) -> float:
-    """One-sided backward mixed difference ``D^(-)_uv`` (FlatCAD Sec. 4.1)."""
+    """One-sided backward mixed difference ``D^(-)_uv``."""
     if h <= 0.0:
         raise ValueError("step h must be positive")
     x = (float(x[0]), float(x[1]), float(x[2]))
@@ -124,7 +122,7 @@ def backward_mixed_uv(f: SDF, x: Sequence[float], u: Vec3, v: Vec3,
 
 def mixed_stencil_uv(f: SDF, x: Sequence[float], u: Vec3, v: Vec3,
                      h: float = 1e-3) -> float:
-    """FlatCAD symmetric mixed stencil ``D^(c)_uv`` (Eq. 9).
+    """Symmetric mixed stencil ``D^(c)_uv``.
 
     ``0.5 (D^(+)_uv + D^(-)_uv) = u^T H_f(x) v + O(h^2)``.  Uses six SDF
     queries plus one shared ``f00`` -- seven total -- and no second-order

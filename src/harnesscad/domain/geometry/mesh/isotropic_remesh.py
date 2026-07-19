@@ -5,8 +5,8 @@ Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
 The pure-Python algorithm uses these deterministic passes:
 
 1. split every edge longer than ``4/3 * L`` at its midpoint, processed
-   longest-first (kerf splits one edge per pass and rebuilds the edge map,
-   bounded at 20 passes per iteration);
+   longest-first (one edge split per pass with the edge map rebuilt each
+   pass, bounded at 20 passes per iteration);
 2. collapse every interior edge shorter than ``4/5 * L`` into its midpoint,
    processed shortest-first (one collapse per pass, bounded at 20 passes);
 3. flip interior edges when doing so reduces the total deviation of the four
@@ -16,33 +16,27 @@ The pure-Python algorithm uses these deterministic passes:
    centroid of its one-ring (uniform Laplacian, strength 0.5) with the update
    projected onto the tangent plane of the area-weighted vertex normal.
 
-The four steps run for ``iterations`` cycles (kerf default 5) and degenerate
-triangles are dropped at the end.  Boundary contract (kerf's documented
-behaviour): boundary edges are never split or collapsed, and boundary
-vertices are never moved -- an open patch keeps its boundary polygon exactly.
+The four steps run for ``iterations`` cycles (default 5) and degenerate
+triangles are dropped at the end.  Boundary contract: boundary edges are
+never split or collapsed, and boundary vertices are never moved -- an open
+patch keeps its boundary polygon exactly.
 
-Fidelity notes relative to the kerf source:
+Design notes:
 
-* kerf's split pass does not actually skip boundary edges even though its
-  module docstring promises it never splits them; this port enforces the
-  documented contract and skips boundary edges in the split pass.
-* kerf's collapse always moves the surviving vertex to the edge midpoint,
-  which would drag a boundary vertex off the boundary; this port collapses
-  an interior/boundary edge pair into the boundary vertex (position kept)
-  and skips edges whose endpoints are both on the boundary.  A link
-  condition (the one-ring intersection of the endpoints must be exactly the
-  set of opposite vertices) is checked so a collapse cannot create a
-  non-manifold edge.
-* kerf's flip picks the two opposite vertices without tracking the directed
-  orientation of the shared edge, which can invert winding; this port keeps
-  the flip orientation-aware, and refuses a flip that would duplicate an
-  existing edge.
-* kerf targets valence 6 everywhere; this port uses the Botsch-Kobbelt
-  targets of 6 for interior and 4 for boundary vertices, with valence
+* The split pass skips boundary edges so the boundary polygon is preserved.
+* The collapse pass moves the surviving vertex to the edge midpoint for a
+  pure interior edge; for an interior/boundary edge pair it collapses into
+  the boundary vertex (position kept), and it skips edges whose endpoints are
+  both on the boundary.  A link condition (the one-ring intersection of the
+  endpoints must be exactly the set of opposite vertices) is checked so a
+  collapse cannot create a non-manifold edge.
+* The flip is orientation-aware so the winding stays consistent, and it
+  refuses a flip that would duplicate an existing edge.
+* Target valence is 6 for interior and 4 for boundary vertices, with valence
   counted as the number of distinct one-ring neighbours.
 
 Pure stdlib, deterministic: every priority queue is sorted with the vertex
-indices as tie-breakers.  Returns a result dict exactly as kerf does.
+indices as tie-breakers.
 """
 
 from __future__ import annotations
@@ -84,7 +78,7 @@ def isotropic_remesh(
         Vertex positions.
     triangles : sequence of vertex-index sequences
         Faces; triangles are used as-is, larger polygons are fan-triangulated
-        (kerf accepts quads the same way).
+        (quads are accepted the same way).
     target_edge_length : float
         Desired average edge length after remeshing.
     iterations : int
@@ -94,8 +88,8 @@ def isotropic_remesh(
     -------
     dict
         ``{"vertices": List[Point], "faces": List[Tri]}`` -- all faces are
-        triangles.  Vertices left unreferenced by a collapse are kept (as in
-        kerf); consumers that need compaction must reindex.
+        triangles.  Vertices left unreferenced by a collapse are kept;
+        consumers that need compaction must reindex.
     """
     if target_edge_length <= 0:
         raise ValueError("target_edge_length must be positive")
@@ -128,7 +122,7 @@ def isotropic_remesh(
 
 
 # ---------------------------------------------------------------------------
-# triangulation (handle quads and higher n-gons by fanning, as kerf does)
+# triangulation (handle quads and higher n-gons by fanning)
 # ---------------------------------------------------------------------------
 
 
@@ -213,9 +207,9 @@ def _split_long_edges(
 ) -> List[List[int]]:
     """Split interior edges longer than *threshold* at their midpoints.
 
-    Kerf structure: one split per pass, edge map rebuilt each pass, bounded
-    at ``_MAX_SPLIT_PASSES`` passes.  Boundary edges are never split (kerf's
-    documented contract; see module docstring fidelity notes).
+    One split per pass, edge map rebuilt each pass, bounded at
+    ``_MAX_SPLIT_PASSES`` passes.  Boundary edges are never split (see the
+    module docstring design notes).
     """
     changed = True
     passes_left = _MAX_SPLIT_PASSES
@@ -261,7 +255,7 @@ def _split_long_edges(
                     new_faces.append(f)
             faces = new_faces
             changed = True
-            break  # restart the outer while after one split (kerf structure)
+            break  # restart the outer while after one split
     return faces
 
 
@@ -296,7 +290,7 @@ def _collapse_short_edges(
 ) -> List[List[int]]:
     """Collapse interior edges shorter than *threshold*.
 
-    Kerf structure: one collapse per pass (shortest first), bounded at
+    One collapse per pass (shortest first), bounded at
     ``_MAX_COLLAPSE_PASSES`` passes.  Boundary edges are never collapsed.
     An edge with exactly one boundary endpoint collapses into the boundary
     vertex without moving it; an interior edge between two boundary vertices
@@ -338,7 +332,7 @@ def _collapse_short_edges(
                     new_faces.append(new_f)
             faces = new_faces
             collapsed = True
-            break  # rebuild the edge map after one collapse (kerf structure)
+            break  # rebuild the edge map after one collapse
         if not collapsed:
             break
     return faces
@@ -355,8 +349,8 @@ def _flip_edges(
 ) -> List[List[int]]:
     """Flip interior edges to reduce deviation from the target valence.
 
-    Target valence: 6 for interior vertices, 4 for boundary vertices
-    (Botsch-Kobbelt).  For an interior edge (a, b) shared by triangles with
+    Target valence: 6 for interior vertices, 4 for boundary vertices.
+    For an interior edge (a, b) shared by triangles with
     opposite vertices c and d, a flip replaces the edge (a, b) with (c, d)
     when the summed valence deviation of a, b, c, d decreases.  The flip is
     orientation-aware so the winding stays consistent, and is refused when
@@ -451,7 +445,7 @@ def _smooth_vertices(
 ) -> None:
     """Move each interior vertex toward the centroid of its one-ring,
     projected onto the tangent plane of the area-weighted vertex normal.
-    Boundary vertices are not moved (kerf skips them entirely)."""
+    Boundary vertices are not moved."""
     edge_map = _build_edge_map(faces)
     boundary_verts = _boundary_vertices(edge_map)
     adj = _vertex_adjacency(faces)

@@ -1,10 +1,9 @@
 """Unified code-CAD parameter schema across languages (deterministic, stdlib-only).
 
-Ported from CadHub's customizer layer: ``components/Customizer/customizerConverter.ts``
-defines one neutral parameter model, and ``helpers/cadPackages/*/…Params.ts``
-supplies a pure converter per language (OpenSCAD Customizer manifest, JSCAD
-``getParameterDefinitions()`` output, CadQuery ``--getparams`` JSON) into that
-model. One panel, N languages -- the conversion is pure and testable.
+One neutral parameter model, with a pure converter per language (OpenSCAD
+Customizer manifest, JSCAD ``getParameterDefinitions()`` output, CadQuery
+``--getparams`` JSON) into that model. One panel, N languages -- the conversion is
+pure and testable.
 
 The harness had an OpenSCAD *source* parameter extractor
 (``programs/cadam_scad_customizer``), but nothing that (a) ingests the parameter

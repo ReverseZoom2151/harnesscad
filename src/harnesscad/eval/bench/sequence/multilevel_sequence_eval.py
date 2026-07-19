@@ -1,21 +1,20 @@
-"""Multi-level evaluation framework for image-to-CAD-sequence prediction
-(Li & Sha, *Image2CADSeq*, 2024, Sec. 4.5 & Table 4(b)).
+"""Multi-level evaluation framework for image-to-CAD-sequence prediction.
 
-The paper argues that assessing predicted CAD *programs* against the ground
-truth has no established metric, and introduces a system organised into three
+Assessing predicted CAD *programs* against the ground truth has no single
+established metric, so this module organises evaluation into three
 **hierarchies** and two **layers** over the ``Nc x 7`` feature-matrix
 representation ``P = [o_1, ..., o_Nc]`` where ``o_i = (t_i, p_i)`` (op type +
 parameters):
 
 * **H1 sequence evaluation** — accuracy over the whole program and its op-type
-  order: ``ACP`` (accuracy of CAD programs, Eq. 1), ``ASOT`` (accuracy of the
-  op-type sequence, Eq. 2), ``EDSOT`` (Levenshtein edit distance of the op-type
-  sequence, Eq. 3).
+  order: ``ACP`` (accuracy of CAD programs), ``ASOT`` (accuracy of the
+  op-type sequence), ``EDSOT`` (Levenshtein edit distance of the op-type
+  sequence).
 * **H2 sequence-based op-type evaluation** — per-position within the sequence:
-  ``AOT`` (accuracy of op types, order-aware, Eq. 4) and ``AP1`` (accuracy of
-  parameters given a correctly predicted op type, order-aware, Eq. 5).
+  ``AOT`` (accuracy of op types, order-aware) and ``AP1`` (accuracy of
+  parameters given a correctly predicted op type, order-aware).
 * **H3 set-based op-type evaluation** — order-agnostic multiset similarity
-  ``MSOT`` via the Tanimoto coefficient (Eq. 6) and cosine similarity (Eq. 7),
+  ``MSOT`` via the Tanimoto coefficient and cosine similarity,
   plus ``AP2`` (parameter accuracy without order).
 
 **Layers**: L1 = operation-type layer (``AOT``); L2 = parameter layer
@@ -24,7 +23,7 @@ parameters):
 Parameter comparison uses an 8-bit tolerance ``eta in [0, 255]``: a quantised
 prediction ``z_hat`` matches ground truth ``z`` iff ``|z_hat - z| <= eta`` and
 ``z_hat in [0, 255]``. A closed-form random-guess baseline for ``AP1`` is also
-provided (Eq. 8).
+provided.
 
 Inputs are quantised feature matrices as produced by
 :mod:`reconstruction.img2cadseq_gallery_dsl` (lists of 7-tuples of ints, with
@@ -49,10 +48,10 @@ def op_types(matrix) -> tuple[int, ...]:
 
 
 def levenshtein(a, b) -> int:
-    """Levenshtein edit distance between sequences ``a`` and ``b`` (paper Eq. 3).
+    """Levenshtein edit distance between sequences ``a`` and ``b``.
 
     Dynamic-programming distance with unit insertion/deletion/substitution
-    costs, matching the paper's ``L(a, b) = M[m, n]`` formulation.
+    costs, following the standard ``L(a, b) = M[m, n]`` formulation.
     """
     a, b = list(a), list(b)
     m, n = len(a), len(b)
@@ -86,21 +85,21 @@ def _program_equal(pred, gt, eta: int) -> bool:
 
 
 def accuracy_cad_programs(preds, gts, eta: int = 3) -> float:
-    """ACP (Eq. 1): fraction of programs matching ground truth exactly."""
+    """ACP: fraction of programs matching ground truth exactly."""
     if not gts:
         return 1.0
     return sum(_program_equal(p, g, eta) for p, g in zip(preds, gts)) / len(gts)
 
 
 def accuracy_seq_op_types(preds, gts) -> float:
-    """ASOT (Eq. 2): fraction of programs whose op-type sequence matches exactly."""
+    """ASOT: fraction of programs whose op-type sequence matches exactly."""
     if not gts:
         return 1.0
     return sum(op_types(p) == op_types(g) for p, g in zip(preds, gts)) / len(gts)
 
 
 def edit_distance_seq_op_types(preds, gts) -> float:
-    """EDSOT (Eq. 3): mean Levenshtein distance over op-type sequences
+    """EDSOT: mean Levenshtein distance over op-type sequences
     (lower is better)."""
     if not gts:
         return 0.0
@@ -110,7 +109,7 @@ def edit_distance_seq_op_types(preds, gts) -> float:
 
 # --- H2 / L1: op-type accuracy ---------------------------------------------
 def accuracy_op_types(preds, gts) -> float:
-    """AOT (Eq. 4): order-aware proportion of correctly predicted op types.
+    """AOT: order-aware proportion of correctly predicted op types.
 
     Compared position-by-position over ``l_i = min(len(pred), len(gt))`` rows;
     normalised by the total number of ground-truth op types.
@@ -130,7 +129,7 @@ def _param_slots_present(row):
 
 
 def accuracy_parameter_ordered(preds, gts, eta: int = 3) -> float:
-    """AP1 (Eq. 5): order-aware parameter accuracy, scored only where the op
+    """AP1: order-aware parameter accuracy, scored only where the op
     type is correctly predicted (L2 sits beneath L1).
 
     A parameter counts as correct when (c1) the op type at that position
@@ -163,7 +162,7 @@ def _multiset_counts(seq, universe) -> list[int]:
 
 
 def tanimoto(a, b) -> float:
-    """Tanimoto coefficient (Eq. 6): ``a.b / (|a|^2 + |b|^2 - a.b)``."""
+    """Tanimoto coefficient: ``a.b / (|a|^2 + |b|^2 - a.b)``."""
     dot = sum(x * y for x, y in zip(a, b))
     na = sum(x * x for x in a)
     nb = sum(y * y for y in b)
@@ -172,7 +171,7 @@ def tanimoto(a, b) -> float:
 
 
 def cosine_similarity(a, b) -> float:
-    """Cosine similarity (Eq. 7): ``a.b / (||a|| ||b||)``."""
+    """Cosine similarity: ``a.b / (||a|| ||b||)``."""
     dot = sum(x * y for x, y in zip(a, b))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
@@ -183,7 +182,7 @@ def cosine_similarity(a, b) -> float:
 
 def multiset_similarity_op_types(preds, gts, universe=range(7)) -> dict:
     """MSOT: mean Tanimoto (``TC``) and cosine (``CS``) similarity of op-type
-    multisets, ignoring order (paper Sec. 4.5, H3)."""
+    multisets, ignoring order (H3)."""
     universe = tuple(universe)
     tcs, css = [], []
     for p, g in zip(preds, gts):
@@ -197,11 +196,11 @@ def multiset_similarity_op_types(preds, gts, universe=range(7)) -> dict:
 
 
 def accuracy_parameter_unordered(preds, gts, eta: int = 3) -> float:
-    """AP2 (Eq. 5, order-agnostic): parameter accuracy where op types are
+    """AP2 (order-agnostic): parameter accuracy where op types are
     matched by first-available instance rather than by position.
 
     For each ground-truth op, the first not-yet-consumed predicted op of the
-    same type is used for the parameter comparison (paper's caveat: exact only
+    same type is used for the parameter comparison (caveat: exact only
     when op types are not repeated).
     """
     num = den = 0
@@ -229,10 +228,10 @@ def accuracy_parameter_unordered(preds, gts, eta: int = 3) -> float:
     return num / den if den else 1.0
 
 
-# --- random-guess baseline for AP1 (paper Eq. 8) ---------------------------
+# --- random-guess baseline for AP1 ------------------------------------------
 def random_baseline_ap1(eta: int) -> float:
     """Closed-form AP1 for a random parameter guesser, ignoring the discrete
-    sketch-plane parameter (paper Eq. 8, simplified form)::
+    sketch-plane parameter (simplified form)::
 
         AP1 = (-eta^2 + 511*eta + 256) / 65536
     """

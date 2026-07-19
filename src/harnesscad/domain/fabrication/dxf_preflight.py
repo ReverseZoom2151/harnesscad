@@ -6,12 +6,10 @@ parser is only a protocol.  A caller must first establish that a file parsed
 into that contract and that its units are resolved; this module then measures
 the declared 2-D entities without silently inventing a scale.
 
-The checks are a clean-room response to the unlicensed ``Printability-main``
-repository's useful, narrow idea: reject degenerate drawing geometry and make
-circle/arc size and drawing density available to a manufacturing rule.  Its
-code, rule files, labels, and dataset are not redistributed here.  In
-particular, this module does not inherit its source-specific thresholds or its
-rule-generated PASS/FAIL labels.  Thresholds are explicit call-site policy.
+The checks pursue one narrow idea: reject degenerate drawing geometry and make
+circle/arc size and drawing density available to a manufacturing rule.  No
+dataset-specific thresholds and no rule-generated PASS/FAIL labels are baked in
+here.  Thresholds are explicit call-site policy.
 
 It also does not promise what a 2-D drawing cannot show: wall thickness,
 overhangs, watertightness, or that a circle is actually a drilled/printed hole.

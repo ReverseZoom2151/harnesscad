@@ -195,7 +195,7 @@ def classifier_free_mix(
 def quantize_levels(value: float, low: float, high: float, levels: int = 256) -> int:
     """Quantise a continuous parameter into ``levels`` discrete bins.
 
-    Diffusion-CAD (following DeepCAD) unifies mixed discrete/continuous CAD
+    Diffusion-CAD (following conventional CAD sequence models) unifies mixed discrete/continuous CAD
     parameters by quantising continuous values into 256 levels. Deterministic
     nearest-bin rounding with clamping to ``[0, levels-1]``.
     """

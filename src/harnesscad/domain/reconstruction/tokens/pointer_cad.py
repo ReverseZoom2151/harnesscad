@@ -1,8 +1,7 @@
-"""Pointer-CAD token vocabulary and ID scheme (Qi, Wang et al.).
+"""Pointer-based CAD token vocabulary and ID scheme.
 
-Pointer-CAD ("Unifying B-Rep and Command Sequences via Pointer-based Edges &
-Faces Selection") encodes a CAD model as a command sequence in which every token
-belongs to exactly one of three families (paper Sec. 3, Table 12):
+This encoding represents a CAD model as a command sequence in which every token
+belongs to exactly one of three families:
 
   * **Label Token** -- carries semantic structure (start of sketch, extrusion,
     chamfer, fillet, ...), a direction, a boolean type, or an orientation flag;
@@ -12,10 +11,10 @@ belongs to exactly one of three families (paper Sec. 3, Table 12):
     *enabled* pointer (it references an entity); ``<pd>`` marks an *empty/disabled*
     pointer (the parameter is placed freely, not snapped).
 
-To let a single classification head decode label and value tokens the paper packs
-them into *non-overlapping integer ranges* (Table 12). This module reproduces that
-exact ID scheme and the value-token quantisation (normalise to ``[0, 1]`` -- or an
-angle to ``[0, 360)`` -- then discretise into ``2**q`` bins, ``q = 8`` by default).
+To let a single classification head decode label and value tokens the scheme packs
+them into *non-overlapping integer ranges*. This module implements that ID scheme
+and the value-token quantisation (normalise to ``[0, 1]`` -- or an angle to
+``[0, 360)`` -- then discretise into ``2**q`` bins, ``q = 8`` by default).
 Everything here is pure stdlib and deterministic; the learned decoder is external.
 """
 
@@ -23,7 +22,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# --- fixed (q-independent) token IDs from Table 12 ---------------------------
+# --- fixed (q-independent) token IDs -----------------------------------------
 TOK_EM = 1   # end of model (final step)
 TOK_ES = 2   # end of step (more steps follow)
 TOK_SS = 3   # start of sketch
@@ -81,7 +80,7 @@ def vocab_size(q: int = 8) -> int:
 
 
 def token_family(token_id: int, q: int = 8) -> str:
-    """Classify ``token_id`` as ``LABEL``, ``VALUE`` or ``POINTER`` (Table 12)."""
+    """Classify ``token_id`` as ``LABEL``, ``VALUE`` or ``POINTER``."""
     if token_id in (TOK_PE, TOK_PD):
         return POINTER
     lo, hi = value_range(q)
@@ -157,7 +156,7 @@ def label_name(token_id: int) -> str:
     raise PointerTokenError(f"token id {token_id} is not a label token")
 
 
-# --- value-token quantisation (paper Sec. 10.1) ------------------------------
+# --- value-token quantisation ------------------------------------------------
 def quantize_nv(value: float, q: int = 8) -> int:
     """Quantise a value normalised to ``[0, 1]`` into a ``<nv>`` value-token ID.
 
@@ -206,9 +205,9 @@ class QuantizationReport:
 def quantization_report(q: int = 8) -> QuantizationReport:
     """Worst-case reconstruction error for uniform ``2**q``-level quantisation.
 
-    The paper motivates the pointer mechanism partly by the *quantisation error*
-    that discretising continuous parameters introduces (Sec. 9.5). With ``2**q``
-    uniform bins over ``[0, 1]`` the worst-case round-trip error is half a bin,
+    The pointer mechanism is motivated partly by the *quantisation error* that
+    discretising continuous parameters introduces. With ``2**q`` uniform bins over
+    ``[0, 1]`` the worst-case round-trip error is half a bin,
     ``1 / (2 * (2**q - 1))``.
     """
     levels = 1 << q

@@ -1,13 +1,13 @@
-"""CISP provenance citations -- traceSDD's orphan-REQ check, applied to geometry.
+"""CISP provenance citations -- a spec-traceability orphan-requirement check, applied to geometry.
 
-The idea, borrowed and made geometric
---------------------------------------
-traceSDD (Panda, arXiv 2606.30689) makes hallucination detection a *set
+The idea, made geometric
+------------------------
+A spec-traceability method makes hallucination detection a *set
 difference*: every line of generated code cites a REQ-XXX, and two O(1) checks
 fall out. A **cited-but-nonexistent REQ** (a line that names a requirement not in
 the spec) is a hallucinated citation; an **orphan REQ** (a requirement no line
-claims) is unimplemented. Its killer finding is that every injected hallucination
-still *passed all functional tests* -- so traceability catches what measurement
+claims) is unimplemented. The key observation is that an injected hallucination
+can still *pass all functional tests* -- so traceability catches what measurement
 cannot.
 
 CAD has the exact same two failure modes, and here the "spec" is measured
@@ -26,7 +26,7 @@ prose:
     residual: a part can hit the right volume for the wrong reason, but it cannot
     cite an op that is not there.
 
-The design keeps traceSDD's cheapness: attribution is a set of feature keys per
+The design keeps that method's cheapness: attribution is a set of feature keys per
 op, the two checks are set differences, and nothing here depends on a kernel.
 
 Backend agnosticism
@@ -215,7 +215,7 @@ class Provenance:
         return self.measurements[0] if self.measurements else {}
 
     def by_index(self) -> Dict[int, OpDelta]:
-        """op index -> its delta. The forward map traceSDD keys citations on."""
+        """op index -> its delta. The forward map that citations key on."""
         return {d.index: d for d in self.deltas}
 
     def by_op_id(self) -> Dict[str, OpDelta]:
@@ -321,7 +321,7 @@ def unattributed_features(prov: Provenance,
     finished artifact, in the SAME namespace as the delta ``changed`` keys (e.g.
     ``"volume"``, ``"n_faces"``, ``"genus"``, or per-entity ids the caller emits).
     The orphan features are exactly ``set(measured_features) - attributed`` -- an
-    O(1)-per-element set difference, language-agnostic, the traceSDD orphan-REQ
+    O(1)-per-element set difference, language-agnostic, the orphan-requirement
     check run in reverse. A non-empty result means the artifact carries geometry
     that the op stream cannot account for.
     """

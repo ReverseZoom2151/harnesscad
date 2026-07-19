@@ -13,15 +13,15 @@ optimisation possible: they are all traversals of this same tree.
 Core properties:
 
 * the opcode set (``VAR_X``, ``OP_ADD``, ``OP_MIN``, ``OP_SQRT``, ...), each
-  with an arity and a printable symbol (``opcode.cpp``);
+  with an arity and a printable symbol;
 * **common-subexpression sharing**: identical subexpressions are deduplicated to
   a single node by a structural hash, so ``f + f`` stores ``f`` once
-  (libfive builds a hash-consed DAG);
+  (a hash-consed DAG);
 * **constant folding** and commutative-operand canonicalisation as cheap graph
   optimisations;
 * a deterministic evaluator over a single point;
-* an infix pretty-printer and an S-expression serialiser (libfive speaks a
-  Scheme-symbol dialect, e.g. ``(max (- x 1) (sqrt y))``).
+* an infix pretty-printer and an S-expression serialiser (a Scheme-symbol
+  dialect, e.g. ``(max (- x 1) (sqrt y))``).
 
 Pure stdlib, deterministic, no floating wall-clock behaviour.
 """
@@ -319,7 +319,7 @@ def to_infix(root: Node) -> str:
 
 
 def to_sexpr(root: Node) -> str:
-    """Serialise to a libfive-style Scheme S-expression, e.g.
+    """Serialise to a Scheme-style S-expression, e.g.
     ``(max (- x 1) (sqrt y))``."""
     def render(n: Node) -> str:
         op = n.op

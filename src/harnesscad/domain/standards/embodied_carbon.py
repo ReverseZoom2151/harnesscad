@@ -1,19 +1,17 @@
-"""Embodied-carbon (CO2e) material accounting for generated designs (Insights).
+"""Embodied-carbon (CO2e) material accounting for generated designs.
 
-Mined from *Insights Informed Generative AI for Design: Incorporating Real-world
-Data for Text-to-Image Output*. The paper's generation step is a trained
-text-to-image model, but its **post-processing insight module** is a deterministic
-accounting pipeline: identify the materials present in a design, pair each with a
-carbon-dioxide-equivalent (CO2e) value from a materials dictionary, and surface the
-top contributors so a designer can iterate toward lower-impact choices.
+A deterministic post-processing accounting pipeline: identify the materials
+present in a design, pair each with a carbon-dioxide-equivalent (CO2e) value
+from a materials dictionary, and surface the top contributors so a designer can
+iterate toward lower-impact choices.
 
-This module ports that accounting:
+This module implements that accounting:
 
 *   :data:`DEFAULT_CO2E` -- a small general materials dictionary (kg CO2e per kg).
 *   :func:`embodied_carbon` -- CO2e for one material given its mass.
 *   :func:`aggregate` -- total embodied carbon across a bill of materials.
-*   :func:`top_contributors` -- the top-N materials by CO2e (paper: "top ten
-    materials"), the ranked list shown back to the designer.
+*   :func:`top_contributors` -- the top-N materials by CO2e, the ranked list
+    shown back to the designer.
 
 Deterministic and stdlib-only. Ties in the ranking break by material name so the
 output order is stable.

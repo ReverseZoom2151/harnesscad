@@ -1,6 +1,6 @@
-"""Sphere tracing (ray marching) of a signed distance field, from Curv.
+"""Sphere tracing (ray marching) of a signed distance field.
 
-Curv renders every shape on the GPU by *sphere tracing*: to find where a ray
+An implicit-geometry renderer renders every shape on the GPU by *sphere tracing*: to find where a ray
 ``o + t*dir`` (``dir`` a unit vector) first meets the surface ``f = 0``, march
 forward in steps equal to the current field value.  Because a valid SDF is
 1-Lipschitz (``|grad f| <= 1``), ``|f(p)|`` is a guaranteed lower bound on the
@@ -21,7 +21,7 @@ For a *correct* SDF the analytic first-hit ``t`` for e.g. a sphere is recovered
 to within ``epsilon``.  If the field underestimates distance by a factor > 1
 (a bad Lipschitz constant), tracing still converges but takes more steps; if it
 *overestimates* (Lipschitz > 1) the trace can tunnel through the surface -- hence
-the ``lipschitz`` scale argument, mirroring Curv's ``lipschitz k`` fix.
+the ``lipschitz`` scale argument, mirroring the ``lipschitz k`` fix.
 
 stdlib-only, deterministic, no randomness, no wall clock.
 """
@@ -72,7 +72,7 @@ def sphere_trace(
     travels past ``max_dist`` or exhausts ``max_steps`` (a miss).
 
     ``lipschitz`` (>= 1) rescales the step to compensate a field whose gradient
-    magnitude exceeds 1 (Curv's ``lipschitz k``); use 1.0 for an exact field.
+    magnitude exceeds 1 (the ``lipschitz k``); use 1.0 for an exact field.
     """
     if lipschitz <= 0.0:
         raise ValueError("lipschitz scale must be positive")

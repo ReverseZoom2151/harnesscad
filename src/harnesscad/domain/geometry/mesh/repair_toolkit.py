@@ -21,7 +21,7 @@ Operations
   twin is absent) followed by fan triangulation of each loop.
 * :func:`remove_degenerate` -- removes repeated-index, zero-area and
   duplicate triangles; reports non-manifold edges.
-* :func:`decimate` -- quadric-error-metric (QEM, Garland-Heckbert) edge
+* :func:`decimate` -- quadric-error-metric (QEM) edge
   collapse to a target triangle count or error bound, with the optimal
   collapse point solved from the summed 4x4 quadric (midpoint fallback).
 * :func:`is_closed` / :func:`is_manifold` -- edge-use and vertex-fan
@@ -29,15 +29,15 @@ Operations
 * :func:`repair_pipeline` -- weld -> unify_normals -> fill_holes ->
   remove_degenerate convenience chain with per-step summaries.
 
-Deferred
---------
-kerf's ``mesh_boolean`` / ``mesh_boolean_sealed`` / ``boolean_volume_oracle``
-(triangle-triangle intersection plus ray-parity inside/outside classification)
-and ``mesh_offset`` (vertex displacement along averaged normals) are NOT
-ported here -- they are large enough to warrant their own module.  kerf's
-``mesh_smooth`` (Laplacian / Taubin) is likewise left out of scope.
+Out of scope
+------------
+Mesh boolean operations (triangle-triangle intersection plus ray-parity
+inside/outside classification) and mesh offsetting (vertex displacement along
+averaged normals) are not handled here -- they are large enough to warrant
+their own module.  Laplacian / Taubin mesh smoothing is likewise left out of
+scope.
 
-Contract (kerf-faithful): every public entry point never raises.  Success
+Contract: every public entry point never raises.  Success
 returns ``{"ok": True, "vertices": [...], "triangles": [...], ...stats...}``;
 failure returns ``{"ok": False, "reason": "..."}``.  All iteration over
 hash-ordered containers is sorted so results are deterministic.
@@ -523,7 +523,7 @@ def decimate(
     target_faces: Optional[int] = None,
     max_error: Optional[float] = None,
 ) -> dict:
-    """QEM (Garland-Heckbert) edge-collapse decimation.
+    """QEM edge-collapse decimation.
 
     Repeatedly collapses the lowest-error edge -- the error being v^T Q v of
     the summed vertex quadrics at the optimal collapse point -- until the

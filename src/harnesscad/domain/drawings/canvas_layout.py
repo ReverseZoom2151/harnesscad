@@ -1,11 +1,10 @@
 """cad2program_canvas_layout — arrange orthographic views on a fixed canvas.
 
-To feed a 2D drawing to an image encoder, CAD2PROGRAM (Wang et al., AAAI 2025,
-App. A.1 / Fig. 8) renders an "engineering drawing" by *arranging the three
-axis-aligned orthographic views on a fixed-size canvas*: the top, front and side
-views are placed at the top-left, bottom-left and bottom-right of the canvas
-respectively, and the canvas is a fixed resolution (512x512 in the paper's
-PlankAssembly (ViT) experiment).
+To feed a 2D drawing to an image encoder, an "engineering drawing" is rendered
+by *arranging the three axis-aligned orthographic views on a fixed-size canvas*:
+the top, front and side views are placed at the top-left, bottom-left and
+bottom-right of the canvas respectively, and the canvas is a fixed resolution
+(512x512 is a typical choice).
 
 The placement itself — projecting a 3D box-composed solid to three views, scaling
 them to fit inside the canvas quadrants, and computing the pixel rectangles — is

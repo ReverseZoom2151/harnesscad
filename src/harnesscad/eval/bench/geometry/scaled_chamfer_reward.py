@@ -1,9 +1,9 @@
-"""Scaled Chamfer Distance reward with a fail-stage taxonomy (StepForge).
+"""Scaled Chamfer Distance reward with a fail-stage taxonomy.
 
-Mined from **StepForge** (``reward/scd_reward.py``), which trains a STEP
-generator by RL against a *scale-invariant* geometric reward. The transferable,
+Deterministic re-implementation of a reward function for RL-trained STEP
+generation against a *scale-invariant* geometric reward. The transferable,
 model-free core is the reward math and its honest fail-stage classification --
-StepForge implements the paper's Equations 1-3 exactly:
+this implements the underlying reward formulation's three equations exactly:
 
 * **Eq. 1 -- bidirectional Chamfer distance** between two point clouds P, Q::
 
@@ -12,7 +12,7 @@ StepForge implements the paper's Equations 1-3 exactly:
 * **Eq. 2 -- Scaled Chamfer Distance**: centre GT at its centroid, divide the
   Chamfer distance by ``scale^2`` where ``scale`` is the RMS distance of GT
   points from their centroid. This makes the metric invariant to translation and
-  scale. (StepForge's full pipeline also aligns rotation via FPFH+RANSAC+ICP;
+  scale. (A full such pipeline also aligns rotation via FPFH+RANSAC+ICP;
   that needs Open3D and is out of scope here -- this module keeps the
   translation+scale-invariant metric, which is deterministic and stdlib-only.)
 
@@ -30,7 +30,7 @@ opaque 0.
 
 Distinct from the harness's existing plain Chamfer metrics
 (:mod:`harnesscad.eval.bench.geometry.chamfer` and the unit-shape variants):
-those measure a raw distance; this adds StepForge's scale-normalization, the
+those measure a raw distance; this adds the scale-normalization above, the
 piecewise reward gate with thresholds, and the fail-stage classifier.
 
 Point clouds are plain sequences of ``(x, y, z)`` tuples. Pure Python math, no
@@ -76,11 +76,11 @@ def _nearest_sq(p: Point, cloud: Sequence[Point]) -> float:
 def chamfer_distance(
     P: Sequence[Point], Q: Sequence[Point], *, bidirectional: bool = True
 ) -> float:
-    """Chamfer distance (StepForge Eq. 1).
+    """Chamfer distance (Eq. 1 of the reward formulation).
 
     Forward term is ``mean_p min_q ||p-q||^2``. With ``bidirectional=True`` the
-    symmetric ``mean_q min_p`` term is added (the paper's stated method);
-    ``False`` matches StepForge's note that the official eval used forward-only.
+    symmetric ``mean_q min_p`` term is added (the stated method);
+    ``False`` matches a note that the reference eval used forward-only.
     Empty inputs return ``inf``.
     """
     if not P or not Q:
@@ -112,7 +112,7 @@ def _rms_radius(centered: Sequence[Point]) -> float:
 def scaled_chamfer_distance(
     pred: Sequence[Point], gt: Sequence[Point], *, bidirectional: bool = True
 ) -> float:
-    """Scaled Chamfer Distance (StepForge Eq. 2), translation+scale invariant.
+    """Scaled Chamfer Distance (Eq. 2 of the reward formulation), translation+scale invariant.
 
     Asymmetric by design: both the scale factor and the centring target derive
     from ``gt`` -- do not swap the arguments. ``scale`` is the RMS distance of GT
@@ -126,7 +126,7 @@ def scaled_chamfer_distance(
     if scale < 1e-9:
         return float("inf")
     pred_centered = _centered(pred, _centroid(pred))
-    # Scale pre-normalization (StepForge ``scale_prenorm``): bring pred to GT's
+    # Scale pre-normalization (``scale_prenorm``): bring pred to GT's
     # RMS scale before comparison. With rotation alignment dropped, this is what
     # makes the metric scale-invariant (Eq. 2 relies on the alignment stage to
     # pre-scale pred; the division by ``scale^2`` then normalizes GT's own size).
@@ -139,7 +139,7 @@ def scaled_chamfer_distance(
 
 
 def r_geo(scd: float, *, delta_low: float = 0.01, delta_high: float = 0.50) -> float:
-    """Piecewise-linear geometric reward (StepForge Eq. 3), in [0, 1]."""
+    """Piecewise-linear geometric reward (Eq. 3 of the reward formulation), in [0, 1]."""
     if scd <= delta_low:
         return 1.0
     if scd >= delta_high:
@@ -149,7 +149,7 @@ def r_geo(scd: float, *, delta_low: float = 0.01, delta_high: float = 0.50) -> f
 
 @dataclass(frozen=True)
 class RewardConfig:
-    """Reward-shape parameters (StepForge's frozen reward config)."""
+    """Reward-shape parameters (the frozen reward config)."""
 
     delta_low: float = 0.01
     delta_high: float = 0.50
@@ -184,7 +184,7 @@ def compute_reward(
 ) -> RewardResult:
     """Full reward pipeline. Never raises; returns a :class:`RewardResult`.
 
-    Guards degenerate clouds (too few unique points -- StepForge's reward-hacking
+    Guards degenerate clouds (too few unique points -- a reward-hacking
     guard) before scoring, and distinguishes a prediction failure (reward 0) from
     a ground-truth failure (reward nan).
     """

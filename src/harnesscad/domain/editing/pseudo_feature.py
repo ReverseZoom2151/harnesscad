@@ -1,4 +1,4 @@
-"""Pseudo-Feature integration (Section 4.1 of Zou 2025).
+"""Pseudo-Feature integration.
 
 The pseudo-feature approach lets a user make direct edits inside a history-based
 parametric modeler: "User-specified direct edits will be added to the end of the
@@ -6,10 +6,10 @@ model's construction history as pseudo-features, and the original history remain
 exactly as before." It is the approach adopted by most CAD vendors because it is
 trivial to implement.
 
-Its documented failure (Fig. 3): a trailing pseudo-feature is anchored to
+Its documented failure: a trailing pseudo-feature is anchored to
 geometry produced by an *earlier* feature; changing that earlier feature's
-parameter (the paper's example: P10 33mm -> 68mm) invalidates the anchor and
-"leads to a failed history regeneration." The paper's "perfect solution" is *not*
+parameter (the example: P10 33mm -> 68mm) invalidates the anchor and
+"leads to a failed history regeneration." The "perfect solution" is *not*
 to append the direct edit, but to transform it into an appropriate redefinition
 of the relevant feature (there, modifying the 2D sketch from a rectangular slot
 to a slanted slot).
@@ -97,7 +97,7 @@ def regenerate(tree: FeatureTree, edit) -> RegenResult:
 
     Regeneration fails when the edited feature is the anchor of one or more
     trailing pseudo-features and the edit moves the anchor's controlling offset
-    away from the snapshot the pseudo-feature was captured against — exactly the
+    away from the snapshot the pseudo-feature was captured against -- exactly the
     P10 33->68 failure in Fig. 3.
     """
     from harnesscad.domain.editing.hybrid_model import ParameterEdit
@@ -126,7 +126,7 @@ def regenerate(tree: FeatureTree, edit) -> RegenResult:
 
 def transform_to_feature_redefinition(tree: FeatureTree, pseudo_fid: str,
                                       ) -> FeatureTree:
-    """The paper's "perfect solution": fold a pseudo-feature into its anchor.
+    """The "perfect solution": fold a pseudo-feature into its anchor.
 
     Instead of a trailing direct-edit pseudo-feature, the push-pull intent is
     expressed as a redefinition of the relevant (anchor) feature: the move

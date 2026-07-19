@@ -1,10 +1,10 @@
-"""Unified B-rep <-> command-sequence linkage for Pointer-CAD.
+"""Unified B-rep <-> command-sequence linkage.
 
-Pointer-CAD's core claim is that a command sequence and a B-rep are *one* object:
-each step's pointers are resolved against the B-rep accumulated so far, and applying
+The core idea is that a command sequence and a B-rep are *one* object: each
+step's pointers are resolved against the B-rep accumulated so far, and applying
 the step mutates that B-rep so the next step's pointers address the new geometry
-(paper Sec. 4.1: "the B-rep is incrementally updated after each operation"). This
-module makes that loop explicit and deterministic:
+-- the B-rep is incrementally updated after each operation. This module makes
+that loop explicit and deterministic:
 
   * :class:`BrepState` holds the current model faces/edges and can produce a fresh
     :class:`EntityIndex` (stable pointer addressing) on demand.

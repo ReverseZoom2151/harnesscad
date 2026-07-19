@@ -1,6 +1,6 @@
-"""Vitruvion primitive-token codec: the exact vocabulary, quantiser and 3-stream layout.
+"""Primitive-token codec: the exact vocabulary, quantiser and 3-stream layout.
 
-Vitruvion (Seff et al., ICLR 2022 -- ``img2cad/dataset.py`` + ``img2cad/data_utils.py``)
+This codec
 tokenises a *normalised* sketch (see ``geometry.vitruvion_sketch_norm``) into **three
 parallel streams** of equal length, all consumed as embeddings that are summed:
 
@@ -31,19 +31,19 @@ Domain ``[-0.5, 0.5]`` (guaranteed by the long-axis-1 normalisation), and::
     bin   = int((v + 0.5) / 1.0 * n)          # TRUNCATION, then clamp n -> n-1
     value = (bin + 0.5) / n - 0.5             # BIN CENTRE, not the bin's left edge
 
-So Vitruvion is a **floor/truncating quantiser with bin-centre reconstruction**, at a
+So this is a **floor/truncating quantiser with bin-centre reconstruction**, at a
 default of ``n = 64`` (6 bits).  Contrast with what is already in this harness:
 
-  * ``reconstruction.deepcad2_numericalize`` -- DeepCAD: 256 levels (8 bit) over
+  * ``reconstruction.deepcad2_numericalize`` -- 256 levels (8 bit) over
     ``[-1, 1]``, ``round`` (half-to-even), reconstruction at the *level*, not a centre.
-  * ``reconstruction.gencad2_sketch_quantize`` -- GenCAD: DeepCAD's rounding scheme.
-  * SkexGen -- 6-bit *truncating* like Vitruvion, but reconstructs at the level.
+  * ``reconstruction.gencad2_sketch_quantize`` -- the same 8-bit rounding scheme.
+  * a 6-bit *truncating* variant like this one, but reconstructing at the level.
 
-The bin-centre dequantisation means Vitruvion's round-trip error is bounded by half a
-bin (``1/(2n)``) and is *unbiased*, whereas a floor-quantise/floor-dequantise pair (as
-in SkexGen) biases every coordinate downward by half a bin.  Feeding Vitruvion bins to a
-DeepCAD-style dequantiser (or vice versa) shifts every primitive by ``1/(2n)`` of the
-sketch's long axis -- a silent, systematic offset.  A value exactly at the top of the
+The bin-centre dequantisation means this round-trip error is bounded by half a
+bin (``1/(2n)``) and is *unbiased*, whereas a floor-quantise/floor-dequantise pair
+biases every coordinate downward by half a bin.  Feeding these bins to a
+level-reconstruction dequantiser (or vice versa) shifts every primitive by ``1/(2n)``
+of the sketch's long axis -- a silent, systematic offset.  A value exactly at the top of the
 domain (``+0.5``) would land in bin ``n`` and is clamped back to ``n - 1``.  Values are
 rounded to 10 decimals before the range check, so float noise at the boundary does not
 trip the guard.
@@ -59,7 +59,7 @@ The positions are fixed per type, as offsets from the entity-type token:
     Circle [0, 1]      (entity, centre.x)
     Point [0]          (entity)
 
-which is exactly the sub-node structure of SketchGraphs (an arc owns centre/start/end
+which is exactly the sub-node structure of the sketch graph (an arc owns centre/start/end
 sub-nodes).  Index 0 of ``gather_idxs`` is reserved for the "external" node.
 
 Pure stdlib.
@@ -172,7 +172,7 @@ def quantize_params(params: Sequence[float], n_bins: int = DEFAULT_NUM_BINS) -> 
 
 
 def clip_params(params: Sequence[float]) -> List[float]:
-    """Clamp parameters into the quantiser domain (Vitruvion's fallback path)."""
+    """Clamp parameters into the quantiser domain (the fallback path)."""
     return [min(MAX_VAL, max(MIN_VAL, float(p))) for p in params]
 
 
@@ -225,10 +225,10 @@ def tokenize_sketch(
 ) -> Tuple[Dict[str, List[int]], List[int]]:
     """Tokenise a normalised sketch into the ``val`` / ``coord`` / ``pos`` streams.
 
-    Returns ``(streams, gather_idxs)``.  ``gather_idxs`` maps a SketchGraphs node index
+    Returns ``(streams, gather_idxs)``.  ``gather_idxs`` maps a sketch-graph node index
     (1-based; 0 is the external node) to the position in the *unpadded* ``val`` stream
     that the constraint model points at.  Parameters that escape the quantiser domain
-    are clamped rather than raising -- Vitruvion's own fallback, which exists because
+    are clamped rather than raising -- a fallback that exists because
     zero-length segments can produce out-of-range values after normalisation.
     """
     construction_map = construction_tokens(num_bins)

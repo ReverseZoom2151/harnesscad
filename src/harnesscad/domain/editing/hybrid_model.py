@@ -1,21 +1,21 @@
 """Data models for the two CAD paradigms integrated by Zou (2025),
 *Parametric/direct CAD integration* (Technical Report ZJU).
 
-The paper contrasts two solid-modeling paradigms:
+This approach contrasts two solid-modeling paradigms:
 
-* **Parametric (feature-based) modeling** — a *construction history*: an ordered
+* **Parametric (feature-based) modeling** -- a *construction history*: an ordered
   sequence of features (2D sketch -> 3D sweep -> boolean combine), each carrying
   embedded parameters and *associativity* (constraints) so that a local
   parameter change propagates automatically. The ordered history defines a
   *model variation space* of admissible edits.
-* **Direct (B-rep) modeling** — a *history-free* boundary representation: a
+* **Direct (B-rep) modeling** -- a *history-free* boundary representation: a
   collection of interconnected faces (carrying surfaces = geometry, connections
   = topology) whose entities are all free to change. Editing is done by grabbing
   a face and *push-pulling* it, which (unlike the older *tweak* operation) is
   allowed to violate the pre-edit topology.
 
 This module provides deterministic, stdlib-only data models for both paradigms
-plus the paper's *information-layer* taxonomy from the conclusion: a CAD model
+plus the *information-layer* taxonomy from the conclusion: a CAD model
 carries information on **topology**, **geometry**, and **constraints**;
 "parametric and direct edits work at different layers of information, i.e., the
 constraint layer and the geometry layer, respectively." Two edit-operation
@@ -118,7 +118,7 @@ class FeatureTree:
             raise KeyError(name)
         f.params[name] = value
 
-    # -- variation space (Section 3) --------------------------------------
+    # -- variation space --------------------------------------
     def variation_space(self) -> Tuple[Tuple[str, str], ...]:
         """The set of (feature, parameter) handles a simple edit can change.
 
@@ -283,7 +283,7 @@ def classify_edit(edit) -> Paradigm:
 
 
 def edit_layer(edit) -> InfoLayer:
-    """The information layer an edit acts on (conclusion of the paper).
+    """The information layer an edit acts on (conclusion of this approach).
 
     Parametric edits act on the constraint layer; direct edits on the geometry
     layer.

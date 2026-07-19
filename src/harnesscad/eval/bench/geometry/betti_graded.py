@@ -1,7 +1,7 @@
-"""Mesh-based Betti numbers and the CADGenBench topology-match score.
+"""Mesh-based Betti numbers and a graded topology-match score.
 
-Ported (deterministically, stdlib-only) from the CADGenBench "Topology
-Match" axis. Two pieces:
+Deterministic, stdlib-only re-implementation of a "Topology Match" axis
+used by generative-CAD validity gates. Two pieces:
 
 1. Betti numbers ``(b0, b1, b2)`` of a *solid* recovered from its
    tessellated boundary mesh:
@@ -135,7 +135,7 @@ class TopoMatchResult:
 def mesh_gate_errors(mesh: MeshSurface) -> List[str]:
     """Return the reasons *mesh* is not a closed orientable manifold ([] = ok).
 
-    Three conditions, matching the CADGenBench validity gate's mesh stage:
+    Three conditions, matching a typical validity gate's mesh stage:
 
     - manifold: every undirected edge is used by at most two triangles,
     - closed: every undirected edge is used by exactly two (equivalently 3F = 2E),

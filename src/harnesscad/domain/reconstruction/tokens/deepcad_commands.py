@@ -1,10 +1,10 @@
-"""Exact DeepCAD command-sequence specification (Wu, Xiao & Zheng, 2021).
+"""Exact canonical CAD command-sequence specification.
 
-DeepCAD is the canonical CAD-sequence paper. It describes a CAD model
+This is the canonical CAD-sequence representation. It describes a CAD model
 ``M = [C1, ..., C_Nc]`` as a sequence of commands, each ``Ci = (ti, pi)`` with a
 command *type* ``ti`` and a **fixed 16-dimensional** parameter vector ``pi``. This
 module is the deterministic, network-agnostic part of that representation, faithful
-to the paper's exact conventions (Sec. 3.1, Table 1):
+to its exact conventions:
 
 Command types (exactly six)::
 

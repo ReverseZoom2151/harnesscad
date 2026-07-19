@@ -1,13 +1,12 @@
-"""img2cadsvg_representation -- the Structured Visual Geometry (SVG) schema.
+"""Wireframe representation -- the Structured Visual Geometry (SVG) schema.
 
-Img2CAD (Chen et al., "Conditioned 3D CAD Model Generation from Single Image
-with Structured Visual Geometry") introduces an intermediate representation it
-calls **Structured Visual Geometry (SVG)**: a *vectorized wireframe* of an
-object, "which capture line segments and their associated endpoints (primarily
-junctions)".  The learned parser that predicts the wireframe from an image is out
-of scope, but the *representation itself* -- its schema, construction, validity
-rules, and the canonical/normalised coordinate form the paper feeds to the
-conditioning encoder (``L_n in R^{N x 2}``) -- is a deterministic data structure.
+An intermediate representation termed **Structured Visual Geometry (SVG)**: a
+*vectorized wireframe* of an object, capturing line segments and their
+associated endpoints (primarily junctions).  The learned parser that predicts
+the wireframe from an image is out of scope, but the *representation itself* --
+its schema, construction, validity rules, and the canonical/normalised
+coordinate form fed to the conditioning encoder (``L_n in R^{N x 2}``) -- is a
+deterministic data structure.
 
 This module implements that structured-visual-geometry graph:
 
@@ -16,16 +15,13 @@ This module implements that structured-visual-geometry graph:
 * :func:`build_wireframe` de-duplicates near-coincident endpoints into shared
   junctions (tolerance ``eps``) so that segments that meet at a corner share a
   junction node -- turning a loose "line soup" into a topological wireframe;
-* :func:`validity` reports the structural conditions the paper's SVG must
-  satisfy (no zero-length segments, no duplicate segments, every segment endpoint
-  a valid junction) that determine whether the wireframe can condition a CAD
-  sequence;
-* :func:`normalise` reproduces the paper's normalisation of endpoint coordinates
-  into a common frame (``L_n in R^{N x 2}``) before they are embedded.
+* :func:`validity` reports the structural conditions the SVG must satisfy (no
+  zero-length segments, no duplicate segments, every segment endpoint a valid
+  junction) that determine whether the wireframe can condition a CAD sequence;
+* :func:`normalise` maps endpoint coordinates into a common frame
+  (``L_n in R^{N x 2}``) before they are embedded.
 
-Naming ``img2cadsvg_`` = Img2CAD *Structured Visual Geometry* (paper index 109),
-distinct from the separate "Img2CAD -- VLM-Assisted Conditional Factorization"
-work.  Pure stdlib, deterministic; no learned components.
+Pure stdlib, deterministic; no learned components.
 """
 
 from __future__ import annotations
@@ -178,7 +174,7 @@ def bounding_box(wf: Wireframe) -> tuple[Point, Point]:
 def normalise(wf: Wireframe) -> Wireframe:
     """Normalise junction coordinates into ``[-1, 1]`` preserving aspect ratio.
 
-    Reproduces the paper's mapping of raw endpoint coordinates into a common
+    Maps raw endpoint coordinates into a common
     reference frame (``L_n in R^{N x 2}``) prior to embedding: centre the
     wireframe at its bounding-box centre and scale by the largest half-extent so
     the longest axis spans ``[-1, 1]``.  Segments are unchanged.

@@ -1,7 +1,7 @@
-"""SkexGen extrude-branch token vector (19 tokens) and its field-flag stream.
+"""Extrude-branch token vector (19 tokens) and its field-flag stream.
 
-SkexGen encodes every sketch-extrude pair's extrusion as a *fixed-length* run of
-19 tokens (``utils/utils.py::process_obj_se``)::
+The extrusion of every sketch-extrude pair is encoded as a *fixed-length* run of
+19 tokens::
 
     idx   0  1 | 2  3  4 | 5 .. 13        | 14   | 15    | 16 17  | 18
     field ext_v | origin  | rotation (3x3) | op   | scale | offset | end
@@ -10,7 +10,7 @@ SkexGen encodes every sketch-extrude pair's extrusion as a *fixed-length* run of
     origin  3 tokens  sketch-plane origin, quantised over [-1, 1]
     rot     9 tokens  the plane's x/y/z axes, each component rounded and
                       clipped to {-1, 0, 1} then shifted by R_PAD = 2  ->  {1,2,3}
-                      (SkexGen assumes axis-aligned sketch planes)
+                      (assumes axis-aligned sketch planes)
     op      1 token   1 = add (join/new body), 2 = cut, 3 = intersect
     scale   1 token   sketch normalisation scale, quantised over [0, SCALE_R]
     offset  2 tokens  sketch bbox centre, quantised over [-OFFSET_R, OFFSET_R]
@@ -21,10 +21,11 @@ All value tokens carry ``EXT_PAD = 1`` (rotation carries ``R_PAD = 2``) so that
 ``[1,1,2,2,2,3,3,3,3,3,3,3,3,3,4,5,6,6,7]`` tags each position with its field
 id; the extrude transformer embeds it alongside the value token.
 
-This is a distinct scheme from DeepCAD's single ``EXT`` row (theta/phi/gamma
+This is a distinct scheme from the single ``EXT`` row (theta/phi/gamma
 Euler angles + 11 args) already in ``reconstruction/deepcad2_vector_layout``:
-SkexGen stores the *raw rotation matrix* trit-quantised, and it stores the
-sketch scale/offset in the extrude branch (DeepCAD keeps them as args ``s``).
+this branch stores the *raw rotation matrix* trit-quantised, and it stores the
+sketch scale/offset in the extrude branch (the single-row scheme keeps them as
+args ``s``).
 
 Deterministic, stdlib only.
 """
@@ -70,7 +71,7 @@ def extrude_vocab_size(bit: int = BIT) -> int:
 
 
 def op_token(set_op: str) -> int:
-    """Map a Fusion 360 / DeepCAD set-operation name to SkexGen's op token."""
+    """Map a CAD set-operation name to this branch's op token."""
     try:
         return SET_OP_TO_TOKEN[set_op]
     except KeyError:

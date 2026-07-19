@@ -1,11 +1,11 @@
-"""Clean-flow ODE / SDE integrator on an analytic Gaussian target (CFD Sec. 3).
+"""Clean-flow ODE / SDE integrator on an analytic Gaussian target.
 
-CFD reparametrizes the diffusion PF-ODE into the *clean variable*
-``x_hat_c = (x_t - sigma_t * eps) / alpha_t`` (paper Eq. 7), which is a non-noisy
+The diffusion probability-flow ODE is reparametrized into the *clean variable*
+``x_hat_c = (x_t - sigma_t * eps) / alpha_t``, which is a non-noisy
 image for all t, is initialized at zero (``x_hat_c(T) = 0``), and whose ODE
 endpoint ``x_hat_c(0) = x_0`` is a sample from the target distribution fully
-determined by the fixed noise ``eps`` (Eq. 8). The paper further gives an
-EDM-style 2nd-order Heun stochastic sampler (Algorithm 3).
+determined by the fixed noise ``eps``. On top of that sits a second-order Heun
+stochastic sampler in the log-signal-to-noise time variable.
 
 The full method distills a learned diffusion model and is out of scope, but the
 *integrator itself* is a deterministic numerical primitive. This module
@@ -49,7 +49,7 @@ def eps_gaussian(x: float, alpha: float, sigma: float, mu: float, s: float) -> f
 
 
 def sample_prediction(x: float, alpha: float, sigma: float, mu: float, s: float) -> float:
-    """Sample prediction D = E[x0|xt] = (x_t - sigma eps_phi) / alpha (Lemma 1)."""
+    """Sample prediction D = E[x0|xt] = (x_t - sigma eps_phi) / alpha."""
     eps = eps_gaussian(x, alpha, sigma, mu, s)
     return (x - sigma * eps) / alpha
 
@@ -63,16 +63,16 @@ def clean_flow_ode_endpoint(
     t_start: float = 0.999,
     t_end: float = 1e-3,
 ) -> float:
-    """Integrate the clean-flow ODE (Eq. 8) from t_start to t_end.
+    """Integrate the clean-flow ODE from t_start to t_end.
 
-    Marches the *clean variable* ``x_hat_c`` directly (Eq. 8), which stays
+    Marches the *clean variable* ``x_hat_c`` directly, which stays
     bounded (no division by the vanishing ``alpha_t`` near t=T):
 
         d x_hat_c = d(sigma/alpha) * (eps_phi(alpha x_hat_c + sigma eps_tilde, t)
                                       - eps_tilde)
 
     with initial condition ``x_hat_c(T) = 0``. First-order (explicit Euler in the
-    ``lambda = sigma/alpha`` time) discretization, per CFD's first-order claim.
+    ``lambda = sigma/alpha`` time) discretization, first-order accurate.
     Returns ``x_hat_c(t_end) ~= x_0``.
     """
     if steps <= 0:
@@ -100,12 +100,12 @@ def edm_heun_sampler(
     seed: int = 0,
     eps_tilde: float | None = None,
 ) -> float:
-    """EDM-style 2nd-order Heun sampler on the clean variable (Algorithm 3).
+    """Second-order Heun sampler on the clean variable.
 
     ``gamma`` is the per-step noise-injection rate (0 => deterministic Heun /
     clean-flow ODE). ``eps_tilde`` is the fixed trajectory-identity noise; when
     ``gamma > 0`` it is refreshed each step by the variance-preserving update
-    ``eps <- sqrt(1-gamma) eps + sqrt(gamma) z`` (Eq. 11). Returns x_0. When
+    ``eps <- sqrt(1-gamma) eps + sqrt(gamma) z``. Returns x_0. When
     ``gamma == 0`` and ``eps_tilde`` is given the result is deterministic and
     second-order accurate.
     """

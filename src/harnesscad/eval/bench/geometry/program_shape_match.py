@@ -1,8 +1,8 @@
 """Binary-free evaluation of generated OpenSCAD against a reference program.
 
-ScadLM scores a generation by rendering it with the ``openscad`` binary and
-asking a vision model "does it look correct?" -- an external, non-deterministic
-judge. Its own README concedes the loop "didn't work that well".
+A vision-model-in-the-loop scorer renders a generation with the ``openscad``
+binary and asks a vision model "does it look correct?" -- an external,
+non-deterministic judge that is known to be unreliable in practice.
 
 Given the local front end (:mod:`programs.scadlm_ast`), gate
 (:mod:`programs.scadlm_check`) and evaluator
@@ -10,7 +10,7 @@ Given the local front end (:mod:`programs.scadlm_ast`), gate
 deterministically at the *geometry* level, with no binary and no model:
 
   * :func:`compile_rate` -- the fraction of candidate programs that pass the
-    static gate (the local stand-in for ScadLM's compile check), plus
+    static gate (the local stand-in for a render-and-judge compile check), plus
     :func:`pass_at_k`-style best-of-k over a candidate list;
   * :func:`voxel_iou` -- intersection-over-union of two programs' solids on a
     shared cell-centre lattice covering the union of their bounds;

@@ -21,16 +21,16 @@ The object model provides:
     ``text``, ``import_``, ``surface``;
   * the ``* ! # %`` modifier characters (:func:`disable`, :func:`root`,
     :func:`debug`, :func:`background`);
-  * SolidPython's ``segments`` -> ``$fn`` parameter aliasing and its
-    Python-reserved-word escaping (``or_`` -> ``or``);
-  * SolidPython's **hole** / **part** mechanism, which OpenSCAD has no
-    equivalent of: a subtree marked as a hole is *lifted* out of its position
-    and subtracted at the root (or at the nearest enclosing ``part``), so that
-    later unions can never fill it back in.  Booleans on the path to a hole are
-    rewritten to ``union`` when the hole branch is re-emitted -- an
-    intersection/difference must not shrink the void.  Here the rewrite is
-    structural (SolidPython does it with a string ``replace``, which corrupts
-    identifiers that merely contain "union"/"difference").
+  * ``segments`` -> ``$fn`` parameter aliasing and Python-reserved-word
+    escaping (``or_`` -> ``or``);
+  * a **hole** / **part** mechanism, which OpenSCAD has no equivalent of: a
+    subtree marked as a hole is *lifted* out of its position and subtracted at
+    the root (or at the nearest enclosing ``part``), so that later unions can
+    never fill it back in.  Booleans on the path to a hole are rewritten to
+    ``union`` when the hole branch is re-emitted -- an intersection/difference
+    must not shrink the void.  Here the rewrite is structural; a naive string
+    ``replace`` would corrupt identifiers that merely contain
+    "union"/"difference".
 
 Deterministic: parameters are emitted in a stable order (positional indices
 first, then named keys sorted), floats are formatted with a fixed precision and
@@ -76,7 +76,7 @@ __all__ = [
     "render",
     "linear_extrude",
     "rotate_extrude",
-    # solidpython extensions
+    # object-model extensions
     "hole",
     "part",
     "debug",
@@ -92,7 +92,7 @@ __all__ = [
     "back",
 ]
 
-# Names that exist only in SolidPython, never in OpenSCAD output.
+# Names that exist only in the object model, never in OpenSCAD output.
 NON_RENDERED = ("hole", "part")
 
 MODIFIERS = {
@@ -138,7 +138,7 @@ def _unsub_keyword(word: str) -> str:
 
 
 def format_value(value: Any) -> str:
-    """Format a Python value as an OpenSCAD literal (SolidPython ``py2openscad``)."""
+    """Format a Python value as an OpenSCAD literal."""
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, int):
@@ -343,7 +343,7 @@ def _hole_branch(node: ScadNode) -> Optional[ScadNode]:
 
 
 def _resolve(node: ScadNode) -> ScadNode:
-    """Materialise SolidPython holes into a real ``difference()``."""
+    """Materialise holes into a real ``difference()``."""
     positive = _strip_holes(node, is_scope_root=True)
     hole_kids: List[ScadNode] = []
     for c in node.children:
@@ -524,7 +524,7 @@ def rotate_extrude(angle: Optional[float] = None, convexity: Optional[int] = Non
                  segments=segments)
 
 
-# -- SolidPython extensions ----------------------------------------------
+# -- object-model extensions ---------------------------------------------
 def hole() -> ScadNode:
     """A subtree that is subtracted at the root, not where it appears."""
     return ScadNode("hole").set_hole(True)

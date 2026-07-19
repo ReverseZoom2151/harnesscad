@@ -1,11 +1,9 @@
-"""Mesh colorization for Magic3DSketch's stylization branch (Zang et al. 2024).
+"""Mesh colorization: per-vertex colours propagated across the surface.
 
-Magic3DSketch is "the first to add color based on text description to the
-sketch-derived shapes" (Sec. 1).  Its stylization branch assigns each mesh
-vertex a colour ``c_p`` via a neural field ``N_c``; those vertex colours then
-"propagate over the entire mesh surface using an interpolation-based
-differentiable renderer" (paper Sec. 3.6).  The neural field and the CLIP-guided
-optimisation that *choose* the colours are learned and external, but the
+A stylization stage may assign each mesh vertex a colour and then propagate
+those vertex colours over the entire mesh surface using an interpolation-based
+differentiable renderer.  The stage that *chooses* the colours (for example a
+neural field driven by a text description) is learned and external, but the
 colour-propagation math -- barycentric interpolation of per-vertex colours to
 any point on a triangle -- is deterministic and classical.
 

@@ -1,10 +1,6 @@
 """Feature-typed FDM printability minima and a feature-level rule checker.
 
-Ported from **AgentSCAD** (MIT license, (c) 2026 AgentSCAD), specifically the
-FDM printable design rules knowledge file at
-``resources/cad_repos/AgentSCAD-main/AgentSCAD-main/cad_knowledge/patterns/printable_rules.md``.
-AgentSCAD injects that markdown into LLM generation prompts as free text; the
-transferable core is the *typed rule table*: per-feature minimum and
+The transferable core is a *typed rule table*: per-feature minimum and
 recommended sizes (wall, rib, through hole, blind hole, boss, text, clearance
 gap), the overhang/bridge maxima, and the boolean-robustness tolerances
 (union merge overlap, difference cut extension). This module makes those
@@ -67,12 +63,12 @@ KIND_MAXIMUM = "maximum"
 
 @dataclass(frozen=True)
 class FeatureRule:
-    """One feature-typed printability rule from AgentSCAD's printable_rules.md.
+    """One feature-typed printability rule.
 
     ``threshold`` is the hard limit (a floor for ``kind == "minimum"`` rules,
     a ceiling for ``kind == "maximum"`` rules). ``recommended`` is the
-    comfortable value where the md gives one, else ``None``. ``rule`` is the
-    cited rationale text.
+    comfortable value where one is defined, else ``None``. ``rule`` is the
+    rationale text.
     """
 
     feature: str
@@ -83,7 +79,7 @@ class FeatureRule:
     rule: str
 
 
-# AgentSCAD cad_knowledge/patterns/printable_rules.md, verbatim values.
+# Feature-typed FDM minima and maxima.
 FEATURE_MINIMA: Dict[str, FeatureRule] = {
     "wall": FeatureRule(
         feature="wall",
@@ -370,7 +366,7 @@ def feature_verdict(
 
 
 def _selfcheck() -> None:
-    # Table values match printable_rules.md exactly.
+    # Table values are the documented feature minima.
     assert FEATURE_MINIMA["wall"].threshold == 1.2
     assert FEATURE_MINIMA["wall"].recommended == 2.0
     assert FEATURE_MINIMA["rib"].threshold == 1.2

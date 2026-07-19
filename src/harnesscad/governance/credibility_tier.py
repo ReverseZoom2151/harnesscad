@@ -1,15 +1,12 @@
 """V&V-40 credibility tiering + regression-diff verdicts for result-bearing outputs.
 
-Ported from cad-cae-copilot (cad-cae-copilot-main): the AGENTS.md
-"Credibility tiering" section and its shared classifier
-``aieng/src/aieng/converters/credibility.py``, plus the ``regression_diff``
-verdict taxonomy from the parametric-edit governance section.
+Implements a credibility-tiering scheme plus a ``regression_diff`` verdict
+taxonomy for parametric-edit governance.
 
 ASME V&V-40 / NAFEMS principle: *model credibility must be commensurate with
 the risk of the decision it informs.* Honesty signals (solver_executed,
-is_solver_evidence, uncertainty, production_ready) were scattered as booleans
-in the source; the classifier consolidates them into ONE ordered tier every
-result can stamp. Two invariants, ported exactly:
+is_solver_evidence, uncertainty, production_ready) are consolidated by the
+classifier into ONE ordered tier every result can stamp. Two invariants:
 
   * **never-upgrade**: a tier is never more credible than its evidence. An
     output CLAIMING an executed-solver result whose ``solver_executed`` flag
@@ -24,8 +21,8 @@ Tiers, low -> high: ``critique_finding`` < ``surrogate_prediction`` <
 ``proxy_assembly_result`` < ``executed_solver_result``.
 
 The ``regression_diff`` verdict enum classifies what a parametric edit did to
-the model's part topology (the source returns it with every
-``cad.edit_parameter`` response as the agent's safety net):
+the model's part topology (returned with every ``cad.edit_parameter`` response
+as the agent's safety net):
 
   * ``clean``            -- only the intended part(s) changed;
   * ``collateral_change`` -- parts NOT targeted also moved (shared constant);
@@ -33,9 +30,8 @@ the model's part topology (the source returns it with every
     disappeared; unexpected for a pure dimensional edit);
   * ``identical``        -- nothing changed (wrong constant or no-op value).
 
-Attribution: cad-cae-copilot (AGENTS.md V&V-40 section;
-aieng/src/aieng/converters/credibility.py). Pure stdlib, deterministic;
-no kernel, no model, matching the governance package's style.
+Pure stdlib, deterministic; no kernel, no model, matching the governance
+package's style.
 """
 
 from __future__ import annotations
@@ -302,8 +298,7 @@ def judge_regression(
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="V&V-40 credibility tiering with never-upgrade invariant "
-                    "+ regression_diff verdicts (cad-cae-copilot AGENTS.md / "
-                    "converters/credibility.py port).",
+                    "+ regression_diff verdicts.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="assert tier ordering, downgrade invariants, and "

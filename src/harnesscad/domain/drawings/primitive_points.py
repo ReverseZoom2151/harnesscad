@@ -1,20 +1,20 @@
-"""Primitive-as-point representation for symbol spotting (SymPoint, ECCV 2024).
+"""Primitive-as-point representation for symbol spotting.
 
-SymPoint reframes CAD symbol spotting as *point-cloud* panoptic segmentation:
+This reframes CAD symbol spotting as *point-cloud* panoptic segmentation:
 every graphic primitive of a vectorised floor plan (line / arc / circle /
 ellipse) collapses to a single point carrying a small feature vector.  The
-deterministic front end (``parse_svg.py`` in the reference repo) is what this
-module reimplements, stdlib-only and without ``svgpathtools``:
+deterministic front end is what this module implements, stdlib-only and without
+any external path-parsing library:
 
 * :func:`sample_args` -- the four *anchor* samples of a primitive.  Paths are
   sampled at parameters ``0, 1/3, 2/3, 1``; closed circles and ellipses are
   sampled at the four cardinal angles ``0, pi/2, pi, 3pi/2`` (with the ellipse
-  written major-axis-first, exactly as the reference does).  The resulting
-  8-tuple ``(x1,y1,...,x4,y4)`` is SymPoint's ``args`` record.
+  written major-axis-first).  The resulting
+  8-tuple ``(x1,y1,...,x4,y4)`` is the ``args`` record.
 * :func:`primitive_length` -- arc length: ``2*pi*r`` for a circle, the
   ``2*pi*b + 4*(a-b)`` ellipse approximation, ``r*|sweep|`` for an arc.
 * :func:`primitive_point` -- the point a primitive becomes: the *mean of its
-  four anchors* (SymPoint uses ``mean(args[0::2]), mean(args[1::2])``), which
+  four anchors* (using ``mean(args[0::2]), mean(args[1::2])``), which
   is emphatically not the segment midpoint used by endpoint-graph methods such
   as ``drawings.cadtransformer_primitive_graph``.
 * :func:`instance_boxes` -- ground-truth aggregation: an instance's bounding

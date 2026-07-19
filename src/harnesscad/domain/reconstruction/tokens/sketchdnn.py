@@ -1,6 +1,6 @@
-"""Composite ("superposition") CAD-sketch primitive encoding (SketchDNN Sec. 2).
+"""Composite ("superposition") CAD-sketch primitive encoding.
 
-To resolve the *heterogeneity* of CAD primitive parameterisations, SketchDNN
+To resolve the *heterogeneity* of CAD primitive parameterisations, this encoding
 represents every primitive as a single fixed-width vector that encodes ALL
 primitive types at once -- a "superposition" that lets a diffusion model treat a
 primitive as a probabilistic mixture over types. Each primitive is:
@@ -10,7 +10,7 @@ primitive as a probabilistic mixture over types. Each primitive is:
 * ``b``  -- one-hot construction-aid flag (regular / construction).
 * ``c``  -- one-hot class label over ``{LINE, CIRCLE, ARC, POINT, NONE}``.
 * the four parameter blocks, one per primitive type, with the type-specific
-  parameterisations from the paper:
+  parameterisations:
 
       LINE   : (x1, y1, x2, y2)        start / end coords          (4)
       CIRCLE : (x, y, r)               centre coords, radius        (3)
@@ -22,11 +22,11 @@ class ``argmax(c)`` and reading its parameter block.
 
 This module also implements two deterministic training/inference details:
 
-* **Parameter masking** (Sec. 5.2): before the MSE loss the parameters of the
+* **Parameter masking**: before the MSE loss the parameters of the
   irrelevant types are masked using the *ground-truth* class, so the network is
   supervised to predict every type's parameters but only scored on the true one.
 
-* **Type-probability weighting** (Sec. 5.2): at inference the continuous
+* **Type-probability weighting**: at inference the continuous
   parameters are weighted by *rescaled* class probabilities -- each probability
   vector is divided by its maximum element -- so relevant parameters do not
   decay to zero through the reverse process while irrelevant ones are suppressed.
@@ -140,7 +140,7 @@ def decode_primitive(vec: Sequence[float]) -> tuple[bool, str, list[float]]:
 def mask_irrelevant_params(
     vec: Sequence[float], true_class: str
 ) -> list[float]:
-    """Zero out parameter blocks of every type except ``true_class`` (Sec. 5.2).
+    """Zero out parameter blocks of every type except ``true_class``.
 
     Used before the MSE loss so the model is scored only on the ground-truth
     primitive type's parameters. ``b`` and ``c`` blocks are left untouched.
@@ -158,7 +158,7 @@ def mask_irrelevant_params(
 
 
 def rescale_probs(probs: Sequence[float]) -> list[float]:
-    """Divide a probability vector by its maximum element (Sec. 5.2 rescaling).
+    """Divide a probability vector by its maximum element (rescaling).
 
     The winning class becomes 1.0 and the rest are scaled proportionally,
     preventing the relevant type's parameters from decaying to zero during the
@@ -178,7 +178,7 @@ def weight_params_by_type(
     ``class_probs`` is a distribution over ``PARAM_TYPES`` (length 4, in
     ``PARAM_TYPES`` order). Each block is multiplied by ``p_type / max(p)`` so
     the most-likely type keeps its parameters intact while unlikely types are
-    attenuated (Sec. 5.2 confidence weighting).
+    attenuated (confidence weighting).
     """
     if len(class_probs) != len(PARAM_TYPES):
         raise ValueError(f"class_probs must have length {len(PARAM_TYPES)}")
@@ -194,8 +194,8 @@ def weight_params_by_type(
 def reflect_arc(vec: Sequence[float]) -> list[float]:
     """Reflect an ARC across its terminal chord by negating curvature ``kappa``.
 
-    The paper notes negating ``kappa`` reflects the arc across the line through
-    its start/end points. Only the ARC block's last element is affected.
+    Negating ``kappa`` reflects the arc across the line through its start/end
+    points. Only the ARC block's last element is affected.
     """
     out = list(vec)
     kappa_idx = _PARAM_OFF["ARC"] + PARAM_DIMS["ARC"] - 1

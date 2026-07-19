@@ -1,6 +1,6 @@
-"""Progressive Hierarchical Tuning (PHT) for PHT-CAD (Niu et al. 2025, Sec. 4.3).
+"""Progressive Hierarchical Tuning (PHT) for parametric primitive analysis.
 
-PHT is PHT-CAD's central contribution: a coarse-to-fine, three-stage curriculum
+PHT is a coarse-to-fine, three-stage curriculum
 that progressively grows the model's capability for parametric primitive
 analysis. This module models the *deterministic* machinery of that curriculum --
 stage definitions, the data subset and hyper-parameters each stage consumes, the
@@ -9,7 +9,7 @@ parameter refinement that hands predictions from one stage to the next. The
 learned VLM itself is external; here we build the schedule and the refinement
 operator around it.
 
-Three stages (paper Fig. 5):
+Three stages:
 
   Stage 1 -- Primitive Perception Tuning
       Recognise/classify individual primitives and emit their (coarse) params.
@@ -26,9 +26,9 @@ Three stages (paper Fig. 5):
       non-dimensioned generalisation. Data subset: ``dimensional_annotated``.
       lr 2e-5, replay 50% of stage-2 data. Coarse-to-fine role: *fine params*.
 
-The ablation (paper Tab. 4) shows removing Stage 1 costs ~12% accuracy and
+Ablation shows removing Stage 1 costs ~12% accuracy and
 removing Stage 2 ~15%; :func:`ablation_accuracy` reproduces that monotone
-ordering deterministically from a base accuracy and the reported deltas so a
+ordering deterministically from a base accuracy and the recorded deltas so a
 caller can reason about stage importance without the trained model.
 """
 
@@ -62,7 +62,7 @@ class StageSpec:
     refines: str             # coarse-to-fine level this stage delivers
 
 
-# The canonical three-stage schedule (paper Sec. 5.1 implementation details).
+# The canonical three-stage schedule (implementation details).
 _SCHEDULE: tuple[StageSpec, ...] = (
     StageSpec(1, "primitive_perception", "single_primitive",
               1e-4, 2, 4096, 0.0, "type"),
@@ -165,10 +165,10 @@ def run_pipeline(kind: str, raw_params: list[float]) -> Prediction:
 
 
 # ---------------------------------------------------------------------------
-# Ablation reconstruction (paper Tab. 4): stage importance ordering.
+# Ablation reconstruction: stage importance ordering.
 # ---------------------------------------------------------------------------
 
-# Accuracy drop (absolute) attributed to omitting a stage, from the paper text:
+# Accuracy drop (absolute) attributed to omitting a stage:
 # "~12% without Stage 1", "~15% without Stage 2".
 _ABLATION_DROP = {"primitive_perception": 0.12, "structural_perception": 0.15}
 

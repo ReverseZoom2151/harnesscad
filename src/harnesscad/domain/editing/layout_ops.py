@@ -1,17 +1,19 @@
-"""autocad_layout_ops -- align & distribute objects by axis-aligned bbox.
+"""Align and distribute objects by axis-aligned bounding box.
 
-The ``AutoCAD.py`` COM library exposes ``align_objects`` (LEFT / RIGHT / CENTER)
-and ``distribute_objects`` (even spacing along X) that read each entity's
-reference point / geometric extents through the CAD host and then move it. The
-host does the moving, but the *arrangement arithmetic* -- computing, from a set
-of bounding boxes, the translation that snaps each to a common edge or spreads
-them at a chosen pitch -- is pure deterministic geometry usable anywhere.
+A CAD host's automation layer typically exposes an align operation (LEFT /
+RIGHT / CENTER) and a distribute operation (even spacing along X) that read
+each entity's reference point / geometric extents through the host and then
+move it. The host does the moving, but the *arrangement arithmetic* --
+computing, from a set of bounding boxes, the translation that snaps each to a
+common edge or spreads them at a chosen pitch -- is pure deterministic geometry
+usable anywhere.
 
-This module reimplements that arithmetic on plain ``(minx, miny, maxx, maxy)``
-boxes and adds the natural completions the COM version lacked (TOP / BOTTOM /
-MIDDLE alignment on Y, and even *gap* distribution as well as even *centre*
-distribution). Each function returns the per-box translation ``(dx, dy)`` so the
-caller can apply it however it stores geometry. Stdlib-only, deterministic.
+This module implements that arithmetic on plain ``(minx, miny, maxx, maxy)``
+boxes and adds the natural completions such host automation layers lack (TOP /
+BOTTOM / MIDDLE alignment on Y, and even *gap* distribution as well as even
+*centre* distribution). Each function returns the per-box translation
+``(dx, dy)`` so the caller can apply it however it stores geometry.
+Stdlib-only, deterministic.
 """
 
 from __future__ import annotations

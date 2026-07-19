@@ -1,7 +1,7 @@
-"""EvoCAD topology metrics: Euler-characteristic-based 3D similarity.
+"""Topology metrics: Euler-characteristic-based 3D similarity.
 
-EvoCAD (Preintner et al., 2025, Sec. IV-B) introduces two topology metrics that
-capture a form of *semantic* similarity for texture-less CAD objects, where the
+This introduces two topology metrics that capture a form of *semantic*
+similarity for texture-less CAD objects, where the
 Euler characteristic ``chi = V - E + F`` is a topological invariant for
 2-manifold (watertight) polyhedra and, for a genus-``g`` surface,
 ``chi = 2 - 2g`` (intuitively "number of holes").

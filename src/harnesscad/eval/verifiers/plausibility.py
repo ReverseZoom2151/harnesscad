@@ -1,9 +1,9 @@
 """Rule-based physical-plausibility gate and hard-constraint checker for CAD solids.
 
-Ported from SpatialHero (``core/verifier.py``: ``GeometricConstraintChecker``),
-a multi-modal reward system for text-to-CAD code generation. Unlike the harness's
-``quality/anomaly.py`` -- which turns the same bounding-box shape ratios into a
-scale-robust *feature vector* for statistical outlier scoring -- this module is a
+A deterministic geometric-constraint checker for text-to-CAD code generation.
+Unlike the harness's ``quality/anomaly.py`` -- which turns the same
+bounding-box shape ratios into a scale-robust *feature vector* for statistical
+outlier scoring -- this module is a
 deterministic **acceptance gate**: it applies fixed absolute thresholds to a
 solid's measured properties and returns concrete issue/warning strings plus a
 pass/fail flag. It also evaluates a solid against an explicit constraint dict
@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-# SpatialHero default thresholds (core/verifier.py, check_physical_plausibility).
+# Default physical-plausibility thresholds.
 MIN_DIMENSION = 0.1          # mm; below this a dimension is "very small"
 MAX_DIMENSION = 10000.0      # mm; above this a dimension is "very large"
 EXTREME_ASPECT_HI = 100.0    # side-ratio flagged as extreme when above this
@@ -38,8 +38,8 @@ HIGH_SA_TO_VOL = 1000.0      # surface-area / volume above this -> thin/complex
 class AABB:
     """Axis-aligned bounding box.
 
-    ``width`` spans x, ``depth`` spans y, ``height`` spans z -- matching
-    SpatialHero's convention where height is the vertical (z) extent.
+    ``width`` spans x, ``depth`` spans y, ``height`` spans z -- the convention
+    where height is the vertical (z) extent.
     """
 
     min_x: float

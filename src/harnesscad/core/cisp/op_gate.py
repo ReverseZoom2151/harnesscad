@@ -1,30 +1,29 @@
 """Operation-gating contract layer: validate a CISP op stream BEFORE execution.
 
-Port of the operation-admissibility contract from **cad-cae-copilot**
-(MIT License, Copyright (c) 2026 armpro24-blip), specifically the four schema
-contracts under ``aieng/src/aieng/schemas/``:
+Derived from cad-cae-copilot (MIT License, Copyright (c) 2026 armpro24-blip).
 
-* ``allowed_operations_catalog.schema.json`` -- the per-feature catalog of
+Implements an operation-admissibility contract built from four schema
+contracts:
+
+* an allowed-operations catalog -- the per-feature catalog of
   allowed / forbidden / conditional operations, where a conditional operation
-  carries ``preconditions`` and ``blocked_by_constraints`` (Phase 19 C3
-  "generated operation-admissibility catalog for AI patch planning");
-* ``protected_regions.schema.json`` -- per-feature protected regions with
+  carries ``preconditions`` and ``blocked_by_constraints``;
+* protected regions -- per-feature protected regions with
   ``allowed_operations`` / ``forbidden_operations`` whitelists that override
   the catalog (an op touching a protected region is refused unless the region
   explicitly admits it);
-* ``parameter_edit.schema.json`` -- the parameter-edit preflight contract:
+* a parameter-edit preflight contract:
   value-in-bounds checks against declared ``bounds`` (min / max /
   discrete_values) and the hard rule that "topology-changing parameters must
   be refused";
-* ``patch_proposal.schema.json`` -- the proposal lifecycle whose
+* a patch-proposal lifecycle whose
   ``protected_targets_checked`` / ``protected_targets_avoided`` bookkeeping and
   status vocabulary (``ready_for_validation`` / ``violates_protected_target``
   / ``blocked``) this gate's report mirrors.
 
-The JSON Schema shape checks are reimplemented here in pure Python (the two
-gating schemas are embedded as data below, under the source project's MIT
-license, with attribution) so a catalog dict can be structurally validated
-without any third-party jsonschema dependency.
+The JSON Schema shape checks are implemented here in pure Python (the two
+gating schemas are embedded as data below) so a catalog dict can be
+structurally validated without any third-party jsonschema dependency.
 
 The gate consumes the CISP op stream defined in
 :mod:`harnesscad.core.cisp.ops` (frozen dataclasses with a stable ``OP`` tag,
@@ -81,8 +80,7 @@ __all__ = [
 ]
 
 # ---------------------------------------------------------------------------
-# Vocabulary (verbatim from allowed_operations_catalog.schema.json /
-# patch_proposal.schema.json, cad-cae-copilot, MIT)
+# Vocabulary (the catalog and patch-proposal operation_type / status enums)
 # ---------------------------------------------------------------------------
 
 #: The catalog's (and patch proposal's) operation_type enum.
@@ -117,7 +115,7 @@ WILDCARD_FEATURE = "*"
 
 # CISP op tag -> catalog operation_type. Every registered mutating CISP op
 # creates or places geometry (add_feature) except the editability primitive
-# SetParam, which is exactly the catalog's modify_parameter. Derived from the
+# SetParam, which is exactly the catalog's modify_parameter. Built from the
 # ops registry so the mapping can never name an op CISP does not have.
 _OP_TYPE_OVERRIDES: Dict[str, str] = {
     "set_param": "modify_parameter",
@@ -142,11 +140,9 @@ _FEATURE_REF_FIELDS: Tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 # Embedded schema structure (data, not executable jsonschema)
 #
-# These two dicts are the gating-relevant JSON Schemas from cad-cae-copilot
-# (aieng/src/aieng/schemas/allowed_operations_catalog.schema.json and
-# protected_regions.schema.json), MIT License, Copyright (c) 2026
-# armpro24-blip, embedded verbatim minus the $-metadata keys. They drive the
-# stdlib structural checker below.
+# These two dicts are the gating-relevant JSON Schemas (the allowed-operations
+# catalog and the protected-regions schema), embedded as data minus the
+# $-metadata keys. They drive the stdlib structural checker below.
 # ---------------------------------------------------------------------------
 
 _OPERATION_RULE_SCHEMA: Dict[str, object] = {
@@ -1067,7 +1063,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="op_gate",
         description="Gate a CISP op stream against a per-feature "
-                    "allowed-operations catalog (cad-cae-copilot contract).")
+                    "allowed-operations catalog.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="run the built-in gate scenarios and exit 0")
     parser.add_argument("--catalog", type=str, default=None,

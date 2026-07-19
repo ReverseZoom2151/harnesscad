@@ -1,11 +1,11 @@
-"""Deterministic DDIM sampling + diffuse-denoise from LION (Zeng et al., 2022).
+"""Deterministic DDIM sampling + diffuse-denoise from the latent diffusion model .
 
-LION's main experiments use 1000-step DDPM synthesis, but Section 5.5 highlights
-that switching to **DDIM** [Song et al., 2021] produces high-quality shapes in a
+the model's main experiments use 1000-step DDPM synthesis, but Section 5.5 highlights
+that switching to **DDIM**  produces high-quality shapes in a
 handful of steps ("25-step DDIM samples, 0.89s per shape") for interactive use.
 The DDIM reverse update is *deterministic* (the eta=0 case): given a schedule and
 a noise-prediction ``eps(x_t, t)``, every step is a closed-form combination with
-no injected noise. LION also uses a **diffuse-denoise** procedure (SDEdit-style):
+no injected noise. The sampler also uses a **diffuse-denoise** procedure (SDEdit-style):
 encode a shape, run the forward diffusion only ``tau < T`` steps so only local
 details are destroyed, then denoise back from ``tau`` -- yielding controlled
 variations of the original.
@@ -118,7 +118,7 @@ def ddim_sample(
 
 
 def diffuse_denoise_steps(total_steps: int, tau: int) -> List[int]:
-    """Timestep sequence for LION's diffuse-denoise reverse pass from ``tau``.
+    """Timestep sequence for the model's diffuse-denoise reverse pass from ``tau``.
 
     The forward pass noises a clean encoding up to intermediate step ``tau``; the
     reverse pass then denoises from ``tau`` down to ``0``. Returns the descending

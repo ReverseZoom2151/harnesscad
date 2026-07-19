@@ -1,10 +1,10 @@
-"""Static analysis of BlenderLLM ``bpy`` scripts (Du et al., 2024).
+"""Static analysis of generated ``bpy`` scripts.
 
-BlenderLLM emits a Python script that drives Blender's ``bpy`` API to build a
+The model emits a Python script that drives Blender's ``bpy`` API to build a
 model. Two deterministic things can be checked about such a script *without*
 running Blender:
 
-* **Syntax validity** -- the paper reports a syntax-error rate ``E_syntax`` for
+* **Syntax validity** -- a syntax-error rate ``E_syntax`` can be defined for
   every model; a script either parses as Python or it does not. We decide that
   with :func:`compile`, so the result is exactly Blender's own "does it parse"
   gate, minus the runtime.

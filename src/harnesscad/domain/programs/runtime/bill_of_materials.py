@@ -1,18 +1,16 @@
 """Bill of materials extracted from a SCAD object tree.
 
-Reimplementation of SolidPython's ``bom_part`` / ``bill_of_materials``
-(``solid/utils.py``).  A design built from Python functions can annotate each
-part-producing function with its description, unit price and any extra columns;
-walking the emitted object tree then yields a costed parts list -- the design
-and its BOM can never drift apart, because the BOM *is* the design tree.
+A design built from Python functions can annotate each part-producing function
+with its description, unit price and any extra columns; walking the emitted
+object tree then yields a costed parts list -- the design and its BOM can never
+drift apart, because the BOM *is* the design tree.
 
-Differences from SolidPython, all in the direction of determinism:
+Design choices, all in the direction of determinism:
 
   * the extra column names are passed to :func:`bill_of_materials` instead of
     living in a module-level global that accumulates across calls;
   * the table is rendered here (fixed-width, left-justified, deterministic)
-    rather than depending on the third-party ``prettytable``, which SolidPython
-    silently falls back away from;
+    rather than depending on a third-party table-rendering library;
   * parts are listed in the order they are first met in a depth-first pre-order
     walk, so the same tree always produces byte-identical output.
 

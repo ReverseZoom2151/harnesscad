@@ -1,6 +1,6 @@
-"""Variance-schedule augmentation for Gaussian-Softmax diffusion (SketchDNN 3.4).
+"""Variance-schedule augmentation for Gaussian-Softmax diffusion (the model 3.4).
 
-SketchDNN observes that a continuous variance schedule (e.g. the cosine schedule)
+the model observes that a continuous variance schedule (e.g. the cosine schedule)
 cannot be reused verbatim inside Gaussian-Softmax diffusion: the softmax
 projection distorts the injected noise so that the *discrete* label switches far
 too abruptly (Fig. 2, orange vs. blue curves). The paper therefore augments the

@@ -1,15 +1,15 @@
-"""DeepCAD's official autoencoder accuracy metric (``evaluation/evaluate_ae_acc.py``).
+"""Autoencoder command/parameter accuracy metric for CAD command sequences
+(``evaluation/evaluate_ae_acc.py``-style scoring).
 
-Source: the DeepCAD reference code (Wu, Xiao & Zheng, ICCV 2021). This is the exact
-scoring script behind the ``ACC_cmd`` / ``ACC_param`` numbers in the paper's Table 2,
-reproduced here on the quantised 17-column rows of
-``reconstruction.deepcad2_vector_layout``.
+This reproduces the exact scoring behind the ``ACC_cmd`` / ``ACC_param`` numbers
+commonly reported for CAD sequence autoencoders, evaluated here on the quantised
+17-column rows of ``reconstruction.deepcad2_vector_layout``.
 
-Difference from ``bench/contrastcad_recon_accuracy``
-----------------------------------------------------
-That module implements ContrastCAD's *paraphrase* of the metric: a single tolerance
-over all 16 slots of every correctly-typed command. The released DeepCAD script has
-four extra behaviours that materially change the number, all reproduced here:
+Difference from the alternative reconstruction-accuracy metric elsewhere in this benchmark
+--------------------------------------------------------------------------------------------
+That alternative implements a simpler paraphrase of the metric: a single tolerance
+over all 16 slots of every correctly-typed command. This version has four extra
+behaviours that materially change the number, all reproduced here:
 
 1. ``SOL`` and ``EOS`` positions are **excluded** from ACC_param entirely (they have
    no arguments), while still counting toward ACC_cmd;
@@ -23,11 +23,11 @@ four extra behaviours that materially change the number, all reproduced here:
    the per-model scores are **macro-averaged** over models (mean of per-model means),
    not pooled over all commands.
 
-The routines also return the reference's diagnostic breakdowns: accuracy per command
+The routines also return the same diagnostic breakdowns: accuracy per command
 type and per (command, argument) slot.
 
 Ground-truth command types drive the bookkeeping (``gt_cmd`` selects the row of the
-mask), exactly as in the script. Deterministic, stdlib only.
+mask), exactly as in the underlying scoring approach. Deterministic, stdlib only.
 """
 
 from __future__ import annotations
@@ -81,7 +81,7 @@ def parameter_accuracy(out: Sequence[Row], gt: Sequence[Row],
     """ACC_param for one model: mean over the masked args of correctly-typed rows.
 
     ``SOL``/``EOS`` rows are skipped. Returns ``0.0`` when no argument-bearing command
-    was typed correctly (the reference would produce NaN there).
+    was typed correctly (a naive division would otherwise produce NaN there).
     """
     _check(out, gt)
     scored: list[int] = []
@@ -106,7 +106,7 @@ def evaluate_model(out: Sequence[Row], gt: Sequence[Row],
 
 def evaluate_dataset(pairs: Sequence[tuple[Sequence[Row], Sequence[Row]]],
                      tolerance: int = TOLERANCE) -> dict:
-    """The full script: macro-averaged accuracies plus the two breakdowns.
+    """The full evaluation: macro-averaged accuracies plus the two breakdowns.
 
     ``pairs`` is a sequence of ``(out_vec, gt_vec)`` models. Returns::
 
@@ -116,7 +116,7 @@ def evaluate_dataset(pairs: Sequence[tuple[Sequence[Row], Sequence[Row]]],
          "each_param_acc": {command_name: {arg_name: acc}}}
 
     A command type / slot never seen in the ground truth is reported as ``0.0``
-    (the reference divides by ``count + 1e-6``).
+    (avoiding a divide-by-zero that would otherwise occur for an empty count).
     """
     if not pairs:
         raise ValueError("no models to evaluate")

@@ -1,10 +1,10 @@
-"""Classic clustering-inference algorithms for the Cluster3D benchmark.
+"""Classic clustering-inference algorithms for the non-categorical 3D CAD
+clustering benchmark.
 
-Xiang, Tseng, Wen et al., *Evaluating Deep Clustering Algorithms on
-Non-Categorical 3D CAD Models*. The two-stage baselines apply a *classic*
-clustering algorithm (K-means) on top of learned features, and the annotation
-workflow oversegments with K-means. The learned encoders are research-heavy /
-external, but the classic partitioners are fully deterministic. A shuffle-seeded
+Two-stage baselines for this kind of evaluation apply a *classic* clustering
+algorithm (K-means) on top of learned features, and the annotation workflow
+oversegments with K-means. The learned encoders are research-heavy / external,
+but the classic partitioners are fully deterministic. A shuffle-seeded
 Lloyd K-means already exists in :mod:`bench.contrastcad_latent_metrics`; this
 module adds the algorithms that are *not* present:
 
@@ -44,7 +44,7 @@ def kmeans_plus_plus(points: Sequence[Point], k: int, seed,
     """K-means with k-means++ seeding; returns ``(labels, centroids)``.
 
     Centres are chosen one at a time with probability proportional to the squared
-    distance to the nearest already-chosen centre (Arthur & Vassilvitskii), using
+    distance to the nearest already-chosen centre, using
     ``random.Random(seed)`` so the run is reproducible. Lloyd iterations then run
     until assignments stabilise or ``max_iters`` is reached; nearest-centroid
     ties break to the lowest centroid index.

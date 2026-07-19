@@ -1,17 +1,12 @@
-"""Exact DeepCAD normalisation / quantisation numerics (reference implementation).
-
-Source: ``cadlib/sketch.py`` (``SketchBase.normalize``/``denormalize``),
-``cadlib/extrude.py`` (``CoordSystem.numericalize``, ``Extrude.numericalize``,
-``CADSequence.normalize``) and ``cadlib/macro.py`` (``NORM_FACTOR``) of the DeepCAD
-reference code (Wu, Xiao & Zheng, ICCV 2021).
+"""Exact CAD normalisation / quantisation numerics (reference implementation).
 
 ``reconstruction.deepcad_command_spec`` already models the *command vocabulary* and a
 generic symmetric quantiser ``round((v - low)/(high - low) * (n - 1))``. That is NOT
-what the reference implementation does: DeepCAD uses a *family* of field-specific
-affine maps with ``n`` (not ``n - 1``) in the denominator and a ``clip(0, n-1)``, and
-each field family (unit-cube coordinate, angle, size, sketch pixel, sweep angle) has
-its own map. This module reproduces those maps exactly, so a vector produced here is
-bit-comparable with the released DeepCAD ``.h5`` data.
+what the reference implementation does: it uses a *family* of field-specific affine
+maps with ``n`` (not ``n - 1``) in the denominator and a ``clip(0, n-1)``, and each
+field family (unit-cube coordinate, angle, size, sketch pixel, sweep angle) has its
+own map. This module reproduces those maps exactly, so a vector produced here is
+bit-comparable with the released ``.h5`` data.
 
 The five quantisation families
 ------------------------------
@@ -47,7 +42,7 @@ from __future__ import annotations
 import math
 from typing import Iterable, Sequence
 
-# --- constants (cadlib/macro.py) -------------------------------------------
+# --- constants ---------------------------------------------------------------
 NORM_FACTOR = 0.75
 ARGS_DIM = 256          # quantisation levels
 SKETCH_DIM = 256        # sketch canvas size
@@ -118,11 +113,12 @@ def denumericalize_sweep(level: int, n: int = ARGS_DIM) -> float:
     return level / n * 2 * math.pi
 
 
-# --- shape normalisation (CADSequence.normalize) ----------------------------
+# --- shape normalisation ------------------------------------------------------
 def shape_scale(bbox: Sequence[Sequence[float]], size: float = 1.0) -> float:
     """``size * NORM_FACTOR / max |bbox|`` -- the CAD-sequence normalising scale.
 
-    ``bbox`` is any iterable of 3D points (DeepCAD stacks ``[max_point, min_point]``).
+    ``bbox`` is any iterable of 3D points (the reference stacks
+    ``[max_point, min_point]``).
     Raises ``ValueError`` on a degenerate (all-zero) bounding box.
     """
     peak = max(abs(c) for point in bbox for c in point)
@@ -139,10 +135,10 @@ def normalize_shape(points: Iterable[Sequence[float]],
     return [tuple(c * scale for c in p) for p in points]
 
 
-# --- sketch normalisation (SketchBase.normalize / denormalize) --------------
+# --- sketch normalisation -----------------------------------------------------
 def sketch_bbox_size(points: Iterable[Sequence[float]],
                      start_point: Sequence[float]) -> float:
-    """DeepCAD's ``bbox_size``: max abs deviation of the bbox corners from *start*.
+    """The reference ``bbox_size``: max abs deviation of the bbox corners from *start*.
 
     ``max(|bbox_max - start|, |bbox_min - start|)`` over both axes -- i.e. the
     half-width of the smallest start-point-centred square containing the sketch.
@@ -157,7 +153,7 @@ def sketch_bbox_size(points: Iterable[Sequence[float]],
 
 
 def sketch_normalize_scale(bbox_size: float, size: float = SKETCH_DIM) -> float:
-    """``(size/2 * NORM_FACTOR - 1) / bbox_size`` (sketch.py ``normalize``).
+    """``(size/2 * NORM_FACTOR - 1) / bbox_size`` -- the sketch normalising scale.
 
     The ``-1`` is the reference's overflow guard: after augmentation the profile must
     still fit inside the ``size x size`` canvas.
@@ -197,7 +193,7 @@ def denormalize_sketch(points: Sequence[Sequence[float]], bbox_size: float,
 
 
 # --- the extrude parameter block -------------------------------------------
-#: Order of the 11 extrusion parameters in the DeepCAD vector (macro.py).
+#: Order of the 11 extrusion parameters in the command vector.
 EXT_PARAM_NAMES: tuple[str, ...] = (
     "theta", "phi", "gamma",     # sketch-plane orientation (angles)
     "px", "py", "pz",            # sketch-plane origin (unit-cube coords)

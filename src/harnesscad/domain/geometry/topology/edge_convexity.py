@@ -1,18 +1,16 @@
 """Edge-convexity classification and Attributed Adjacency Graph (deterministic, stdlib-only).
 
-Ported from the Hierarchical-CADNet edge routines used by QueryCAD
-(``src/cad_service/utils/hierarchical_cadnet_utils.py``). QueryCAD grounds a
-natural-language part query onto B-rep faces, and its first geometric step is to
-build a *face adjacency graph* in which every shared edge between two faces is
-labelled **convex**, **concave**, or **smooth**. That single per-edge label is
+Grounding a natural-language part query onto B-rep faces begins with a geometric
+step: build a *face adjacency graph* in which every shared edge between two faces
+is labelled **convex**, **concave**, or **smooth**. That single per-edge label is
 what lets a downstream feature detector tell a pocket (bounded by concave edges)
 from a boss (bounded by convex edges) without any learned model.
 
-The original computes the label with an OpenCascade kernel: it samples the
+A kernel-based approach computes the label directly: it samples the
 outward unit normals ``n0``, ``n1`` of the two faces at the edge midpoint and the
 edge tangent ``t`` there, then takes the sign of ``dot(cross(n0, n1), t)`` (with
 the cross-product order flipped when the edge is reversed). That sign is +1 for a
-convex edge, -1 for a concave edge and 0 for a smooth/tangent edge. The kernel is
+convex edge, -1 for a concave edge and 0 for a smooth/tangent edge. A kernel is
 only a *supplier* of the three vectors; the classification itself is pure
 arithmetic, reimplemented here over plain 3-vectors so it works with any
 geometry source.
@@ -74,9 +72,8 @@ def classify_edge_convexity(
 
     ``normal_a`` / ``normal_b`` are the outward face normals sampled at a common
     point on the edge (order = face ``a`` then face ``b``); ``tangent`` is the
-    edge tangent at that point. ``forward`` mirrors OpenCascade's edge
-    orientation flag -- a reversed edge swaps the cross-product operands, exactly
-    as in the source.
+    edge tangent at that point. ``forward`` mirrors the kernel's edge
+    orientation flag -- a reversed edge swaps the cross-product operands.
 
     The convexity is the sign of ``dot(cross(n_a, n_b), t)``. The vectors need
     not be unit length; the magnitude is scaled out by ``tolerance``, which is
@@ -108,11 +105,11 @@ def classify_edge_convexity(
     return SMOOTH
 
 
-# The continuous three-way sign is a strict *subset* of JoinABLe's discrete
+# The continuous three-way sign is a strict *subset* of the discrete
 # six-state ``Convexity`` enum. These helpers lift a label (or a full
 # classification) into that discrete id via the enum module's authoritative
 # ``EDGE_CONVEXITY_TO_ID`` bridge -- never a second mapping -- so a caller that
-# wants JoinABLe-compatible integer ids can get them. The three states the
+# wants the discrete integer ids can get them. The three states the
 # continuous sign cannot express (``None`` for faces, ``Non-manifold``,
 # ``Degenerate``) are not producible from a sign and remain reachable through
 # ``brep_entity_ids.classify`` by their wire names.
@@ -139,7 +136,7 @@ def classify_edge_convexity_id(
 ) -> "brep_entity_ids.Convexity":
     """Discrete-id variant of :func:`classify_edge_convexity`.
 
-    Runs the identical sign classification and returns the JoinABLe discrete
+    Runs the identical sign classification and returns the discrete
     :class:`Convexity` state (a ``Convexity`` ``IntEnum``, so it is also its
     integer id) instead of the continuous string label. The string API and its
     return type are unchanged; this is an additive path for callers that want the

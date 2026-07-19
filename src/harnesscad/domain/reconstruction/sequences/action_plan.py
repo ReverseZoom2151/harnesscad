@@ -1,12 +1,12 @@
-"""Graph-CAD stage 2: decomposition graph -> ordered CAD action sequence.
+"""Stage two: decomposition graph -> ordered CAD action sequence.
 
-Graph-CAD's second stage turns the hierarchical decomposition graph into an
-ordered CAD action sequence that "respects assembly structure and local
-dependencies" before a third stage emits executable ``bpy`` code. The *model*
-does that with a fine-tuned LLM, but the ordering it must respect is fully
-determined by the graph: children exist before their parent consumes them,
-boolean operands exist before the boolean, ``after`` / ``depends_on`` edges are
-honoured, and a parent's ``assembly_order`` groups run one after another.
+The second stage turns a hierarchical decomposition graph into an ordered CAD
+action sequence that respects assembly structure and local dependencies before
+a later stage emits executable ``bpy`` code. A learned model can do that, but
+the ordering it must respect is fully determined by the graph: children exist
+before their parent consumes them, boolean operands exist before the boolean,
+``after`` / ``depends_on`` edges are honoured, and a parent's ``assembly_order``
+groups run one after another.
 
 This module builds that ground-truth linearisation deterministically. It walks
 the build waves of :mod:`reconstruction.graphcad_knowledge_graph`, expands

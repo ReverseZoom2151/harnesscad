@@ -1,8 +1,8 @@
-"""Scaled gradient-variance consistency metric (CFD, Appx. F, Eq. 15).
+"""Scaled gradient-variance consistency metric.
 
-CFD reports that a more *consistent* flow yields lower gradient variance during
-optimization, and measures it with a scaled statistic built from the Adam-style
-exponential-moving-average moments:
+A more *consistent* flow yields lower gradient variance during optimization.
+This module measures that with a scaled statistic built from the usual
+exponential-moving-average moment estimates:
 
     m_hat ~ E[g]              (first moment)
     v_hat ~ E[g^2]           (second moment)
@@ -31,7 +31,7 @@ def ema_moments(
     beta2: float = 0.999,
     bias_correction: bool = True,
 ) -> tuple:
-    """Return (m_hat, v_hat): Adam-style EMA of g and g^2 over the stream.
+    """Return (m_hat, v_hat): bias-corrected EMA of g and g^2 over the stream.
 
     ``grads`` is a sequence of equal-length gradient vectors, one per step.
     """
@@ -67,7 +67,7 @@ def scaled_gradient_variance(
     bias_correction: bool = True,
     eps: float = 1e-12,
 ) -> float:
-    """Compute sigma of Eq. 15 from a stream of gradient vectors.
+    """Compute the scaled gradient-variance sigma from a stream of gradients.
 
     Returns a scalar in [0, 1]: sqrt(sum(v_hat - m_hat^2)) / sqrt(sum(v_hat)).
     """

@@ -1,17 +1,17 @@
-"""Text2CAD-Bench CadQuery operation-sequence edit distance.
+"""Text-to-CAD benchmark programmatic-CAD operation-sequence edit distance.
 
-Deterministic sequence-level metric for Text2CAD-Bench (Wang et al.,
-"Text2CAD-Bench"). The benchmark ground truth is executable CadQuery whose
-construction is a *sequence of API calls* (Appendix A reports mean "API Calls"
-of 10.8 / 15.0 / 26.8 for L1/L2/L3). This module measures how close a model's
+Deterministic sequence-level metric for a text-to-CAD benchmark whose ground
+truth is an executable programmatic-CAD script whose construction is a
+*sequence of API calls*, with mean call counts that scale with model
+complexity across difficulty tiers. This module measures how close a model's
 operation sequence is to the ground-truth construction sequence via Levenshtein
 edit distance over operation tokens, normalised by the longer sequence.
 
 Distinct from ``bench/edit_metrics`` (ranked B-rep edit retention / pass@k) and
-``bench/sketch_sequence_metrics``: here the tokens are CadQuery API operation
-names (normalised via ``t2cadbench_taxonomy.normalize_operation``), and we
-report a length-normalised distance plus a similarity in [0, 1] tailored to the
-benchmark's construction-sequence comparison. Sequences are injected.
+``bench/sketch_sequence_metrics``: here the tokens are programmatic-CAD API
+operation names (normalised via ``t2cadbench_taxonomy.normalize_operation``),
+and we report a length-normalised distance plus a similarity in [0, 1] tailored
+to the benchmark's construction-sequence comparison. Sequences are injected.
 
 No wall clock, no randomness.
 """
@@ -49,15 +49,15 @@ def levenshtein(a, b):
 def sequence_edit_distance(predicted, truth):
     """Edit distance / normalised distance / similarity of two op sequences.
 
-    predicted, truth : iterables of CadQuery operation tokens.
+    predicted, truth : iterables of programmatic-CAD operation tokens.
 
     Returns a dict:
       distance          : raw Levenshtein token edit distance.
       max_len           : max(len(predicted), len(truth)).
       normalized_distance : distance / max_len (0.0 for two empty sequences).
       similarity        : 1 - normalized_distance.
-      pred_len, truth_len, api_call_delta : length bookkeeping (paper "API
-                          Calls" proxy; delta = pred_len - truth_len).
+      pred_len, truth_len, api_call_delta : length bookkeeping (an "API
+                          call count" proxy; delta = pred_len - truth_len).
     """
     p = _tokenize(predicted)
     t = _tokenize(truth)

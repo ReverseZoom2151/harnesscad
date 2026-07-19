@@ -1,17 +1,16 @@
-"""CADReview error detector — locate the wrong block and name the error type.
+"""Error detector -- locate the wrong block and name the error type.
 
-The CADReview task is: given a (possibly erroneous) CAD program and a reference
-design, produce the error *type* (one of the eight scenarios in
-:mod:`cadreview_taxonomy`) AND the ID of the offending code block. The paper
-learns this with a multimodal model that aligns a rendered image with the
-program; that vision-grounded detector is learned/external and out of scope
-here.
+The task is: given a (possibly erroneous) CAD program and a reference design,
+produce the error *type* (one of the eight scenarios in
+:mod:`cadreview_taxonomy`) AND the ID of the offending code block. A
+vision-grounded variant would learn this with a multimodal model that aligns a
+rendered image with the program; that learned detector is out of scope here.
 
 This module implements the deterministic, *reference-program*-grounded half of
 the same task: when a known-correct reference program is available (which is how
-the CADReview benchmark itself is constructed — every erroneous sample is a
-mutation of a correct one), the discrepancy can be recovered exactly by a
-structural block diff, with no model. :func:`detect` segments both programs
+the benchmark itself is constructed -- every erroneous sample is a mutation of a
+correct one), the discrepancy can be recovered exactly by a structural block
+diff, with no model. :func:`detect` segments both programs
 (:mod:`cadreview_blocks`), aligns their blocks by signature, and classifies the
 difference:
 
@@ -20,9 +19,9 @@ difference:
   * an aligned pair that differs -> Primitive / Rotation / Position / Size /
     Logic / Constant error, chosen by which construct actually changed.
 
-It returns the primary discrepancy (paper samples carry one injected error) plus
+It returns the primary discrepancy (samples carry one injected error) plus
 every discrepancy found, each as a :class:`Detection` naming the error type and
-block ID — exactly the pair the accuracy metric ("Acc") scores. Pure stdlib.
+block ID -- exactly the pair the accuracy metric ("Acc") scores. Pure stdlib.
 """
 
 from __future__ import annotations

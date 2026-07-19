@@ -802,33 +802,33 @@ class _Parser:
 # --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
-# dialect gate: refuse RapCAD rather than mis-diagnose it
+# dialect gate: refuse the sibling dialect rather than mis-diagnose it
 # --------------------------------------------------------------------------
 #
-# This module implements OpenSCAD, transliterated from RapCAD's
-# ``doc/openscad.bnf``. RapCAD ships a *second*, larger grammar for its own
-# language, ``doc/rapcad.bnf`` (202 lines against openscad.bnf's 121), which
-# this port never saw. Fed a ``.rcad`` file, the OpenSCAD parser below does not
-# merely fail -- it fails *confidently and wrongly*, reporting a pile of
-# invented syntax errors at constructs that are perfectly valid RapCAD.
+# This module implements OpenSCAD, following the OpenSCAD-family grammar. A
+# sibling rational-numeric OpenSCAD-family dialect carries a second, larger
+# grammar for its own language that this validator does not implement. Fed a
+# ``.rcad`` file, the OpenSCAD parser below does not merely fail -- it fails
+# *confidently and wrongly*, reporting a pile of invented syntax errors at
+# constructs that are perfectly valid in that dialect.
 #
 # Rather than pretend to validate a language we do not implement, we refuse it.
 # The refusal is one diagnostic naming the marker and the construct, so the
-# caller learns "this is RapCAD, and I do not speak RapCAD" instead of "line 4:
+# caller learns the input is a different dialect instead of seeing "line 4:
 # expected ';'". See ``harnesscad.domain.programs.rapcad_language`` for the
-# RapCAD semantics the harness *does* model.
+# dialect semantics the harness *does* model.
 #
-# Each marker is a construct that is valid RapCAD and is not valid OpenSCAD;
-# citations are into the RapCAD source (GPL-3, facts only, nothing copied).
+# Each marker is a construct that is valid in that dialect and is not valid
+# OpenSCAD; the descriptions below are stated as language facts, nothing copied.
 
 #: ``(marker_text, human_description)`` -- word markers must appear as whole
 #: identifiers; the rest match anywhere outside strings, comments and paths.
 RAPCAD_MARKERS: Tuple[Tuple[str, str], ...] = (
-    # structural keywords (src/lexer.l:90-96)
+    # structural keywords
     ("return", "RapCAD `return` (imperative user functions)"),
     ("const", "RapCAD `const` declaration"),
     ("param", "RapCAD `param` (parametric variable)"),
-    # operators (src/lexer.l:97-112, src/parser.y:305-320)
+    # operators
     ("::", "RapCAD `::` namespace operator"),
     ("~=", "RapCAD `~=` append operator"),
     ("**", "RapCAD `**` cross-product operator"),
@@ -836,7 +836,7 @@ RAPCAD_MARKERS: Tuple[Tuple[str, str], ...] = (
     ("./", "RapCAD `./` componentwise-divide operator"),
     ("^", "RapCAD `^` exponent operator"),
     (chr(0x00B1), "RapCAD `+/-` (U+00B1) tolerance-interval operator"),
-    # doc comments are lexed as grammar tokens, not comments (src/lexer.l:131)
+    # doc comments are lexed as grammar tokens, not comments
     ("/**", "RapCAD `/** @param */` doc-comment tokens"),
 )
 
@@ -846,11 +846,11 @@ _IDENT_CHARS = frozenset(
 
 
 def _dialect_scan(source: str) -> Optional[Tuple[int, int, str]]:
-    """First RapCAD-only construct in ``source`` as ``(line, col, what)``.
+    """First dialect-only construct in ``source`` as ``(line, col, what)``.
 
     Walks the raw text skipping strings, comments and ``<...>`` include/use/
     import paths, so that a path like ``include <./lib.scad>`` is not mistaken
-    for the ``./`` operator. Returns ``None`` when nothing RapCAD-specific is
+    for the ``./`` operator. Returns ``None`` when nothing dialect-specific is
     seen. Deterministic: the earliest marker always wins.
     """
     i, line, col, n = 0, 1, 1, len(source)
@@ -915,9 +915,9 @@ def _dialect_scan(source: str) -> Optional[Tuple[int, int, str]]:
                 for text, what in RAPCAD_MARKERS:
                     if text == word:
                         return line, col, what
-            # a bare number immediately followed by '[' is a RapCAD tolerance
-            # interval literal (src/parser.y:301-304); OpenSCAD has no such
-            # form, and this parser would silently read it as an index.
+            # a bare number immediately followed by '[' is a tolerance-interval
+            # literal in the sibling dialect; OpenSCAD has no such form, and
+            # this parser would silently read it as an index.
             if word and word[0].isdigit() and j < n and source[j] == "[":
                 return (line, col,
                         "RapCAD tolerance-interval literal `N[a,b]`")
@@ -940,18 +940,17 @@ def _dialect_scan(source: str) -> Optional[Tuple[int, int, str]]:
 
 def detect_rapcad(source: str,
                   path: Optional[str] = None) -> Optional[Diagnostic]:
-    """Refuse RapCAD input, returning the refusal diagnostic (or ``None``).
+    """Refuse sibling-dialect input, returning the refusal diagnostic (or ``None``).
 
     Two independent signals, either of which is enough:
 
-    * ``path`` ends in ``.rcad`` -- RapCAD's own extension; and
+    * ``path`` ends in ``.rcad`` -- that dialect's own extension; and
     * ``source`` contains a construct from :data:`RAPCAD_MARKERS` that is valid
-      RapCAD and is not valid OpenSCAD.
+      in the sibling dialect and is not valid OpenSCAD.
 
     A leading UTF-8 BOM is *not* treated as a signal on its own (it is a common
-    editor artefact), though RapCAD does lex it as a real token
-    (``src/lexer.l:147``) while this module's OpenSCAD lexer would call it a
-    lexical fault.
+    editor artefact), though that dialect does lex it as a real token while this
+    module's OpenSCAD lexer would call it a lexical fault.
     """
     hit = _dialect_scan(source)
     if path is not None and path.lower().endswith(".rcad"):
@@ -975,7 +974,7 @@ def validate(source: str, path: Optional[str] = None) -> Result:
     """Validate ``source`` against the OpenSCAD grammar.
 
     Returns a :class:`Result` whose ``ok`` is True when no diagnostic fired.
-    RapCAD input is *refused* up front with a single :attr:`Rule.DIALECT`
+    Sibling-dialect input is *refused* up front with a single :attr:`Rule.DIALECT`
     diagnostic (see :func:`detect_rapcad`) instead of being run through a
     grammar that does not describe it. Then: lexical faults short-circuit;
     unbalanced delimiters short-circuit (with every unmatched position
@@ -1051,9 +1050,9 @@ _INVALID_SNIPPETS: Tuple[Tuple[str, str, str], ...] = (
      "x = true ? 1;", Rule.EXPR),
 )
 
-# RapCAD constructs that are valid RapCAD and not valid OpenSCAD. Every one
-# must be REFUSED as a dialect, not reported as a syntax error. All snippets are
-# written from scratch for this test; no RapCAD file is vendored.
+# Sibling-dialect constructs that are valid there and not valid OpenSCAD. Every
+# one must be REFUSED as a dialect, not reported as a syntax error. All snippets
+# are written from scratch for this test; no external file is vendored.
 _RAPCAD_SNIPPETS: Tuple[Tuple[str, str], ...] = (
     ("imperative function with return",
      "function f(x) { return x * 2; }"),
@@ -1070,8 +1069,8 @@ _RAPCAD_SNIPPETS: Tuple[Tuple[str, str], ...] = (
     ("doc comment tokens", "/** @param r radius */\nmodule ring(r) { }"),
 )
 
-# Constructs that merely *look* like RapCAD markers but are ordinary OpenSCAD,
-# and must NOT trip the dialect gate.
+# Constructs that merely *look* like sibling-dialect markers but are ordinary
+# OpenSCAD, and must NOT trip the dialect gate.
 _NOT_RAPCAD_SNIPPETS: Tuple[Tuple[str, str], ...] = (
     ("relative include path", "include <./lib/util.scad>\ncube(1);"),
     ("relative use path", "use <../shared/gears.scad>\ncube(1);"),

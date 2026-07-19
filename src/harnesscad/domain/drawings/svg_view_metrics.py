@@ -1,11 +1,10 @@
-"""MUSE 4-view engineering-drawing SVG metrics (deterministic).
+"""Four-view engineering-drawing SVG metrics (deterministic).
 
-Re-implements ``src/judge_system/svg_metrics.py`` of the muse-benchmark repo
-(Dong et al., "MUSE"). MUSE renders each candidate CAD solid to a four-view
-engineering drawing (Isometric / Top / Front / Right) as an SVG; the judge feeds
-a handful of *deterministic* structural measurements about that drawing into the
-rubric-deduction engine (``svg_path_count`` and ``estimated_component_count`` are
-read by several rules in ``bench/muse2_rubric_deductions``).
+Each candidate CAD solid is rendered to a four-view engineering drawing
+(Isometric / Top / Front / Right) as an SVG; a judge feeds a handful of
+*deterministic* structural measurements about that drawing into a
+rubric-deduction engine (path count and estimated component count are read by
+several deduction rules).
 
 This module extracts those measurements from the SVG text with the stdlib XML
 parser only -- no rasteriser, no rsvg, no VTK:
@@ -30,7 +29,7 @@ from __future__ import annotations
 import re
 import xml.etree.ElementTree as ET
 
-# The four canonical MUSE view labels.
+# The four canonical view labels.
 VIEW_LABELS = ("Isometric", "Top", "Front", "Right")
 _SVG_NS = "http://www.w3.org/2000/svg"
 _NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
@@ -51,7 +50,7 @@ def path_bbox(path_d):
     """Axis-aligned bbox (xmin, ymin, xmax, ymax) from a path 'd' string.
 
     Treats the numeric tokens in ``d`` as an alternating x,y coordinate stream
-    (as the MUSE drawing generator emits) and takes their extent. Returns None
+    (as the drawing generator emits) and takes their extent. Returns None
     if fewer than two coordinate pairs are present.
     """
     numbers = [float(t) for t in _NUMBER.findall(path_d or "")]

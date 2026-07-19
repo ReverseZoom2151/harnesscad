@@ -1,20 +1,19 @@
-"""Provenance evidence bundle for a design spec's standards data (Anvilate).
+"""Provenance evidence bundle for a design spec's standards data.
 
-**Anvilate**'s promise is "geometry an engineer can trust *with the evidence
-attached*". Its ``evidence`` module walks a typed Design Spec and rolls every
-standards record the part leans on into an auditable provenance bundle -- one
-:class:`SourceRecord` per source (the material, each standard component
-interface, the general-tolerance class that always applies, the fit on a
-toleranced bore, the geometric-tolerance standard for a call-out), each naming
-the standard or dataset behind it. "Nothing is asserted without a citation; this
-is what a design review reads."
+The goal is geometry an engineer can trust *with the evidence attached*. This
+collector walks a typed Design Spec and rolls every standards record the part
+leans on into an auditable provenance bundle -- one :class:`SourceRecord` per
+source (the material, each standard component interface, the general-tolerance
+class that always applies, the fit on a toleranced bore, the geometric-tolerance
+standard for a call-out), each naming the standard or dataset behind it. Nothing
+is asserted without a citation; this is what a design review reads.
 
-This module reimplements that collector over a lightweight, stdlib spec (a plain
-mapping or the provided dataclasses -- no OCCT, no external units library). It
-adds a **deterministic bundle hash** so two identical specs produce byte-identical
-provenance, and a :meth:`EvidenceBundle.missing_citations` gate that flags any
-referenced material/component the databases cannot vouch for -- the export gate
-Anvilate wants ("nothing unvalidated leaves the tool").
+This module implements that collector over a lightweight, stdlib spec (a plain
+mapping or the provided dataclasses -- no B-rep kernel, no external units
+library). It adds a **deterministic bundle hash** so two identical specs produce
+byte-identical provenance, and a :meth:`EvidenceBundle.missing_citations` gate
+that flags any referenced material/component the databases cannot vouch for --
+the export gate that ensures nothing unvalidated leaves the tool.
 
 It is distinct from :mod:`harnesscad.domain.standards.ingest` (which parses a
 standard's clause text): this *aggregates* the citations a specific part relies

@@ -1,9 +1,9 @@
-"""Text2CAD Invalidity Ratio (IR) metric (Khan et al., Table 1 / Sec. 15).
+"""Text-to-CAD Invalidity Ratio (IR) metric.
 
-The Text2CAD paper reports the **Invalidity Ratio** alongside F1 and Chamfer
-distance: "the proportion of invalid CAD sequences". Sec. 15 (Failure Cases)
-gives the *exact* deterministic conditions that make a generated sequence
-invalid ("Invalidity ... occurs in approximately 1% of the test samples"):
+Text-to-CAD sequence evaluation reports an **Invalidity Ratio** alongside F1 and
+Chamfer distance: "the proportion of invalid CAD sequences". The exact
+deterministic conditions that make a generated sequence invalid (occurring in
+roughly 1% of typical test samples) are:
 
   * a **line** whose start and end points are identical;
   * an **arc** with the same start and end points (degenerate);
@@ -19,9 +19,8 @@ particular decoder, e.g.::
     {"curves": [{"type": "line", "start": (0, 0), "end": (0, 0)}],
      "extrusion": {"d_plus": 0.0, "d_minus": 0.0}}
 
-Existing metric modules (``bench.cadrille_metrics``, ``bench.diffusioncad_
-generation_metrics``) compute different quantities and none encode these exact
-degeneracy rules.
+Other metric modules in this package compute different quantities and none
+encode these exact degeneracy rules.
 """
 
 from __future__ import annotations
@@ -87,7 +86,7 @@ def sequence_is_invalid(sequence: dict, eps: float = EPS) -> bool:
 
 
 def invalidity_ratio(sequences, eps: float = EPS) -> float:
-    """Fraction of sequences that are invalid (Table 1 ``IR``).
+    """Fraction of sequences that are invalid (``IR``).
 
     Returns 0.0 for an empty collection.
     """
@@ -99,5 +98,5 @@ def invalidity_ratio(sequences, eps: float = EPS) -> float:
 
 
 def invalidity_percentage(sequences, eps: float = EPS) -> float:
-    """Invalidity ratio expressed as a percentage (paper reports ``~1%``)."""
+    """Invalidity ratio expressed as a percentage (typically ``~1%``)."""
     return 100.0 * invalidity_ratio(sequences, eps)

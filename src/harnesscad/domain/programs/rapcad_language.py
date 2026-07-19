@@ -1,14 +1,14 @@
-"""RapCAD's genuinely-novel numeric and literal semantics, reimplemented exactly.
+"""Exact numeric and literal semantics of a rational-numeric OpenSCAD dialect.
 
-RapCAD (Giles Bathgate, GPL-3) is usually filed away as "OpenSCAD with a nicer
-IDE". That is wrong in a way that matters to any tool that reads or generates
-its ``.rcad`` files: RapCAD's *numeric tower and literal grammar* are a
-different language from OpenSCAD's, and the differences are silent -- a program
-that means one thing in OpenSCAD means another in RapCAD without any syntax
-error to warn you.
+A rational-numeric OpenSCAD-family dialect -- the one whose files carry the
+``.rcad`` extension -- is usually filed away as "OpenSCAD with a nicer IDE".
+That is wrong in a way that matters to any tool that reads or generates those
+files: its *numeric tower and literal grammar* are a different language from
+OpenSCAD's, and the differences are silent -- a program that means one thing in
+OpenSCAD means another in this dialect without any syntax error to warn you.
 
-This module reimplements the four novel pieces, from scratch, in stdlib
-:class:`fractions.Fraction`, so the harness can reason about RapCAD numbers
+This module models the four novel pieces in stdlib
+:class:`fractions.Fraction`, so the harness can reason about those numbers
 instead of guessing:
 
 1.  **Unit-suffixed literals over a millimetre base, with exact rational
@@ -18,10 +18,10 @@ instead of guessing:
 
 2.  **An exact-rational numeric tower, not IEEE-754 doubles.** ``"1.5"`` becomes
     the exact rational ``15/10``, not the nearest double. The one-line
-    discriminator between a real RapCAD and any double-based OpenSCAD is
-    ``1.0000000000000001 != 1.0``: **true** in RapCAD, **false** everywhere
-    else, because in doubles both literals are the same bit pattern. See
-    :func:`is_exact_rational_dialect`.
+    discriminator between a true exact-rational dialect and any double-based
+    OpenSCAD is ``1.0000000000000001 != 1.0``: **true** under exact rationals,
+    **false** everywhere else, because in doubles both literals are the same
+    bit pattern. See :func:`is_exact_rational_dialect`.
 
 3.  **Engineering tolerance intervals** ``N[a,b]``, ``N[a]`` and ``N PM e``,
     with real interval arithmetic. The asymmetric form is easy to get backwards:
@@ -32,42 +32,32 @@ instead of guessing:
     plus ``ang(angle, axis)`` as an axis-angle constructor with identity
     ``<1,0,0,0>``. See :class:`Quaternion` and :func:`ang`.
 
-Attribution and method
-----------------------
-Everything below is a *fact about the RapCAD language*, established by reading
-the RapCAD sources and recorded with a path and line number. RapCAD is GPL-3;
-no RapCAD source text is reproduced here, and no ``.rcad`` fixture is vendored
+Method
+------
+Everything below is a *fact about the dialect*, stated as behaviour. No
+external source text is reproduced here, and no ``.rcad`` fixture is vendored
 -- the test inputs in :data:`FACTS` and in the selfcheck are written from
-scratch for this module. Sources consulted (paths relative to the RapCAD
-source root):
+scratch for this module. The behaviours modelled are:
 
-* ``src/decimal.cpp:28-56``   -- ``to_decimal``: a decimal string is rewritten
-  into an ``mpq`` rational (digits over a power of ten), so parsing is exact.
-* ``src/decimal.cpp:113-140`` -- ``parse_numberexp`` / ``parse_mixed_rational``
-  / ``parse_rational``: exponent, mixed-number and repeated-``/`` forms.
-* ``src/decimal.cpp:142-173`` -- ``get_unit``: the seven unit suffixes and
-  their exact factors, tested longest-first.
-* ``src/lexer.l:50-70``       -- the ``N``/``E``/``Z``/``R``/``M``/``U``
-  character classes that define what a numeric literal *is*.
-* ``src/lexer.l:113-118``     -- the four number token rules; note both
-  rational rules require a unit suffix.
-* ``src/tokenbuilder.cpp:332-358`` -- ``buildNumber`` / ``buildNumberExp`` /
-  ``buildRational``: value = mantissa * unit; the zero-denominator rule
-  returns the ``UNDEF`` token rather than raising or producing an infinity.
-* ``src/numbervalue.cpp:85-88``    -- division/modulus by zero yields undefined.
-* ``src/parser.y:299-304``    -- the three interval literal productions.
-* ``src/parser.y:305-306``    -- the quaternion literal production.
-* ``src/treeevaluator.cpp:412-432`` -- interval evaluation: ``lower = n - less``
-  and ``upper = n + more``, with ``less`` defaulting to ``more``.
-* ``src/intervalvalue.cpp:58-98``   -- interval add/subtract/multiply/divide
-  and the equality rules.
-* ``src/function/angfunction.cpp:27-48`` -- ``ang(angle, axis)``.
-* ``src/rmath.cpp:221-235``   -- ``r_right_sin``/``r_right_cos``: exact rounding
-  at right angles, which is why ``ang(0, axis)`` is exactly ``<1,0,0,0>``.
-* ``src/complexvalue.cpp:107-119`` -- the Hamilton product for ``*``.
+* a decimal string is rewritten into an exact rational (digits over a power of
+  ten), so parsing is exact;
+* exponent, mixed-number and repeated-``/`` literal forms;
+* seven unit suffixes with exact factors, tested longest-first;
+* the character classes that define what a numeric literal *is*, and the four
+  number token rules -- note both rational rules require a unit suffix;
+* a literal's value is mantissa * unit; the zero-denominator rule yields the
+  undefined value rather than raising or producing an infinity, and runtime
+  division/modulus by zero is likewise undefined;
+* three interval literal productions, evaluated as ``lower = n - less`` and
+  ``upper = n + more``, with ``less`` defaulting to ``more``;
+* interval add/subtract/multiply/divide and the equality rules;
+* the quaternion literal production, ``ang(angle, axis)``, and exact rounding
+  of sine/cosine at right angles, which is why ``ang(0, axis)`` is exactly
+  ``<1,0,0,0>``;
+* the Hamilton product for ``*``.
 
 Not a duplicate of existing harness modules -- checked before writing:
-:mod:`harnesscad.domain.numeric.interval_arithmetic` is libfive f-rep *spatial*
+:mod:`harnesscad.domain.numeric.interval_arithmetic` is f-rep *spatial*
 bounding (a different purpose: pruning an implicit-surface octree), and
 :mod:`harnesscad.domain.numeric.unit_expressions` is a float, SI-metre-base
 expression evaluator with no ``th`` suffix and no notion of a unit-suffixed
@@ -104,7 +94,7 @@ __all__ = [
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Fact:
-    """One verified claim about the RapCAD language, with its source location."""
+    """One verified claim about the dialect, with its recorded reference."""
 
     topic: str
     claim: str
@@ -118,8 +108,8 @@ class Fact:
 # 1. unit-suffixed literals -- exact rationals over a millimetre base          #
 # --------------------------------------------------------------------------- #
 
-#: Suffix -> exact multiplier, in millimetres. The base unit of RapCAD is the
-#: millimetre: a bare number and a ``mm``-suffixed number are the same value.
+#: Suffix -> exact multiplier, in millimetres. The base unit of the dialect is
+#: the millimetre: a bare number and a ``mm``-suffixed number are the same value.
 UNIT_FACTORS: Dict[str, Fraction] = {
     "um": Fraction(1, 1000),      # micrometre
     "mm": Fraction(1),            # millimetre -- the base
@@ -130,7 +120,7 @@ UNIT_FACTORS: Dict[str, Fraction] = {
     "ft": Fraction(3048, 10),     # foot = 304.8 mm, exactly
 }
 
-#: Suffixes in the order RapCAD tests them. The order is load-bearing: ``um``,
+#: Suffixes in the order the dialect tests them. The order is load-bearing: ``um``,
 #: ``mm`` and ``cm`` must be tried before the bare ``m``, or ``5cm`` would lex
 #: as the number ``5c`` times metres. (``th``/``in``/``ft`` do not end in ``m``,
 #: so their position after ``m`` is harmless.)
@@ -141,8 +131,8 @@ def split_unit(text: str) -> Tuple[str, Fraction]:
     """Strip a trailing unit suffix, returning ``(mantissa_text, factor)``.
 
     An unsuffixed number keeps a factor of 1 -- millimetres are the base unit.
-    Matching is longest-first, mirroring ``get_unit``'s ordered ``endsWith``
-    chain (``src/decimal.cpp:142-173``).
+    Matching is longest-first, mirroring the dialect's ordered suffix-test
+    chain.
     """
     for suffix in UNIT_SUFFIXES:
         if text.endswith(suffix):
@@ -153,9 +143,8 @@ def split_unit(text: str) -> Tuple[str, Fraction]:
 def _parse_plain(text: str) -> Optional[Fraction]:
     """Exact value of a decimal digit string: ``"1.5"`` -> ``Fraction(15, 10)``.
 
-    Reimplements ``to_decimal`` (``src/decimal.cpp:28-56``), which removes the
-    point and divides by the corresponding power of ten -- so the result is
-    exact, never the nearest double.
+    The point is removed and the digits divided by the corresponding power of
+    ten -- so the result is exact, never the nearest double.
     """
     if not text:
         return None
@@ -175,9 +164,9 @@ def _parse_plain(text: str) -> Optional[Fraction]:
 
 
 def _parse_exp(text: str) -> Optional[Fraction]:
-    """``parse_numberexp`` (``src/decimal.cpp:113-121``): mantissa ``e`` power.
+    """Exponent form: mantissa ``e`` power.
 
-    The exponent may itself be fractional in RapCAD's grammar; a non-integer
+    The exponent may itself be fractional in the dialect's grammar; a non-integer
     exponent cannot stay exact, so it is refused here rather than silently
     returning a float.
     """
@@ -198,11 +187,11 @@ def _parse_exp(text: str) -> Optional[Fraction]:
 
 
 def _parse_rational(text: str) -> Optional[Fraction]:
-    """``parse_rational`` (``src/decimal.cpp:132-140``): repeated ``/``.
+    """Rational form: repeated ``/``.
 
     Splits on the *last* slash and recurses left, so ``1/2/4`` is ``(1/2)/4``
-    -- left-associative, matching the C++ recursion. A zero divisor makes the
-    whole literal undefined (see :func:`parse_number`).
+    -- left-associative. A zero divisor makes the whole literal undefined
+    (see :func:`parse_number`).
     """
     at = text.rfind("/")
     if at < 0:
@@ -215,7 +204,7 @@ def _parse_rational(text: str) -> Optional[Fraction]:
 
 
 def _parse_mixed(text: str) -> Optional[Fraction]:
-    """``parse_mixed_rational`` (``src/decimal.cpp:124-130``): ``1 1/2`` = 3/2.
+    """Mixed-number form: ``1 1/2`` = 3/2.
 
     Splits on the *first* space; the whole part is parsed plainly and the
     remainder as a rational.
@@ -231,14 +220,13 @@ def _parse_mixed(text: str) -> Optional[Fraction]:
 
 
 def parse_number(literal: str) -> Optional[Fraction]:
-    """Exact millimetre value of one RapCAD numeric literal, or ``None``.
+    """Exact millimetre value of one numeric literal of the dialect, or ``None``.
 
-    ``None`` means the literal is ``undef`` in RapCAD -- which is what a
-    zero-denominator literal such as ``1/0m`` produces: RapCAD's lexer has a
-    dedicated rule for a zero denominator that returns the ``UNDEF`` token
-    (``src/lexer.l:116`` -> ``src/tokenbuilder.cpp:348-351``), and at runtime
-    division by zero is likewise undefined rather than an infinity or an
-    exception (``src/numbervalue.cpp:85-88``). It also means "not a literal".
+    ``None`` means the literal is undefined -- which is what a zero-denominator
+    literal such as ``1/0m`` produces: the lexer has a dedicated rule for a zero
+    denominator that yields the undefined token, and at runtime division by zero
+    is likewise undefined rather than an infinity or an exception. It also means
+    "not a literal".
 
     The whole string is *one* literal, suffix included. ``1/2m`` is a single
     token worth exactly 500 mm; there is no division operator involved.
@@ -254,14 +242,13 @@ def parse_number(literal: str) -> Optional[Fraction]:
 
 
 def is_exact_rational_dialect(evaluate_ne) -> bool:
-    """Does ``evaluate_ne`` behave like RapCAD's exact tower or like doubles?
+    """Does ``evaluate_ne`` behave like an exact rational tower or like doubles?
 
     ``evaluate_ne`` is any callable taking two literal *strings* and returning
     whether the dialect considers them unequal. The probe is the sharpest
     one-liner available: ``1.0000000000000001 != 1.0``. Under IEEE-754 doubles
     both literals round to the same bit pattern, so the answer is False; under
-    RapCAD's ``mpq`` tower they are distinct rationals, so it is True
-    (``src/decimal.cpp:28-56``).
+    an exact rational tower they are distinct rationals, so it is True.
     """
     return bool(evaluate_ne("1.0000000000000001", "1.0"))
 
@@ -271,14 +258,14 @@ def is_exact_rational_dialect(evaluate_ne) -> bool:
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Interval:
-    """A RapCAD tolerance interval: a closed range ``[lower, upper]``.
+    """A tolerance interval: a closed range ``[lower, upper]``.
 
-    Build it from a literal with :meth:`from_literal`, which applies RapCAD's
-    (easily-inverted) convention: for ``N[a, b]`` the first bracketed value is
-    the deviation *upward* and the second the deviation *downward*, so the
-    range is ``[N - b, N + a]`` (``src/treeevaluator.cpp:412-432``).
+    Build it from a literal with :meth:`from_literal`, which applies the
+    dialect's (easily-inverted) convention: for ``N[a, b]`` the first bracketed
+    value is the deviation *upward* and the second the deviation *downward*, so
+    the range is ``[N - b, N + a]``.
 
-    Arithmetic follows ``src/intervalvalue.cpp:58-98``.
+    Arithmetic is ordinary interval arithmetic over the four corner products.
     """
 
     lower: Fraction
@@ -299,12 +286,12 @@ class Interval:
     # -- presentation ------------------------------------------------------ #
     @property
     def midpoint(self) -> Fraction:
-        """The centre RapCAD prints: ``upper - (upper - lower)/2``."""
+        """The centre the dialect prints: ``upper - (upper - lower)/2``."""
         return self.upper - (self.upper - self.lower) / 2
 
     @property
     def tolerance(self) -> Fraction:
-        """Half-width -- the ``t`` in RapCAD's ``n +/- t`` display form."""
+        """Half-width -- the ``t`` in the ``n +/- t`` display form."""
         return (self.upper - self.lower) / 2
 
     def __str__(self) -> str:

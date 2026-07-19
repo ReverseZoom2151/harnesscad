@@ -1,13 +1,11 @@
 """Deterministic structural graph descriptors for heuristic CAD retrieval.
 
-Quan et al., *Self-supervised GNN for Mechanical CAD Retrieval* (GC-CAD), review
-the retrieval landscape (Section 2.1): before learned embeddings, CAD parts were
-compared with *heuristic* descriptors -- **histogram features** and **graph
-features** -- and similarity was computed by graph matching, which is
-"NP-hard" and "very time-consuming". This module provides the fast, closed-form
-graph descriptors that serve as a hand-crafted baseline against GC-CAD's learned
-embeddings, operating on the face-node / curve-edge :class:`CADGraph` from
-:mod:`reconstruction.ssgnn_graph_augment`.
+Before learned embeddings, CAD parts were compared with *heuristic* descriptors
+-- **histogram features** and **graph features** -- and similarity was computed by
+graph matching, which is NP-hard and very time-consuming. This module provides
+the fast, closed-form graph descriptors that serve as a hand-crafted baseline
+against learned embeddings, operating on the face-node / curve-edge
+:class:`CADGraph` from :mod:`reconstruction.ssgnn_graph_augment`.
 
 Three deterministic structural signatures turn a graph into a fixed-length,
 permutation-invariant vector suitable for vector retrieval:
@@ -16,7 +14,7 @@ permutation-invariant vector suitable for vector retrieval:
   connectivity fingerprint).
 * :func:`wl_label_histogram` -- Weisfeiler-Lehman colour-refinement histogram: a
   polynomial-time structural signature that approximates graph isomorphism (a
-  positive substitute for the NP-hard exact graph match the paper flags).
+  practical substitute for the NP-hard exact graph match).
 * :func:`descriptor_vector` -- degree + WL histograms concatenated with global
   scalars (node/edge counts, density) into one retrieval embedding.
 
@@ -137,7 +135,7 @@ def _colour_multiset(graph: CADGraph, iterations: int) -> Dict[str, int]:
 def wl_kernel(g1: CADGraph, g2: CADGraph, iterations: int = 3) -> int:
     """Weisfeiler-Lehman subtree kernel: dot product of WL colour multisets.
 
-    The classic Shervashidze et al. graph kernel -- counts colours the two graphs
+    A classic graph kernel -- counts colours the two graphs
     share across all refinement iterations. Higher means more structurally
     similar. Deterministic and polynomial-time.
     """

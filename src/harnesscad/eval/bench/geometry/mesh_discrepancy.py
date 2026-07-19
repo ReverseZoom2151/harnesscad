@@ -1,9 +1,9 @@
-"""Geometric and topological mesh discrepancy metrics from CADmium.
+"""Geometric and topological mesh discrepancy metrics.
 
-CADmium (Govindarajan et al., TMLR 01/2026) argues that point-cloud metrics such
-as Chamfer distance obscure fine structural detail, and introduces four richer
-structural/topological indicators to compare a *predicted* reconstruction against
-its *ground-truth* mesh:
+The premise is that point-cloud metrics such as Chamfer distance obscure fine
+structural detail, so this introduces four richer structural/topological
+indicators to compare a *predicted* reconstruction against its *ground-truth*
+mesh:
 
   * Watertightness      -- a closed 2-manifold surface (every edge shared by
                            exactly two faces, no boundary/non-manifold edges),
@@ -269,10 +269,10 @@ def discrete_mean_curvature_difference(pred: Mesh, gt: Mesh, radius: float) -> f
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class MeshComparison:
-    """Bundled CADmium structural metrics.
+    """Bundled structural discrepancy metrics.
 
     ``sphericity_discrepancy``, ``euler_match`` and ``dmcd`` are ``None`` unless
-    *both* meshes are watertight, exactly as the paper gates them.
+    *both* meshes are watertight, exactly as this protocol gates them.
     """
 
     pred_watertight: bool

@@ -1,9 +1,9 @@
-"""Edit identity-preservation and locality metrics (Liu et al., 2026, "B-repLer:
-Language-guided Editing of CAD Models").
+"""Edit identity-preservation and locality metrics for language-guided editing
+of CAD models.
 
-B-repLer performs text-driven B-rep editing that "preserves identities in
-unchanged areas" -- a good edit modifies only the region the instruction targets
-and leaves everything else intact. The latent editing model is out of scope, but
+A text-driven B-rep editing system should "preserve identities in unchanged
+areas" -- a good edit modifies only the region the instruction targets and
+leaves everything else intact. The latent editing model is out of scope, but
 the *evaluation* of an edit -- did the unchanged region survive, and did the
 change stay local -- is deterministic set/geometry book-keeping over entity ids
 (faces/edges) before and after an edit:
@@ -15,7 +15,7 @@ change stay local -- is deterministic set/geometry book-keeping over entity ids
   / modified), what fraction lie inside the intended region. 1.0 means the edit
   is fully localised.
 * :func:`edit_report` -- combines both into an identity score plus the raw
-  added/removed/modified id sets, mirroring B-repLer's "functional change with
+  added/removed/modified id sets, mirroring a "functional change with
   identity preserved" evaluation.
 
 Deterministic, stdlib-only. Entities are identified by hashable ids; a

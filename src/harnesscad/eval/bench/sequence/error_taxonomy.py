@@ -1,15 +1,14 @@
-"""FreeCAD execution-error taxonomy (Kumar et al., "Generative AI for CAD
-Automation", 2025, sec. 2.2 & Table 1 error-type column).
+"""FreeCAD execution-error taxonomy.
 
-The paper classifies the failures produced by executing an LLM-generated
-FreeCAD script in headless mode into three families (sec. 2.2):
+Classifies the failures produced by executing an LLM-generated
+FreeCAD script in headless mode into three families:
 
   * SYNTAX          invalid Python (indentation, missing imports, ...)
   * GEOMETRIC       invalid boolean ops, degenerate / null-shape geometry,
                     overconstraint
   * EXECUTION       incorrect API calls, missing object dependencies
 
-and its experiments (Table 1) surface concrete signatures such as
+Concrete signatures include things such as
 ``module 'Part' has no attribute 'makeGear'`` (unsupported API -> EXECUTION) and
 ``Null shape`` (GEOMETRIC).  This module is a deterministic classifier over a
 FreeCAD stderr string plus a convenience tally for a batch of runs.  No LLM,
@@ -52,11 +51,11 @@ class ErrorClassification:
 
 
 def classify(stderr: str) -> ErrorClassification:
-    """Classify a FreeCAD stderr string into the sec. 2.2 taxonomy.
+    """Classify a FreeCAD stderr string into the error taxonomy above.
 
     Empty / whitespace stderr means the script executed cleanly (E = 0).  An
     unrecognised non-empty error is reported as EXECUTION with empty signature
-    (the paper's catch-all "execution failure").
+    (a generic catch-all "execution failure").
     """
     if not stderr or not stderr.strip():
         return ErrorClassification(NONE, "")
@@ -69,7 +68,7 @@ def classify(stderr: str) -> ErrorClassification:
 
 
 def tally(stderrs: List[str]) -> Dict[str, int]:
-    """Count errors by family across a batch of runs (Table 1 error column)."""
+    """Count errors by family across a batch of runs."""
     counts = {SYNTAX: 0, GEOMETRIC: 0, EXECUTION: 0, NONE: 0}
     for s in stderrs:
         counts[classify(s).family] += 1

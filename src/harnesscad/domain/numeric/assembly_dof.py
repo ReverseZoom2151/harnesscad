@@ -1,13 +1,12 @@
-"""CadQuery assembly constraint algebra and 6-DOF well-posedness analysis.
+"""Assembly constraint algebra and 6-DOF well-posedness analysis.
 
-CadQuery's ``Assembly`` (``cadquery/assembly.py`` + ``occ_impl/solver.py``)
-positions rigid parts in space by solving a set of geometric *constraints*.  The
-numerics are delegated to SciPy/CasADi, but the *algebra* is fully
-deterministic: each constraint kind has a fixed arity, marker types, parameter
-type, and -- crucially for design intent -- a fixed number of relative degrees
-of freedom it removes.  This module builds that algebra plus a Grubler-style
-mobility analysis that classifies an assembly as under-, well-, or
-over-constrained without ever running the solver.
+An assembly positions rigid parts in space by solving a set of geometric
+*constraints*.  The numeric solve can be delegated to an external optimiser, but
+the *algebra* is fully deterministic: each constraint kind has a fixed arity,
+marker types, parameter type, and -- crucially for design intent -- a fixed
+number of relative degrees of freedom it removes.  This module builds that
+algebra plus a mobility (degree-of-freedom count) analysis that classifies an
+assembly as under-, well-, or over-constrained without ever running the solver.
 
 This is distinct from the harness's existing DOF work, which is all *2D sketch*
 DOF over point/line/circle primitives (:mod:`reconstruction.sgraphs2_dof_mask`,
@@ -15,7 +14,7 @@ DOF over point/line/circle primitives (:mod:`reconstruction.sgraphs2_dof_mask`,
 *3D rigid-body*: every part is a free body with 6 DOF (3 translation + 3
 rotation), and constraints couple whole parts.
 
-Constraint kinds mirror ``solver.py`` exactly:
+The constraint kinds are:
 
 * Unary (act on one part): ``Fixed`` (6), ``FixedPoint`` (3), ``FixedAxis`` (2),
   ``FixedRotation`` (3).
@@ -23,7 +22,7 @@ Constraint kinds mirror ``solver.py`` exactly:
   ``PointOnLine`` (2), ``Plane`` = ``Axis`` + ``Point`` (5).
 
 The DOF-removed figures are the standard mechanical-assembly values for these
-mates and match the residual structure of the reference cost functions.
+mates and match the residual structure of the usual mate cost functions.
 """
 
 from __future__ import annotations

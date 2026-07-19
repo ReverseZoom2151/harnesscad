@@ -1,9 +1,7 @@
-"""Classify parametric-property expressions into the paper's C1..C5 categories.
+"""Classify parametric-property expressions into the C1..C5 categories.
 
-The formative study in Gonzalez et al., *Facilitating the Parametric Definition
-of Geometric Properties in Programming-Based CAD* (UIST '24, Section 3.1,
-Table 2), classifies every parameter expression used to define a primitive's
-size or a spatial transformation into one of five categories:
+A formative study classifies every parameter expression used to define a
+primitive's size or a spatial transformation into one of five categories:
 
 * **C1 Raw number**   — a non-default numeric literal, e.g. ``4.0``.
 * **C2 One variable**  — a single variable reference, e.g. ``var1``.
@@ -13,13 +11,13 @@ size or a spatial transformation into one of five categories:
 * **C5 Other**         — other programming structures such as conditionals,
   e.g. ``(var1 > 3) ? 1 : 2``.
 
-The paper notes C1 and C2 are *special cases* of C3 but are kept distinct "seeking
-a detailed analysis"; this module honours that by reporting the most specific
-category. It reproduces the study's aggregation too: Table 3 tallies category
-occurrences across four statement kinds (Primitive / Translate / Rotate / Scale)
-and reports per-cell counts and percentages of a grand total. :class:`FormativeTally`
-is a deterministic re-implementation of that cross-tabulation, so a corpus of
-classified expressions can be summarised exactly as in the paper.
+C1 and C2 are *special cases* of C3 but are kept distinct for a more detailed
+analysis; this module honours that by reporting the most specific category. It
+reproduces the aggregation too: a cross-tabulation tallies category occurrences
+across four statement kinds (Primitive / Translate / Rotate / Scale) and reports
+per-cell counts and percentages of a grand total. :class:`FormativeTally` is a
+deterministic implementation of that cross-tabulation, so a corpus of classified
+expressions can be summarised.
 
 Pure stdlib; classification is total (never raises) — unparseable input is C5.
 """
@@ -45,7 +43,7 @@ from harnesscad.domain.programs.expressions.linear_form import (
 
 
 class Category(str, Enum):
-    """The five expression categories from Table 2 of the paper."""
+    """The five expression categories."""
 
     C1_RAW_NUMBER = "C1"
     C2_ONE_VARIABLE = "C2"
@@ -73,7 +71,7 @@ class Classification:
     expression: str
 
 
-# statement kinds tracked by Table 3
+# statement kinds tracked by the cross-tabulation
 STATEMENT_KINDS: Tuple[str, ...] = ("primitive", "translate", "rotate", "scale")
 
 
@@ -171,21 +169,21 @@ def classify_expression(text: str) -> Classification:
 def classify_vector(components: Iterable[str]) -> Tuple[Classification, ...]:
     """Classify each component of a vector literal, e.g. ``[5, size_y, size_z+3]``.
 
-    The paper notes a single ``cube(size = [5, size_y, size_z+3])`` is counted
-    under C1, C2 *and* C3 (one per component). This returns the per-component
-    classifications so a caller can tally them independently.
+    A single ``cube(size = [5, size_y, size_z+3])`` is counted under C1, C2 *and*
+    C3 (one per component). This returns the per-component classifications so a
+    caller can tally them independently.
     """
     return tuple(classify_expression(c) for c in components)
 
 
 @dataclass
 class FormativeTally:
-    """Cross-tabulation of categories by statement kind (paper's Table 3).
+    """Cross-tabulation of categories by statement kind.
 
     Rows are categories C1..C5, columns are the four statement kinds. Records
     are added with :meth:`add`; :meth:`counts`, :meth:`row_total`,
     :meth:`column_total`, :meth:`grand_total`, and :meth:`percentage` reproduce
-    the count/percent cells the paper reports.
+    the count/percent cells.
     """
 
     _grid: Dict[Tuple[Category, str], int] = field(default_factory=dict)
@@ -227,11 +225,11 @@ class FormativeTally:
         return 100.0 * self.count(category, statement_kind) / total
 
     def linear_share(self) -> float:
-        """Share (%) of expressions that are C1, C2 or C3 (the paper's 71% claim).
+        """Share (%) of expressions that are C1, C2 or C3.
 
-        The paper's core finding: raw numbers + single variables + linear
-        combinations account for the large majority of positioning/sizing
-        expressions, so a linear-form model captures most of real usage.
+        The core finding: raw numbers + single variables + linear combinations
+        account for the large majority of positioning/sizing expressions, so a
+        linear-form model captures most of real usage.
         """
         total = self.grand_total()
         if total == 0:

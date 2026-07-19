@@ -1,6 +1,6 @@
 """Deterministic state-transition validator for the CadQuery ``Workplane``.
 
-CadQuery's ``Workplane`` (``cadquery/cq.py``) is a fluent *state machine* built
+CadQuery's ``Workplane`` is a fluent *state machine* built
 around a shared ``CQContext`` that tracks **pending edges** and **pending
 wires**: 2D drawing verbs (``lineTo``, ``threePointArc``, ``spline`` ...) queue
 *edges*; ``close`` / ``wire`` fuse queued edges into a *wire*; closed-profile

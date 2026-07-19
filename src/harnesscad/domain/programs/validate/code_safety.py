@@ -1,14 +1,14 @@
-"""Static safety gate for model-generated CAD scripts (Text23D).
+"""Static safety gate for model-generated CAD scripts.
 
-**Text23D** is a text->3D backend that executes model-written CAD code in-process
-against CadQuery and FreeCAD. Before any ``exec``, it runs a static AST allowlist
-(``backend/app/validation.py``): the generated code must define a known entry
-point, may only import from a per-kernel allowlist, and must not touch dangerous
-builtins (``eval``/``exec``/``open``/...) or process/OS modules
+A text-to-3D backend that executes model-written CAD code in-process against
+CadQuery or FreeCAD needs a static AST allowlist ahead of any ``exec``: the
+generated code must define a known entry point, may only import from a
+per-kernel allowlist, and must not touch dangerous builtins
+(``eval``/``exec``/``open``/...) or process/OS modules
 (``os``/``subprocess``/``socket``/...). This is the deterministic *pre-execution*
 gate that makes running an LLM's code merely risky rather than reckless.
 
-This module reimplements that check as a reusable, kernel-parameterised safety
+This module provides that check as a reusable, kernel-parameterised safety
 gate. It is deliberately distinct from:
 
 * :mod:`harnesscad.domain.programs.runtime.module_sandbox` -- that isolates a run
@@ -20,7 +20,7 @@ gate. It is deliberately distinct from:
 
 Two entry points: :func:`check_cad_code` returns a structured
 :class:`SafetyReport`; :func:`assert_cad_code_safe` raises
-:class:`CodeSafetyError` on the first violation (Text23D's original contract).
+:class:`CodeSafetyError` on the first violation.
 
 Pure stdlib (``ast``), deterministic.
 """
@@ -241,7 +241,7 @@ def assert_cad_code_safe(
     required_def: Optional[str] = "build_model",
     allow_async: bool = False,
 ) -> None:
-    """Raise :class:`CodeSafetyError` on the first violation (Text23D contract)."""
+    """Raise :class:`CodeSafetyError` on the first violation."""
     report = check_cad_code(
         code, kernel=kernel, required_def=required_def, allow_async=allow_async
     )

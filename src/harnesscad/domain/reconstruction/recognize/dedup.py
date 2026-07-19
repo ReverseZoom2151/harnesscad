@@ -1,14 +1,15 @@
-"""mmABC dataset curation primitives from CMT (Sec. 3).
+"""Dataset curation primitives for a CAD-model corpus.
 
-To build mmABC from ABC, CMT applies two deterministic cleaning steps that do not
-need any trained model:
+Two deterministic cleaning steps prepare a raw solid-model corpus and need no
+trained model:
 
-  * **duplicate removal by quantized-point hash** -- "we filter data with same
-    hash value of their 6-bit quantized point coordinates sampled from surfaces
-    of CAD models". Two models that quantize to the same (order-independent) set
-    of surface points are treated as identical and one is dropped.
-  * **multi-body decomposition** -- "we decompose complex multi-body models into
-    multiple basic single models to augment the dataset". Given the surfaces of
+  * **duplicate removal by quantized-point hash** -- models are filtered by the
+    hash value of their 6-bit quantized point coordinates sampled from the
+    surfaces of the CAD models. Two models that quantize to the same
+    (order-independent) set of surface points are treated as identical and one is
+    dropped.
+  * **multi-body decomposition** -- complex multi-body models are decomposed into
+    several basic single-body models to enlarge the corpus. Given the surfaces of
     a model and which surfaces share edges, each connected component is one body.
 
 Both are implemented here with stdlib only and deterministic hashing.
@@ -26,7 +27,7 @@ Point = tuple[float, float, float]
 
 def quantize_point(point: Point, bits: int = 6,
                    lo: float = 0.0, hi: float = 1.0) -> tuple[int, int, int]:
-    """Quantize a point's coordinates to ``bits`` (paper uses 6-bit)."""
+    """Quantize a point's coordinates to ``bits`` (6-bit by default)."""
     return tuple(quantize(v, bits, lo, hi) for v in point)
 
 

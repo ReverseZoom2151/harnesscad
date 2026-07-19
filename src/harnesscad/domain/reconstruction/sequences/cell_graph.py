@@ -1,20 +1,18 @@
 """Cell-adjacency graph and plausible-sequence generation for surface CSG.
 
-From *Don't Mesh with Me* (Mews et al., 2024), Sec. 3.1, "Model Sequence
-Generation": after decomposition the model is turned into a **graph** whose
-nodes are the half-spaces / cells the model is made of; two nodes are connected
-"if they touch each other in the model". This graph is then used to "generate
-plausible sequences to generate the same 3D geometry and avoid generating
-geometry that is unconnected. All plausible sequences are generated to maximize
-the amount of training data."
+After decomposition, the model is turned into a **graph** whose nodes are the
+half-spaces / cells the model is made of; two nodes are connected if they touch
+each other in the model. This graph is then used to generate plausible sequences
+that build the same 3D geometry while avoiding geometry that is unconnected, and
+enumerating all plausible sequences maximises the amount of training data.
 
 This module builds that graph deterministically and enumerates the plausible
 build orderings. A *plausible sequence* is an ordering of the cells such that
 every cell after the first is adjacent (touches) at least one already-placed
 cell -- i.e. the placed prefix is always a connected sub-graph. This is exactly
-the "avoid unconnected geometry" constraint, and enumerating every such ordering
-is the paper's order-augmentation strategy (Sec. 4.1, "we vary the order of the
-sequence", which Tab. 1 shows lifts model accuracy).
+the avoid-unconnected-geometry constraint, and enumerating every such ordering
+is an order-augmentation strategy that varies the order of the sequence, which
+lifts model accuracy.
 
 Adjacency is decided geometrically with no external tools: two cells touch if
 they share a surface (reference the same surface object) or their occupied

@@ -1,11 +1,10 @@
-"""Fixed-point integer geometry with shared-grid vertex welding (SolidType).
+"""Fixed-point integer geometry with shared-grid vertex welding.
 
-SolidType (``packages/core/src/num/integer-geometry.ts``) attacks the single
-most persistent source of failure in a B-Rep boolean kernel: two faces that
-*share* an edge or vertex end up with coordinates that differ in the last few
-floating-point bits, so the shared entity silently becomes two nearly-coincident
-entities and the resulting shell is non-manifold.  SolidType's fix is not a
-tolerance -- it is a *representation* change:
+The approach attacks the single most persistent source of failure in a B-Rep
+boolean kernel: two faces that *share* an edge or vertex end up with
+coordinates that differ in the last few floating-point bits, so the shared
+entity silently becomes two nearly-coincident entities and the resulting shell
+is non-manifold.  The fix is not a tolerance -- it is a *representation* change:
 
 * every coordinate is stored as an **integer** count of a fixed sub-unit
   (nanometres; ``NANO_PER_MM = 1_000_000``).  Two points are equal *iff* their
@@ -19,9 +18,9 @@ tolerance -- it is a *representation* change:
   integer determinants** and a **division-free** in-range test, so they never
   round to the wrong answer.
 
-This module reimplements that fixed-point substrate in stdlib Python.  It is
-deliberately *different* from :mod:`numeric.manifold_predicates` (Shewchuk-style
-exact *sign* predicates): those decide the sign of a determinant on
+This module implements that fixed-point substrate in stdlib Python.  It is
+deliberately *different* from :mod:`numeric.manifold_predicates` (exact *sign*
+predicates): those decide the sign of a determinant on
 floating-point inputs, whereas this module quantises the inputs themselves so
 that near-coincident vertices collapse to one canonical grid point.  The two are
 complementary -- predicates classify, quantisation welds.

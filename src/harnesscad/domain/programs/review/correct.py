@@ -1,12 +1,12 @@
-"""CADReview correction pass — turn a detected error into a code edit.
+"""Correction pass -- turn a detected error into a code edit.
 
-Detection (:mod:`cadreview_detect`) names *what* is wrong and *where*; the
-paper's second stage then *corrects* the program, mapping the geometric error to
-a concrete code modification (swap the primitive, fix the rotation angle,
-re-insert the missing block, ...). The learned code editor does this from images;
-this module implements the deterministic, reference-grounded corrector: when the
+Detection (:mod:`cadreview_detect`) names *what* is wrong and *where*; a second
+stage then *corrects* the program, mapping the geometric error to a concrete
+code modification (swap the primitive, fix the rotation angle, re-insert the
+missing block, ...). A learned code editor would do this from images; this
+module implements the deterministic, reference-grounded corrector: when the
 correct reference program is known, every one of the eight error types has an
-exact, mechanical fix — restore the offending block to its reference form,
+exact, mechanical fix -- restore the offending block to its reference form,
 remove a redundant block, or re-insert a missing one.
 
 :func:`correct` takes the candidate program, its reference, and a

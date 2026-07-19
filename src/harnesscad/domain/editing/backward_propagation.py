@@ -1,26 +1,24 @@
 """Backward propagation ``put``: a 3D-view edit -> an updated CSG program.
 
-From *Introducing Bidirectional Programming in Constructive Solid Geometry-Based
-CAD* (Gonzalez et al., SUI '23), Sec. 4.3. This is the genuinely new half of the
-bidirectional transformation -- ``dontmesh`` and the rest of the codebase only do
-forward CSG evaluation. Here a *direct-manipulation edit on the output* is
-propagated *back to the source program* while keeping code and view coherent
-(the paper's "put"; the lens formulation of bidirectional programming, [11]).
+This is the genuinely new half of the bidirectional transformation -- the rest of
+the codebase only does forward CSG evaluation. Here a *direct-manipulation edit
+on the output* is propagated *back to the source program* while keeping code and
+view coherent (the "put" direction of the lens formulation of bidirectional
+programming).
 
-The paper's edit rules (F6-F8):
+The edit rules:
 
-  * **F6 Translation** -- "the system adds a translate element in the CSG tree and
-    the code ... The system does not add another translate element if an existing
-    one only affects the translated element" (then it modifies that one instead).
-    The gizmo sits "applying previous translation and rotation from the root to
-    the selected object", so a *world-space* drag is converted to a *local*
-    parameter using the selected node's parent frame.
-  * **F7 Rotation** -- "the system only adds a rotate element if necessary;
-    otherwise, it modifies an existing one."
-  * **F8 Scaling** -- *Scale*: "if it is the only child of a scale element, the
-    system updates the parameters of this scale element. Otherwise, ... adds a new
-    scale element." *Scale primitive*: "if the selected part is a primitive ... the
-    system will update the instantiating parameters."
+  * **Translation** -- a translate element is added to the CSG tree and the code,
+    unless an existing one only affects the translated element (then that one is
+    modified instead). The gizmo applies the accumulated translation and rotation
+    from the root down to the selected object, so a *world-space* drag is
+    converted to a *local* parameter using the selected node's parent frame.
+  * **Rotation** -- a rotate element is added only if necessary; otherwise an
+    existing one is modified.
+  * **Scaling** -- *Scale*: if the selection is the only child of a scale element,
+    that element's parameters are updated; otherwise a new scale element is added.
+    *Scale primitive*: if the selected part is a primitive, its instantiating
+    parameters are updated directly.
 
 Plus the two lens laws that make the transformation well-behaved:
 
@@ -77,7 +75,7 @@ def _instance(program: Node, source_path: Path, call_stack: Tuple[int, ...]) -> 
 
 
 # --------------------------------------------------------------------------
-# F6: translation.
+# Translation.
 # --------------------------------------------------------------------------
 
 def put_translate(
@@ -88,8 +86,8 @@ def put_translate(
 ) -> PutResult:
     """Propagate a world-space translation of the selected element back to code.
 
-    Reuses the parent ``Translate`` if there is one (it "only affects the
-    translated element"); otherwise inserts a new ``translate`` above the element.
+    Reuses the parent ``Translate`` if there is one (when it only affects the
+    translated element); otherwise inserts a new ``translate`` above the element.
     """
     if _is_zero(world_delta):
         return PutResult(program, source_path, False)  # GetPut
@@ -113,7 +111,7 @@ def put_translate(
 
 
 # --------------------------------------------------------------------------
-# F7: rotation (local euler delta, degrees, about the object's own axes).
+# Rotation (local euler delta, degrees, about the object's own axes).
 # --------------------------------------------------------------------------
 
 def put_rotate(
@@ -122,7 +120,7 @@ def put_rotate(
     angle_delta: Vec3,
     call_stack: Tuple[int, ...] = (),
 ) -> PutResult:
-    """Propagate a rotation of the selected element back to code (F7)."""
+    """Propagate a rotation of the selected element back to code."""
     if _is_zero(angle_delta):
         return PutResult(program, source_path, False)
 
@@ -141,7 +139,7 @@ def put_rotate(
 
 
 # --------------------------------------------------------------------------
-# F8: scaling.
+# Scaling.
 # --------------------------------------------------------------------------
 
 def put_scale(
@@ -150,7 +148,7 @@ def put_scale(
     factor_delta: Vec3,
     call_stack: Tuple[int, ...] = (),
 ) -> PutResult:
-    """Propagate a *Scale* edit back to code (F8, "Scale" option).
+    """Propagate a whole-subtree *Scale* edit back to code.
 
     Reuses a parent ``Scale`` (multiplying its factors) if present; otherwise
     inserts a new ``scale``.
@@ -177,7 +175,7 @@ def put_scale_primitive(
     source_path: Path,
     factor_delta: Vec3,
 ) -> PutResult:
-    """Propagate a *Scale primitive* edit (F8): update the primitive's params.
+    """Propagate a *Scale primitive* edit: update the primitive's params.
 
     Only valid when the selected node is a primitive; the instantiating
     parameters are scaled component-wise (extra params beyond 3 are left as-is,

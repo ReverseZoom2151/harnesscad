@@ -1,4 +1,4 @@
-"""JoinABLe B-rep entity-type + discrete edge-convexity id tables (fact tables).
+"""B-rep entity-type + discrete edge-convexity id tables (fact tables).
 
 The harness already models B-rep surfaces analytically -- ``Plane``, ``Cylinder``,
 ``Cone``, ``Sphere``, ``Torus`` in
@@ -11,18 +11,12 @@ types a B-rep node can carry, and (b) the *discrete six-value* convexity
 classification (including the ``None``, ``Non-manifold`` and ``Degenerate``
 states that a continuous sign cannot express).
 
-This module supplies both, transcribed verbatim (no invented ids) from the
-JoinABLe reference implementation:
+This module supplies both, using the canonical id assignments of the reference
+B-rep taxonomy:
 
-    resources/cad_repos/JoinABLe-main/JoinABLe-main/
-        datasets/joint_graph_dataset.py  ->  entity_type_map (16 types, 0..15)
-                                              convexity_type_map (6 states, 0..5)
-        joint/joint_axis.py              ->  check_colinear_with_tolerance(
-                                                 angle_tol_degs=10.0,
-                                                 distance_tol=1e-2)
-
-Source: JoinABLe, Willis et al. 2022, MIT License
-(``Copyright (c) 2022 Autodesk, Inc``).
+    entity_type_map   ->  16 entity types, ids 0..15
+    convexity_type_map ->  6 convexity states, ids 0..5
+    axis colinearity  ->  angle_tol_degs=10.0, distance_tol=1e-2
 
 Entity types 0..15 cover eight surface families (plane, cylinder, cone, sphere,
 torus, elliptical cylinder, elliptical cone, NURBS surface) and eight curve
@@ -57,7 +51,7 @@ Public API
 ``is_surface_type(t)`` / ``is_curve_type(t)``  -- entity family predicates.
 ``is_convex(c)`` / ``is_concave(c)`` / ``classify(...)``  -- convexity helpers.
 ``AXIS_ANGLE_TOL_DEG`` / ``AXIS_DISTANCE_TOL``  -- axis colinearity thresholds.
-``axis_lines_colinear(...)``        -- the JoinABLe axis-hit test.
+``axis_lines_colinear(...)``        -- the axis-hit test.
 ``ANALYTIC_SURFACE_TO_ID`` / ``EDGE_CONVEXITY_TO_ID``  -- harness bridges.
 """
 
@@ -89,11 +83,10 @@ __all__ = [
 
 
 class EntityType(enum.IntEnum):
-    """B-rep node entity types (JoinABLe ``entity_type_map``, ids 0..15).
+    """B-rep node entity types (``entity_type_map``, ids 0..15).
 
     Ids 0..7 are surface families; ids 8..15 are curve families (15 is the
-    degenerate-edge sentinel). Transcribed verbatim from JoinABLe
-    ``datasets/joint_graph_dataset.py``.
+    degenerate-edge sentinel), following the reference B-rep taxonomy.
     """
 
     PlaneSurfaceType = 0
@@ -115,7 +108,7 @@ class EntityType(enum.IntEnum):
 
 
 class Convexity(enum.IntEnum):
-    """Discrete edge-convexity states (JoinABLe ``convexity_type_map``, ids 0..5).
+    """Discrete edge-convexity states (``convexity_type_map``, ids 0..5).
 
     ``NoneType`` (id 0) is assigned to faces; ``Degenerate`` (id 5) to degenerate
     edges. The middle four are the true per-edge classes. The member is spelled
@@ -141,7 +134,7 @@ _CONVEXITY_WIRE_NAME: Dict[Convexity, str] = {
     Convexity.Degenerate: "Degenerate",
 }
 
-#: canonical wire name -> integer id (matches JoinABLe convexity_type_map exactly).
+#: canonical wire name -> integer id (matches the reference convexity_type_map exactly).
 convexity_name_to_id: Dict[str, int] = {
     name: int(member.value) for member, name in _CONVEXITY_WIRE_NAME.items()
 }
@@ -150,7 +143,7 @@ convexity_id_to_name: Dict[int, str] = {
     int(member.value): name for member, name in _CONVEXITY_WIRE_NAME.items()
 }
 
-#: entity name -> integer id (matches JoinABLe entity_type_map exactly).
+#: entity name -> integer id (matches the reference entity_type_map exactly).
 entity_name_to_id: Dict[str, int] = {m.name: int(m.value) for m in EntityType}
 #: integer id -> entity name.
 entity_id_to_name: Dict[int, str] = {int(m.value): m.name for m in EntityType}
@@ -195,7 +188,7 @@ def is_concave(convexity: Convexity) -> bool:
 def classify(name: str) -> Convexity:
     """Discrete :class:`Convexity` for a wire name (e.g. ``"Non-manifold"``).
 
-    Accepts the exact JoinABLe wire names (``None``, ``Convex``, ``Concave``,
+    Accepts the exact canonical wire names (``None``, ``Convex``, ``Concave``,
     ``Smooth``, ``Non-manifold``, ``Degenerate``); case-insensitive. Raises
     ``KeyError`` for an unknown state.
     """
@@ -206,7 +199,7 @@ def classify(name: str) -> Convexity:
     raise KeyError(f"unknown convexity state: {name!r}")
 
 
-# Axis colinearity thresholds -- JoinABLe joint_axis.check_colinear_with_tolerance
+# Axis colinearity thresholds -- the axis-hit test
 # uses these defaults to decide whether two entity axes count as the same joint
 # axis: angle < 10 degrees AND distance < 1e-2.
 AXIS_ANGLE_TOL_DEG: float = 10.0
@@ -219,7 +212,7 @@ def axis_lines_colinear(
     angle_tol_deg: float = AXIS_ANGLE_TOL_DEG,
     distance_tol: float = AXIS_DISTANCE_TOL,
 ) -> bool:
-    """Whether two axis lines count as colinear (the JoinABLe axis-hit test).
+    """Whether two axis lines count as colinear (the axis-hit test).
 
     ``angle_deg`` is the (direction-reversal-minimised) angle between the two
     axis directions in degrees; ``distance`` is the perpendicular distance
@@ -231,7 +224,7 @@ def axis_lines_colinear(
 
 # --- bridges to the harness's existing partial vocabularies -----------------
 
-# analytic_surfaces.py surface class name -> JoinABLe surface entity id.
+# analytic_surfaces.py surface class name -> surface entity id.
 ANALYTIC_SURFACE_TO_ID: Dict[str, int] = {
     "Plane": EntityType.PlaneSurfaceType,
     "Cylinder": EntityType.CylinderSurfaceType,
@@ -295,7 +288,7 @@ def _selfcheck() -> int:
         if cls not in ANALYTIC_SURFACE_TO_ID:
             problems.append(f"analytic surface {cls!r} not bridged")
 
-    # 6. Axis-hit thresholds match the cited source defaults.
+    # 6. Axis-hit thresholds match the reference defaults.
     if AXIS_ANGLE_TOL_DEG != 10.0 or AXIS_DISTANCE_TOL != 1e-2:
         problems.append("axis thresholds do not match source (10 deg / 1e-2)")
     if not axis_lines_colinear(9.9, 9e-3):

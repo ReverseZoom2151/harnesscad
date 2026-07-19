@@ -1,12 +1,12 @@
-"""Text2CAD's training-time token accuracy (``Cad_VLM/models/metrics.py``).
+"""Text-to-CAD training-time token accuracy.
 
-Reference implementation: ``AccuracyCalculator`` of the released Text2CAD code
-(Khan et al., NeurIPS 2024) -- the metric the Transformer is monitored on while it
+This mirrors an ``AccuracyCalculator``-style metric used for a text-to-CAD
+sequence model -- the metric the Transformer is monitored on while it
 learns to emit the 2-column ``cad_vec`` stream of
 :mod:`reconstruction.t2c3_cad_vec_codec`.
 
 The rules are specific and none of them are shared with ``bench.deepcad2_ae_accuracy``
-(which scores DeepCAD's 17-column rows through ``CMD_ARGS_MASK``) or
+(which scores the 17-column CAD command rows through ``CMD_ARGS_MASK``) or
 ``bench.contrastcad_recon_accuracy``:
 
 1. Prediction and target are ``(N, 2)`` token streams. If they differ in length both

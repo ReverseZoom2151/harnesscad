@@ -1,14 +1,14 @@
-"""Artist-like mesh quality metrics (Meshtron, Hao et al., 2024).
+"""Artist-like mesh quality metrics.
 
-Meshtron argues that artist-created meshes differ from iso-surfaced ones by
+The premise is that artist-created meshes differ from iso-surfaced ones by
 their *topology and tessellation*: well-structured faces, controlled face
-counts, and regular edge flow rather than overly dense, bumpy tessellation
-(Secs. 1, 4.3, Figs. 2-3). This module provides deterministic geometric
-metrics for judging those qualities on a triangle mesh:
+counts, and regular edge flow rather than overly dense, bumpy tessellation.
+This module provides deterministic geometric metrics for judging those
+qualities on a triangle mesh:
 
-  * **triangle / face counts** and quad-face share (the density knobs Meshtron
-    conditions on, Sec. 3.3),
-  * **face-area distribution** (Fig. 3b: high-face-count meshes have smaller,
+  * **triangle / face counts** and quad-face share (common density knobs an
+    artist-mesh generator conditions on),
+  * **face-area distribution** (high-face-count meshes have smaller,
     more uniform faces),
   * **triangle aspect ratios** -- both the longest/shortest edge ratio and the
     circumradius-to-inradius radius ratio (1.0 for an equilateral triangle;
@@ -16,7 +16,7 @@ metrics for judging those qualities on a triangle mesh:
   * **vertex-valence regularity** -- artist meshes favour regular valence-6
     interior vertices,
   * generic **distribution summaries** (min/mean/median/std/percentiles) so the
-    above can be reported as the histograms shown in the paper.
+    above can be reported as histograms.
 
 Vertices are 3D ``(x, y, z)`` tuples. Pure stdlib, deterministic.
 """
@@ -49,7 +49,7 @@ def quad_count(faces: Sequence[Face]) -> int:
 
 
 def quad_ratio(faces: Sequence[Face]) -> float:
-    """Fraction of faces that are quads (Meshtron's quad-dominance control)."""
+    """Fraction of faces that are quads (a quad-dominance control)."""
     if not faces:
         return 0.0
     return quad_count(faces) / len(faces)

@@ -1,13 +1,13 @@
-"""DeepCAD sketch-plane orientation + extrusion decode (Wu, Xiao & Zheng, 2021).
+"""Sketch-plane orientation + extrusion decode.
 
-The DeepCAD extrusion command carries the 3D pose of the sketch plane so that the
+The extrusion command carries the 3D pose of the sketch plane so that the
 2D curve parameters (which live in the plane's local frame) can be lifted into world
-space (paper Sec. 3.1.1). The paper states: the plane orientation "is defined by a
-rotational matrix, determined by ``(theta, phi, gamma)`` ... to align the world
-frame of reference to the plane's local frame of reference, and to align the z-axis
-to the plane's normal direction." The extrusion command also carries the plane
-origin ``(px, py, pz)``, a profile scale ``s``, the two extrude distances
-``(e1, e2)`` and an extrude *type* (one-sided / symmetric / two-sided).
+space. The plane orientation is defined by a rotational matrix, determined by
+``(theta, phi, gamma)``, to align the world frame of reference to the plane's local
+frame of reference, and to align the z-axis to the plane's normal direction. The
+extrusion command also carries the plane origin ``(px, py, pz)``, a profile scale
+``s``, the two extrude distances ``(e1, e2)`` and an extrude *type* (one-sided /
+symmetric / two-sided).
 
 This module makes that decode explicit and deterministic. The three angles are
 interpreted as a **ZYZ Euler parameterization** -- the standard, invertible way to
@@ -19,7 +19,7 @@ in-plane roll:
 so the plane normal (local +z mapped to world) is the spherical direction
 ``n = (sin theta cos phi, sin theta sin phi, cos theta)`` (theta = polar angle from
 world +z, phi = azimuth) and ``gamma`` rolls the in-plane x/y axes about that
-normal. This matches the paper's requirement that the matrix aligns the z-axis to
+normal. This matches the requirement that the matrix aligns the z-axis to
 the plane normal, and it is exactly invertible (ZYZ extraction) so a decoded pose
 round-trips to the same angles.
 
@@ -35,7 +35,7 @@ Vec3 = tuple[float, float, float]
 Vec2 = tuple[float, float]
 Mat3 = tuple[tuple[float, float, float], ...]
 
-# Extrude-type codes (paper: one-sided / symmetric / two-sided).
+# Extrude-type codes (one-sided / symmetric / two-sided).
 ONE_SIDED = 0
 SYMMETRIC = 1
 TWO_SIDED = 2
@@ -110,7 +110,7 @@ def local_to_world(point2d: Vec2, theta: float, phi: float, gamma: float,
     """Lift a 2D sketch point ``(u, v)`` into world space.
 
     ``world = origin + scale * (u * x_axis + v * y_axis)`` where the plane axes come
-    from :func:`plane_axes`. This is DeepCAD's decode of a curve's in-plane
+    from :func:`plane_axes`. This is the decode of a curve's in-plane
     coordinates using the extrusion command's plane pose, origin and profile scale.
     """
     x_axis, y_axis, _ = plane_axes(theta, phi, gamma)

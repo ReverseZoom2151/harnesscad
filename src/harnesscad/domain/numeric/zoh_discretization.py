@@ -1,6 +1,6 @@
 """Zero-Order-Hold (ZOH) discretization of a continuous diagonal SSM.
 
-Mamba-CAD (Li et al., AAAI 2025) reviews the State Space Model (SSM) that
+the state-space model (Li et al., AAAI 2025) reviews the State Space Model (SSM) that
 underlies Mamba: a continuous system that maps a 1-D signal ``X(t)`` to ``Y(t)``
 through a hidden state ``H(t)`` via the ODE (paper "Preliminary")::
 

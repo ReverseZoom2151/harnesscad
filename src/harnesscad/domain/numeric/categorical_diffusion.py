@@ -1,9 +1,9 @@
-"""Categorical (Multinomial / D3PM) discrete diffusion from SketchDNN, Sec. 3.2.
+"""Categorical (multinomial) discrete diffusion from the model, Sec. 3.2.
 
-SketchDNN (ICML 2025) reviews the *conventional* discrete-diffusion baseline it
+the model  reviews the *conventional* discrete-diffusion baseline it
 later improves upon: the Multinomial / structured discrete diffusion of
-Hoogeboom et al. (2021) and Austin et al. (2021, "D3PM"). This baseline is the
-``SketchDNN (Cat.)`` ablation in the paper. Unlike the learned denoiser, the
+established discrete-diffusion formulations. This baseline is the
+``the model (Cat.)`` ablation in the paper. Unlike the learned denoiser, the
 categorical *forward* process, its cumulative marginal, and the true posterior
 ``q(x_{t-1} | x_t, x_0)`` are fully deterministic given a transition schedule,
 and all reduce to small matrix algebra over the probability simplex.
@@ -19,7 +19,7 @@ families are provided:
   with probability ``1-b_t`` the category is kept, otherwise it is resampled
   uniformly. As ``t -> T`` the state converges to the uniform categorical.
 
-* **Absorbing** (D3PM absorbing/[MASK]): every category decays with rate
+* **Absorbing** (absorbing/[MASK]): every category decays with rate
   ``b_t`` into a distinguished absorbing/mask category and stays there.
 
 Iterating the chain gives the cumulative transition ``Qbar_t = Q_1 ... Q_t`` and
@@ -70,7 +70,7 @@ def uniform_transition_matrix(num_classes: int, beta: float) -> Matrix:
 def absorbing_transition_matrix(
     num_classes: int, beta: float, absorb_index: int | None = None
 ) -> Matrix:
-    """D3PM absorbing transition: mass ``b`` decays into an absorbing state.
+    """absorbing transition: mass ``b`` decays into an absorbing state.
 
     ``absorb_index`` defaults to the last category (the conventional ``[MASK]``
     slot). The absorbing row is the identity row, so once absorbed a state never
@@ -178,7 +178,7 @@ def categorical_posterior(
     q_t: Matrix,
     qbar_prev: Matrix | None,
 ) -> Vector:
-    """True posterior ``q(x_{t-1} | x_t, x_0)`` (Austin et al. 2021, Eq. 3).
+    """True posterior ``q(x_{t-1} | x_t, x_0)`` .
 
     ``proportional to (x_t Q_t^T) elementwise (x_0 Qbar_{t-1})``, renormalised.
     For ``t == 1`` pass ``qbar_prev=None``; the ``Qbar_0 = I`` factor makes the

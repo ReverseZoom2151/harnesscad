@@ -1,13 +1,13 @@
 """Fine-grained partial-token masking for locate-then-infill CAD editing.
 
-From CAD-Editor (Yuan et al., ICML 2025, ``finetune/create_mask.py``). The
+The
 "Locate" stage needs a *ground-truth masked sequence*: given an original CAD
 token sequence and its edited counterpart, produce the original with every span
 that must change replaced by a ``<mask>`` placeholder, so the "Infill" stage only
 has to regenerate the masked spans while the surrounding context is frozen.
 
 The harness already has a *whole-token* locate mask (``editing.locate_infill``):
-a token either survives verbatim or is masked. CAD-Editor's contribution captured
+a token either survives verbatim or is masked. The refinement captured
 here is **finer granularity** -- when two tokens align but differ only in some of
 their comma-separated components (e.g. ``line,14,14`` vs ``line,13,13``), the
 shared command word and the matching components are *preserved* and only the
@@ -39,7 +39,7 @@ MASK = "<mask>"
 def parse_components(token: str, sep: str = ",") -> List[str]:
     """Split a token into its components (command word + parameters).
 
-    CAD-Editor tokens look like ``line,14,14`` / ``circle,7,3,7,9`` -- a leading
+    Such tokens look like ``line,14,14`` / ``circle,7,3,7,9`` -- a leading
     command word followed by comma-separated integer parameters.
     """
     return token.split(sep)
@@ -121,7 +121,7 @@ def mask_span_count(masked: Sequence[str]) -> int:
 
     Counts maximal runs containing at least one masked token (bare ``<mask>`` or a
     partial ``...<mask>...`` token). A useful complexity signal for the edit
-    (mirrors CAD-Editor's downstream length/complexity filtering).
+    (mirrors the downstream length/complexity filtering).
     """
     count = 0
     in_run = False

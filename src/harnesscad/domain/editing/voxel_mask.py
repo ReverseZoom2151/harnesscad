@@ -4,7 +4,7 @@ Implements the deterministic, training-free part of VoxHammer's masking: given
 the set of active voxels/tokens of a structured 3D latent (SLAT) and a
 user-specified 3D editing region, select the voxels inside the region (to be
 edited) and the complementary preserved set ``Omega_keep`` (kept fixed). Masks
-come in two flavours matching the paper:
+come in two flavours matching this approach:
 
 - binary masks ``Mss in {0,1}`` used for latent/KV replacement (eqs. 4-7);
 - soft masks ``f_Mss in [0,1]`` obtained by dilation + Gaussian falloff to
@@ -96,7 +96,7 @@ def soft_mask(coords, edit_voxels, dilation=1, sigma=1.0):
     For each active voxel let ``d`` be its Euclidean distance to the nearest edit
     voxel. Voxels within ``dilation`` of the edit region form a plateau of weight
     1.0; beyond that the weight decays as ``exp(-(d-dilation)^2 / (2 sigma^2))``.
-    This smooth transition suppresses the visible seams described in the paper.
+    This smooth transition suppresses the visible seams described in this approach.
     """
     if dilation < 0:
         raise ValueError("dilation must be non-negative")

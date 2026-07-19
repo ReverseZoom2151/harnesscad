@@ -1,10 +1,9 @@
-"""Gauss-Legendre quadrature nodes and weights (OCCT ``math`` package).
+"""Gauss-Legendre quadrature nodes and weights .
 
-Open CASCADE Technology (OCE / OCCT), ``src/FoundationClasses/TKMath/math/
-math.cxx``.  OCCT's ``math`` toolkit ships a hard-coded table of Gauss-Legendre
+the kernel's ``math`` toolkit ships a hard-coded table of Gauss-Legendre
 quadrature abscissae (``Point[]``) and weights (``Weight[]``) for every order
-``N = 1 .. 61`` (``math::GaussPointsMax() == 61``).  These are the reference
-sample points OCCT uses throughout its integration machinery
+``N = 1 .. 61`` (``math::GaussPointsMax == 61``).  These are the reference
+sample points the kernel uses throughout its integration machinery
 (``math_GaussSingleIntegration``, ``math_GaussMultipleIntegration``,
 ``BSplCLib`` surface-area / mass-property integrals, etc.).  Exploiting the
 symmetry of the Legendre roots about the origin, the table stores only the
@@ -15,13 +14,13 @@ The harness has extensive NURBS / Bernstein machinery (``numeric.nurbs_basis``,
 numerical-quadrature primitive at all -- no way to integrate a function, and no
 Gauss-Legendre node/weight table.  This module fills that gap.
 
-Rather than transcribe OCCT's 61-order static table verbatim, the nodes and
+Rather than transcribe the kernel's 61-order static table verbatim, the nodes and
 weights are *generated* deterministically -- the roots of the degree-``n``
 Legendre polynomial found by Newton's method, with the classic weight formula
 
     w_i = 2 / ((1 - x_i^2) * P_n'(x_i)^2)
 
-The generator reproduces OCCT's published table to full double precision (the
+The generator reproduces the kernel's published table to full double precision (the
 unit tests check the low-order rows against the exact values copied out of
 ``math.cxx``).  Everything here is pure-Python stdlib and deterministic (a
 fixed initial guess ``x = cos(pi * (k - 1/4) / (n + 1/2))`` -- no randomness,
@@ -31,7 +30,7 @@ Public API
 ----------
   * :func:`legendre_p`         -- P_n(x) and P_n'(x) via the three-term recurrence.
   * :func:`nodes_and_weights`  -- the ``n``-point rule on the reference [-1, 1].
-  * :func:`gauss_points_max`   -- OCCT's cap (61); rules above it still generate.
+  * :func:`gauss_points_max`   -- the kernel's cap (61); rules above it still generate.
   * :func:`integrate`          -- definite integral of ``f`` on ``[a, b]``.
   * :func:`integrate_2d`       -- tensor-product rule on a rectangle.
 """
@@ -41,15 +40,15 @@ from __future__ import annotations
 import math
 from typing import Callable, List, Tuple
 
-# OCCT math::GaussPointsMax() -- the largest tabulated rule in math.cxx.
+# Largest tabulated rule order in the reference table.
 _OCCT_GAUSS_POINTS_MAX = 61
 
 
 def gauss_points_max() -> int:
-    """Return OCCT's tabulated maximum rule order (``math::GaussPointsMax()``).
+    """Return the kernel's tabulated maximum rule order (``math::GaussPointsMax``).
 
     This module can generate rules of any positive order; the value is exposed
-    only to mirror OCCT's documented limit.
+    only to mirror the kernel's documented limit.
     """
     return _OCCT_GAUSS_POINTS_MAX
 
@@ -92,7 +91,7 @@ def nodes_and_weights(n: int) -> Tuple[List[float], List[float]]:
 
     Produces ``(nodes, weights)``, each a length-``n`` list, with ``nodes``
     sorted ascending.  The rule integrates polynomials up to degree ``2n - 1``
-    exactly.  Equivalent to OCCT's ``Point``/``Weight`` rows (which store only
+    exactly.  Equivalent to the kernel's ``Point``/``Weight`` rows (which store only
     the non-negative half by symmetry).
     """
     if n < 1:
@@ -153,7 +152,7 @@ def integrate_2d(
     """Integrate ``func(x, y)`` over the rectangle ``[ax,bx] x [ay,by]``.
 
     Tensor product of an ``nx``-point rule in ``x`` and an ``ny``-point rule in
-    ``y`` -- the same construction OCCT's ``math_GaussMultipleIntegration``
+    ``y`` -- the same construction the kernel's ``math_GaussMultipleIntegration``
     uses for separable domains.
     """
     xn, xw = nodes_and_weights(nx)

@@ -1,9 +1,9 @@
-"""Standard screw-thread / fastener dimension database (sdfx).
+"""Standard screw-thread / fastener dimension database.
 
-Reimplementation of the thread lookup tables from deadsy/sdfx
-(``sdf/screw.go`` -- ``initThreadLookup``).  A named lookup for the four common
-thread standards, each entry carrying the nominal major radius, pitch, taper and
-hex head flat-to-flat distance in consistent millimetres:
+Thread lookup tables implemented from published thread standards.  A named
+lookup for the four common thread standards, each entry carrying the nominal
+major radius, pitch, taper and hex head flat-to-flat distance in consistent
+millimetres:
 
 * **ISO metric** coarse & fine (``M3x0.5`` ... ``M64x6``);
 * **UTS** Unified coarse (UNC) and fine (UNF), specified in inch/TPI;

@@ -14,10 +14,10 @@ Hard operators (scalar distances ``a``, ``b`` of the argument fields):
 Smooth operators use a *smooth minimum* ``smin`` with radius/parameter ``k``:
 
 * polynomial (quadratic) smin -- an elliptic blend;
-* exponential smin (IQ) -- smoothly blends any number of fields;
-* power smin (IQ) -- requires positive arguments.
+* exponential smin -- smoothly blends any number of fields;
+* power smin -- requires positive arguments.
 
-Distance-field classes / Lipschitz caveats (from Curv's docs):
+Distance-field classes / Lipschitz caveats:
 
 * Hard ``union`` of exact fields: the *exterior* stays exact but the *interior*
   becomes only approximate (``max`` of two exact interiors is exact, ``min`` of
@@ -25,7 +25,7 @@ Distance-field classes / Lipschitz caveats (from Curv's docs):
   ``min``/``max`` are exactly 1-Lipschitz (they never increase the gradient).
 * Smooth blends are only *approximate* fields: the smoothing term
   ``- k*h*(1-h)`` slightly violates the Eikonal equation inside the blend band,
-  so ``|grad|`` can exceed 1 (Curv recommends ``lipschitz`` compensation before
+  so ``|grad|`` can exceed 1 (a Lipschitz compensation pass is recommended before
   meshing).  The bound is small for the polynomial blend and the maximum
   under-shoot never exceeds ``k/4`` (``smooth k .union [s, s] == offset (k/4) s``).
 * ``smooth_union <= hard_union`` everywhere (the blend only ever *adds*
@@ -71,7 +71,7 @@ def difference(a: float, b: float) -> float:
 
 
 def union_all(values) -> float:
-    """N-ary union; identity is ``+inf`` (Curv's ``nothing``)."""
+    """N-ary union; identity is ``+inf`` (the empty solid)."""
     result = float("inf")
     for v in values:
         if v < result:
@@ -80,7 +80,7 @@ def union_all(values) -> float:
 
 
 def intersection_all(values) -> float:
-    """N-ary intersection; identity is ``-inf`` (Curv's ``everything``)."""
+    """N-ary intersection; identity is ``-inf`` (the full space)."""
     result = float("-inf")
     for v in values:
         if v > result:
@@ -92,11 +92,10 @@ def intersection_all(values) -> float:
 # smooth minima                                                                #
 # --------------------------------------------------------------------------- #
 def smooth_min_poly(a: float, b: float, k: float) -> float:
-    """Polynomial (quadratic) smooth minimum -- Curv's ``smooth_min`` (IQ).
+    """Polynomial (quadratic) smooth minimum.
 
     ``h = clamp(0.5 + 0.5*(b - a)/k, 0, 1);  lerp(b, a, h) - k*h*(1 - h)``.
     ``k > 0`` is the blend radius.  As ``k -> 0`` it converges to ``min(a, b)``.
-    Reference: iquilezles.org/articles/smin.
     """
     if k <= 0.0:
         return a if a < b else b
@@ -114,7 +113,7 @@ def smooth_max_poly(a: float, b: float, k: float) -> float:
 
 
 def smooth_min_exp(a: float, b: float, k: float) -> float:
-    """Exponential smooth minimum (IQ).
+    """Exponential smooth minimum.
 
     ``-log(exp(-a/k) + exp(-b/k)) * k`` with ``k > 0`` the smoothing amount.
     Unlike the polynomial form this generalises to N arguments associatively.
@@ -127,7 +126,7 @@ def smooth_min_exp(a: float, b: float, k: float) -> float:
 
 
 def smooth_min_power(a: float, b: float, k: float) -> float:
-    """Power smooth minimum (IQ).  Requires ``a > 0`` and ``b > 0``.
+    """Power smooth minimum.  Requires ``a > 0`` and ``b > 0``.
 
     ``pow(a, k) ...`` blends only where both fields are positive; used mostly
     for the *exterior*.  ``k > 1`` sharpens.  Raises for non-positive inputs.
@@ -160,7 +159,7 @@ def smooth_difference(a: float, b: float, k: float) -> float:
 
 
 def chamfer_min(a: float, b: float, r: float) -> float:
-    """Chamfer minimum (Curv/MERCURY): a 45-degree bevel of size ``r``.
+    """Chamfer minimum: a 45-degree bevel of size ``r``.
 
     ``min(a, b) - 0.5*max(r - |a - b|, 0)``.
     """

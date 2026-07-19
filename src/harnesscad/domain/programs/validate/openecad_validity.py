@@ -1,7 +1,6 @@
-"""Loop-closure and profile validity for OpenECAD sketches (Yuan et al., 2024).
+"""Loop-closure and profile validity for OpenECAD sketches.
 
-The paper's analysis of generated code (Sec. 6.4.1) singles out two structural
-properties a valid OpenECAD sketch must satisfy:
+A valid OpenECAD sketch must satisfy two structural properties:
 
 * consecutive curves in a loop are *connected end-to-end*, and the first and last
   curves are joined, so the loop is **closed**;
@@ -12,7 +11,7 @@ This module checks those properties deterministically over the curve calls of
 :mod:`programs.openecad_script`. A ``add_circle`` is a self-closed single-curve
 loop; ``add_line`` / ``add_arc`` contribute ``start``/``end`` points that must
 chain up. Nothing here is learned -- it is the geometric validity test the
-paper's scoring and rendering rely on.
+scoring and rendering rely on.
 """
 
 from __future__ import annotations
@@ -25,7 +24,7 @@ from harnesscad.domain.programs.ast import openecad as oe
 
 DEFAULT_TOL = 1e-6
 
-# Curve target names encode ``<Kind><step>_<loop>_<index>`` (Algorithm 1).
+# Curve target names encode ``<Kind><step>_<loop>_<index>``.
 _CURVE_NAME = re.compile(r"^(Line|Arc|Circle)(\d+)_(\d+)_(\d+)$")
 
 

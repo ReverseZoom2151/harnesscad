@@ -1,9 +1,8 @@
 """Heat-set (threaded) insert bore schedule keyed to screw designation.
 
-Source rule: the ``heatserts`` plugin of the CadQuery community plugin
-collection.  A heat-set insert is a knurled brass sleeve melted into a
+A heat-set insert is a knurled brass sleeve melted into a
 thermoplastic part so that a machine screw can be driven into it.  The
-plugin encodes a *schedule*: for each metric screw designation (M3, M4,
+standard encodes a *schedule*: for each metric screw designation (M3, M4,
 M5, M6) it stores the insert bore diameter, the bore depth, and the bolt
 diameter, and it builds the hole as the union of
 
@@ -15,7 +14,7 @@ diameter, and it builds the hole as the union of
   at the face down to ``diam/2`` over ``chamfer_depth``; a scalar chamfer
   means setback == depth, i.e. a 45 degree lead-in.
 
-This module reimplements the schedule and the resulting axial profile with
+This module implements the schedule and the resulting axial profile with
 stdlib arithmetic, and adds the derived quantities a planner needs: melt
 displacement volume, minimum boss diameter (the wall of plastic that must
 surround the insert), and validation of the bore against a wall thickness.

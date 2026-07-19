@@ -1,10 +1,9 @@
 """CADReasoner closed-loop program editing (render -> compare -> refine).
 
 Paper: "CADReasoner - Iterative Program Editing for CAD Reverse Engineering",
-Sec. 3.1 (Problem Setup), 3.6 (greedy inference / best-so-far), 4.2 (selection
 vs. reporting protocol).
 
-The paper casts reverse engineering as *closed-loop program editing*. At each
+This approach casts reverse engineering as *closed-loop program editing*. At each
 iteration ``t`` an editor proposes an updated program from the target, the
 previous render, and their geometric discrepancy:
 
@@ -12,10 +11,10 @@ previous render, and their geometric discrepancy:
 
 The render is fed back to the next step, the loop keeps the *best-so-far* program
 by a geometric discrepancy ``D``, and stops when improvement falls below a
-threshold or a step budget is reached (Sec. 3.1, 3.6).
+threshold or a step budget is reached.
 
 This module is the deterministic *harness* around that loop. Everything learned
-in the paper — the neural editor ``f`` — is injected as a plain callable, so the
+in this approach -- the neural editor ``f`` -- is injected as a plain callable, so the
 same loop drives a heuristic editor, a stub, or (behind an adapter) a model. The
 harness owns exactly the deterministic parts:
 
@@ -24,7 +23,7 @@ harness owns exactly the deterministic parts:
   * computing the discrepancy encoding fed to the editor (via
     ``cadreasoner_discrepancy`` by default);
   * **best-so-far** bookkeeping ``C_{<=t} = argmin_{i<=t} D(T, R(C_i))``;
-  * the **selection-vs-reporting** split (Sec. 4.2): ranking/selection use one
+  * the **selection-vs-reporting** split: ranking/selection use one
     (possibly scan) target while the reported score is measured against a second
     (clean) target, so candidate selection never accesses an oracle;
   * early stopping on a ``min_improvement`` threshold or ``max_steps`` budget.
@@ -125,7 +124,7 @@ def run_edit_loop(
 
     Args:
         target_points: point set sampled on the *selection* target (the scan, at
-            inference — never the clean oracle). Drives ranking and the editor
+            inference -- never the clean oracle). Drives ranking and the editor
             feedback.
         initial_program: the program C_0 the loop starts editing from. The first
             edit (t=1) uses the null-prediction encoding when this renders empty.
@@ -137,7 +136,7 @@ def run_edit_loop(
         select_metric: ``D(target_points, render_points) -> float`` used for
             best-so-far selection (lower is better). ``None`` counts as invalid.
         report_target_points / report_metric: optional second target + metric
-            (Sec. 4.2). When given, the reported score of each step is measured
+. When given, the reported score of each step is measured
             against ``report_target_points`` but **selection still uses**
             ``select_metric``, so the loop never selects using the report oracle.
         max_steps: iteration budget ``s``.
@@ -209,7 +208,7 @@ def run_edit_loop(
             t=t, program=program, valid=True, select_score=sel,
             report_score=rep, encoding=encoding))
 
-        # BEST-SO-FAR by the selection metric only (Sec. 3.6 / 4.2).
+        # BEST-SO-FAR by the selection metric only.
         improvement = best_select - sel
         if sel < best_select:
             best_index = len(steps) - 1

@@ -1,23 +1,22 @@
-"""Deterministic KCL (Zoo/KittyCAD modeling language) tokeniser and grammar tables.
+"""Deterministic KCL modeling-language tokeniser and grammar tables.
 
 This module is a stdlib-only, deterministic reference implementation of the KCL
-lexer, mirrored faithfully from the Rust ``kcl-syntax`` crate in Zoo's
-``modeling-app`` (``rust/kcl-syntax/src/lexer.rs`` and ``syntax_kind.rs``). It is
-NOT the Zoo backend and does NOT talk to any API -- it exists so the rest of the
-harness (and in particular a Zoo-backend author) has a checked, importable model
-of KCL's *lexical* grammar, keyword set, AST node vocabulary, standard-library
-function catalogue, and engine op set, without needing the Rust toolchain.
+lexer. It is NOT an engine backend and does NOT talk to any API -- it exists so
+the rest of the harness (and in particular a backend author) has a checked,
+importable model of KCL's *lexical* grammar, keyword set, AST node vocabulary,
+standard-library function catalogue, and engine op set, without needing a
+separate native toolchain.
 
-What is mirrored here
+What is modelled here
 ---------------------
 *   :data:`SYNTAX_KINDS` -- every ``SyntaxKind`` variant (token kind).
-*   :data:`KEYWORDS` -- the reserved-word table (``keyword_or_word`` in Rust).
+*   :data:`KEYWORDS` -- the reserved-word table.
 *   :func:`lex` -- a lossless tokeniser: whitespace and comments are preserved as
     tokens, and lexical errors surface as recovery token kinds
     (``Unknown``, ``UnterminatedString``, ``UnterminatedBlockComment``), exactly
-    like the reference lexer. Byte ranges are UTF-8 byte offsets to match Rust.
-*   :data:`AST_NODES` -- the AST node/enum vocabulary from
-    ``parsing/ast/types/mod.rs`` (statements, expressions, operators).
+    like any lossless lexer. Byte ranges are UTF-8 byte offsets.
+*   :data:`AST_NODES` -- the AST node/enum vocabulary (statements, expressions,
+    operators).
 *   :data:`BINARY_OPERATORS` / :data:`UNARY_OPERATORS` -- operator spellings.
 
 The number-suffix unit set (``mm``, ``cm``, ``m``, ``inch``, ``in``, ``ft``,

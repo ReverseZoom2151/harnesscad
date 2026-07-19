@@ -1,16 +1,14 @@
-"""Buildability / assembly-order analysis for brick structures (BRICKGPT).
+"""Buildability / assembly-order analysis for brick structures.
 
-Paper: "Generating Physically Stable and Buildable Brick Structures from Text".
 A design is *buildable* if it can be assembled brick-by-brick by a human or
-robot (Section 1). BRICKGPT emits bricks in a raster-scan order from bottom to
-top (Section 4.1), which doubles as an assembly guide (Appendix C: "since our
-method outputs a sequence of intermediate steps, it naturally serves as an
-intuitive assembly guide"). Robotic assembly (Appendix B) additionally reorders
-bricks so that "each intermediate structure is physically stable by itself".
+robot. A raster-scan order from bottom to top doubles as an assembly guide,
+since a sequence of intermediate steps naturally serves as an assembly
+walkthrough. A robotic-assembly variant additionally reorders bricks so that
+each intermediate structure is physically stable by itself.
 
 This module provides the deterministic assembly-order checks:
 
-* :func:`raster_assembly_order` -- the paper's canonical bottom-to-top raster
+* :func:`raster_assembly_order` -- the canonical bottom-to-top raster
   order (sort by ``z``, then ``y``, then ``x``).
 * :func:`is_supported_order` -- every brick is placed only after the bricks it
   studs onto are already present (no brick placed in mid-air): each prefix is a
@@ -21,7 +19,7 @@ This module provides the deterministic assembly-order checks:
   is grounded/connected, or ``None`` if the structure has a floating island that
   can never be reached.
 * :func:`is_buildable` -- convenience predicate.
-* :func:`is_assembly_stable` -- optional stronger check (Appendix B): every
+* :func:`is_assembly_stable` -- optional stronger check: every
   intermediate partial build is physically stable, using the stability analysis.
 
 Deterministic, stdlib only.
@@ -40,7 +38,7 @@ from harnesscad.domain.geometry.assembly.brick_connectivity import (
 
 
 def raster_assembly_order(structure: BrickStructure) -> list[int]:
-    """Canonical bottom-to-top raster order (Section 4.1): sort by z, then y, x."""
+    """Canonical bottom-to-top raster order: sort by z, then y, x."""
     idx = list(range(len(structure.bricks)))
     idx.sort(key=lambda i: (structure.bricks[i].z, structure.bricks[i].y, structure.bricks[i].x))
     return idx
@@ -126,7 +124,7 @@ def is_assembly_stable(
     stability_predicate: Callable[[BrickStructure], bool],
     order: Optional[list[int]] = None,
 ) -> bool:
-    """True if every intermediate partial build (Appendix B) is stable.
+    """True if every intermediate partial build is stable.
 
     ``stability_predicate`` maps a :class:`BrickStructure` to a bool (e.g.
     ``verifiers.brick_stability.is_stable``). If ``order`` is omitted, the

@@ -1,20 +1,19 @@
-"""Straight-line fluent-subset policy for model-generated CAD scripts (OpenCAD).
+"""Straight-line fluent-subset policy for model-generated CAD scripts.
 
-OpenCAD executes LLM-generated fluent scripts (``Part``/``Sketch`` chains)
-in-process, and its gate (``opencad_agent/generated_code.py``) is stricter than
-an import/call blocklist: it constrains the *shape of the program itself*. A
-generated script may only be a straight-line sequence of assignments and fluent
-expression chains -- no function or class definitions, no loops, no ``try``, no
-``with``, no ``lambda``, no ``raise``, no ``global``. The insight is that a CAD
-build script has no business owning control flow: every legitimate output of
-the code-generation prompt is a linear recipe, so any control-flow node in the
-AST is either a prompt violation or an attempted escape, and both get refused
-before ``exec``.
+A fluent-CAD runtime executes model-generated fluent scripts (``Part``/``Sketch``
+chains) in-process, and its gate is stricter than an import/call blocklist: it
+constrains the *shape of the program itself*. A generated script may only be a
+straight-line sequence of assignments and fluent expression chains -- no function
+or class definitions, no loops, no ``try``, no ``with``, no ``lambda``, no
+``raise``, no ``global``. The insight is that a CAD build script has no business
+owning control flow: every legitimate output of the code-generation prompt is a
+linear recipe, so any control-flow node in the AST is either a prompt violation
+or an attempted escape, and both get refused before ``exec``.
 
-The full rule set, reimplemented here:
+The full rule set:
 
 * **statement-shape allowlist** -- every node in :data:`BLOCKED_STATEMENTS` is
-  refused (OpenCAD's ``BLOCKED_STATEMENTS``);
+  refused;
 * **single import form** -- exactly ``from <module> import <allowed names>``,
   no ``import x``, no relative imports, no aliasing (``as``), no names outside
   the allowlist;

@@ -1,30 +1,26 @@
-"""METRO-style hierarchical mesh coarsening / upsampling and template positional encoding.
+"""Hierarchical mesh coarsening / upsampling and template positional encoding.
 
-Deterministic re-encoding of the two fixed, weight-free geometry operations that
-sit around MeshTransformer / METRO (``metro/modeling/bert/modeling_metro.py``):
+Deterministic re-encoding of two fixed, weight-free geometry operations that
+sit around a mesh-regression transformer:
 
-* **Coarse <-> fine mesh sampling.** METRO does not regress a full mesh directly;
-  it predicts a *coarse* vertex set and lifts it back to the full mesh through a
-  pair of precomputed linear operators::
+* **Coarse <-> fine mesh sampling.** Rather than regressing a full mesh
+  directly, such a model predicts a *coarse* vertex set and lifts it back to
+  the full mesh through a pair of precomputed linear operators: a downsample
+  step (``N -> M``) and an upsample step (``M -> N``).  Those operators are
+  sparse matrices fixed by the mesh topology (a quadric-decimation hierarchy
+  in the original).  The reusable idea is the *pair of operators*: a downsample
+  matrix whose rows average a cluster of fine vertices, and an upsample matrix
+  whose rows blend the nearest coarse vertices.  This module builds both
+  deterministically from a mesh via shortest-edge clustering -- no learned
+  weights -- so a caller can push any per-vertex signal up or down the
+  hierarchy.
 
-        template_vertices_sub = mesh_sampler.downsample(template_vertices)   # N -> M
-        pred_vertices         = self.upsampling(pred_vertices_sub)           # M -> N
-
-  ``downsample`` / ``upsampling`` are sparse matrices fixed by the mesh topology
-  (Ranjan et al.'s CoMA quadric decimation in the original). The reusable idea is
-  the *pair of operators*: a downsample matrix whose rows average a cluster of fine
-  vertices, and an upsample matrix whose rows blend the nearest coarse vertices.
-  This module builds both deterministically from a mesh via shortest-edge
-  clustering -- no learned weights -- so a caller can push any per-vertex signal
-  up or down the hierarchy.
-
-* **Template positional encoding.** METRO gives each transformer token a position
-  by concatenating the *canonical template coordinate* of that vertex/joint
-  (``ref_vertices = cat([template_3d_joints, template_vertices_sub])``) to the image
-  feature. The position of vertex *i* is therefore just its coordinate in a fixed
-  template pose. This module provides that raw encoding and a sinusoidal
-  frequency expansion of it (the ``FrequencyPositionalEmbedding`` idea reused
-  across these codebases: frequencies ``2**k``).
+* **Template positional encoding.** Each transformer token can be given a
+  position by concatenating the *canonical template coordinate* of that
+  vertex/joint to the image feature.  The position of vertex *i* is therefore
+  just its coordinate in a fixed template pose.  This module provides that raw
+  encoding and a sinusoidal frequency expansion of it (a frequency-based
+  positional embedding with frequencies ``2**k``).
 
 This is DISTINCT from the marching-cubes / dual-contouring meshers in
 ``geometry.volumes`` and from ``geometry.mesh.segmentation``: here the mesh is
@@ -236,7 +232,7 @@ def apply_operator(
 
 
 def template_positional_encoding(vertices: Sequence[Vec3]) -> list[tuple[float, ...]]:
-    """The raw METRO positional encoding: each vertex's canonical template coordinate."""
+    """The raw positional encoding: each vertex's canonical template coordinate."""
     return [tuple(float(c) for c in v) for v in vertices]
 
 
@@ -249,7 +245,7 @@ def sinusoidal_positional_encoding(
 
     For each coordinate ``x`` and frequency ``f = 2**k`` (``k`` in ``0..num_freqs-1``)
     emit ``sin(f*x)`` and ``cos(f*x)``; optionally prepend the raw coordinate. This
-    is the ``FrequencyPositionalEmbedding`` construction reused across these repos.
+    is the standard frequency-based positional-embedding construction.
     """
     if num_freqs < 1:
         raise ValueError("num_freqs must be >= 1")

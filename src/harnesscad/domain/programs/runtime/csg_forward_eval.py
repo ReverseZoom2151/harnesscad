@@ -1,28 +1,25 @@
 """Forward evaluation ``get``: CSG program AST -> traced geometry tree.
 
-From *Introducing Bidirectional Programming in Constructive Solid Geometry-Based
-CAD* (Gonzalez et al., SUI '23), Sec. 4:
+The forward evaluation model this module follows: an OpenSCAD program is parsed
+into an Abstract Syntax Tree, which is processed into an abstract CSG tree whose
+nodes each contribute an element to the model; the CSG tree is then used to
+compute a mesh hierarchy (3D points, normal vectors, colors) stored as a
+geometric tree.
 
-    "OpenSCAD parses the code to create an Abstract Syntax Tree (AST) ... Then it
-    processes the AST ... to create an Abstract CSG Tree. Each node in this tree
-    represents an element that contributes to the creation of the model ...
-    OpenSCAD uses the CSG to compute a mesh hierarchy that contains the 3D points,
-    normal vectors, and colors of all nodes ... and stores it in a Geometric Tree."
-
-This module is the forward half of the bidirectional transformation -- the paper's
-``get``. It evaluates a :mod:`programs.bidircsg_ast` program into a **traced
+This module is the forward half of a bidirectional transformation -- the ``get``
+direction. It evaluates a :mod:`programs.bidircsg_ast` program into a **traced
 geometry tree** in which every output node carries:
 
-  * ``source_path`` -- the AST node reference (Sec. 4.1, F2: "the reference of the
-    AST node in each CSG node"). This is what makes navigation possible: one AST
-    node may produce *several* output nodes (a loop / repeated module), which is
-    exactly the *impacted* relationship.
+  * ``source_path`` -- the reference of the AST node in each CSG node. This is
+    what makes navigation possible: one AST node may produce *several* output
+    nodes (a loop / repeated module), which is exactly the *impacted*
+    relationship.
   * ``call_stack`` -- the sequence of loop-instance indices from the root to this
-    node ("the call order of the instruction in the call stack", F2).
+    node (the call order of the instruction in the call stack).
   * ``world_transform`` / ``parent_transform`` -- the accumulated affine from the
-    root to this node (and to its parent frame). The gizmo in the paper is placed
-    "applying previous translation and rotation from the root to the selected
-    object" (F6); the backward ``put`` needs the parent frame to convert a
+    root to this node (and to its parent frame). The manipulation gizmo is placed
+    by applying the accumulated translation and rotation from the root to the
+    selected object; the backward ``put`` needs the parent frame to convert a
     world-space edit into a local parameter change.
   * ``anchor`` -- the world position of the node's local origin (a cheap stand-in
     for the mesh, enough to verify the lens laws).

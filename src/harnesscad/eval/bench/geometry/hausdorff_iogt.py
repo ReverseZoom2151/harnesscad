@@ -1,16 +1,15 @@
-"""CADPrompt / CADCodeVerify geometric evaluation protocol.
+"""Vision-language CAD-code geometric evaluation protocol.
 
-Deterministic re-implementation of the evaluation metrics defined in
-"Generating CAD Code with Vision-Language Models for 3D Designs"
-(Alrashedy et al., ICLR 2025), section 5.2.
+Deterministic re-implementation of an evaluation protocol for CAD code
+generated with vision-language models from 3D design references.
 
-The paper compares a generated 3D object (as a point cloud sampled from an STL
-mesh) against an expert ground-truth object using three metrics:
+The protocol compares a generated 3D object (as a point cloud sampled from an
+STL mesh) against an expert ground-truth object using three metrics:
 
-  * Point Cloud distance -- the symmetric average nearest-neighbour distance
-    (Eq. 8), a Chamfer-style distance with the paper's explicit ``1/(2|.|)``
-    weighting on each direction.
-  * Hausdorff distance -- ``max`` of the two directed suprema (Eq. 9).
+  * Point Cloud distance -- the symmetric average nearest-neighbour distance,
+    a Chamfer-style distance with an explicit ``1/(2|.|)`` weighting on each
+    direction.
+  * Hausdorff distance -- ``max`` of the two directed suprema.
   * Intersection over the Ground Truth (IoGT) -- the ratio of the axis-aligned
     bounding-box intersection volume of the generated object to the bounding-box
     volume of the ground truth (Eq. 10).

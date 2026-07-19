@@ -1,20 +1,19 @@
-"""Exact GenCAD/DeepCAD normalisation + quantisation pipeline (dataset processing).
+"""Exact CAD normalisation + quantisation pipeline (dataset processing).
 
-``reconstruction.deepcad_command_spec`` states *that* continuous parameters are
-normalised and quantised to 256 levels; it does not carry the reference
-implementation's exact affine constants. Those constants matter -- a decoder that
-de-quantises with the wrong offset reconstructs a shifted solid. This module is the
-faithful port of the constants and formulas in GenCAD's ``cadlib/macro.py``,
-``cadlib/sketch.py`` and ``cadlib/extrude.py``:
+A companion command specification states *that* continuous parameters are
+normalised and quantised to 256 levels; it does not carry the exact affine
+constants. Those constants matter -- a decoder that de-quantises with the wrong
+offset reconstructs a shifted solid. This module fixes the constants and formulas
+for the shape-, sketch- and extrude-level maps:
 
-Shape-level (``CADSequence.normalize``), applied before anything else::
+Shape-level normalisation, applied before anything else::
 
     scale = size * NORM_FACTOR / max(|bbox|)      NORM_FACTOR = 0.75, size = 1.0
 
   The 0.75 factor deliberately leaves head-room so that data augmentation cannot
   push a coordinate out of the ``[-1, 1]`` cube.
 
-Sketch-level (``SketchBase.normalize``), maps a profile into a ``size x size`` raster
+Sketch-level normalisation maps a profile into a ``size x size`` raster
 with the profile's *start point* at the raster centre::
 
     scale = (size / 2 * NORM_FACTOR - 1) / bbox_size          bbox_size measured

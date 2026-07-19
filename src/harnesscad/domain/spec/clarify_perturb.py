@@ -1,8 +1,7 @@
 """clarify_perturb -- deterministic ambiguity synthesis for text-to-CAD.
 
-The ProCAD clarifier is trained on synthetic *ambiguous* prompts produced by
-perturbing verified specifications (Section 5.2 + Appendix J.3, "Misleading CAD
-Description Generator"). The paper focuses on two error types:
+The clarifier is trained on synthetic *ambiguous* prompts produced by
+perturbing verified specifications. Two error types are covered:
 
   * **under-specified** -- omit exactly K key dimensions;
   * **conflicting**    -- assign conflicting values to exactly K features.
@@ -12,8 +11,8 @@ are the questions that recover the omitted/over-written information and ``a``
 are the correct answers drawn from the ground truth.
 
 This module reproduces that generator deterministically (seeded, stdlib-only)
-so a robustness benchmark can be built without an LLM. The paper's curation
-rules (Section 5.2) -- keep a perturbed sample only when it is *genuinely
+so a robustness benchmark can be built without an LLM. The curation
+rules -- keep a perturbed sample only when it is *genuinely
 harmful* and the degradation is *substantial* -- are provided as
 :func:`keep_sample`.
 """
@@ -191,7 +190,7 @@ def _numeric(v: object) -> bool:
 
 def keep_sample(orig_cd: float, perturbed_cd: float,
                 *, cd_threshold: float = 2e-4, ratio_min: float = 10.0) -> bool:
-    """The paper's three selection rules for a synthetic ambiguous sample.
+    """Three selection rules for a synthetic ambiguous sample.
 
     Keep a sample only if:
       (i)   the verified spec is high quality: ``orig_cd < cd_threshold``;

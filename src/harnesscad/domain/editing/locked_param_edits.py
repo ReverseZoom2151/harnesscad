@@ -1,6 +1,6 @@
-"""Locked-parameter edit-script protocol and iteration gate (Studio-OSS).
+"""Locked-parameter edit-script protocol and iteration gate .
 
-Mined from **Studio-OSS** (``lib/types.ts`` EditScript/EditAction,
+Mined from **the optimizer** (``lib/types.ts`` EditScript/EditAction,
 ``app/api/iterate/route.ts`` applyEditScript and the iteration loop). Studio's
 optimizer step lets a model *propose* parameter edits but never lets it
 *apply* them: the proposal is a typed edit script, and a deterministic
@@ -22,7 +22,7 @@ state and report "no improvement". The scorer is injected (for the harness
 that is :mod:`harnesscad.eval.quality.geometry.two_stage_score` or any other
 scorer); this module owns only the deterministic protocol.
 
-Complements :mod:`harnesscad.domain.editing.sketch_edit_schema` (mrCAD's
+Complements :mod:`harnesscad.domain.editing.sketch_edit_schema` (the sketch-edit protocol's
 curve-level edit grammar): this protocol operates at the named-parameter
 level of a parametric design with user-held locks.
 

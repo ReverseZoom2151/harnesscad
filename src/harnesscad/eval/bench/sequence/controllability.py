@@ -1,21 +1,21 @@
-"""Prediction-validity & controllability metrics for FlexCAD (Zhang et al. 2024).
+"""Prediction-validity & controllability metrics for masked-field CAD text editing.
 
-FlexCAD is evaluated on both *generation quality* and *controllability*. Two of its
-deterministic, learning-free metrics are implemented here:
+This style of task is evaluated on both *generation quality* and *controllability*.
+Two deterministic, learning-free metrics are implemented here:
 
-* **Prediction Validity (PV)** (paper Sec. 4.1 "Metrics"): the fraction of predicted
-  CAD texts that can be rendered into a 3D shape -- "rather than just 2D sketches or
-  nothing". Here a prediction is *valid* when it parses and is structurally complete
-  enough to extrude to a solid: at least one SE; every sketch has >=1 face; every
-  face has >=1 loop (its first being the outer loop); every loop has >=1 curve; and
-  every extrusion has a non-degenerate extent (not all attributes zero).
+* **Prediction Validity (PV)**: the fraction of predicted CAD texts that can be
+  rendered into a 3D shape -- rather than just 2D sketches or nothing. Here a
+  prediction is *valid* when it parses and is structurally complete enough to
+  extrude to a solid: at least one SE; every sketch has >=1 face; every face has
+  >=1 loop (its first being the outer loop); every loop has >=1 curve; and every
+  extrusion has a non-degenerate extent (not all attributes zero).
 
-* **Controllability**: FlexCAD's defining property is that only the *masked* field
-  changes while every unmasked element stays intact (paper Sec. 4.2; the baselines
-  fail this -- SkexGen cannot target a specific SE, Hnc-cad cannot preserve unmasked
-  elements). Given the original model, the mask target, and a predicted model, we
-  check that the surrounding tokens are preserved verbatim and report whether the
-  masked field actually changed (an *edit*).
+* **Controllability**: the defining property of a well-behaved masked-field editor
+  is that only the *masked* field changes while every unmasked element stays
+  intact (a weaker editor might fail to target a specific SE, or fail to preserve
+  unmasked elements). Given the original model, the mask target, and a predicted
+  model, we check that the surrounding tokens are preserved verbatim and report
+  whether the masked field actually changed (an *edit*).
 
 Pure stdlib, deterministic. Consumes :mod:`reconstruction.flexcad_text` structures.
 """
@@ -91,7 +91,7 @@ class ControllabilityReport:
 
     ``preserved`` -- every token *outside* the masked field is byte-identical.
     ``changed``   -- the masked field itself differs (a genuine edit was made).
-    ``controllable`` -- the FlexCAD ideal: preserved AND changed.
+    ``controllable`` -- the ideal outcome: preserved AND changed.
     """
 
     preserved: bool

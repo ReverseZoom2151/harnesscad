@@ -1,9 +1,9 @@
-"""Query-to-instance decoding for symbol spotting (SymPoint, ECCV 2024).
+"""Query-to-instance decoding for point-based symbol spotting.
 
-SymPoint's network emits a fixed set of ``Q`` *queries*, each a
+The network emits a fixed set of ``Q`` *queries*, each a
 (class-logit vector, per-point mask-logit vector) pair.  Turning those into a
-panoptic result is entirely deterministic (``svgnet/model/svgnet.py``), and it
-is the piece reimplemented here -- the network itself is external.
+panoptic result is entirely deterministic, and it is the piece implemented here
+-- the network itself is out of scope.
 
 Two decoders:
 

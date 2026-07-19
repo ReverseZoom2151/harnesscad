@@ -1,25 +1,25 @@
-"""Joint continuous-discrete diffusion coordination (SketchDNN Sec. 4 & 4.1).
+"""Joint continuous-discrete diffusion coordination for sketch primitives.
 
-SketchDNN diffuses a whole sketch ``X = {x_i}`` where each primitive
+A whole sketch ``X = {x_i}`` is diffused where each primitive
 ``x = (b, c, p)`` mixes DISCRETE variables (construction flag ``b``, class label
 ``c``) with CONTINUOUS parameters ``p``. The joint process treats each component
 independently:
 
-* discrete ``b`` and ``c`` follow **Gaussian-Softmax** diffusion (Eqs. 6/7);
-* continuous ``p`` follows **standard Gaussian** diffusion (Eqs. 2/3);
+* discrete ``b`` and ``c`` follow **Gaussian-Softmax** diffusion;
+* continuous ``p`` follows **standard Gaussian** diffusion;
 
 driven by a single shared retention schedule so the two modalities are noised in
-lock-step. Because every primitive is corrupted *independently* and identically
-(Eqs. 9/10), the forward and reverse processes are **permutation-equivariant**:
+lock-step. Because every primitive is corrupted *independently* and identically,
+the forward and reverse processes are **permutation-equivariant**:
 permuting the primitives before noising yields exactly the permuted noised
 sketch, ``p(pi(X_t) | pi(X_0)) = p(X_t | X_0)``.
 
-This module operates on the composite feature vectors of
-``reconstruction.sketchdnn_primitive_representation`` -- the first two blocks
-(construction one-hot, class one-hot) are the discrete part, everything after is
-the continuous parameter part. It reuses the Gaussian-Softmax primitives from
-``numeric.sketchdnn_gaussian_softmax``. Everything is stdlib-only and
-deterministic (randomness via explicit ``random.Random`` streams).
+This module operates on the composite primitive feature vectors defined by the
+reconstruction token layout -- the first two blocks (construction one-hot,
+class one-hot) are the discrete part, everything after is the continuous
+parameter part. It reuses the Gaussian-Softmax primitives from the companion
+module. Everything is stdlib-only and deterministic (randomness via explicit
+``random.Random`` streams).
 """
 
 from __future__ import annotations
@@ -98,7 +98,7 @@ def corrupt_sketch(
     seeds: Sequence[int],
     k: float = 0.99,
 ) -> list[Vector]:
-    """Corrupt a sketch primitive-by-primitive (factorised forward, Eq. 10).
+    """Corrupt a sketch primitive-by-primitive (factorised forward process).
 
     Each primitive is noised with its *own* ``random.Random(seed)`` stream so the
     noise is bound to the primitive, not to its position -- this is exactly what
@@ -122,7 +122,7 @@ def is_permutation_equivariant(
     """Check ``corrupt(pi(X)) == pi(corrupt(X))`` for the given permutation.
 
     Permuting ``(primitive, seed)`` pairs and corrupting must equal corrupting
-    then permuting -- the deterministic witness of Eqs. 9/10.
+    then permuting -- the deterministic witness of permutation equivariance.
     """
     n = len(primitives)
     if sorted(perm) != list(range(n)):
@@ -141,7 +141,7 @@ def is_permutation_equivariant(
 def _ddpm_posterior_coeffs(
     alpha_t: float, alpha_bar_t: float, alpha_bar_prev: float
 ) -> tuple[float, float]:
-    """DDPM posterior-mean coeffs ``(c0, ct)`` for the ``x0`` parameterisation."""
+    """Gaussian posterior-mean coeffs ``(c0, ct)`` for the ``x0`` parameterisation."""
     denom = 1.0 - alpha_bar_t
     if denom <= 0.0:
         raise ValueError("1 - alpha_bar_t must be positive")
@@ -161,7 +161,7 @@ def joint_posterior_mean(
     """Joint reverse posterior mean for one primitive.
 
     Discrete blocks use the Gaussian-Softmax posterior (projected back to the
-    simplex with softmax); the continuous block uses the DDPM posterior mean
+    simplex with softmax); the continuous block uses the Gaussian posterior mean
     ``c0 x_0 + ct x_t``.
     """
     _check(vec_t)

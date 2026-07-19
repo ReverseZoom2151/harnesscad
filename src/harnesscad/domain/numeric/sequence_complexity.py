@@ -1,6 +1,6 @@
 """Complexity measures for *complex parametric CAD command sequences*.
 
-MamTiff-CAD targets what it calls **complex parametric sequences** -- long
+This module targets what it calls **complex parametric sequences** -- long
 (60-256 command) CAD programs whose difficulty is the whole reason for the
 multi-scale design. The paper's ABC-256 dataset is built precisely by *filtering
 on sequence complexity* (Sec. 4 / Supp. 1): keep only models "with complete
@@ -8,7 +8,7 @@ design operations", "excluding simpler cases with only sketching and extrusion",
 ensuring sequence lengths of 60-256. That filter is a deterministic notion of
 complexity, and this module makes it concrete -- distinct from any learned model.
 
-A CAD command sequence is modelled as in DeepCAD / MamTiff-CAD: a tuple of
+A CAD command sequence is modelled conventionally: a tuple of
 ``(command_type, params)`` pairs where ``command_type`` is a small integer (the
 paper defines six types incl. ``SOL`` start-of-loop and ``EOS``) and ``params``
 is a fixed-width vector with unused entries set to ``-1`` (Sec. 3.2, Supp. 2).

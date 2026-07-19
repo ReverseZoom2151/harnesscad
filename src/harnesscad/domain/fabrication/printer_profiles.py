@@ -1,18 +1,6 @@
 """Printer wrapper-profile schema and static G-code bounds validation.
 
-Ported from **text-to-cad** (MIT License, Copyright (c) 2026 earthtojake),
-specifically its ``gcode`` skill:
-
-  * schema + loader:  ``plugins/cad/skills/gcode/scripts/gcode_tool.py``
-                      (``GCodeProfile``, ``load_profile``, ``parse_axis_bounds``,
-                      ``require_number``);
-  * validator:        the same file's ``validate_gcode_file``,
-                      ``parse_command``, ``parse_numeric_tokens``,
-                      ``strip_gcode_comment`` and the ``SUPPORTED_GCODE_COMMANDS``
-                      / ``PREFERRED_BACKEND_ORDER`` tables;
-  * documented policy: ``plugins/cad/skills/gcode/references/gcode-validation.md``
-                      (the required-checks list and the bounds policy reproduced
-                      in :func:`validate_gcode`).
+Derived from text-to-cad (MIT, Copyright (c) 2026 earthtojake).
 
 What this gives the harness
 ---------------------------
@@ -25,13 +13,13 @@ bounds) and filament temperatures. Two capabilities follow from it:
 * :func:`load_profile` validates a profile mapping into a typed, frozen
   :class:`PrinterProfileSpec`, rejecting a malformed envelope up front rather
   than letting a bad bound silently pass a G-code file.
-* :func:`validate_gcode` runs text-to-cad's STATIC checks over a G-code body:
+* :func:`validate_gcode` runs STATIC checks over a G-code body:
   the file must contain movement commands, extrusion moves and temperature
   commands, and every absolute ``X``/``Y``/``Z`` move must lie inside the
   profile's motion bounds. Unknown commands and relative-positioning blocks
   warn rather than fail.
 
-Bounds policy (reproduced from ``gcode-validation.md``): motion bounds default
+Bounds policy: motion bounds default
 to ``X=0..bed_size_mm[0]``, ``Y=0..bed_size_mm[1]``, ``Z=0..z_height_mm``.
 A profile may override any axis via ``machine.motion_bounds_mm`` -- intended
 only for real printers with safe off-bed wipe/purge positions, never as a way
@@ -53,8 +41,8 @@ consults. :mod:`harnesscad.domain.fabrication.feature_minima` remains the
 feature-level layer; nothing here is modified by or modifies those modules.
 
 This module validates G-code *text*; it never runs a slicer and never touches
-the filesystem. Where text-to-cad's loader additionally requires
-``native_config`` to be an existing absolute file, this port validates the
+the filesystem. Where the original loader additionally requires
+``native_config`` to be an existing absolute file, this version validates the
 field's shape only (a non-empty string), keeping the loader deterministic and
 side-effect free -- resolving a path against a real disk is the caller's job.
 
@@ -91,10 +79,10 @@ class ProfileError(ValueError):
     """A profile mapping is malformed, or a G-code body cannot be validated."""
 
 
-# text-to-cad's accepted slicer backends, in its preference order.
+# Accepted slicer backends, in preference order.
 PREFERRED_BACKEND_ORDER: Tuple[str, ...] = ("orcaslicer", "prusa-slicer", "curaengine")
 
-# text-to-cad's SUPPORTED_GCODE_COMMANDS: commands the validator recognises.
+# The G-code commands the validator recognises.
 # Anything else warns (never fails) -- an unknown command is a review prompt.
 SUPPORTED_GCODE_COMMANDS: frozenset = frozenset(
     {
@@ -218,8 +206,8 @@ def _optional_path_list(data: Mapping[str, Any], field_name: str) -> Tuple[str, 
 def load_profile(data: Mapping[str, Any]) -> PrinterProfileSpec:
     """Validate a wrapper-profile mapping into a :class:`PrinterProfileSpec`.
 
-    ``data`` is the parsed profile document (text-to-cad reads it from JSON;
-    this port takes the mapping so the loader stays pure). Raises
+    ``data`` is the parsed profile document (typically read from JSON;
+    this version takes the mapping so the loader stays pure). Raises
     :class:`ProfileError` naming the offending field for an unknown backend, a
     missing ``native_config``/``machine.name``/``filament.type``, a malformed
     ``machine.bed_size_mm``, a non-numeric temperature or Z height, or an
@@ -299,7 +287,7 @@ def load_profile(data: Mapping[str, Any]) -> PrinterProfileSpec:
 
 
 # ---------------------------------------------------------------------------
-# G-code lexing (text-to-cad's parse helpers)
+# G-code lexing helpers
 # ---------------------------------------------------------------------------
 
 _COMMAND_RE = re.compile(r"[GMT]\d+(?:\.\d+)?\Z")
@@ -315,8 +303,7 @@ def strip_gcode_comment(line: str) -> str:
 def parse_command(line: str) -> str:
     """The leading command word of a line (``"G1"``), or ``""`` if there is none.
 
-    A sub-numbered command (``G1.1``) reduces to its integer form (``G1``),
-    matching text-to-cad.
+    A sub-numbered command (``G1.1``) reduces to its integer form (``G1``).
     """
     stripped = strip_gcode_comment(line)
     if not stripped:
@@ -344,7 +331,7 @@ def parse_numeric_tokens(line: str) -> Dict[str, float]:
 def validate_gcode(text: str, profile: PrinterProfileSpec) -> GCodeReport:
     """Statically validate a G-code body against ``profile``'s motion bounds.
 
-    Reproduces text-to-cad's required-checks list. Fails when the body is
+    Applies the required-checks list. Fails when the body is
     empty, has no ``G0``/``G1``/``G2``/``G3`` movement, no extrusion move, no
     temperature command, or an absolute ``X``/``Y``/``Z`` move outside the
     profile's motion bounds. Warns on unknown commands and on relative

@@ -1,13 +1,13 @@
-"""clarify_dialogue -- the ProCAD two-round proactive clarification MDP.
+"""clarify_dialogue -- a two-round proactive clarification MDP.
 
-The paper models the clarifying agent as a finite-horizon MDP
+The clarifying agent is modelled as a finite-horizon MDP
 ``M = (S, A, R)`` where a state ``s = (p, h)`` couples the prompt with the
 conversation history and the action space is::
 
     A = {ACCEPT} u {ASK(u) : u in U}
 
 Under the assumption that the user answers any *clear* question correctly, the
-optimal policy collapses to **two rounds** (Section 5.2):
+optimal policy collapses to **two rounds**:
 
   * Round 1 -- the agent either ACCEPTs the prompt (emitting the standardized
     specification unchanged) or ASKs a single batched set of targeted
@@ -17,7 +17,7 @@ optimal policy collapses to **two rounds** (Section 5.2):
 
 This module is the deterministic state machine implementing that reduction. It
 consumes :mod:`clarify_ambiguity` for the audit and a pluggable *user
-simulator* callback (deterministic; the paper uses an LLM user simulator, we
+simulator* callback (deterministic; instead of an LLM user simulator, we
 supply an answer-oracle interface) to close the loop. No LLM, no wall clock.
 """
 from __future__ import annotations
@@ -51,7 +51,7 @@ UserSimulator = Callable[[ClarQuestion, CADSpec], object]
 def oracle_from_truth(truth: CADSpec) -> UserSimulator:
     """Build a deterministic user simulator that answers from a ground-truth spec.
 
-    Mirrors the paper's assumption that the user "can provide correct answers to
+    Mirrors the assumption that the user "can provide correct answers to
     any asked question as long as the question itself is clear".
     """
 
@@ -81,7 +81,7 @@ class DialogueResult:
     is_misleading: bool
 
     def interaction_cost(self) -> int:
-        """The paper's C(h): number of question-asking rounds (0 or 1 here)."""
+        """C(h): number of question-asking rounds (0 or 1 here)."""
         return sum(1 for t in self.turns if t.action == ASK)
 
 

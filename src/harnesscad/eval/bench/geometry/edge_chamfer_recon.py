@@ -1,9 +1,9 @@
-"""PS-CAD reconstruction metrics.
+"""Program-synthesis CAD reconstruction metrics.
 
-Implements the deterministic evaluation metrics used in PS-CAD (Yang et al. 2024,
-Sec. 7.1 "Evaluation metrics"), following [Guo et al. 2022a].  Metrics are
-computed between the input CAD model's point cloud and the point cloud of the
-executed predicted CAD modelling sequence:
+Implements a deterministic evaluation-metrics set for step-by-step program-
+synthesis CAD reconstruction. Metrics are computed between the input CAD
+model's point cloud and the point cloud of the executed predicted CAD
+modelling sequence:
 
   * Chamfer distance (CD) -- symmetric mean nearest-neighbour distance;
   * Hausdorff distance (HD) -- symmetric max nearest-neighbour distance;
@@ -14,7 +14,7 @@ executed predicted CAD modelling sequence:
   * Invalidity ratio (IR) -- fraction of reconstructions where no step executes
     successfully (a sequence is invalid iff none of ``O_0, O_1, ...`` executes).
 
-Following the paper, clouds are normalised into a unit bounding box (keeping the
+Following that protocol, clouds are normalised into a unit bounding box (keeping the
 aspect ratio) before scale-invariant geometric comparison.  Everything is
 stdlib-only and deterministic.  The learned NLL/sequence-fidelity metrics that
 require a trained autoregressive model are intentionally out of scope.
@@ -155,7 +155,7 @@ def evaluate_reconstruction(target, prediction, *, target_edges=None,
                             prediction_edges=None, target_normals=None,
                             prediction_normals=None, sequences=None,
                             normalize=True):
-    """Compute the full PS-CAD geometric report between target and prediction.
+    """Compute the full geometric report between target and prediction.
 
     Only the metrics whose inputs are supplied are populated; the rest are
     ``None`` (except IR, which defaults to 0.0 for an empty ``sequences``).

@@ -1,10 +1,8 @@
-"""SkexGen token stream -> sketch-and-extrude geometry (the ``CADparser``).
+"""Token stream -> sketch-and-extrude geometry (the CAD parser).
 
-Port of ``utils/utils.py::CADparser.perform`` from the SkexGen release: it turns
-a flat merged token stream (see ``reconstruction/skexgen_token_format``) back
-into per-SE geometry, and doubles as SkexGen's *validity oracle* --- the paper's
-"invalid %" is literally "the parser raised an exception"
-(``utils/invalid.py``).
+It turns a flat merged token stream (see ``reconstruction/skexgen_token_format``)
+back into per-SE geometry, and doubles as the *validity oracle* --- the
+"invalid %" figure is literally "the parser raised an exception".
 
 Decoding rules that make this representation distinctive:
 
@@ -20,7 +18,7 @@ Decoding rules that make this representation distinctive:
   block's ``scale`` and ``offset`` (which is why those live in the extrude
   branch).
 
-The parser also reproduces SkexGen's vertex de-duplication table, which is what
+The parser also reproduces the vertex de-duplication table, which is what
 gives the ``.obj``-style output its ``l / a / c`` index-based curve records.
 
 Deterministic, stdlib only.
@@ -40,11 +38,11 @@ Vec2 = Tuple[float, float]
 
 
 class SkexGenParseError(ValueError):
-    """Raised when a token stream cannot be decoded (SkexGen "invalid")."""
+    """Raised when a token stream cannot be decoded (the "invalid" case)."""
 
 
 def circumcenter(a: Vec2, b: Vec2, c: Vec2) -> Vec2:
-    """Centre of the circle through three points (SkexGen ``find_arc_geometry``)."""
+    """Centre of the circle through three points (arc geometry fit)."""
     ax, ay = a
     bx, by = b
     cx, cy = c
@@ -65,7 +63,7 @@ def arc_radius(center: Vec2, point: Vec2) -> float:
 
 
 def circle_from_rim(p1: Vec2, p2: Vec2, p3: Vec2, p4: Vec2) -> Tuple[Vec2, float]:
-    """SkexGen's 4-point circle: centre from two diameters, radius averaged."""
+    """The 4-point circle: centre from two diameters, radius averaged."""
     center = (0.5 * (p1[0] + p2[0]), 0.5 * (p3[1] + p4[1]))
     radius = (hypot(p1[0] - p2[0], p1[1] - p2[1]) +
               hypot(p3[0] - p4[0], p3[1] - p4[1])) / 4.0
@@ -84,7 +82,7 @@ def _apply(point: Vec2, scale: float, offset: Sequence[float]) -> Vec2:
 
 
 class VertexTable:
-    """Insertion-ordered de-duplicating vertex table (SkexGen ``save_vertex``)."""
+    """Insertion-ordered de-duplicating vertex table."""
 
     def __init__(self) -> None:
         self._keys: List[str] = []
@@ -192,7 +190,7 @@ def _decode_loop(curves: Sequence[Sequence[int]], scale: float,
 
 
 def obj_records(faces: Sequence[Sequence[Sequence[Dict]]]) -> Tuple[List[str], List[str]]:
-    """Emit SkexGen's ``.obj``-style vertex + curve records for one SE."""
+    """Emit the ``.obj``-style vertex + curve records for one SE."""
     table = VertexTable()
     lines: List[str] = []
     for face in faces:
@@ -218,7 +216,7 @@ def obj_records(faces: Sequence[Sequence[Sequence[Dict]]]) -> Tuple[List[str], L
 
 
 def parse_tokens(tokens: Sequence[int], bit: int = BIT) -> List[Dict]:
-    """Full SkexGen decode: merged token stream -> list of SE dicts."""
+    """Full decode: merged token stream -> list of SE dicts."""
     out: List[Dict] = []
     for sketch_tokens, ext_tokens in split_se(tokens):
         if len(ext_tokens) != EXT_SEQ_LEN:
@@ -236,7 +234,7 @@ def parse_tokens(tokens: Sequence[int], bit: int = BIT) -> List[Dict]:
 
 
 def is_valid(tokens: Sequence[int], bit: int = BIT) -> bool:
-    """SkexGen validity: does the parser survive the stream? (``utils/invalid.py``)"""
+    """Validity check: does the parser survive the stream?"""
     try:
         parse_tokens(tokens, bit)
     except (SkexGenParseError, ValueError, IndexError):

@@ -1,7 +1,6 @@
-"""Text2CAD CAD-sequence token representation (Khan et al., Table 3 / Sec. 9).
+"""CAD-sequence token representation for text-conditioned CAD generation.
 
-This is the *exact* sketch-and-extrude token vocabulary used by the Text2CAD
-Transformer (adopted from CAD-SIGNet [18]) to serialise a DeepCAD construction
+This is a sketch-and-extrude token vocabulary that serialises a CAD construction
 sequence into a flat stream of 2D tokens for an autoregressive decoder. Every
 element of the sequence is a **2-tuple** ``(px, py)``:
 
@@ -9,7 +8,7 @@ element of the sequence is a **2-tuple** ``(px, py)``:
   second, i.e. ``(id, 0)``;
 * a *coordinate* token carries a quantised (x, y) pair, both slots populated.
 
-Token id map (Table 3)::
+Token id map::
 
     0            pad                 (0, 0)
     1            start / end-seq     (1, 0)   -- cls (SOS) and EOS share id 1
@@ -24,7 +23,7 @@ Token id map (Table 3)::
 Continuous 2D coordinates and continuous extrusion parameters are quantised in
 **8 bits** -> 256 class labels, then offset by ``COORD_OFFSET = 11`` so quantised
 values never collide with the 11 reserved ids ``0..10``. Curves are parameterised
-(Sec. 9) as:
+as:
 
 * **Line**  -- start & end coordinate;
 * **Arc**   -- start, mid & end coordinate;
@@ -36,16 +35,16 @@ Loops are always closed. An extrusion block is the 10 parameters
 This is a self-contained, reversible codec. The repo's other tokenizers
 (``ingest.davinci_primitive_tokens`` 8-token fixed blocks, ``reconstruction.
 cmt_tokenization`` continuous B-Rep tokens) encode entirely different schemes;
-none reproduce this Text2CAD id table or its 11-offset 8-bit coordinate range.
+none reproduce this id table or its 11-offset 8-bit coordinate range.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# --- Reserved / structural token ids (Table 3). ---
+# --- Reserved / structural token ids. ---
 PAD = 0
-START = 1          # cls (SOS); EOS shares id 1 per Table 3.
+START = 1          # cls (SOS); EOS shares id 1.
 END_SEQUENCE = 1
 END_SKETCH = 2     # es
 END_FACE = 3       # ef
@@ -136,7 +135,7 @@ def is_coordinate_token(token: Token) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# Curve parameterisation (Sec. 9).
+# Curve parameterisation.
 # --------------------------------------------------------------------------- #
 def circle_topmost(cx: float, cy: float, radius: float) -> tuple[float, float]:
     """Top-most point of a circle = centre shifted ``+radius`` in y."""
@@ -182,7 +181,7 @@ class Circle:
 
 @dataclass(frozen=True)
 class Extrusion:
-    """The 10 extrusion parameters, listed in Table 3 order."""
+    """The 10 extrusion parameters, listed in canonical order."""
     d_plus: float
     d_minus: float
     tx: float

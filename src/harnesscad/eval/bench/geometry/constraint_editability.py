@@ -1,11 +1,10 @@
-"""Constraint-Aware Editability Benchmark metrics (HistCAD).
+"""Constraint-Aware Editability Benchmark metrics.
 
-Mined from *HistCAD: A Constraint-Aware Parametric History-Based CAD
-Representation, Dataset, and Benchmark with Industrial Complexity*. The paper's
-central contribution that is purely a checkable metric is the **Constraint-Aware
-Editability Benchmark**, which, for each instance, applies a target parameter edit
-and reports three diagnostics that separate *reaching* a valid edited state from
-*preserving* design intent:
+Deterministic re-implementation of a constraint-aware, history-based CAD
+editability benchmark. The checkable-metric contribution of that benchmark
+design is the **Constraint-Aware Editability Benchmark**, which, for each
+instance, applies a target parameter edit and reports three diagnostics that
+separate *reaching* a valid edited state from *preserving* design intent:
 
 *   **Edit Reachability (ER)** -- fraction of instances whose edited sequence
     reaches a valid CAD state.
@@ -14,8 +13,8 @@ and reports three diagnostics that separate *reaching* a valid edited state from
     remain satisfied after the edit.
 *   **Overall Editable Success (OES)** = ER x cPCSR -- the strict overall rate.
 
-The module also enumerates the paper's 19 explicit constraint types. Everything is
-deterministic and stdlib-only.
+The module also enumerates 19 explicit constraint types drawn from that design.
+Everything is deterministic and stdlib-only.
 """
 
 from __future__ import annotations
@@ -32,7 +31,7 @@ __all__ = [
     "evaluate",
 ]
 
-#: The 19 explicit constraint types HistCAD encodes.
+#: The 19 explicit constraint types this benchmark design encodes.
 CONSTRAINT_TYPES: tuple = (
     "coincident", "concentric", "collinear", "parallel", "perpendicular",
     "horizontal", "vertical", "tangent", "equal", "symmetric", "midpoint",

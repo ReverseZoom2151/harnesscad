@@ -1,8 +1,7 @@
-"""Parametric sketch-primitive representation (Wang et al., "Parametric Primitive
-Analysis of CAD Sketches with Vision Transformer", IEEE T-II 2024).
+"""Parametric sketch-primitive representation.
 
 This is the *foundation* shared representation for CAD-sketch parametric-primitive
-analysis. The paper (Sec. III, Table I) parameterises every sketch primitive by a
+analysis. It parameterises every sketch primitive by a
 triple ``P_j = (tp_j, f_j, pp_j)``:
 
   * ``tp`` -- the primitive **type** (one of line / circle / arc / point);
@@ -11,7 +10,7 @@ triple ``P_j = (tp_j, f_j, pp_j)``:
     (``False``);
   * ``pp`` -- a fixed-length vector of 7 **parameters** with ``0`` padding.
 
-Table I lays out the 7-slot parameter row per type::
+The 7-slot parameter row per type is laid out as::
 
     Type    flag  x1  y1  x2  y2  x3  y3  r/pad
     Line     f    x1  y1  x2  y2  0   0   0
@@ -19,10 +18,10 @@ Table I lays out the 7-slot parameter row per type::
     Arc      f    x1  y1  x2  y2  x3  y3  0
     Point    f    x1  y1  0   0   0   0   0
 
-A **sketch** ``S`` is an *unordered* set ``P = {P_i}`` of such primitives (the paper
-stresses "there is no explicit order among primitives"). This module provides the
-typed primitive, its Table-I padded-row (de)serialisation, the number of meaningful
-(non-padding) parameters ``|pp_i|`` used by the paper's embedding / loss, an
+A **sketch** ``S`` is an *unordered* set ``P = {P_i}`` of such primitives -- there is
+no explicit order among primitives. This module provides the
+typed primitive, its padded-row (de)serialisation, the number of meaningful
+(non-padding) parameters ``|pp_i|`` used by the embedding / loss, an
 order-invariant canonical form for a sketch, and deterministic point sampling of a
 primitive (used downstream for Chamfer-style comparison).
 
@@ -37,7 +36,7 @@ from typing import Iterable, Sequence
 
 Point = tuple[float, float]
 
-# Primitive type codes (paper's four types; the four Vitruvion/SketchGraphs types).
+# Primitive type codes (the four standard sketch-primitive types).
 LINE = "line"
 CIRCLE = "circle"
 ARC = "arc"
@@ -47,7 +46,7 @@ TYPES = (LINE, CIRCLE, ARC, POINT)
 # Integer type code used by the classification head / cost matrix (stable order).
 TYPE_CODE = {t: i for i, t in enumerate(TYPES)}
 
-# Number of parameter slots in the padded Table-I row.
+# Number of parameter slots in the padded parameter row.
 PARAM_SLOTS = 7
 
 # Number of *meaningful* (non-padding) parameters |pp_i| per type -- used by the
@@ -59,7 +58,7 @@ MEANINGFUL_PARAMS = {LINE: 4, CIRCLE: 3, ARC: 6, POINT: 2}
 class Primitive:
     """A single parametric sketch primitive ``(type, flag, params[7])``.
 
-    ``params`` is always the length-7 Table-I row (with ``0.0`` padding). Prefer the
+    ``params`` is always the length-7 parameter row (with ``0.0`` padding). Prefer the
     :func:`line` / :func:`circle` / :func:`arc` / :func:`point` constructors, which
     place coordinates into the correct slots.
     """
@@ -106,10 +105,10 @@ class Primitive:
             raise ValueError("radius is only defined for circle primitives")
         return self.params[6]
 
-    # -- Table-I row (de)serialisation -------------------------------------
+    # -- parameter row (de)serialisation -----------------------------------
 
     def to_row(self) -> tuple[str, int, tuple[float, ...]]:
-        """Return the ``(type, flag_int, params[7])`` Table-I row (flag as 0/1)."""
+        """Return the ``(type, flag_int, params[7])`` row (flag as 0/1)."""
         return (self.ptype, 1 if self.flag else 0, tuple(float(x) for x in self.params))
 
     @classmethod
@@ -117,7 +116,7 @@ class Primitive:
         return cls(ptype, bool(flag), tuple(float(x) for x in params))
 
 
-# -- ergonomic constructors (fill the correct Table-I slots) ----------------
+# -- ergonomic constructors (fill the correct parameter slots) --------------
 
 def line(p1: Point, p2: Point, flag: bool = True) -> Primitive:
     return Primitive(LINE, flag, (p1[0], p1[1], p2[0], p2[1], 0.0, 0.0, 0.0))
@@ -140,7 +139,7 @@ class Sketch:
     """An unordered set of parametric primitives ``P = {P_i}``.
 
     Primitives are stored as a tuple (preserving insertion order for convenience) but
-    equality / :meth:`canonical` are order-invariant, reflecting the paper's set
+    equality / :meth:`canonical` are order-invariant, reflecting the set
     semantics.
     """
 

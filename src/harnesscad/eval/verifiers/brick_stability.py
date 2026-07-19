@@ -1,36 +1,34 @@
-"""Physical stability analysis for brick structures (BRICKGPT, Section 4.2).
+"""Physical stability analysis for brick structures.
 
-Paper: "Generating Physically Stable and Buildable Brick Structures from Text".
-The paper assigns each brick a stability score ``s_i in [0, 1]`` by solving for
+Each brick is assigned a stability score ``s_i in [0, 1]`` by solving for
 a set of connection forces that put every brick in *static equilibrium* under
-gravity (Figure 4, Eqns 2-4). A structure is physically stable iff every brick
-has ``s_i > 0``.
+gravity. A structure is physically stable iff every brick has ``s_i > 0``.
 
-Force model implemented here (a deterministic, stdlib linearisation of the
-paper's force model; the paper solves a nonlinear program with Gurobi, which is
-proprietary and therefore external):
+Force model implemented here (a deterministic, stdlib linearisation of that
+force model; an exact formulation solves a nonlinear program with a proprietary
+solver, which is external):
 
 * Bricks are 1-unit tall, axis-aligned. Each shared cell between a lower brick
   and the brick directly above it (or between a ground-layer brick and the
   baseplate) is a *connection point* carrying a force with three components:
 
   - a compressive normal ``N >= 0`` (the lower brick / baseplate pressing up on
-    the upper brick -- "supporting/pressing", Fig. 4),
+    the upper brick -- "supporting/pressing"),
   - a "dragging" hold ``T >= 0``: the stud-clutch tension that resists pull-out,
   - horizontal shear ``(fx, fy)``: the knob/adjacency friction, also "dragging".
 
-* Newton's third law (Eqn 2 constraint 3) is enforced structurally: one force
+* Newton's third law is enforced structurally: one force
   variable per connection is added with ``+`` to the upper brick's balance and
   ``-`` to the lower brick's balance.
 
-* Static equilibrium (Eqn 2): for every brick, ``sum F = 0`` and
+* Static equilibrium: for every brick, ``sum F = 0`` and
   ``sum tau = 0`` about the brick's centre of mass, with gravity ``-weight`` in
   ``z`` (weight proportional to stud count).
 
 The "dragging" magnitude on a brick is ``D_i = max over its connections of
-(T + |fx| + |fy|)`` and ``FT`` is the connection friction capacity. Following
-Eqn 4, we minimise the total internal stress (sum of dragging forces -- the
-paper's ``beta * sum D`` term) subject to equilibrium, then score:
+(T + |fx| + |fy|)`` and ``FT`` is the connection friction capacity. We minimise
+the total internal stress (sum of dragging forces -- the ``beta * sum D`` term)
+subject to equilibrium, then score:
 
     s_i = 0                       if no equilibrium exists or D_i > FT,
         = (FT - D_i) / FT          otherwise.
@@ -50,7 +48,7 @@ from harnesscad.domain.geometry.assembly.brick_connectivity import grounded_bric
 
 _EPS = 1e-7
 
-# Default friction capacity. The paper measures FT = 0.98 N. Weight here is in
+# Default friction capacity. A reference measurement gives FT = 0.98 N. Weight here is in
 # stud-count units, so we pick a capacity of the same order as a small brick's
 # weight; callers may override.
 DEFAULT_FRICTION_CAPACITY = 4.0
@@ -386,7 +384,7 @@ def analyze_stability(
     structure: BrickStructure,
     friction_capacity: float = DEFAULT_FRICTION_CAPACITY,
 ) -> StabilityResult:
-    """Compute per-brick stability scores by solving the equilibrium LP (Eqn 4).
+    """Compute per-brick stability scores by solving the equilibrium LP.
 
     A brick that is not connected to the baseplate (a floating island) can never
     reach equilibrium and is scored 0 directly; the remaining grounded bricks are
@@ -427,5 +425,5 @@ def is_stable(
     structure: BrickStructure,
     friction_capacity: float = DEFAULT_FRICTION_CAPACITY,
 ) -> bool:
-    """True iff every brick has a positive stability score (Section 4.2)."""
+    """True iff every brick has a positive stability score."""
     return analyze_stability(structure, friction_capacity).stable

@@ -1,28 +1,28 @@
-"""Long-sequence length statistics for Mamba-CAD (Table 1 / Table 2).
+"""Long-sequence length statistics for sequence-model-based CAD generation.
 
-Mamba-CAD's whole thesis is that a State Space Model can model *longer*
-parametric CAD sequences than Transformer baselines, so the paper reports a
+The underlying premise is that a sequence model can model *longer*
+parametric CAD sequences than earlier baselines, so this module implements a
 family of **length-centric** statistics that are all deterministic:
 
-* **Average Length (AL)** of valid parametric CAD sequences (Table 1 "AL",
-  Table 2 "AL"): the mean effective length.
+* **Average Length (AL)** of valid parametric CAD sequences: the mean
+  effective length.
 * **Length distribution** over the buckets ``[1-10] [11-25] [26-40] [41-60]
-  [60-128]`` (Table 1): the fraction of sequences whose length falls in each
-  bucket.
-* **L>=60 ratio** (Table 2 caption): "the ratio of valid reconstructed CAD
-  sequences (Length>=60) in total CAD sequences (Length>=60) within test set"
-  -- i.e. among ground-truth sequences at least ``threshold`` long, the fraction
-  whose reconstruction is valid *and* still at least ``threshold`` long. This is
-  the metric that most directly measures long-sequence modelling ability.
+  [60-128]``: the fraction of sequences whose length falls in each bucket.
+* **L>=60 ratio**: the ratio of valid reconstructed CAD sequences
+  (length >= 60) among ground-truth sequences of length >= 60 within the test
+  set -- i.e. among ground-truth sequences at least ``threshold`` long, the
+  fraction whose reconstruction is valid *and* still at least ``threshold``
+  long. This is the metric that most directly measures long-sequence
+  modelling ability.
 
 These are distinct from the already-present generation metrics
 (``bench/diffusioncad_generation_metrics.py`` already provides Unique / Novel /
 Invalid ratios, and ``bench/contrastcad_recon_accuracy.py`` provides the Ac/Ap
 command/parameter accuracies) -- none of those look at sequence *length*.
 
-A parametric CAD sequence is padded to a fixed ``N`` (128 in the paper) with an
-``<EOS>`` marker; the *effective* length is the number of real commands before
-the first ``<EOS>``. :func:`effective_length` extracts that; the other functions
+A parametric CAD sequence is padded to a fixed ``N`` (128) with an ``<EOS>``
+marker; the *effective* length is the number of real commands before the
+first ``<EOS>``. :func:`effective_length` extracts that; the other functions
 consume plain integer lengths so they work regardless of token encoding.
 
 Deterministic, stdlib-only.
@@ -30,7 +30,7 @@ Deterministic, stdlib-only.
 
 from __future__ import annotations
 
-# Table 1 length buckets (inclusive integer ranges). ``None`` upper bound means
+# Length buckets (inclusive integer ranges). ``None`` upper bound means
 # "no upper limit".
 DEEPCAD_BUCKETS: tuple[tuple[str, int, int | None], ...] = (
     ("1-10", 1, 10),
@@ -44,7 +44,7 @@ DEEPCAD_BUCKETS: tuple[tuple[str, int, int | None], ...] = (
 def effective_length(sequence, eos_token) -> int:
     """Number of real commands before the first ``eos_token``.
 
-    Trailing ``<EOS>`` padding (paper "CAD sequence representation") is not
+    Trailing ``<EOS>`` padding in the CAD sequence representation is not
     counted. If no ``eos_token`` is present the full sequence length is returned.
     """
     for i, tok in enumerate(sequence):
@@ -65,13 +65,13 @@ def average_length(lengths) -> float:
 
 
 def length_distribution(lengths, buckets=DEEPCAD_BUCKETS) -> dict[str, float]:
-    """Fraction of sequences whose length falls in each bucket (Table 1).
+    """Fraction of sequences whose length falls in each bucket.
 
     ``buckets`` is a tuple of ``(label, lo, hi)`` with inclusive integer bounds
     (``hi=None`` means unbounded above). Lengths outside every bucket are
     ignored in the numerator but still counted in the total, so fractions sum to
-    <= 1.0 (matching the paper's per-row percentages). Returns fractions in
-    ``[0, 1]``; multiply by 100 for the paper's percentages.
+    <= 1.0 (matching a per-row percentage report). Returns fractions in
+    ``[0, 1]``; multiply by 100 to get percentages.
     """
     lengths = list(lengths)
     total = len(lengths)
@@ -91,7 +91,7 @@ def length_distribution(lengths, buckets=DEEPCAD_BUCKETS) -> dict[str, float]:
 
 def long_sequence_ratio(gt_lengths, recon_valid, recon_lengths,
                         threshold: int = 60) -> float:
-    """L>=``threshold`` ratio (Table 2 caption).
+    """L>=``threshold`` ratio.
 
     Among ground-truth sequences with ``gt_length >= threshold``, the fraction
     whose reconstruction is *valid* and whose reconstructed length is also

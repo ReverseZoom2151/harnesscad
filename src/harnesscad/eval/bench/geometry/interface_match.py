@@ -1,4 +1,4 @@
-"""Interface Match: keep-in / keep-out mating-feature scoring (CADGenBench).
+"""Interface Match: keep-in / keep-out mating-feature scoring.
 
 The interface axis asks "would the candidate bolt up to the same fixture?".
 Every mating feature is authored as a sub-volume of one of two kinds:
@@ -18,7 +18,7 @@ ramp, and the group aggregation. The volumetric IoU itself needs a boolean
 kernel and is injected as a callable, so the aggregation is testable with a
 stub.
 
-Scoring, exactly as CADGenBench defines it:
+Scoring, exactly as this benchmark axis defines it:
 
 1. Per-feature fit is a volumetric IoU between the region (plus a verification
    shell of the opposite material, which is what makes an *oversize* feature

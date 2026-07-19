@@ -1,8 +1,6 @@
-"""Validity check and physics-aware rollback for brick generation (BRICKGPT).
+"""Validity check and physics-aware rollback for brick generation.
 
-Paper: "Generating Physically Stable and Buildable Brick Structures from Text",
-Section 4.2 and Algorithm 1. During autoregressive inference BRICKGPT enforces
-feasibility with two mechanisms:
+During autoregressive inference, feasibility is enforced with two mechanisms:
 
 1. **Brick-by-brick validity check / rejection sampling.** Each newly predicted
    brick must be well-formatted (present in the brick library), lie inside the
@@ -13,14 +11,13 @@ feasibility with two mechanisms:
    stability score ``S`` is computed. If unstable, the design is rolled back to
    the state *before the first unstable brick* was generated:
    ``B' = [b_1, ..., b_{min(I)-1}]`` where ``I`` is the set of indices of
-   unstable bricks (Algorithm 1, lines 11-15), and generation resumes from
-   there.
+   unstable bricks, and generation resumes from there.
 
 This module implements the *deterministic* pieces of that inference loop
-(stdlib only). The learned autoregressive model (LLaMA-3.2 fine-tune) that
-proposes candidate bricks is research-heavy/external; here a candidate brick is
-supplied by the caller (e.g. an iterator of proposals), and this module performs
-the validity gating and the physics-aware rollback around it.
+(stdlib only). The learned autoregressive model that proposes candidate bricks
+is external; here a candidate brick is supplied by the caller (e.g. an iterator
+of proposals), and this module performs the validity gating and the
+physics-aware rollback around it.
 """
 
 from __future__ import annotations
@@ -66,7 +63,7 @@ def is_valid_placement(
 ) -> bool:
     """True if ``brick`` is a valid, non-colliding addition to ``existing``.
 
-    Implements the inference-time validity check of Section 4.2: well-formatted,
+    Implements the inference-time validity check: well-formatted,
     in-bounds, and ``V_t intersect V_i = empty`` for all placed bricks.
     """
     if not is_valid_brick(brick, grid_h, grid_w, grid_d, library):
@@ -84,8 +81,8 @@ def rejection_sample(
 ) -> Optional[Brick]:
     """Return the first candidate that passes the validity check, or ``None``.
 
-    Deterministic model of brick-by-brick rejection sampling (Algorithm 1,
-    lines 3-7): iterate proposals in order and accept the first valid one.
+    Deterministic model of brick-by-brick rejection sampling: iterate proposals
+    in order and accept the first valid one.
     """
     for cand in candidates:
         if is_valid_placement(existing, cand, grid_h, grid_w, grid_d, library):
@@ -94,7 +91,7 @@ def rejection_sample(
 
 
 # ---------------------------------------------------------------------------
-# Physics-aware rollback (Algorithm 1, lines 11-15).
+# Physics-aware rollback.
 # ---------------------------------------------------------------------------
 
 
@@ -121,7 +118,7 @@ def physics_aware_rollback(
     friction_capacity: float = DEFAULT_FRICTION_CAPACITY,
     max_rollbacks: int = 100,
 ) -> RollbackResult:
-    """Roll a design back to its last stable prefix (Algorithm 1, lines 11-15).
+    """Roll a design back to its last stable prefix.
 
     While the structure is unstable, find the first unstable brick ``i = min I``
     and truncate the design to ``[b_1, ..., b_{i-1}]``. Repeat (each truncation

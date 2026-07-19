@@ -1,6 +1,6 @@
-"""Three-layer information-consistency reconciliation (Section 5 + 4.5 of Zou 2025).
+"""Three-layer information-consistency reconciliation.
 
-The paper identifies the *primary challenge* of parametric/direct integration as
+This approach identifies the *primary challenge* of parametric/direct integration as
 "maintaining information consistency in a CAD model undergoing parametric/direct
 edits." A CAD model carries three layers of information: **topology**,
 **geometry**, and **constraints**. Parametric edits act on the constraint layer,
@@ -17,11 +17,11 @@ implements deterministic consistency machinery:
 * :func:`propagate_parametric_to_geometry` reflects a constraint-layer edit down
   into the geometry layer (parametric -> direct edit propagation).
 * :func:`propagate_direct_to_constraint` reflects a geometry-layer push-pull back
-  up into the constraint layer (direct -> parametric edit propagation) — the
+  up into the constraint layer (direct -> parametric edit propagation) -- the
   reconciliation the "Constrained Direct Modeling" approach (4.5) attempts.
 * :func:`recognize_constraints` re-derives constraints from the current geometry
   (automatic constraint recognition, 4.5) and :func:`design_intent_drift` flags
-  where the recognized constraints differ from the original design intent — the
+  where the recognized constraints differ from the original design intent -- the
   documented disadvantage of that approach.
 
 Geometry is planar faces along a shared axis (offsets); a ``DistanceConstraint``
@@ -179,7 +179,7 @@ def propagate_direct_to_constraint(model: HybridModel,
     Apply the push-pull to the geometry, then update any distance constraint the
     moved face participates in so its ``value`` matches the new gap. This is the
     direct -> parametric reconciliation that keeps constraints "in the
-    background" (Section 4.5) instead of dropping them.
+    background" instead of dropping them.
     """
     new = HybridModel(model.brep.copy(),
                       [], model.tree.copy() if model.tree else None)
@@ -220,7 +220,7 @@ def _solve_geometry(model: HybridModel) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Automatic constraint recognition + design-intent drift (Section 4.5)
+# Automatic constraint recognition + design-intent drift
 # ---------------------------------------------------------------------------
 def recognize_constraints(brep: DirectBRep) -> List[object]:
     """Re-derive constraints from current geometry (automatic recognition).

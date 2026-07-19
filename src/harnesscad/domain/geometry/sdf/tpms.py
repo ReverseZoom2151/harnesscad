@@ -1,14 +1,14 @@
-"""Triply-periodic minimal surfaces (TPMS) as approximate SDFs, from Curv.
+"""Triply-periodic minimal surfaces (TPMS) as approximate SDFs.
 
-Curv's ``gyroid`` (``lib/curv/std.curv``) is a trigonometric implicit surface:
+The ``gyroid`` is a trigonometric implicit surface:
 ``cos x sin y + cos y sin z + cos z sin x``.  Its zero level set is the gyroid,
 an infinite labyrinthine minimal surface popular in 3D-printed lattices.  This
 module adds the other classic TPMS from the same family (Schwarz-P, Schwarz-D /
 diamond, and Neovius) using their standard trigonometric implicit forms.
 
 **These are implicit fields, not exact distance fields.**  The raw implicit
-value ``F(p)`` is not Euclidean distance: ``|grad F|`` is not 1.  Curv's docs
-recommend ``lipschitz 1.33`` (dividing the gyroid field by ``4/3``) as a light
+value ``F(p)`` is not Euclidean distance: ``|grad F|`` is not 1.  A common
+recommendation is ``lipschitz 1.33`` (dividing the gyroid field by ``4/3``) as a light
 practical correction for meshing -- but the *true* supremum of ``|grad F|`` for
 the gyroid, Schwarz-P and Schwarz-D families is ``sqrt(3) ~ 1.732`` (and ``7``
 for Neovius), so ``4/3`` does not fully bound the gradient.  Each function here
@@ -33,8 +33,8 @@ from typing import Sequence
 # Gradient-magnitude bounds used for Lipschitz normalisation.  These are the
 # true suprema of |grad F| over a period (confirmed numerically in the tests):
 # sqrt(3) for the gyroid / Schwarz-P / Schwarz-D families, 7 for Neovius.
-# (Curv's docs suggest 4/3 for the gyroid, but that only bounds the field
-# loosely -- see the module docstring.)
+# (The commonly cited 4/3 for the gyroid only bounds the field loosely -- see
+# the module docstring.)
 GYROID_LIPSCHITZ = sqrt(3.0)
 SCHWARZ_P_LIPSCHITZ = sqrt(3.0)
 SCHWARZ_D_LIPSCHITZ = sqrt(3.0)

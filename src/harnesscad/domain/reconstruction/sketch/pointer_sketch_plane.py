@@ -1,16 +1,16 @@
-"""Pointer-based sketch-plane coordinate-system construction (Pointer-CAD Sec. 10.2).
+"""Pointer-based sketch-plane coordinate-system construction.
 
-Where DeepCAD encodes a sketch plane as a 3-angle + 3-translation regression,
-Pointer-CAD *selects* the plane with a face pointer and then builds a deterministic
-local frame ``UVW`` on it (Sec. 10.2, Table 14). This reformulates plane placement
-from continuous rotation regression into a discrete selection plus a fixed geometric
-recipe, "reducing the search space and mitigating misalignment" (Sec. 4).
+Rather than encoding a sketch plane as a 3-angle + 3-translation regression, this
+approach *selects* the plane with a face pointer and then builds a deterministic
+local frame ``UVW`` on it. This reformulates plane placement from continuous
+rotation regression into a discrete selection plus a fixed geometric recipe,
+reducing the search space and mitigating misalignment.
 
 The construction, given the selected face's normal and a ``<dr>`` direction label:
 
   1. **W'** = the face normal, sign-chosen so it has a positive dot product with the
-     world direction ``n`` named by ``<dr>`` (Table 14 primary direction).
-  2. **U'** = the *auxiliary* direction ``d`` (Table 14) projected onto the plane and
+     world direction ``n`` named by ``<dr>`` (the primary direction).
+  2. **U'** = the *auxiliary* direction ``d`` projected onto the plane and
      normalised.
   3. **V'** = ``W' x U'`` (right-hand rule), completing an orthonormal basis.
   4. A counter-clockwise in-plane rotation by angle ``alpha`` about ``W`` yields the

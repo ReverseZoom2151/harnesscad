@@ -1,30 +1,29 @@
-"""CADMorph plan-generate-verify loop: geometry-driven parametric CAD editing.
+"""Plan-generate-verify loop: geometry-driven parametric CAD editing.
 
-From CADMorph (Ma et al., NeurIPS 2025), Sections 3.2 and 3.4. CADMorph edits a
-parametric construction sequence so that its rendered shape matches a *target*
-geometric shape, while preserving the original sequence's structure. It does so
-by iterating three stages (paper Figure 2a):
+This loop edits a parametric construction sequence so that its rendered shape
+matches a *target* geometric shape, while preserving the original sequence's
+structure. It does so by iterating three stages:
 
-  1. **Plan** — locate the segments that most need editing and mask them
+  1. **Plan** -- locate the segments that most need editing and mask them
      (:mod:`editing.cadmorph_plan`).
-  2. **Generate** — infill the masks ``N`` times to propose ``N`` candidate
-     sequences. In the paper this is the learned MPP (masked-parameter-
-     prediction) LLM; here it is any callable ``generate(masked, n, rng) ->
-     [candidate, ...]`` you supply.
-  3. **Verify** — render each candidate, measure its distance to the target,
+  2. **Generate** -- infill the masks ``N`` times to propose ``N`` candidate
+     sequences. This is typically a learned masked-parameter-prediction model;
+     here it is any callable ``generate(masked, n, rng) -> [candidate, ...]``
+     you supply.
+  3. **Verify** -- render each candidate, measure its distance to the target,
      and keep the global best via a cross-round priority queue
      (:mod:`editing.cadmorph_verify`).
 
 The loop terminates when the selected sequence converges (unchanged from the
 previous round or its distance falls below a tolerance) or a maximum number of
-rounds is reached. This is the paper's inference-time "test-time scaling with a
-verifier" — no training, no triplet data.
+rounds is reached. This is inference-time test-time scaling with a verifier --
+no training, no triplet data.
 
 This orchestrator is model-agnostic: it is distinct from :class:`loop.py`'s
 ``HarnessSession`` (apply-op -> regen -> verify -> checkpoint), because it does
-not apply ops one at a time — it generates whole candidate *sequences* and
-selects among them against a target shape. The two learned components (P2S
-renderer/embedder and MPP infiller) enter only through the ``render`` /
+not apply ops one at a time -- it generates whole candidate *sequences* and
+selects among them against a target shape. The two learned components (parameter-to-shape
+renderer/embedder and masked-parameter-prediction infiller) enter only through the ``render`` /
 ``contribution`` / ``generate`` callables, so the whole control flow is
 deterministic given a seeded generator.
 
@@ -77,13 +76,13 @@ class CADMorphLoop:
 
     Parameters (all the learned pieces are injected as callables):
 
-      * ``render(sequence) -> shape`` — parameter-to-shape ``F`` (P2S stand-in).
-      * ``distance(shape_a, shape_b) -> float`` — geometric dissimilarity
+      * ``render(sequence) -> shape`` -- parameter-to-shape ``F`` (parameter-to-shape stand-in).
+      * ``distance(shape_a, shape_b) -> float`` -- geometric dissimilarity
         (e.g. :func:`geometry.cadmorph_tsdf.l2_distance`).
-      * ``contribution(sequence, shape) -> [float]`` — per-segment contribution
+      * ``contribution(sequence, shape) -> [float]`` -- per-segment contribution
         ``M`` used by the planner (see
         :func:`editing.cadmorph_plan.leave_one_out_contribution`).
-      * ``generate(masked, n, rng) -> [sequence]`` — candidate infiller (MPP
+      * ``generate(masked, n, rng) -> [sequence]`` -- candidate infiller (masked-parameter-prediction
         stand-in).
 
     Tuning: ``n_candidates`` (``N``), ``max_rounds`` (paper uses 10),

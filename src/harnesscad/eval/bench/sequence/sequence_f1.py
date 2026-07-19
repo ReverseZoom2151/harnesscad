@@ -1,10 +1,10 @@
-"""Text2CAD CAD-sequence evaluation: primitive/extrusion F1 via loop matching.
+"""Text-to-CAD sequence evaluation: primitive/extrusion F1 via loop matching.
 
-Text2CAD evaluates a generated CAD sequence against the ground-truth sequence by
-the protocol of CAD-SIGNet (Khan et al. [19], reused in this paper, Sec. 5.1 A):
+A common text-to-CAD evaluation protocol scores a generated CAD sequence
+against the ground-truth sequence as follows:
 
   * predicted loops are aligned to ground-truth loops *within the same sketch* using
-    the **Hungarian matching algorithm** (Kuhn, 1955);
+    the **Hungarian matching algorithm**;
   * once loops are matched, **F1 scores** are computed for each primitive type
     (line, arc, circle) and for extrusions;
   * the **Invalidity Ratio** (IR) is the fraction of predicted sequences that fail
@@ -13,9 +13,10 @@ the protocol of CAD-SIGNet (Khan et al. [19], reused in this paper, Sec. 5.1 A):
 This module provides the deterministic, geometry-free core of that protocol: a
 compact Hungarian assignment over a loop-to-loop cost matrix (cost = primitive
 multiset disagreement), aggregation of true/false positives/negatives per primitive
-type across the matched loops, and F1 computation. The learned generator, the OCC
-build (which decides validity) and Chamfer distance over meshes are out of scope;
-IR here is computed from an explicit per-sample validity flag.
+type across the matched loops, and F1 computation. The learned generator, the
+solid-modeling-kernel build (which decides validity), and Chamfer distance over
+meshes are out of scope; IR here is computed from an explicit per-sample
+validity flag.
 
 Pure stdlib, deterministic (ties in matching break to the lowest index).
 """
@@ -71,7 +72,7 @@ def _loop_cost(a: dict[str, int], b: dict[str, int]) -> int:
 
 # --- Hungarian assignment (square, minimisation) ----------------------------
 def hungarian_assignment(cost: list[list[int]]) -> list[int]:
-    """Optimal min-cost assignment for a square cost matrix (Kuhn-Munkres).
+    """Optimal min-cost assignment for a square cost matrix (Hungarian algorithm).
 
     Returns ``assign`` where row ``i`` is matched to column ``assign[i]``. Pure
     integer/float arithmetic; deterministic. Small matrices only (loops per sketch).
@@ -191,7 +192,7 @@ class SequenceEvaluation:
 
 
 def evaluate_sequence(pred: list[Command], gt: list[Command]) -> SequenceEvaluation:
-    """F1 counts for a predicted vs ground-truth DeepCAD command sequence.
+    """F1 counts for a predicted vs ground-truth CAD command sequence.
 
     Loops are matched with Hungarian assignment before counting, so a correct loop
     predicted in a different order still scores as a match.
@@ -219,7 +220,7 @@ def evaluate_sequence(pred: list[Command], gt: list[Command]) -> SequenceEvaluat
 
 
 def aggregate_f1(evals: list[SequenceEvaluation]) -> dict[str, float]:
-    """Micro-averaged F1 per type across a batch (paper Table 1 layout)."""
+    """Micro-averaged F1 per type across a batch."""
     totals = {
         "line": PrimitiveCounts(), "arc": PrimitiveCounts(),
         "circle": PrimitiveCounts(), "extrusion": PrimitiveCounts(),
@@ -233,7 +234,7 @@ def aggregate_f1(evals: list[SequenceEvaluation]) -> dict[str, float]:
 
 
 def invalidity_ratio(validity_flags: list[bool]) -> float:
-    """IR = (#invalid) / (#total): fraction of sequences that fail to build (Sec. 5.1)."""
+    """IR = (#invalid) / (#total): fraction of sequences that fail to build."""
     if not validity_flags:
         raise SequenceF1Error("need at least one sample")
     invalid = sum(1 for ok in validity_flags if not ok)

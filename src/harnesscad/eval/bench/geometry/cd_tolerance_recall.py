@@ -1,11 +1,12 @@
-"""Chamfer-Distance Tolerance-Recall curve and AUC-TR (IterCAD).
+"""Chamfer-Distance Tolerance-Recall curve and AUC-TR.
 
-Mined from *IterCAD: An Iterative Multimodal Agent for Visually-Grounded CAD
-Generation and Editing*. IterCAD observes that standard geometric metrics suffer a
-"survivor bias": Chamfer distance is averaged **only over samples whose code
-executed**, so a method that crashes on hard cases can look artificially precise.
-IterCAD fixes this with the **Chamfer Distance Tolerance-Recall (CD-TR)** curve and
-its **AUC-TR** summary, which count non-executing samples as failures at every
+Deterministic re-implementation of a tolerance-recall protocol for iterative,
+visually-grounded CAD generation and editing agents. The motivating
+observation is that standard geometric metrics suffer a "survivor bias":
+Chamfer distance is averaged **only over samples whose code executed**, so a
+method that crashes on hard cases can look artificially precise. This fixes
+that with the **Chamfer Distance Tolerance-Recall (CD-TR)** curve and its
+**AUC-TR** summary, which count non-executing samples as failures at every
 tolerance.
 
 For a set of generation attempts, each either failed to execute or produced a

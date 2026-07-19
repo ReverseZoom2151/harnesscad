@@ -1,9 +1,9 @@
-"""Plate-stack building DSL schema and validator (Gaudi-backend style).
+"""Plate-stack building DSL schema and validator.
 
-Gaudi (``gaudi-backend-main``) is a text-to-architecture backend: a building is
-described as an ordered list of *plates* -- flat 2D profiles that are extruded
-by a thickness and stacked vertically to form a tower.  Each plate dictionary
-carries a ``category`` that selects how its 2D outline is defined:
+A text-to-architecture backend describes a building as an ordered list of
+*plates* -- flat 2D profiles that are extruded by a thickness and stacked
+vertically to form a tower.  Each plate dictionary carries a ``category`` that
+selects how its 2D outline is defined:
 
   * ``vertex``     -- an explicit polygon given as ``(x, y)`` vertices;
   * ``parametric`` -- a curve sampled from string formulas ``x(t)``/``y(t)`` over
@@ -11,16 +11,16 @@ carries a ``category`` that selects how its 2D outline is defined:
   * ``mixed``      -- a closed Bezier outline given by control ``vertices`` and
                       optional per-point ``handle_types``.
 
-The upstream backend (``template.py`` / ``app.py``) feeds these dictionaries
-straight into Blender ``bpy`` with no validation, so a malformed dictionary
-surfaces only as an opaque Blender traceback that the LLM repair loop must guess
-at.  This module reimplements the *schema* deterministically and up front: it
+Such a backend typically feeds these dictionaries straight into a mesh-building
+runtime with no validation, so a malformed dictionary surfaces only as an opaque
+runtime traceback that the LLM repair loop must guess at.  This module
+implements the *schema* deterministically and up front: it
 enumerates the required and optional keys per category, checks their types and
 value ranges, and reports every problem in one pass with a precise field path --
 turning "some Blender error" into an actionable list.
 
-The validator is the deterministic transferable core; the ``bpy`` mesh building,
-the LLM calls and the Flask/JWT plumbing are out of scope.
+The validator is the deterministic, transferable core; the mesh building,
+the LLM calls and the web-service plumbing are out of scope.
 
 Public API
 ----------

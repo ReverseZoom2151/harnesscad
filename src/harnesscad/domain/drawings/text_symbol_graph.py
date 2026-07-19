@@ -1,9 +1,8 @@
 """Text-enhanced primitive graph with type-aware edge features for symbol spotting.
 
-Paper: *Text-Enhanced Panoptic Symbol Spotting in CAD Drawings* (Liu et al.,
-2025). Beyond the geometry-only CADTransformer graph (already reimplemented in
-:mod:`primitive_graph`), this paper adds two deterministic, handcrafted pieces
-that a downstream network consumes as fixed inputs (Sec. III):
+Beyond the geometry-only primitive graph (built in :mod:`primitive_graph`), this
+adds two deterministic, handcrafted pieces that a downstream network consumes as
+fixed inputs:
 
   * a **Text Primitives Integration** step -- text annotations become a distinct
     node type in the primitive graph, but only after *low-frequency annotations

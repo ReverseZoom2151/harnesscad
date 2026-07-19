@@ -1,24 +1,21 @@
 """Traceability between the CSG code and the 3D view (reverse & forward search).
 
-From *Introducing Bidirectional Programming in Constructive Solid Geometry-Based
-CAD* (Gonzalez et al., SUI '23), Sec. 4.1-4.2. The paper adds two navigation
-features on top of the AST<->CSG reference:
+Two navigation features are built on top of the AST<->CSG reference:
 
-  * **Reverse search** (Sec. 4.1) -- from a selected element in the 3D view, find
-    the code. "The target element refers to the nodes in the branch of the CSG
-    tree from the root to the selected node, included. The impacted elements refer
-    to the other nodes of the CSG tree that were created with the same code
-    statement of the selected part" (F2). "The code editor adds a number in the
-    margin of the targeted nodes indicating the call order of the instruction in
-    the call stack."
-  * **Forward search** (Sec. 4.2) -- from a selected code statement, find the view
-    elements. "The system searches all the nodes created by the selected
-    statement. If there is only one, the program marks it as targeted; if there is
-    more than one, it marks all nodes as impacted" (F4).
-  * **Ghosts** (Sec. 4.1, F3) -- intersection/difference operations subtract
-    volume, so their operands are not visible. "When the selected element is one
-    of these operations ... we draw the elements used in its creation as ghosts",
-    cloned from the CSG children and classified as target/impacted.
+  * **Reverse search** -- from a selected element in the 3D view, find the code.
+    The target elements are the nodes in the branch of the CSG tree from the root
+    to the selected node, inclusive. The impacted elements are the other nodes of
+    the CSG tree created by the same code statement as the selected part. The
+    code editor adds a number in the margin of the targeted nodes indicating the
+    call order of the instruction in the call stack.
+  * **Forward search** -- from a selected code statement, find the view elements.
+    All nodes created by the selected statement are collected: if there is only
+    one it is marked as targeted; if there is more than one, all are marked as
+    impacted.
+  * **Ghosts** -- intersection/difference operations subtract volume, so their
+    operands are not visible. When the selected element is one of these
+    operations, the elements used in its creation are drawn as ghosts, cloned
+    from the CSG children and classified as target/impacted.
 
 This module is deterministic, view-agnostic (no rendering), and works purely on
 the traced geometry tree from :mod:`programs.bidircsg_forward`. Pure stdlib.
@@ -42,8 +39,8 @@ class Reverse:
     """Result of a reverse search from a selected output node."""
 
     selected: GeomNode
-    target_source_paths: List[Path]   # root -> selected AST branch (F2 green)
-    impacted: List[GeomNode]          # other outputs of the same AST node (pink)
+    target_source_paths: List[Path]   # root -> selected AST branch (target set)
+    impacted: List[GeomNode]          # other outputs of the same AST node
     call_order: List[int]             # per targeted branch node: call-stack order
 
 
@@ -62,7 +59,7 @@ def _branch_to(tree: GeomNode, target: GeomNode) -> List[GeomNode]:
 
 
 def reverse_search(tree: GeomNode, selected: GeomNode) -> Reverse:
-    """Reverse navigation from a selected element (Sec. 4.1, F1-F3).
+    """Reverse navigation from a selected element.
 
     *Target* = the AST branch from the root down to the selected node. *Impacted*
     = every other output node produced by the same AST statement (e.g. the other
@@ -77,7 +74,7 @@ def reverse_search(tree: GeomNode, selected: GeomNode) -> Reverse:
         if g.source_path == selected.source_path and g is not selected
     ]
     # Call order = position of each branch node within the group of outputs that
-    # share its AST node (the "call order in the call stack", F2).
+    # share its AST node (the call order within the call stack).
     call_order: List[int] = []
     for g in branch:
         siblings = [x for x in iter_geom(tree) if x.source_path == g.source_path]
@@ -98,7 +95,7 @@ class Forward:
 
 
 def forward_search(tree: GeomNode, source_path: Path) -> Forward:
-    """Forward navigation from a code statement (Sec. 4.2, F4).
+    """Forward navigation from a code statement.
 
     One created node -> *targeted*; several -> all *impacted*.
     """
@@ -121,11 +118,11 @@ class Ghost:
 
 
 def ghosts(tree: GeomNode, operation: GeomNode) -> List[Ghost]:
-    """Ghost clones of the operands of an intersection/difference (Sec. 4.1, F3).
+    """Ghost clones of the operands of an intersection/difference.
 
     The first operand (kept) is classified ``target``; the subtracted operands
-    ``impacted`` -- mirroring the paper's green (target) / pink (impacted)
-    colouring of the cloned children.
+    ``impacted`` -- driving the distinct target/impacted colouring of the cloned
+    children.
     """
     if operation.kind not in ("Intersection", "Difference"):
         raise ValueError("ghosts only apply to intersection/difference nodes")
@@ -139,8 +136,8 @@ def ghosts(tree: GeomNode, operation: GeomNode) -> List[Ghost]:
 def removed_operands(tree: GeomNode) -> List[GeomNode]:
     """Every operand that a difference/intersection removes from the view.
 
-    These are exactly the outputs that "do not have a visual representation"
-    (Sec. 3.4.1) and thus need ghosts to be navigable.
+    These are exactly the outputs that have no visual representation of their own
+    and thus need ghosts to be navigable.
     """
     out: List[GeomNode] = []
     for g in iter_geom(tree):

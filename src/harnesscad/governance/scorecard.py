@@ -293,7 +293,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         prog="harnesscad-scorecard",
         description="Tri-state 'no silent green' scorecard aggregator: any "
                     "unknown keeps the set off green, distinct from fail, with "
-                    "the reason always carried (anvilate scorecard.py port).")
+                    "the reason always carried.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="prove the no-silent-green invariant on synthetic "
                              "scorecards: one unknown among all-pass is NOT "

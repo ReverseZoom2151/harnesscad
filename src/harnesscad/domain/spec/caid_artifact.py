@@ -1,11 +1,10 @@
-"""CAID design-artifact and design-patch contract (SimCorrect / OpenCAD).
+"""CAID design-artifact and design-patch contract.
 
-Mined from **SimCorrect** (``caid_contract.py`` + ``docs/CAID_ARTIFACT_CONTRACT.md``),
-where the "CAID design artifact" is the stable JSON boundary between a CAD tool
-(OpenCAD) that owns the design and a simulation-driven corrector (SimCorrect)
-that identifies faulty parameters and sends back patches. The contract is worth
-stealing wholesale for a text-to-CAD harness because it solves a problem the
-harness will hit with any external verifier or simulator:
+The "CAID design artifact" is the stable JSON boundary between a CAD tool that
+owns the design and a simulation-driven corrector that identifies faulty
+parameters and sends back patches. The contract is worth adopting wholesale for
+a text-to-CAD harness because it solves a problem the harness will hit with any
+external verifier or simulator:
 
   * the artifact carries an ``artifact_id`` identity so a patch produced against
     one design revision can never be applied to another;
@@ -18,7 +17,7 @@ harness will hit with any external verifier or simulator:
     hardcodes aliases;
   * patch application never mutates the input artifact.
 
-This module reimplements the full contract: artifact/patch validation, parameter
+This module implements the full contract: artifact/patch validation, parameter
 lookup, bidirectional name resolution through simulation tags, patch
 construction (including directly from an identification result), and
 non-mutating patch application both to the artifact and to a flat simulation

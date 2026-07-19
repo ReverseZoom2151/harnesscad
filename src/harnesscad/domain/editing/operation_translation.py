@@ -1,8 +1,8 @@
-"""Operation Translating integration (Section 4.4 of Zou 2025).
+"""Operation Translating integration.
 
-This approach (academia + Autodesk) "translates direct edits into operations of
+This approach "translates direct edits into operations of
 parameter tuning and/or order rearrangement of the features already presented in
-the model history." The paper flags two fundamental limits:
+the model history." This approach flags two fundamental limits:
 
 1. it "cannot solve the problem altogether because not all direct edits are
    achievable through those feature operations" (non-achievability); and
@@ -84,7 +84,7 @@ def translate_push_pull(tree: FeatureTree, edit: PushPullEdit,
     ``links`` associates faces with governing parameters (the model's
     face-to-parameter map). ``symmetric_params`` optionally lists extra
     (fid, param) handles that produce the *same* face change (e.g. a symmetric
-    counterpart), which is how the paper's non-uniqueness arises.
+    counterpart), which is how the non-uniqueness arises.
 
     Returns every candidate in a deterministic order. An empty list means the
     edit is *not achievable* via feature parameter tuning (limit 1).

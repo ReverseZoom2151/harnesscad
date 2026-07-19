@@ -13,22 +13,21 @@ The closed forms, for ``|x - y| < r``, are::
 
 and plain ``max``/``min`` otherwise (and when ``r == 0``).
 
-Why add this when the harness already has smooth blends
--------------------------------------------------------
-:mod:`combinators` already carries Inigo Quilez's *polynomial* / *exponential* /
-*power* smooth minima and a 45-degree *chamfer*.  ImplicitCAD's ``rmax``/``rmin``
-are none of those: the blend profile is a true **circular arc** of a specified
+Why add this when there are already smooth blends
+-------------------------------------------------
+:mod:`combinators` already carries the *polynomial* / *exponential* /
+*power* smooth minima and a 45-degree *chamfer*.  The ``rmax``/``rmin``
+operators are none of those: the blend profile is a true **circular arc** of a specified
 radius (the fillet radius is a real geometric radius, not a soft "k" parameter),
 which is what a CAD ``fillet r`` / ``round r`` on a Boolean edge actually means.
 It sits between the polynomial smin (cheap, radius-inexact) and the chamfer
 (straight bevel): the fillet radius ``r`` is exactly the arc radius.
 
-Caveats carried over from ImplicitCAD's own notes:
+Caveats:
 
 * ``rmax`` / ``rmin`` are **not associative**, so the n-ary forms
-  (:func:`rmaximum` / :func:`rminimum`) reproduce ImplicitCAD exactly: they sort
-  the arguments and round only the extreme *pair*, leaving the rest as a hard
-  extremum.  This matches ``rmaximum``/``rminimum`` in ``MathUtil.hs``.
+  (:func:`rmaximum` / :func:`rminimum`) sort the arguments and round only the
+  extreme *pair*, leaving the rest as a hard extremum.
 * Only valid for ``r >= 0``.  ``r == 0`` degrades to hard CSG.
 * Like every fillet blend it perturbs the Eikonal property inside the blend band
   (``|grad|`` may slightly exceed 1 there); away from the band it is unchanged.
@@ -85,11 +84,11 @@ def rmin(r: float, x: float, y: float) -> float:
 
 
 def rmaximum(r: float, values: Sequence[float]) -> float:
-    """N-ary rounded maximum (ImplicitCAD ``rmaximum``).
+    """N-ary rounded maximum.
 
     Rounds only the two largest arguments and leaves the rest hard, because
-    :func:`rmax` is not associative and ImplicitCAD deliberately rounds just the
-    dominant pair.  Empty -> ``0.0`` (ImplicitCAD's convention); single -> itself.
+    :func:`rmax` is not associative so only the dominant pair is rounded.
+    Empty -> ``0.0`` (by convention); single -> itself.
     """
     vs = list(values)
     if not vs:
@@ -101,7 +100,7 @@ def rmaximum(r: float, values: Sequence[float]) -> float:
 
 
 def rminimum(r: float, values: Sequence[float]) -> float:
-    """N-ary rounded minimum (ImplicitCAD ``rminimum``).
+    """N-ary rounded minimum.
 
     Rounds only the two smallest arguments and leaves the rest hard.  Empty ->
     ``0.0``; single -> itself.
@@ -116,15 +115,15 @@ def rminimum(r: float, values: Sequence[float]) -> float:
 
 
 # --------------------------------------------------------------------------- #
-# named Boolean operators (ImplicitCAD unionR / intersectR / differenceR)     #
+# named Boolean operators (rounded union / intersection / difference)         #
 # --------------------------------------------------------------------------- #
 def rounded_union(r: float, a: float, b: float) -> float:
-    """Filleted union: ``rmin(r, a, b)`` (ImplicitCAD ``unionR r``)."""
+    """Filleted union: ``rmin(r, a, b)``."""
     return rmin(r, a, b)
 
 
 def rounded_intersection(r: float, a: float, b: float) -> float:
-    """Filleted intersection: ``rmax(r, a, b)`` (ImplicitCAD ``intersectR r``)."""
+    """Filleted intersection: ``rmax(r, a, b)``."""
     return rmax(r, a, b)
 
 
@@ -134,7 +133,7 @@ def rounded_complement(a: float) -> float:
 
 
 def rounded_difference(r: float, a: float, b: float) -> float:
-    """Filleted difference ``a - b``: ``rmax(r, a, -b)`` (ImplicitCAD ``differenceR``).
+    """Filleted difference ``a - b``: ``rmax(r, a, -b)``.
 
     The subtracted edge is rounded with a concave fillet of radius ``r`` -- the
     CAD "round the inside corner left by a cut" operation.

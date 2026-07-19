@@ -1,19 +1,17 @@
-"""Structure-consistency metrics for GeoFusion-CAD hierarchical CAD trees.
+"""Structure-consistency metrics for hierarchical CAD trees.
 
-GeoFusion-CAD argues (Sec. 5.3, Sec. E.1) that its *hierarchical tree*
-representation is what preserves "topological consistency" across long command
-sequences -- removing it ("w/o Tree") degrades every metric. This module gives
-the deterministic structure-aware checks and metrics implied by that claim,
-operating on the serialized token sequence and the typed tree from
-:mod:`reconstruction.geofusion_hierarchy`:
+The underlying premise is that a *hierarchical tree* representation is what
+preserves topological consistency across long command sequences -- removing
+it degrades every metric. This module gives the deterministic structure-aware
+checks and metrics implied by that claim, operating on the serialized token
+sequence and the typed tree from :mod:`reconstruction.geofusion_hierarchy`:
 
-* :func:`closure_valid` -- verifies the Table S1 *hierarchical closure*: end
-  tokens (``ec`` for a curve, ``eloop``, ``eface``, ``esketch``, ``ee``,
-  ``esolid``) nest correctly, like balanced brackets. A malformed nesting means
-  the serialization is not reversible (the property the tree representation is
+* :func:`closure_valid` -- verifies *hierarchical closure*: end tokens (``ec``
+  for a curve, ``eloop``, ``eface``, ``esketch``, ``ee``, ``esolid``) nest
+  correctly, like balanced brackets. A malformed nesting means the
+  serialization is not reversible (the property the tree representation is
   designed to guarantee).
-* :func:`valid_ratio` -- the batch-level fraction of well-formed sequences
-  (the paper's "ValidRatios" family of well-formedness measures, Sec. C.2).
+* :func:`valid_ratio` -- the batch-level fraction of well-formed sequences.
 * :func:`structure_signature` -- a canonical, parameter-free descriptor of the
   tree shape (node-type counts + depth), so two trees with identical topology
   but different coordinates compare equal.
@@ -47,7 +45,7 @@ def closure_valid(tokens: tuple[Token, ...]) -> tuple[bool, str]:
     failure modes (missing ``cls`` / ``esolid``, stray ``ec``); the authoritative
     verdict is delegated to
     :func:`reconstruction.geofusion_hierarchy.deserialize`, which enforces the
-    full Table S1 nesting grammar. Never raises, so it can be mapped over a batch.
+    full nesting grammar. Never raises, so it can be mapped over a batch.
     """
     if not tokens:
         return False, "empty sequence"

@@ -1,19 +1,18 @@
-"""Soft target distribution for CAD parameter prediction (Drawing2CAD, Qin et
-al., MM '25, "Sequence-to-Sequence Learning for CAD Generation from Vector
-Drawings").
+"""Soft target distribution for CAD parameter prediction from vector drawings.
 
-Drawing2CAD replaces the hard one-hot Parameter Loss with a *soft target
-distribution* (Section 4.5, Eqs. 6-7) that tolerates minor parameter deviations
-while preserving design intent. For a ground-truth quantised category ``t`` over
+This approach replaces the hard one-hot Parameter Loss with a *soft target
+distribution* that tolerates minor parameter deviations while preserving
+design intent. For a ground-truth quantised category ``t`` over
 ``num_classes`` discrete levels, the smoothed weight on category ``k`` is::
 
     w~_k = (beta - |k - t|) / Z      for k in [t - delta, t + delta]
     w~_k = 0                          otherwise
 
-normalised so the weights sum to 1 (``Z`` is the normaliser). The paper sets
-``beta = 2.0`` and ``delta = 3``. The Parameter Loss is then the cross-entropy of
-the predicted distribution against this soft target rather than the one-hot
-target, relaxing over-strict penalties for near-miss predictions.
+normalised so the weights sum to 1 (``Z`` is the normaliser), with default
+parameters ``beta = 2.0`` and ``delta = 3``. The Parameter Loss is then the
+cross-entropy of the predicted distribution against this soft target rather
+than the one-hot target, relaxing over-strict penalties for near-miss
+predictions.
 
 This module builds the soft target and the soft cross-entropy deterministically
 (stdlib only). It complements ``sequence/parameter_accuracy.py`` (which scores a
@@ -71,8 +70,8 @@ def soft_cross_entropy(pred_probs, target: int, delta: int = DEFAULT_DELTA,
     ``pred_probs`` is a predicted probability distribution over the categories
     (need not be exactly normalised; it is renormalised defensively). Returns
     ``-sum_k w~_k log p_k`` with the soft target ``w~`` from :func:`soft_target`.
-    Only categories with non-zero soft weight contribute, matching the paper's
-    windowed penalisation.
+    Only categories with non-zero soft weight contribute, matching the
+    windowed penalisation described above.
     """
     n = len(pred_probs)
     tgt = soft_target(target, n, delta, beta)

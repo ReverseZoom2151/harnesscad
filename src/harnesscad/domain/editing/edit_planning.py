@@ -1,34 +1,33 @@
-"""CADMorph planning stage: relative-contribution masking of a CAD sequence.
+"""Planning stage: relative-contribution masking of a CAD sequence.
 
-From CADMorph (Ma et al., NeurIPS 2025), Section 3.4, "Planning". Given the
-current parametric sequence ``C_{r-1}`` and a target shape ``S'``, the planner
-decides *which segments to edit*. A naive planner masks segments at random,
-wasting effort on parts that already match the target; CADMorph instead
-concentrates edits on the segments most responsible for the discrepancy.
+Given the current parametric sequence ``C_{r-1}`` and a target shape ``S'``, the
+planner decides *which segments to edit*. A naive planner masks segments at
+random, wasting effort on parts that already match the target; this planner
+instead concentrates edits on the segments most responsible for the discrepancy.
 
-The paper's raw per-segment signal ``M(C(i), S)`` is a cross-attention score
-read out of the learned P2S diffusion model — that read-out is the learned
+The raw per-segment signal ``M(C(i), S)`` is a cross-attention score read out of
+a learned parametric-to-shape diffusion model -- that read-out is the learned
 part and stays outside this module (supply it as a callable). What *is*
 deterministic and buildable is the algorithm layered on top:
 
-  * **Scale-invariant relative score** (paper Eq. 2)::
+  * **Scale-invariant relative score**::
 
         J(i) = | M(C(i), S') - M(C(i), S_{r-1}) |
 
     i.e. how much segment ``i``'s influence *changes* between the current
     rendered shape ``S_{r-1}`` and the target ``S'``. Taking the absolute
-    difference cancels each segment's baseline magnitude (the paper notes
-    ``[SOL]`` tokens always score low), so segments are compared fairly.
+    difference cancels each segment's baseline magnitude (``[SOL]`` tokens
+    always score low), so segments are compared fairly.
 
-  * **Mean-threshold selection** — rank segments by ``J(i)`` and mask those
-    whose score exceeds the mean ``J̄`` (paper: "the K largest ones ... those
-    above the mean"). This focuses computation on the mismatched segments.
+  * **Mean-threshold selection** -- rank segments by ``J(i)`` and mask those
+    whose score exceeds the mean. This focuses computation on the mismatched
+    segments.
 
 The masked segments are collapsed into ``<mask>`` tokens (the same token
 :mod:`editing.locate_infill` uses, so a downstream infiller sees a familiar
 shape), yielding ``C_mask_r``.
 
-To make the planner usable end-to-end without the P2S model, we also provide
+To make the planner usable end-to-end without the parameter-to-shape model, we also provide
 :func:`leave_one_out_contribution`, a deterministic geometry-based stand-in for
 ``M``: a segment's contribution to a shape ``S`` is how much *worse* the
 sequence fits ``S`` when that segment is removed. It needs only a renderer and
@@ -43,7 +42,7 @@ from dataclasses import dataclass
 from typing import Callable, List, Optional, Sequence, Tuple
 
 # Reuse the mask token the locate-then-infill layer already uses so a candidate
-# generator (MPP stand-in) sees a consistent representation. Importing the
+# generator (masked-parameter-prediction stand-in) sees a consistent representation. Importing the
 # constant does not modify that module.
 from harnesscad.domain.editing.locate_infill import MASK
 
@@ -59,7 +58,7 @@ class PlanResult:
     ``masked_sequence`` is ``C_mask_r`` with selected segments collapsed to
     ``<mask>`` tokens; ``masked_indices`` are the original segment positions
     chosen; ``scores`` are the per-segment ``J(i)`` values; ``threshold`` is the
-    mean ``J̄`` used to select.
+    mean of ``J`` used to select.
     """
 
     masked_sequence: Tuple
@@ -70,7 +69,7 @@ class PlanResult:
 
 def relative_scores(contrib_current: Sequence[float],
                     contrib_target: Sequence[float]) -> Tuple[float, ...]:
-    """Compute ``J(i) = |M(C(i), S') - M(C(i), S_{r-1})|`` (paper Eq. 2).
+    """Compute ``J(i) = |M(C(i), S') - M(C(i), S_{r-1})|``.
 
     ``contrib_current[i]`` is ``M(C(i), S_{r-1})`` and ``contrib_target[i]`` is
     ``M(C(i), S')``. The two must be the same length (one score per segment).
@@ -86,7 +85,7 @@ def relative_scores(contrib_current: Sequence[float],
 def select_mask_indices(scores: Sequence[float],
                         *, max_k: Optional[int] = None,
                         ensure_progress: bool = True) -> Tuple[int, ...]:
-    """Pick the segments to edit: those with ``J(i)`` above the mean ``J̄``.
+    """Pick the segments to edit: those with ``J(i)`` above the mean of ``J``.
 
     Ranks by score (desc, stable by index on ties). ``max_k`` optionally caps
     how many are returned. When ``ensure_progress`` is set and the mean rule
@@ -155,7 +154,7 @@ def plan_mask(sequence: Sequence,
 
 
 # --------------------------------------------------------------------------- #
-# Deterministic contribution stand-in for the learned P2S cross-attention
+# Deterministic contribution stand-in for the learned parameter-to-shape cross-attention
 # --------------------------------------------------------------------------- #
 def leave_one_out_contribution(
         render: Callable[[Sequence], object],
@@ -172,7 +171,7 @@ def leave_one_out_contribution(
     A large value means removing segment ``i`` moves the rendered shape *away*
     from ``S`` (the segment matters for reproducing ``S``); ~0 means the segment
     is irrelevant to ``S``. This is a purely geometric, learned-model-free
-    stand-in for the paper's cross-attention read-out, suitable for driving the
+    stand-in for the cross-attention read-out, suitable for driving the
     planner via :func:`plan_mask`.
 
     The returned callable has signature ``contribution(sequence, shape) ->

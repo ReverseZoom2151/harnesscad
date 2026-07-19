@@ -1,23 +1,23 @@
-"""Continuous B-Rep tokenization for CMT (Sec. 4.1).
+"""Continuous B-Rep tokenization for surface/edge token sequences.
 
-CMT converts a B-Rep into two sequences of continuous-valued tokens before
-autoregressive generation:
+This module converts a B-Rep into two sequences of continuous-valued tokens
+before autoregressive generation:
 
   * a **surface token** = the 6 axis-aligned bounding-box coordinates enclosing
-    the surface (its "topology characteristics", following BrepGen) concatenated
-    with a per-surface hidden feature vector (from a Surface VAE);
+    the surface (its topology characteristics) concatenated with a per-surface
+    hidden feature vector (from a surface VAE);
   * an **edge token** = the edge bounding box concatenated with its two adjacent
-    vertices (start point and end point). "Note that the vertices information is
-    integrated in the edge tokens, there is no need to generate vertex tokens."
+    vertices (start point and end point). The vertex information is integrated
+    into the edge tokens, so no separate vertex tokens are generated.
 
-After tokenization the tokens are ordered per family "in ascending order based on
-the 3D coordinate value of x1, y1, z1, x2, y2, z2 within the bounding boxes",
-yielding the ordered sequences ``S`` and ``E``.
+After tokenization the tokens are ordered per family in ascending order of the
+3D coordinate values x1, y1, z1, x2, y2, z2 within the bounding boxes, yielding
+the ordered sequences ``S`` and ``E``.
 
-The learned Surface/Edge VAE encoders are external; the deterministic packing,
-ordering and quantization defined by the paper are implemented here. The hidden
-feature slots are carried opaquely so the layout matches the paper's token even
-when the VAE output is supplied from elsewhere.
+The learned surface/edge VAE encoders are external; the deterministic packing,
+ordering and quantization are implemented here. The hidden feature slots are
+carried opaquely so the layout matches the token even when the VAE output is
+supplied from elsewhere.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def surface_token(box: Box, features: tuple[float, ...] = ()) -> tuple[float, ..
 
 
 def _order_key(token: tuple[float, ...]) -> tuple[float, ...]:
-    # Paper sorts by (x1, y1, z1, x2, y2, z2), i.e. the leading box coordinates,
+    # Sort by (x1, y1, z1, x2, y2, z2), i.e. the leading box coordinates,
     # with the full token as a deterministic tie-break.
     return tuple(token[:6]) + tuple(token)
 
@@ -95,5 +95,5 @@ def dequantize(level: int, bits: int, lo: float = 0.0, hi: float = 1.0) -> float
 
 def quantize_token(token: tuple[float, ...], bits: int,
                    lo: float = 0.0, hi: float = 1.0) -> tuple[int, ...]:
-    """Quantize every component of a token (the paper's 4-bit Valid check)."""
+    """Quantize every component of a token (the 4-bit Valid check)."""
     return tuple(quantize(v, bits, lo, hi) for v in token)

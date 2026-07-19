@@ -1,7 +1,7 @@
 """Cox-de Boor B-spline basis functions and knot-vector machinery (NURBGen).
 
 Usama, Khan, Stricker & Afzal, *NURBGen: High-Fidelity Text-to-CAD Generation
-through LLM-Driven NURBS Modeling* (AAAI 2026), "Background" section.
+through LLM-Driven NURBS Modeling* 
 
 NURBGen serialises every CAD face as an untrimmed NURBS surface -- control
 points, knot vectors, degrees and rational weights -- and converts the JSON back
@@ -68,7 +68,7 @@ def uniform_clamped_knots(n: int, p: int) -> List[float]:
     """Return a clamped (open) uniform knot vector on ``[0, 1]``.
 
     The first and last knots have multiplicity ``p + 1`` so the curve
-    interpolates its first and last control points -- the standard CAD/OCCT
+    interpolates its first and last control points -- the standard CAD
     convention that NURBGen's ``Geom_BSplineSurface`` uses.
     """
     if p < 0:
@@ -158,7 +158,7 @@ def find_span(n: int, p: int, u: float, knots: Sequence[float]) -> int:
 
     ``n`` is the index of the last control point.  Clamps ``u`` to the valid
     parameter domain ``[knots[p], knots[n+1]]``.  Implements A2.1 from *The
-    NURBS Book* (Piegl & Tiller).
+    standard NURBS formulation.
     """
     if u >= knots[n + 1] - _EPS:
         return n
@@ -229,7 +229,7 @@ def basis_derivatives(span: int, u: float, p: int, knots: Sequence[float],
     Returns ``ders`` with ``ders[k][j]`` = the ``k``-th derivative of the
     ``j``-th non-zero basis function (``j = 0..p`` maps to control-point index
     ``span - p + j``).  Derivatives above degree ``p`` are zero.  Implements
-    A2.3 from *The NURBS Book*.
+    A2.3 from the standard NURBS formulation.
     """
     if d < 0:
         raise ValueError("derivative order d must be >= 0")

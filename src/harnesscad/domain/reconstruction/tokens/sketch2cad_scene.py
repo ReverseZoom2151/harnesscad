@@ -1,28 +1,27 @@
-"""Scene-descriptor token codec (Yang, "Sketch2CAD: 3D CAD Model Reconstruction
-from 2D Sketch using Visual Transformer", EPFL 2023).
+"""Scene-descriptor token codec for single-image 3D CAD reconstruction.
 
-Sketch2CAD reframes single-image 3D reconstruction as a Pix2Seq-style *text
-generation* task: a visual transformer emits a sequence of tokens describing a
+This codec reframes single-image 3D reconstruction as a sequence *generation*
+task: a visual transformer emits a sequence of tokens describing a
 "scene descriptor" -- the list of objects in the scene and their shape parameters.
-This module implements the deterministic *target parameterisation* (Sec. III-B),
-independent of the learned encoder/decoder, which are out of scope.
+This module implements the deterministic *target parameterisation*, independent of
+the learned encoder/decoder, which are out of scope.
 
-Per the paper each object is serialised as the fixed 9-slot row (Sec. III-B-2)::
+Each object is serialised as the fixed 9-slot row::
 
     [shape-type, position-x, position-y, position-z, yaw, pitch,
      size-x, size-y, size-z]
 
 and a whole scene is the camera pose ID followed by the concatenation of every
-object's row (the camera pose "is encapsulated at the beginning of the sequence").
+object's row: the camera pose is encapsulated at the beginning of the sequence.
 
-Continuous parameters are tokenised exactly as the paper's Eq. (Sec. III-B-2):
+Continuous parameters are tokenised as:
 
     Q_i = round( (x_i - min(X)) / (max(X) - min(X)) * (n_bins - 1) )
 
 i.e. uniform discretisation of a value into an integer in ``[0, n_bins - 1]``. The
-paper uses *different* bin counts per property (e.g. complex dataset: position 200,
+scheme uses *different* bin counts per property (e.g. complex dataset: position 200,
 size 60, rotation 4) and shares the vocabulary *only between axes of the same
-property*. The flat vocabulary therefore has the layout / total size (Sec. III-B-2)::
+property*. The flat vocabulary therefore has the layout / total size::
 
     total = n_cam_pose + n_shape_type + n_bin_pos + n_bin_rot + n_bin_size
 
@@ -39,7 +38,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-# The seven architectural shapes the paper uses (Sec. III-A-1, Fig. 4).
+# The seven architectural shapes covered by the vocabulary.
 SHAPE_TYPES: tuple[str, ...] = (
     "cube",
     "cylinder",
@@ -53,7 +52,7 @@ SHAPE_INDEX: dict[str, int] = {s: i for i, s in enumerate(SHAPE_TYPES)}
 
 
 def quantize(value: float, lo: float, hi: float, n_bins: int) -> int:
-    """Paper Eq.: uniformly discretise ``value`` in ``[lo, hi]`` to ``[0, n_bins-1]``.
+    """Uniformly discretise ``value`` in ``[lo, hi]`` to ``[0, n_bins-1]``.
 
     ``Q = round((value - lo) / (hi - lo) * (n_bins - 1))``, clamped to the range.
     """
@@ -105,7 +104,7 @@ class SceneObject:
 
 @dataclass(frozen=True)
 class DescriptorConfig:
-    """Bin counts and value ranges for the five vocabulary blocks (Sec. III-B-2)."""
+    """Bin counts and value ranges for the five vocabulary blocks."""
 
     n_cam_pose: int = 60
     n_bin_pos: int = 200
@@ -116,7 +115,7 @@ class DescriptorConfig:
     size_range: tuple[float, float] = (0.0, 60.0)
     n_shape_type: int = field(default=len(SHAPE_TYPES))
 
-    # --- flat vocabulary block offsets (paper's block order) -------------
+    # --- flat vocabulary block offsets (canonical block order) -----------
     @property
     def off_cam(self) -> int:
         return 0
@@ -185,7 +184,7 @@ class SceneDescriptorCodec:
         return row
 
     def encode_scene(self, pose_id: int, objects) -> list[int]:
-        """Camera-pose token followed by every object's row (paper's serialisation)."""
+        """Camera-pose token followed by every object's row."""
         seq = [self.cam_token(pose_id)]
         for obj in objects:
             seq += self.encode_object(obj)
@@ -233,11 +232,11 @@ class SceneDescriptorCodec:
 
 
 def serialize_scene(codec: SceneDescriptorCodec, pose_id: int, objects, rng=None):
-    """Encode a scene using the paper's *random ordering* strategy (Sec. III-B-2).
+    """Encode a scene using the *random ordering* strategy.
 
-    Pix2Seq showed a random object order outperforms a fixed deterministic one, so
-    the objects are shuffled by ``rng`` (a ``random.Random`` for reproducibility)
-    before serialisation. The camera-pose token always stays first.
+    A random object order outperforms a fixed deterministic one, so the objects are
+    shuffled by ``rng`` (a ``random.Random`` for reproducibility) before
+    serialisation. The camera-pose token always stays first.
     """
     objs = list(objects)
     if rng is not None:

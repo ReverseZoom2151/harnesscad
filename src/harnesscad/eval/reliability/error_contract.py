@@ -1,11 +1,10 @@
 """Structured tool-error contract feeding the repair loop's retry-vs-abstain call.
 
-Ported from IntentForge ``src/intentforge/contracts/errors.py``
-(IntentForge-main): a ``ToolError{error_type, message, recoverable,
-suggested_action}`` contract, a ``normalize_error_type`` that disambiguates
-by MESSAGE TOKENS (the same raw exception name can mean "unsupported
-geometry" or "ambiguous request" depending on what the message says), and a
-``suggested_action`` table of terse recovery hints per public error type.
+A ``ToolError{error_type, message, recoverable, suggested_action}`` contract, a
+``normalize_error_type`` that disambiguates by MESSAGE TOKENS (the same raw
+exception name can mean "unsupported geometry" or "ambiguous request" depending
+on what the message says), and a ``suggested_action`` table of terse recovery
+hints per public error type.
 
 The point of the contract is the ``recoverable`` bit: the repair loop
 (``eval/reliability/repair_loop.py``) iterates detect -> repair -> re-check,
@@ -23,8 +22,7 @@ artifact I/O). This module supplies that decision:
     tiny ``code_error.CodeError`` normalizer, lifting its 4 categories into
     the full contract.
 
-Attribution: IntentForge (contracts/errors.py); the pydantic BaseModel is
-replaced by a stdlib dataclass, message-token tables adapted to the CAD
+The contract is a stdlib dataclass keyed by message tokens over the CAD
 harness's vocabulary. Pure stdlib, deterministic; no kernel, no model.
 """
 
@@ -36,7 +34,7 @@ from typing import Optional, Sequence
 
 from harnesscad.eval.reliability.code_error import CodeError
 
-#: The public contract error types, mirroring IntentForge's StandardErrorType.
+#: The public contract error types.
 STANDARD_ERROR_TYPES: tuple = (
     "UnsupportedObjectError",
     "UnsupportedGeometryError",
@@ -52,7 +50,7 @@ STANDARD_ERROR_TYPES: tuple = (
 )
 
 #: Message tokens that flip a rejection into "the request itself is ambiguous"
-#: (source: UnsupportedEditError disambiguation).
+#: (UnsupportedEditError disambiguation).
 _AMBIGUITY_TOKENS = ("measurable", "ambiguous", "optimize", "better",
                      "stronger", "cheaper", "under-specified", "unclear")
 
@@ -63,7 +61,7 @@ _GEOMETRY_TOKENS = ("curved", "adjustable", "sheet-metal", "freeform",
 
 @dataclass(frozen=True)
 class ToolError:
-    """Structured external error object for tool/API responses (source contract)."""
+    """Structured external error object for tool/API responses."""
 
     error_type: str
     message: str
@@ -82,9 +80,8 @@ class ToolError:
 def normalize_error_type(error_type: str, message: str = "") -> str:
     """Map internal exception names/messages to public contract error types.
 
-    Faithful port of the source's token-disambiguation ladder, with the
-    CAD-harness kernel vocabulary added (OCCT/StdFail names -> generation
-    errors).
+    A token-disambiguation ladder, with the CAD-harness kernel vocabulary added
+    (OCCT/StdFail names -> generation errors).
     """
     lowered = (message or "").lower()
     if error_type in {"CadQueryUnavailableError", "ImportError",
@@ -122,7 +119,7 @@ def normalize_error_type(error_type: str, message: str = "") -> str:
 
 
 def suggested_action_for_error(error_type: str, message: str = "") -> str:
-    """Terse recovery hint per public error type (source's hint table, CAD-adapted)."""
+    """Terse recovery hint per public error type (CAD hint table)."""
     normalized = normalize_error_type(error_type, message)
     table = {
         "CadBackendUnavailableError":
@@ -187,7 +184,7 @@ def tool_error(
     recoverable: Optional[bool] = None,
     suggested_action: Optional[str] = None,
 ) -> ToolError:
-    """Build a fully-populated structured error object (source ``tool_error``)."""
+    """Build a fully-populated structured error object."""
     normalized = normalize_error_type(error_type, message)
     return ToolError(
         error_type=normalized,

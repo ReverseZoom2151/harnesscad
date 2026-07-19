@@ -1,17 +1,17 @@
-"""SkillLibrary — a Voyager-style, execution-verified library of parametric
+"""SkillLibrary — an execution-verified library of parametric
 CAD skills that grows monotonically (blueprint sec.8).
 
 A **skill** is a named, parameterised op-template: given params it expands to a
 ``list[cisp.ops.Op]`` — the exact same op stream the agent would emit by hand.
 That makes a skill trivially *verifiable*: run its expanded ops through a
-``HarnessSession`` and, per Voyager, admit it to the library **only if the batch
+``HarnessSession`` and admit it to the library **only if the batch
 verifies (``ok == True``)**. The library therefore only ever contains skills
 whose geometry actually builds — it is monotonic and trustworthy, and it
 improves the harness with zero training.
 
 Design notes:
   - ``register`` adds a skill unconditionally (useful for building blocks /
-    composition). ``add_verified`` is the gated, Voyager path.
+    composition). ``add_verified`` is the gated, verification path.
   - ``find`` routes by lightweight text similarity over name + description
     (pluggable; a real embedder is the future upgrade, same as MemoryStore).
   - Persistence stores names + descriptions + param schemas (JSON). The expander

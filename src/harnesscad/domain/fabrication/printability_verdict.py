@@ -1,23 +1,23 @@
 """Deterministic printability verdict, issue-code taxonomy and fit check.
 
-Mined from **forgent3d** (``packages/cad-runtime/python/print_check.py``), whose
-printability analysis measures a built solid against a printer profile and
+A printability analysis measures a built solid against a printer profile and
 returns a single machine-actionable contract: a ``verdict`` (printable + 0-100
-score), an ``issues[]`` list keyed by ``code``, and per-check metrics. forgent3d
-does the *geometry measurement* on the OCP kernel (ray-cast wall thickness,
-facet-normal overhang, mass properties). The transferable, kernel-free core is
-the *judgement layer*: given already-measured metrics, classify them into
-issue codes, roll them into a severity-penalty score, and decide printability --
-plus the build-volume fit test with axis-permutation rotation.
+score), an ``issues[]`` list keyed by ``code``, and per-check metrics. The
+*geometry measurement* itself (ray-cast wall thickness, facet-normal overhang,
+mass properties) belongs to a solid-modelling kernel. The transferable,
+kernel-free core is the *judgement layer*: given already-measured metrics,
+classify them into issue codes, roll them into a severity-penalty score, and
+decide printability -- plus the build-volume fit test with axis-permutation
+rotation.
 
 This is distinct from :mod:`harnesscad.domain.fabrication.overhang`, which
 *detects* overhang from face normals. This module *judges* a measured metric
 bundle: it turns numbers (min wall, overhang area ratio, solid validity, bbox
-size, small-feature counts) into forgent3d's issue codes and verdict, so a
+size, small-feature counts) into issue codes and a verdict, so a
 printability check has one deterministic scoring definition independent of which
 backend produced the measurements.
 
-forgent3d's contract, reproduced:
+The contract:
 
 * **Issue codes**: ``DOES_NOT_FIT``, ``NOT_SOLID``, ``NOT_WATERTIGHT``,
   ``THIN_WALL``, ``OVERHANG``, ``SMALL_FEATURE``, ``PRINT_OK``.
@@ -47,13 +47,13 @@ __all__ = [
     "printability_verdict",
 ]
 
-# forgent3d's severity -> score penalty.
+# Severity -> score penalty.
 SEVERITY_PENALTY: Dict[str, int] = {"error": 35, "warning": 12, "info": 0}
 
 
 @dataclass(frozen=True)
 class PrinterProfile:
-    """Printer constraints (forgent3d's DEFAULT_PROFILE, the load-bearing subset)."""
+    """Printer constraints (the load-bearing subset of a default profile)."""
 
     build_volume_mm: Tuple[float, float, float] = (256.0, 256.0, 256.0)
     margin_mm: float = 2.0

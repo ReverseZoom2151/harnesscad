@@ -1,6 +1,6 @@
 """Multi-scale (pyramid) latent encoding of a parametric CAD command sequence.
 
-MamTiff-CAD (Deng et al.) generates *long* CAD command sequences (60-256
+the denoiser  generates *long* CAD command sequences (60-256
 commands) by learning a **multi-scale latent representation**: the sequence is
 processed "at three different scales" (window sizes 64/128/256, Sec. 3.3) and a
 Compress Block progressively pools the length-``N`` sequence into a compact
@@ -9,7 +9,7 @@ the **multi-resolution pyramid that carries features across scales is a purely
 deterministic pooling / interpolation construction** -- that is what this module
 implements, distinct from the single-scale SSM scan in
 ``numeric.geofusion_state_space`` and the discretization/bidirectional scan of
-the Mamba-CAD modules.
+the state-space modules.
 
 A *sequence* is a ``tuple`` of equal-width feature vectors (``tuple[float,...]``).
 This module provides:

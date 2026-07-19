@@ -1,9 +1,8 @@
 """CADReasoner stochastic, geometry-guided beam over edit iterations.
 
 Paper: "CADReasoner - Iterative Program Editing for CAD Reverse Engineering",
-Sec. 3.6 ("Stochastic, geometry-guided beam").
 
-Greedy decoding can miss higher-quality trajectories, so the paper runs a
+Greedy decoding can miss higher-quality trajectories, so this approach runs a
 stochastic beam pruned by geometry:
 
   * t = 1: sample ``N`` candidate programs, compile + render each, discard
@@ -16,8 +15,8 @@ stochastic beam pruned by geometry:
 
 This module is the deterministic harness. The stochastic candidate proposals are
 injected as two callables (``seed_generator`` for t=1 and ``child_generator`` for
-t>1); the paper's stochasticity lives inside those (a sampling model), while the
-harness itself is fully deterministic given them — it enumerates candidate slots
+t>1); the stochasticity lives inside those (a sampling model), while the
+harness itself is fully deterministic given them -- it enumerates candidate slots
 by explicit integer indices (no wall-clock RNG), renders, scores, and applies a
 **stable** top-``N`` selection (ties break by discovery order).
 
@@ -75,7 +74,7 @@ class BeamResult:
 
     @property
     def expected_render_budget(self) -> int:
-        """The paper's N + (s-1) N^2 upper bound on renders."""
+        """The N + (s-1) N^2 upper bound on renders."""
         if self.n <= 0 or self.steps <= 0:
             return 0
         return self.n + (self.steps - 1) * self.n * self.n

@@ -1,12 +1,11 @@
 """Topology-consistency metrics for generated vs target 3D shapes.
 
-Topology-Aware LDM (Hu, Fei et al., 2024) generates shapes conditioned on a
-*target topology* -- a Betti number (Sec. 4.2, "Betti number") or a target
-persistence diagram (Sec. 4.3) -- and evaluates whether the generated shape
-actually *realises* that topology.  Sec. 6 states the guiding rule: as a PD
-point is drawn toward the diagonal its feature's lifespan shortens and vanishes,
-and "if all points were positioned on the diagonal, then the shape would ...
-[be] a genus zero object."
+A topology-conditioned generative model may generate shapes conditioned on a
+*target topology* -- a Betti number or a target persistence diagram -- and the
+evaluation question is whether the generated shape actually *realises* that
+topology. The guiding rule: as a persistence-diagram point is drawn toward the
+diagonal its feature's lifespan shortens and vanishes, and if all points were
+positioned on the diagonal, the shape would be a genus-zero object.
 
 This module scores that consistency deterministically:
 

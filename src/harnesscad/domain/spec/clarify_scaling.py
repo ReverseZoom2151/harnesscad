@@ -1,10 +1,10 @@
-"""clarify_scaling -- detect the Text2CAD "scale the sketch" failure mode.
+"""clarify_scaling -- detect the "scale the sketch" failure mode.
 
-Appendix B of the paper analyses a systematic failure: Text2CAD-style prompts
-frequently contain an explicit *scaling operation* placed **immediately after
-the 2D sketch construction and before the 3D extrusion**. In CadQuery this is
-invalid -- ``Workplane`` has no ``scale`` API -- so weak code generators
-hallucinate ``Workplane.scale(...)`` and emit non-executable programs. Worse,
+A systematic failure mode: such prompts frequently contain an explicit *scaling
+operation* placed **immediately after the 2D sketch construction and before the
+3D extrusion**. In a sketch-based CAD scripting API this is invalid -- the
+workplane object has no ``scale`` method -- so weak code generators hallucinate
+a workplane ``scale(...)`` call and emit non-executable programs. Worse,
 the scaling statement admits two conflicting interpretations:
 
   * **Interpretation A** (literal post-sketch scaling): multiply the sketch by

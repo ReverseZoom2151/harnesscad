@@ -1,40 +1,37 @@
-"""Cited engineering-materials database (anvilate + cad-cae-copilot merge).
+"""Cited engineering-materials database (two merged sources).
 
-A single stdlib-only materials database for harnesscad, merging two mined
+A single stdlib-only materials database for harnesscad, merging two
 MIT-licensed sources into one lookup with per-record provenance:
 
-* **anvilate** (MIT, (c) 2026 Clay Good) -- citation-tagged seed materials from
-  ``resources/cad_repos/anvilate-main/anvilate-main/src/anvilate/standards/
-  data/materials.yaml`` (17 materials, each property carrying an explicit
-  source + condition citation: ASM handbook values, ASTM/EN specified minima,
-  Shigley tables). The YAML was converted offline to the Python dicts below;
-  no yaml import at runtime.
-* **cad-cae-copilot** (MIT, (c) 2026 armpro24-blip) -- breadth catalogue from
-  ``resources/cad_repos/cad-cae-copilot-main/cad-cae-copilot-main/aieng/src/
-  aieng/context/materials.py`` (51 materials across aluminum, steels, tool
+* a **cited seed source** -- citation-tagged seed materials (17 materials, each
+  property carrying an explicit source + condition citation: ASM handbook
+  values, ASTM/EN specified minima, Shigley tables). The source table was
+  converted offline to the Python dicts below; no yaml import at runtime.
+* a **breadth catalogue** -- 51 materials across aluminum, steels, tool
   steels, stainless, titanium, copper, magnesium, nickel superalloys,
   engineering plastics, composites and other metals; sources stated there as
-  "ASM Handbook, MatWeb, typical manufacturer datasheets").
+  "ASM Handbook, MatWeb, typical manufacturer datasheets".
 
 Merge policy
 ------------
 Where both sources define the same material (11 overlaps: Al 6061-T6,
 7075-T6, 2024-T3, 6082-T6, steels 1045 / A36 / 4140 / 4340, stainless 304,
-Ti-6Al-4V, bearing bronze C93200), the citation-tagged **anvilate values are
-preferred** for E / nu / rho / yield / ultimate, and the copilot record only
-supplements fields anvilate lacks (thermal expansion coefficient,
-description).  Copilot-only records are marked with the copilot source
-string.  Three copilot rows are pure duplicates of other copilot rows
+Ti-6Al-4V, bearing bronze C93200), the citation-tagged **seed values are
+preferred** for E / nu / rho / yield / ultimate, and the breadth record only
+supplements fields the seed lacks (thermal expansion coefficient,
+description).  Breadth-only records are marked with the breadth source
+string.  Three breadth rows are pure duplicates of other breadth rows
 (Ti-Grade5 == Ti-6Al-4V, Brass-C360 == Cu-C36000, Bronze-C932 == Cu-C93200)
 and are kept as aliases rather than records.  Note the two 4xxx steels differ
-by condition: anvilate carries the *annealed* Shigley values (4140 yield
-417 MPa), copilot carried Q&T-like values; the annealed, cited values win.
+by condition: the seed source carries the *annealed* Shigley values (4140 yield
+417 MPa), the breadth source carried Q&T-like values; the annealed, cited
+values win.
 
 Units (normalised and fixed)
 ----------------------------
-* ``E_mpa``                     Young's modulus, MPa (anvilate GPa * 1000)
+* ``E_mpa``                     Young's modulus, MPa (source GPa * 1000)
 * ``nu``                        Poisson ratio, dimensionless
-* ``rho_kg_m3``                 density, kg/m^3 (anvilate g/cm^3 * 1000)
+* ``rho_kg_m3``                 density, kg/m^3 (source g/cm^3 * 1000)
 * ``yield_mpa`` / ``ultimate_mpa`` / ``endurance_mpa``   strengths, MPa
 * ``thermal_expansion_um_m_k``  CTE, um/(m*K) i.e. 1e-6 / K
 

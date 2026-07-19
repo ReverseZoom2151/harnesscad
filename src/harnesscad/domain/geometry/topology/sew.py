@@ -5,14 +5,14 @@ Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
 The harness has no full B-rep face type, so the sewing input is a minimal
 :class:`SewFace`: an ordered boundary polygon of 3D points with a per-face
 tolerance.  Sewing instantiates fresh vertices and edges for every face,
-then stitches them (BREP_CONTRACT-compliant semantics, kept from kerf):
+then stitches them (BREP_CONTRACT-compliant semantics):
 
 * **Shared vertices**: two vertices ``V1``, ``V2`` are merged when
   ``||V1.point - V2.point|| <= max(V1.tol, V2.tol, tol)``.  All edges
   referencing the loser are repointed at the survivor; the survivor's
   tolerance is bumped to ``max(V1.tol, V2.tol, gap)`` so a merge never
   *narrows* a tolerance and the merged vertex always encloses both input
-  positions (kerf BREP_CONTRACT section 4.5).
+  positions (the tolerance-merge contract).
 * **Shared edges**: two edges are merged when (a) their endpoint
   representatives match (in either direction) and (b) the sample-based
   Hausdorff distance between the two sampled polylines (``samples=8``)
@@ -31,20 +31,19 @@ then stitches them (BREP_CONTRACT-compliant semantics, kept from kerf):
   :func:`check_tolerance_monotonicity`, which returns a list of violation
   strings (empty when the invariant holds).
 
-The heal pass (from kerf body_heal.py) never mutates its input:
+The heal pass never mutates its input:
 
 * **Sub-tolerance entity removal**: edges shorter than their *own*
   tolerance are removed; faces whose boundary collapses (fewer than two
   surviving coedges) or whose spatial extent is below their own tolerance
-  are dropped.  (kerf compared against the single global ``tol``; the
-  harness port compares each entity against its own tolerance field,
+  are dropped.  (Each entity is compared against its own tolerance field,
   which after sewing is always >= the sew tolerance.)
 * **Vertex welding**: vertices within ``tol`` are welded via union-find
   to the lowest-index representative (deterministic), with tolerances
   merged by max-plus-gap as in sewing.
 * **Sliver snap**: loop gaps ``0 < gap <= 10 * tol`` between one coedge's
   end point and the next coedge's start point are closed by snapping the
-  end vertex onto the start point (kerf's ``_snap_loop_gaps``).
+  end vertex onto the start point.
 
 Results are structured: :class:`SewResult` carries the sewn topology plus
 shells, remaining free edges and merge counts; :class:`HealReport` carries
@@ -85,11 +84,11 @@ __all__ = [
 
 Vec3 = Tuple[float, float, float]
 
-_EDGE_SAMPLES = 8  # kerf sew.py samples each edge curve at 8 points
+_EDGE_SAMPLES = 8  # each edge curve is sampled at 8 points
 
 
 # ---------------------------------------------------------------------------
-# Data model (minimal harness-style stand-ins for kerf's B-rep classes)
+# Data model (minimal harness-style stand-ins for full B-rep classes)
 # ---------------------------------------------------------------------------
 
 

@@ -1,30 +1,6 @@
-"""Versioned declarative fabrication rule packs (IntentForge).
+"""Versioned declarative fabrication rule packs.
 
-Port of the versioned rule-pack format and evaluator semantics from
-**IntentForge** (Apache License 2.0):
-
-  * pack format:      ``src/intentforge/knowledge/packs/schema.py``
-                      (``RulePack``) and ``src/intentforge/knowledge/schema.py``
-                      (``DesignKnowledgeRule`` / ``KnowledgeFinding``);
-  * evaluator:        ``src/intentforge/knowledge/evaluator.py`` (the safe
-                      AST-free expression evaluation, ``when`` gating and
-                      finding shape) and
-                      ``src/intentforge/knowledge/reasoning/interactions.py``
-                      (the ``depends_on`` / ``reinforces`` / conflict
-                      annotation pass over failed findings);
-  * vendored data:    every pack under
-                      ``src/intentforge/knowledge/packs/data/*.yaml``
-                      (``assembly.yaml``, ``manufacturing.yaml``,
-                      ``mechanical.yaml``, ``structural.yaml``), converted to
-                      embedded Python dicts so no YAML parser is required.
-
-NOTICE (Apache-2.0 attribution): the embedded rule packs in
-:data:`VENDORED_PACKS` are derived from the IntentForge project's
-``knowledge/packs/data`` files and retain their original ``pack_id``,
-``pack_version``, ``source_reference``, ``created_by`` and ``last_updated``
-provenance fields.  IntentForge is licensed under the Apache License,
-Version 2.0; this vendored copy is redistributed under the same license
-terms with this notice as attribution.
+Derived from IntentForge (Apache-2.0).
 
 A pack is a named, versioned bundle of *condition-expression* rules: each
 rule carries a boolean ``condition.expression`` over named design metrics
@@ -34,18 +10,18 @@ that decide whether the rule applies at all), a ``severity`` and
 ``confidence``, and declarative reasoning metadata (``tradeoffs``,
 ``depends_on``, ``can_conflict_with``, ...).  :func:`evaluate` runs a pack
 against a plain metrics dict and returns severity-tagged findings plus the
-IntentForge-style dependency interactions between failed findings.
+declared dependency interactions between failed findings.
 
 The condition expressions are evaluated by a small recursive-descent
 interpreter (:func:`evaluate_expression`) over the metrics dict -- never by
 ``eval``.  A missing metric or malformed expression yields a typed
-``not_evaluable`` finding instead of a crash, exactly as IntentForge's
-evaluator records an ``evaluation_error``.
+``not_evaluable`` finding instead of a crash, recorded as an
+``evaluation_error``.
 
 NOT to be confused with :mod:`harnesscad.domain.standards.registry`, whose
 ``RulePack`` bundles comparator-style *standards clauses* (parameter /
 comparator / limit records indexed by standard + version).  This module's
-:class:`FabricationRulePack` is the IntentForge shape: free-form boolean
+:class:`FabricationRulePack` uses free-form boolean
 expressions over derived design metrics, with reasoning metadata and
 dependency links between rules.  The public names here are prefixed
 (``FabricationRulePack``, ``FabricationRule``) to keep the two apart.
@@ -80,13 +56,11 @@ __all__ = [
     "main",
 ]
 
-# Mirrors intentforge.knowledge.schema.RuleSeverity / RuleStatus and
-# intentforge.knowledge.packs.schema.RulePackStatus.
+# Rule severity levels and pack lifecycle statuses.
 SEVERITIES = ("info", "recommendation", "warning", "error")
 PACK_STATUSES = ("active", "deprecated")
 
-# Rule-to-rule reference fields carried inside ``reasoning`` (mirrors
-# intentforge.knowledge.rules.RULE_REFERENCE_FIELDS).
+# Rule-to-rule reference fields carried inside ``reasoning``.
 RULE_REFERENCE_FIELDS = (
     "can_conflict_with",
     "depends_on",
@@ -100,8 +74,7 @@ RULE_REFERENCE_FIELDS = (
 class ConditionEvaluationError(ValueError):
     """Raised when a declarative rule condition cannot be safely evaluated.
 
-    Mirrors ``intentforge.knowledge.evaluator.KnowledgeEvaluationError``: a
-    missing metric, an unsupported operator or a malformed expression raises
+    A missing metric, an unsupported operator or a malformed expression raises
     this; :func:`evaluate` converts it into a ``not_evaluable`` finding.
     """
 
@@ -110,7 +83,7 @@ class ConditionEvaluationError(ValueError):
 # Expression evaluator (recursive descent, no eval, no ast)
 # --------------------------------------------------------------------------- #
 #
-# Grammar (matching what IntentForge's AST walker accepts, plus ``not`` and
+# Grammar (comparisons and boolean operators, plus ``not`` and
 # parentheses for completeness):
 #
 #   expr        := or_expr
@@ -124,7 +97,7 @@ class ConditionEvaluationError(ValueError):
 #   atom        := NUMBER | "true" | "false" | NAME | "(" expr ")"
 #
 # Names resolve against the metrics dict; ``true``/``false`` are literals
-# (IntentForge treats them the same way so YAML-style booleans work).
+# (so YAML-style booleans work).
 
 _COMPARATOR_TOKENS = ("==", "!=", "<=", ">=", "<", ">")
 
@@ -297,7 +270,7 @@ class _Parser:
             except ValueError as exc:
                 raise ConditionEvaluationError(f"invalid number: {token!r}") from exc
         if first.isalpha() or first == "_":
-            # Same literal handling as IntentForge's AST walker.
+            # YAML-style boolean literals.
             if token == "true":
                 return True
             if token == "false":
@@ -317,7 +290,7 @@ def evaluate_expression(expression: str, metrics: Dict[str, Any]) -> bool:
     ``+ - * /`` arithmetic, unary minus, parentheses, numeric literals,
     ``true`` / ``false`` and metric names.  Raises
     :class:`ConditionEvaluationError` for unknown metrics, bad syntax or
-    division by zero (mirroring IntentForge's evaluator failure modes).
+    division by zero.
     """
     if not isinstance(expression, str) or not expression.strip():
         raise ConditionEvaluationError("condition expression must be a non-empty string")
@@ -338,7 +311,7 @@ class RuleCondition:
     evaluates true).  ``required_metrics`` lists the metric names the
     expression reads.  ``when`` is an optional gate: a mapping of metric name
     to expected value; if any entry differs from the metrics dict, the rule
-    does not apply and produces no finding (IntentForge's ``_condition_applies``).
+    does not apply and produces no finding.
     """
 
     expression: str
@@ -410,8 +383,7 @@ class Tradeoff:
 class FabricationRule:
     """One condition-expression fabrication rule.
 
-    Field-for-field the IntentForge ``DesignKnowledgeRule`` shape found in the
-    ``knowledge/packs/data`` YAML files: versioned (``rule_version``,
+    Versioned (``rule_version``,
     ``status``, ``created_by``, ``last_updated``), scoped (``applies_to``
     model families), with a :class:`RuleCondition` and free-form ``reasoning``
     metadata carrying ``tradeoffs`` / ``depends_on`` / interaction links.
@@ -504,7 +476,7 @@ class FabricationRule:
 class FabricationRulePack:
     """A versioned, auditable group of condition-expression rules.
 
-    Mirrors IntentForge's ``knowledge.packs.schema.RulePack``: identity
+    Identity
     (``pack_id`` + numeric-dot ``pack_version``), a ``category`` shared by all
     rules in the pack, the ``supported_model_families`` envelope, a ``status``
     lifecycle flag and free-form provenance ``metadata``.  Distinct from
@@ -606,11 +578,11 @@ FINDING_STATUSES = ("pass", "fail", "not_evaluable")
 
 @dataclass
 class RuleFinding:
-    """Result of applying one fabrication rule (IntentForge ``KnowledgeFinding``).
+    """Result of applying one fabrication rule.
 
     ``status`` is ``"pass"``, ``"fail"`` or ``"not_evaluable"`` (a missing
-    required metric or a broken expression).  ``passed`` mirrors IntentForge's
-    boolean, which is False for not-evaluable rules too; the typed ``status``
+    required metric or a broken expression).  ``passed`` is a plain
+    boolean, False for not-evaluable rules too; the typed ``status``
     disambiguates.  ``metadata`` carries the expression, versioning fields,
     the snapshot of required metrics, the pack provenance block and, when
     relevant, the ``evaluation_error`` text.
@@ -650,7 +622,7 @@ class RuleFinding:
 class RuleInteraction:
     """A declared relationship surfaced between evaluated rules.
 
-    Mirrors IntentForge's ``knowledge/reasoning/interactions.py`` pass:
+    Interaction semantics:
     ``depends_on`` links are emitted when the *source* rule failed and the
     referenced rule has any finding at all; ``reinforces``, ``conflicts`` and
     ``duplicates`` require both rules to have failed; ``mitigates`` fires when
@@ -742,10 +714,9 @@ def _evaluate_rule(
 def _interactions(
     rules: List[FabricationRule], findings: List[RuleFinding]
 ) -> List[RuleInteraction]:
-    """Emit IntentForge-style interaction annotations over the findings.
+    """Emit interaction annotations over the findings.
 
-    Semantics mirror ``knowledge/reasoning/interactions.py``: interactions
-    only annotate, never suppress.  Iteration is sorted by rule id so output
+    Interactions only annotate, never suppress.  Iteration is sorted by rule id so output
     is deterministic regardless of pack ordering.
     """
     all_ids = {f.rule_id for f in findings}
@@ -832,7 +803,7 @@ def evaluate(
 ) -> EvaluationResult:
     """Evaluate one pack against a metrics dict.
 
-    Mirrors IntentForge's ``evaluate_design``: rules are visited in pack
+    Rules are visited in pack
     order; deprecated rules are skipped; rules whose ``applies_to`` does not
     include the family are skipped (``family`` defaults to
     ``metrics["family"]`` and, when absent entirely, no family filter is
@@ -840,7 +811,7 @@ def evaluate(
     everything else yields a pass, fail or typed not-evaluable finding.
     Declared ``depends_on`` (and the other reasoning links) between the
     resulting findings are surfaced as :class:`RuleInteraction` annotations,
-    exactly as IntentForge's interactions pass does; they order review
+    they order review
     priority but never suppress findings.
     """
     if family is None:
@@ -866,7 +837,7 @@ def evaluate_packs(
     family: Optional[str] = None,
 ) -> EvaluationResult:
     """Evaluate several packs; interactions are computed across all findings
-    (IntentForge flattens packs into one registry before evaluating)."""
+    (packs are flattened into one registry before evaluating)."""
     findings: List[RuleFinding] = []
     rules: List[FabricationRule] = []
     if family is None:
@@ -886,7 +857,7 @@ def evaluate_packs(
 
 
 # --------------------------------------------------------------------------- #
-# Vendored packs (IntentForge knowledge/packs/data/*.yaml, Apache-2.0)
+# Vendored rule packs
 # --------------------------------------------------------------------------- #
 # Converted 1:1 from the YAML files; every provenance field (pack_id,
 # pack_version, metadata.migrated_from, source_reference, created_by,
@@ -1434,7 +1405,7 @@ VENDORED_PACKS: Dict[str, Dict[str, Any]] = {
 
 
 def vendored_packs() -> List[FabricationRulePack]:
-    """The vendored IntentForge packs as typed objects, sorted by pack_id."""
+    """The vendored packs as typed objects, sorted by pack_id."""
     return [
         FabricationRulePack.from_dict(VENDORED_PACKS[pack_id])
         for pack_id in sorted(VENDORED_PACKS)
@@ -1532,7 +1503,7 @@ def _selfcheck() -> Dict[str, Any]:
     assert failed_finding.metadata["pack_version"] == "1.0"
 
     # depends_on annotates even when the dependency itself passed
-    # (IntentForge only requires the target to have a finding).
+    # (only the target needs to have a finding).
     partial = dict(healthy)
     partial["fastener_edge_clearance"] = 4.0
     result = evaluate_packs(packs, partial)
@@ -1607,7 +1578,7 @@ def _selfcheck() -> Dict[str, Any]:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    """CLI entry point. ``--selfcheck`` runs the vendored IntentForge packs
+    """CLI entry point. ``--selfcheck`` runs the vendored packs
     against synthetic metrics covering pass, fail, not-evaluable, when-gated
     and depends_on paths, with assertions."""
     parser = argparse.ArgumentParser(

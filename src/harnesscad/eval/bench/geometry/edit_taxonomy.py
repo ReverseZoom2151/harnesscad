@@ -1,8 +1,9 @@
-"""CAD edit-operation taxonomy and multimodal-request metrics (neuralCAD-Edit).
+"""CAD edit-operation taxonomy and multimodal-request metrics.
 
-Mined from *neuralCAD-Edit: An Expert Benchmark for Multimodal-Instructed 3D CAD
-Model Editing*. The dataset itself is human-collected, but two of its evaluation
-structures are deterministic and portable:
+Deterministic re-implementation drawn from an expert benchmark for
+multimodal-instructed 3D CAD model editing. The dataset itself is
+human-collected, but two of its evaluation structures are deterministic and
+portable:
 
 *   the **edit-operation taxonomy** -- the vocabulary of B-Rep edit actions experts
     perform (``edit_sketch``, ``chamfer``, ``select``, ``mirror``, ``extrude`` ...),

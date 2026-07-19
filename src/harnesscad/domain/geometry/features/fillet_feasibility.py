@@ -12,7 +12,7 @@ why not, and what is the largest radius that would fit?".
 
 Supported behavior
 ------------------
-* The supported-input taxonomy.  Kerf accepts exactly two face-pair
+* The supported-input taxonomy.  The predicate accepts exactly two face-pair
   configurations at the edge (classified by isinstance on the face surface;
   here by the analytic face dataclass type):
 
@@ -21,9 +21,9 @@ Supported behavior
       2. planar+cylindrical  -- one support is a plane, the other a
                                 cylinder, meeting at a circular rim edge.
 
-  Every other pairing is refused with kerf's message "edge supports must be
-  planar+planar or planar+cylindrical; got <A> + <B>".  Kerf never raises
-  on contract violations; it returns a structured ``{ok: False, reason}``
+  Every other pairing is refused with the message "edge supports must be
+  planar+planar or planar+cylindrical; got <A> + <B>".  The predicate never
+  raises on contract violations; it returns a structured ``{ok: False, reason}``
   result.  This module mirrors that with :class:`FilletFeasibility`.
 
 * The radius feasibility rule.  The rolling-ball radius r must satisfy

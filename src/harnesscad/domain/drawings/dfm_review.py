@@ -105,8 +105,7 @@ def check_datum_scheme_completeness(
 ) -> Optional[DfmFinding]:
     """Warn when fewer than 3 unique datum letters are declared.
 
-    Ported verbatim from checkDatumSchemeCompleteness in dfm-reviewer.ts: per
-    ASME Y14.5-2018 a fully constrained part typically requires primary,
+    Per ASME Y14.5-2018 a fully constrained part typically requires primary,
     secondary, and tertiary datums.
     """
     unique = sorted(

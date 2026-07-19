@@ -1,10 +1,10 @@
-"""Weld a bag of edge polylines into oriented closed loops (faceformer wires).
+"""Weld a bag of edge polylines into oriented closed loops (B-Rep wires).
 
-Ported from *faceformer* (``reconstruction/reconstruction_utils.py``:
-``construct_connected_cycle`` / ``construct_connected_cylinder`` /
-``find_circle_center``).  After faceformer predicts a set of B-Rep edges as
-independent 3D polylines, they are an unordered *bag*: to turn them into face
-boundaries it welds edge endpoints that coincide (within a tolerance) into shared
+Derived from the faceformer reference implementation.
+
+After a learned predictor emits a set of B-Rep edges as independent 3D
+polylines, they are an unordered *bag*: to turn them into face boundaries this
+module welds edge endpoints that coincide (within a tolerance) into shared
 corners, then walks the resulting corner graph to assemble oriented **closed
 loops**, recording for each edge whether it was traversed forward (+1) or
 reversed (-1).  It also fits an exact circle through three points to recover arc
@@ -23,7 +23,7 @@ and duplicates nothing in, the index-based complex.
 Contents:
 
 * :func:`circle_from_three_points` -- exact 3D circumcircle (centre, radius,
-  unit normal) via faceformer's ``find_circle_center`` identity.
+  unit normal) via the standard circumcentre identity.
 * :func:`weld_endpoints` -- cluster edge endpoints into welded corner nodes.
 * :func:`assemble_loops` -- walk the welded graph into oriented closed loops,
   each a list of ``(edge_index, direction)``; leftover open chains are reported

@@ -1,10 +1,10 @@
-"""Degenerate-curve resolution for mrCAD edits (``editing_actions.py`` semantics).
+"""Degenerate-curve resolution for sketch edits.
 
 The harness's :func:`editing.mrcad_refinement.apply_action` implements the typed
 edit vocabulary and the shared-control-point rule, but it applies ``move_point``
 via :meth:`editing.mrcad_schema.Curve.replace_point`, which keeps a curve's
-*kind* fixed.  The mrCAD reference (``mrcad/editing_actions.py`` ``MovePoint``)
-does more: after moving a shared point it **resolves degenerate curves**:
+*kind* fixed.  A complete point-move does more: after moving a shared point it
+**resolves degenerate curves**:
 
 * a **line** whose two endpoints coincide is **dropped**;
 * an **arc** whose start and end coincide becomes a **circle** on the remaining
@@ -19,8 +19,8 @@ arcs.  This module supplies that resolution as pure geometry:
 :func:`move_point_resolved` (shared-point move + resolution), and
 :func:`canonicalize_design` (drop/collapse every degenerate curve).
 
-Point equality follows the reference: exact equality on the (float) control
-points, matching :meth:`editing.mrcad_schema.Curve.replace_point`.
+Point equality is exact equality on the (float) control points, matching
+:meth:`editing.mrcad_schema.Curve.replace_point`.
 
 Pure stdlib, deterministic.
 """
@@ -48,8 +48,8 @@ def resolve_curve(curve: Curve) -> Optional[Curve]:
     # arc: (start, mid, end)
     start, mid, end = pts
     if start == end:
-        # Closed loop -> circle on the diameter (start, mid), matching the
-        # reference which builds Circle(control_points=new_control_points[:2]).
+        # Closed loop -> circle on the diameter (start, mid): the first two
+        # control points become the circle's diameter pair.
         if start == mid:
             return None
         return Curve("circle", (start, mid))
@@ -61,7 +61,7 @@ def resolve_curve(curve: Curve) -> Optional[Curve]:
 def move_point_resolved(design: Design, old: Point, new: Point) -> Design:
     """Move every control point equal to ``old`` to ``new`` and resolve results.
 
-    Shared-point semantics (Sec. 2.2): all curves touching ``old`` move; each is
+    Shared-point semantics: all curves touching ``old`` move; each is
     then passed through :func:`resolve_curve`, so collapsed curves are dropped and
     degenerate arcs become circles.  Curves not touching ``old`` are unchanged.
     """
