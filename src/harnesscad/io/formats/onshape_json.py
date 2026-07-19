@@ -75,9 +75,12 @@ import enum
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, Dict, List, Mapping, Tuple
 
+from harnesscad.domain.geometry.sketch import constraint_type_ids
+
 __all__ = [
     "EntityType",
     "SubnodeType",
+    "ConstraintType",
     "Entity",
     "Point",
     "Line",
@@ -92,8 +95,18 @@ __all__ = [
     "sketch_to_dict",
     "parameter_layout",
     "subnode_ids",
+    "constraint_type_id",
+    "constraint_type_name",
+    "inspect_constraint_type",
     "TYPE_CODES",
 ]
+
+#: Re-exported so callers have the constraint taxonomy alongside ``EntityType`` /
+#: ``SubnodeType``.  The geometry taxonomies here carry no *constraint* ids; the
+#: authoritative SketchGraphs ``ConstraintType`` table supplies them, and
+#: ``SubnodeType.SN_*`` already reuses the same out-of-band ``101`` band that
+#: ``ConstraintType.Subnode`` lives in.
+ConstraintType = constraint_type_ids.ConstraintType
 
 
 class EntityType(enum.IntEnum):
@@ -589,3 +602,60 @@ def parameter_layout(entity_type: EntityType) -> Tuple[Tuple[str, ...], Tuple[st
 def subnode_ids(entity: Entity) -> Tuple[str, ...]:
     """The derived ids of an entity's implicit sub-entities."""
     return entity.subnode_ids()
+
+
+# --- constraint taxonomy resolver ------------------------------------------
+# Onshape's wire format tags a sketch constraint by *name* (e.g. the
+# ``constraintType`` field carries ``"COINCIDENT"`` / ``"TANGENT"`` / ...), but
+# unlike entities it carries no numeric type code in this schema.  These
+# resolvers assign the canonical SketchGraphs integer id -- the value a
+# generative model quantises and predicts over -- by delegating to the
+# authoritative :mod:`...constraint_type_ids` table (never a second mapping).
+
+
+def constraint_type_id(name: str) -> int:
+    """Canonical ``ConstraintType`` integer id for a sketch-constraint name.
+
+    Accepts both the Onshape/SketchGraphs spellings (case-insensitive, e.g.
+    ``"Coincident"``, ``"CIRCULAR_PATTERN"``) and HistCAD's radius-labelled
+    aliases (``"minor_radius"`` / ``"major_radius"``).  Aliases are honoured via
+    the enum module's :data:`~...constraint_type_ids.HISTCAD_TO_ID` bridge so the
+    two vocabularies resolve to the same id; everything else falls through to the
+    module's case-insensitive :func:`~...constraint_type_ids.id_for_name`.
+    Raises ``KeyError`` for an unknown constraint name.
+    """
+    key = name.strip().lower()
+    bridge = constraint_type_ids.HISTCAD_TO_ID
+    if key in bridge:
+        return int(bridge[key])
+    return int(constraint_type_ids.id_for_name(name))
+
+
+def constraint_type_name(type_id: int) -> str:
+    """Canonical constraint name for a ``ConstraintType`` integer id.
+
+    Inverse of :func:`constraint_type_id` for the non-aliased ids.  Raises
+    ``KeyError`` for an id outside the table.
+    """
+    return constraint_type_ids.name_for_id(int(type_id))
+
+
+def inspect_constraint_type(constraint_dict: Mapping[str, Any]) -> int:
+    """Canonical ``ConstraintType`` id of a raw Onshape constraint blob.
+
+    Reads the constraint's type name from ``message.constraintType`` (Onshape's
+    ``BTMSketchConstraint`` layout), falling back to a top-level
+    ``constraintType`` / ``type`` string, and resolves it through
+    :func:`constraint_type_id`.  This gives a parsed constraint (carried verbatim
+    in :attr:`Sketch.constraints`) a canonical numeric id without altering how
+    those blobs are stored.  Raises ``KeyError`` if no known type name is found.
+    """
+    message = constraint_dict.get("message") or {}
+    raw = message.get("constraintType")
+    if raw is None:
+        raw = constraint_dict.get("constraintType")
+    if raw is None:
+        raw = constraint_dict.get("type")
+    if not isinstance(raw, str):
+        raise KeyError("no constraint type name in constraint blob")
+    return constraint_type_id(raw)
