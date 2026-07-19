@@ -18,15 +18,10 @@ geometry". :class:`StepCheckResult` keeps them apart as ``status="empty"``
 (reader succeeded, zero roots) versus ``status="malformed"`` (reader failed),
 with ``ok`` true only for the former's well-formed sibling.
 
-Attribution: pattern and policy from the MUSE benchmark (muse-main,
-``src/judge_system/geometry_metrics.py``): STEP/geometry checking run through
-``subprocess`` under ``timeout_seconds`` "so a malformed STEP can't crash the
-parent", the last-stdout-line JSON contract, and the bbox pre-filter that skips
-the expensive boolean for solid pairs whose bounding boxes cannot overlap
-(``EPS = 1e-6``, strict inequality). MUSE is MIT-licensed (Copyright (c) 2026
-MUSE Benchmark contributors); this is an independent implementation of that
-design rather than a copy, and the status-vs-empty-roots split is the harness's
-own addition.
+The third element is a cheap pre-filter: the pairwise boolean that measures real
+interpenetration is expensive and hang-prone, so solid pairs whose bounding boxes
+cannot overlap (strict inequality with a slack of ``1e-6``) are rejected before
+any kernel call.
 
 Pure stdlib in the parent; the worker degrades to the harness's kernel-free
 part-21 parser when OCCT is absent. The worker command is INJECTABLE so the
@@ -305,8 +300,7 @@ def _write(tmpdir: str, name: str, text: str) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Subprocess-isolated STEP checking with a timeout, and the "
-                    "empty-vs-malformed distinction (MUSE geometry_metrics.py "
-                    "pattern).")
+                    "empty-vs-malformed distinction.")
     parser.add_argument("--selfcheck", action="store_true",
                         help="prove BOTH arms: a well-formed STEP parses, and a "
                              "hanging worker is killed by the timeout instead of "

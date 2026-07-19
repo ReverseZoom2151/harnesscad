@@ -1,4 +1,4 @@
-"""Onshape ``ConstraintType`` integer-id enum (SketchGraphs, verbatim fact table).
+"""Onshape sketch-constraint type ids (``ConstraintType``, a fact table).
 
 The harness already models sketch constraints by *name*: HistCAD's 19-name
 evaluation set lives in :mod:`harnesscad.domain.geometry.sketch.constraint_satisfaction`
@@ -7,24 +7,17 @@ evaluation set lives in :mod:`harnesscad.domain.geometry.sketch.constraint_satis
 ``SubnodeType`` taxonomy for *geometry* but no numeric taxonomy for the
 *constraints* themselves. What was missing is the concrete integer id that
 Onshape's FeatureScript assigns to every constraint kind -- the code a
-SketchGraphs-style generative model quantises and predicts over.
+generative sketch model quantises and predicts over.
 
-This module supplies that missing table, transcribed exactly (no invented ids)
-from the SketchGraphs reference implementation:
+This module supplies that table. The ids are Onshape's own API values: they run
+0..29 contiguously plus the out-of-band ``Subnode = 101`` sentinel, and they are
+reproduced here exactly, with no invented or renumbered entries.
 
-    resources/cad_repos/SketchGraphs-master/SketchGraphs-master/
-        sketchgraphs/data/_constraint.py  ->  class ConstraintType(enum.IntEnum)
-
-Source: SketchGraphs, Seff/Ovadia/Zhou/Adams 2020, MIT License
-(``Copyright (c) 2020 Ari Seff, Yaniv Ovadia, Wenda Zhou, Ryan P. Adams``).
-The ids run 0..29 contiguously plus the out-of-band ``Subnode = 101`` sentinel,
-matching the source's ordering byte-for-byte.
-
-This is a published fact table, so the ids are authoritative and must not be
-renumbered. The harness's HistCAD names are a strict *subset* of this taxonomy;
-:data:`HISTCAD_TO_ID` records the mapping (including the two documented aliases
-``minor_radius -> Minor_Diameter`` and ``major_radius -> Major_Diameter``, which
-SketchGraphs labels by diameter rather than radius).
+Because these are third-party API constants they are authoritative and must not
+be renumbered. The harness's HistCAD names are a strict *subset* of this
+taxonomy; :data:`HISTCAD_TO_ID` records the mapping (including the two aliases
+``minor_radius -> Minor_Diameter`` and ``major_radius -> Major_Diameter``, where
+Onshape labels the dimension by diameter rather than radius).
 
 Wiring point (reported, not performed -- these files are not owned here)
 -----------------------------------------------------------------------
@@ -64,10 +57,7 @@ __all__ = [
 
 
 class ConstraintType(enum.IntEnum):
-    """Onshape sketch constraint types with their FeatureScript integer ids.
-
-    Transcribed verbatim from SketchGraphs ``sketchgraphs/data/_constraint.py``.
-    """
+    """Onshape sketch constraint types with their FeatureScript integer ids."""
 
     Coincident = 0
     Projected = 1
@@ -92,7 +82,7 @@ class ConstraintType(enum.IntEnum):
     Linear_Pattern = 20
     Centerline_Dimension = 21
     Intersected = 22
-    Silhoutted = 23  # (sic) spelling matches the SketchGraphs source
+    Silhoutted = 23  # (sic) spelling as it appears in the Onshape taxonomy
     Quadrant = 24
     Normal = 25
     Minor_Diameter = 26
@@ -125,8 +115,8 @@ def name_for_id(type_id: int) -> str:
 
 # HistCAD's 19 evaluation-side constraint names (see constraint_satisfaction.py)
 # mapped onto this authoritative id table. ``minor_radius`` / ``major_radius``
-# are the two documented aliases -- SketchGraphs labels these dimensions by
-# diameter, HistCAD by radius; they denote the same constraint family.
+# are the two aliases -- Onshape labels these dimensions by diameter, HistCAD by
+# radius; they denote the same constraint family.
 HISTCAD_TO_ID: Dict[str, int] = {
     "coincident": ConstraintType.Coincident,
     "horizontal": ConstraintType.Horizontal,
@@ -150,8 +140,7 @@ HISTCAD_TO_ID: Dict[str, int] = {
 }
 
 
-#: Constraint types that carry numeric parameters in SketchGraphs' schema
-#: (``_numeric_schema`` in the source).
+#: Constraint types that carry numeric parameters in the Onshape schema.
 PARAMETRIC_TYPES = frozenset(
     {
         ConstraintType.Angle,
@@ -165,7 +154,7 @@ PARAMETRIC_TYPES = frozenset(
 
 
 def has_parameters(constraint_type: ConstraintType) -> bool:
-    """Whether a constraint type carries numeric parameters (per SketchGraphs)."""
+    """Whether a constraint type carries numeric parameters."""
     return ConstraintType(constraint_type) in PARAMETRIC_TYPES
 
 
@@ -186,7 +175,7 @@ def _selfcheck() -> int:
         if name_for_id(rid) != member.name:
             problems.append(f"id->name failed for {member.value}")
 
-    # 3. Contiguous 0..29 core plus the 101 sentinel, exactly as in the source.
+    # 3. Contiguous 0..29 core plus the 101 sentinel, as Onshape assigns them.
     core = sorted(i for i in ids if i < 100)
     if core != list(range(0, 30)):
         problems.append(f"core ids not contiguous 0..29: {core}")

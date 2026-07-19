@@ -1,4 +1,4 @@
-"""Tests for the SketchGraphs Onshape ConstraintType integer-id fact table."""
+"""Tests for the Onshape ConstraintType integer-id fact table."""
 
 from harnesscad.domain.geometry.sketch import constraint_type_ids as cti
 from harnesscad.domain.geometry.sketch.constraint_satisfaction import CONSTRAINT_TYPES

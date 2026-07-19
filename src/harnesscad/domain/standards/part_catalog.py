@@ -1,36 +1,32 @@
-"""Standard-parts catalog (anvilate).
+"""Standard-parts catalog: clearance holes, fasteners, pins, bearings,
+extrusions and motor frames.
 
-Port of the standard-component dimension tables and resolver pattern from
-anvilate (MIT License, Copyright (c) 2026 Clay Good).  Source material:
+Nine embedded dimension tables:
 
-* ``src/anvilate/standards/data/metric_clearance.yaml`` -- ISO 273 metric
-  clearance holes, M2 ... M30, at the close / normal / coarse fits;
-* ``src/anvilate/standards/data/cap_screws.yaml`` -- ISO 4762 (DIN 912)
-  socket-head cap screw head geometry;
-* ``src/anvilate/standards/data/hex_bolts.yaml`` -- ISO 4014 / ISO 4017
-  hexagon-head bolt and screw head geometry;
-* ``src/anvilate/standards/data/hex_nuts.yaml`` -- ISO 4032 style-1 hex nuts;
-* ``src/anvilate/standards/data/washers.yaml`` -- ISO 7089 plain washers
-  (normal series, 200 HV);
-* ``src/anvilate/standards/data/dowel_pins.yaml`` -- ISO 2338 parallel pins;
-* ``src/anvilate/standards/data/bearings.yaml`` -- ISO 15 deep-groove ball
-  bearing boundary dimensions (miniature, 68, 60, 62, 63 series);
-* ``src/anvilate/standards/data/extrusions.yaml`` -- T-slot aluminum extrusion
-  profiles, 20/30/40/45 mm series (Bosch Rexroth / Misumi HFS convention);
-* ``src/anvilate/standards/data/nema_frames.yaml`` -- NEMA ICS 16 stepper
-  frame mounting geometry for NEMA 17 / 23 / 34;
-* ``src/anvilate/standards/resolver.py`` -- the ``StandardsResolver`` lookup
-  pattern (:class:`PartCatalog` here mirrors its has-component /
-  known-components behaviour across every table at once).
+* ISO 273 metric clearance holes, M2 ... M30, at the close / normal / coarse
+  fits;
+* ISO 4762 (DIN 912) socket-head cap screw head geometry;
+* ISO 4014 / ISO 4017 hexagon-head bolt and screw head geometry;
+* ISO 4032 style-1 hex nuts;
+* ISO 7089 plain washers (normal series, 200 HV);
+* ISO 2338 parallel pins;
+* ISO 15 deep-groove ball bearing boundary dimensions (miniature, 68, 60, 62,
+  63 series);
+* T-slot aluminum extrusion profiles, 20/30/40/45 mm series (Bosch Rexroth /
+  Misumi HFS convention);
+* NEMA ICS 16 stepper frame mounting geometry for NEMA 17 / 23 / 34.
 
-The YAML tables are embedded here as Python dicts (converted offline; no yaml
-dependency).  Each dataset's provenance block (name / version / source /
-license / retrieved) is preserved verbatim in :data:`PROVENANCE`, keyed by
-dataset name.  The dimension values themselves are CC0-1.0 facts; the source
-standards are not redistributed.
+Derived from anvilate (MIT License, Copyright (c) 2026 Clay Good) -- the
+selection and grouping of these nine datasets, and the per-dataset provenance
+blocks reproduced verbatim in :data:`PROVENANCE`, are that project's.  The
+dimension values themselves are facts drawn from the named standards, which are
+not redistributed.
 
-anvilate's ``metric_thread.yaml`` is deliberately NOT ported: thread pitch and
-major-diameter lookups are already covered by
+The tables are embedded as Python dicts (converted offline; no yaml
+dependency).
+
+Thread pitch and major-diameter lookups are deliberately NOT carried here: they
+are already covered by
 :mod:`harnesscad.domain.standards.thread_database` (the sdfx-derived thread
 table), and duplicating them here would create two sources of truth.  Use that
 module for thread parameters; use this one for clearance holes, head/nut/washer
@@ -39,8 +35,8 @@ geometry, pins, bearings, extrusions, and motor frames.
 Lookup conventions.  Every category accepts the bare user-facing designation
 ("M5", "608", "2020", "NEMA17") and, where the source table keys carry a
 standard prefix ("ISO4762-M5", "EXT-2020"), the prefixed form as well.  The
-catalog-wide :func:`resolve` mirrors anvilate's resolver: it answers "which
-standard part is this reference?" across all categories at once.
+catalog-wide :func:`resolve` answers "which standard part is this reference?"
+across all categories at once.
 
 All dimensions are millimetres.  Pure stdlib, deterministic.
 """
@@ -173,9 +169,8 @@ class ClearanceHole(NamedTuple):
 class CapScrew(NamedTuple):
     """ISO 4762 (DIN 912) socket-head cap screw head geometry (mm).
 
-    Length and shank are order-specific and omitted (anvilate's "mount, not
-    body" rule); pitch and tap/clearance holes come from the thread and
-    clearance tables.
+    Length and shank are order-specific and omitted (mount, not body); pitch
+    and tap/clearance holes come from the thread and clearance tables.
     """
 
     designation: str     # table key, e.g. "ISO4762-M5"
@@ -288,7 +283,7 @@ class NemaFrame(NamedTuple):
 
 
 # ---------------------------------------------------------------------------
-# Embedded tables (converted offline from the anvilate yaml files).
+# Embedded tables (converted offline from the source yaml files).
 # ---------------------------------------------------------------------------
 
 CLEARANCE_FITS: Tuple[str, str, str] = ("close", "normal", "coarse")
@@ -732,12 +727,12 @@ def nema_frame_designations() -> List[str]:
 
 
 # ---------------------------------------------------------------------------
-# Catalog-wide resolution (anvilate resolver.py pattern).
+# Catalog-wide resolution.
 # ---------------------------------------------------------------------------
 
 # (category name, accessor) in a fixed resolution order.  Clearance sizes are
-# not components (they are hole dimensions for a size), so like anvilate's
-# resolver the component walk covers the part tables only.
+# not components (they are hole dimensions for a size), so the component walk
+# covers the part tables only.
 _CATEGORIES: Sequence[Tuple[str, object]] = (
     ("nema_frame", nema_frame),
     ("bearing", bearing),
@@ -753,8 +748,7 @@ _CATEGORIES: Sequence[Tuple[str, object]] = (
 def resolve(designation: str) -> Tuple[str, NamedTuple]:
     """Resolve a designation across every part table at once.
 
-    Mirrors anvilate ``StandardsResolver.has_component``: the tables are tried
-    in a fixed order (NEMA frames, bearings, dowel pins, cap screws, washers,
+    The tables are tried in a fixed order (NEMA frames, bearings, dowel pins, cap screws, washers,
     hex nuts, hex bolts, extrusions) and the first hit wins.  Prefixed keys
     ("ISO4032-M5") are unambiguous; a bare metric size ("M5") resolves to the
     first fastener table that carries it (cap screw before washer/nut/bolt),
@@ -772,8 +766,6 @@ def resolve(designation: str) -> Tuple[str, NamedTuple]:
 
 def known_designations() -> List[str]:
     """Every resolvable table key, across all part tables, sorted.
-
-    Mirrors anvilate ``StandardsResolver.known_components``.
     """
     return sorted(
         set(_CAP_SCREWS)
@@ -882,7 +874,7 @@ def _selfcheck() -> None:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="part_catalog",
-        description="Standard-parts catalog (anvilate port): clearance holes, "
+        description="Standard-parts catalog: clearance holes, "
                     "fasteners, pins, bearings, extrusions, NEMA frames.",
     )
     parser.add_argument(
