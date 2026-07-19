@@ -596,8 +596,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     failing LLM callable, asserting the merge and swallow behaviour."""
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.drawings.dfm_review",
-        description="DFM review over enriched annotations (ported from "
-        "CAD-Annotator, deterministic side expanded). LLM optional.",
+        description="DFM review over enriched annotations. LLM optional.",
     )
     parser.add_argument(
         "--selfcheck",

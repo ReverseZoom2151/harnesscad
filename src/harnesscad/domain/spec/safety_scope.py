@@ -1,15 +1,11 @@
-"""Prompt-scope safety gate for text-to-CAD briefs, mined from Forma-OSS.
+"""Prompt-scope safety gate for text-to-CAD briefs.
 
-Ported from ``check_safety_violations`` in Forma-OSS
-``blueprint_core/validation.py``: five blocked categories (weapons,
-medical/life-support, automotive control, mains AC, high-power battery) with
-the original keyword lists and message spirit, upgraded from a bare optional
-string to a typed ``ScopeVerdict`` dataclass (blocked flag, category, matched
-keyword, message).
+The gate covers five blocked categories (weapons, medical/life-support,
+automotive control, mains AC, and high-power battery) and returns a typed
+``ScopeVerdict`` with its blocked flag, category, matched keyword, and message.
 
-This is a pre-pipeline scope gate on the BRIEF -- per Forma-OSS
-``docs/validation.md`` it is enforced *before* any agent runs, keeping the
-system constrained to low-voltage maker electronics. It is distinct from
+This is a pre-pipeline scope gate on the BRIEF, enforced *before* any agent
+runs to keep the system constrained to low-voltage maker electronics. It is distinct from
 ``harnesscad.domain.programs.validate`` code safety, which audits *generated
 code*; this module audits the incoming natural-language prompt instead.
 
@@ -19,7 +15,7 @@ brief-time taxonomy that keeps the new electronics layer inside safe,
 hobbyist, low-voltage territory.
 
 Deterministic: keyword categories are checked in a fixed order and the first
-match wins, exactly as in the source.
+match wins.
 
 Usage::
 
@@ -206,7 +202,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="python -m harnesscad.domain.spec.safety_scope",
         description="Pre-pipeline prompt-scope safety gate for device briefs "
-        "(ported from Forma-OSS check_safety_violations).",
+        ".",
     )
     parser.add_argument(
         "--selfcheck",

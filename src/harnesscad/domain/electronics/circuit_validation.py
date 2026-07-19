@@ -1,8 +1,6 @@
-"""Rule-based netlist validation for the Hardware IR, mined from Forma-OSS.
+"""Rule-based netlist validation for the Hardware IR.
 
-Ported behavior-verbatim from Forma-OSS ``blueprint_core/validation.py``
-(``validate_circuit`` + ``build_validation_summary``, documented in
-``docs/validation.md``), converted from pydantic to the stdlib dataclass IR in
+The validator operates over the stdlib dataclass IR in
 ``harnesscad.domain.electronics.hardware_ir``.
 
 Gap filled: HarnessCAD previously had no electronics/netlist IR at all, and
@@ -21,9 +19,8 @@ brief. These five deterministic rules give it that verifier:
    name or part number) sharing a 3.3V power net with the MCU's power pin
    (WARNING).
 
-Severities follow the source taxonomy: CRITICAL must be fixed, WARNING is
-risky but overridable, INFO is advisory. ``is_design_valid`` mirrors the
-source's "valid means no CRITICAL issues".
+CRITICAL findings must be fixed, WARNING findings are risky but overridable,
+and INFO is advisory. ``is_design_valid`` means there are no CRITICAL issues.
 
 Deterministic: same components + nets in -> same issues out, in a stable order.
 

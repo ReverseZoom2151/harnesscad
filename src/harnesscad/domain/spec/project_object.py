@@ -1,21 +1,11 @@
-"""Versioned-namespace project object -- ported from Forma-OSS.
+"""Versioned-namespace project object.
 
-Source: Forma-OSS ``blueprint_core/project_objects.py``, which decomposes a
-HardwareIR into a ``BlueprintProjectObject`` -- a tree of dotted, versioned
-namespaces (``product.electrical``, ``project.docs``, ...) whose payloads are
-projected slices of the document, with per-attribute and per-item metadata
-(identity, label, kind, source path) and data-URL redaction for LLM safety.
-
-What is ported: the namespace grammar and normalizer, the descriptor registry,
-the attribute/item object model with identity/label/kind inference, payload
-redaction, pluggable per-namespace payload projection, and the
-``project_object`` metadata block that tracks per-namespace versions so a
-targeted edit bumps only the namespace it touched.
-
-Generalization: Forma-OSS is hard-wired to its pydantic ``HardwareIR``; this
-port operates over a plain ``dict`` document with dataclasses and explicit
-validation, and the CAD namespaces are the harness set (``product.geometry``,
-``product.fabrication``, ...) instead of the electronics set.
+``ProjectObject`` exposes a document through dotted, versioned namespaces
+(``product.electrical``, ``project.docs``, ...) with projected payloads and
+per-attribute/item metadata (identity, label, kind, and source path). It uses
+dataclasses and explicit validation over a plain ``dict`` document, supports
+payload redaction for LLM safety, and increments only the namespace touched by
+a targeted edit.
 
 Harness gap filled: the harness has rich flat specs (the MGC in
 ``harnesscad.domain.spec.contract``, the spec registry in
@@ -945,7 +935,7 @@ def _run_selfcheck() -> int:
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="harnesscad.domain.spec.project_object",
-        description="Versioned-namespace project object (ported from Forma-OSS).",
+        description="Versioned-namespace project object.",
     )
     parser.add_argument(
         "--selfcheck",
