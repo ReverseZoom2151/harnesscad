@@ -3,6 +3,7 @@
 # silently break every hash, so it is disabled for the data directories.
 brepnet/** -text
 cadgenbench/** -text
+cadgenbench_broken/** -text
 manifold/** -text
 cad_coder/** -text
 birdhouse/** -text

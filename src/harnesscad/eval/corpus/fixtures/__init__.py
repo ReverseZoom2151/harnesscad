@@ -9,6 +9,9 @@ imports the highest-value REAL fixtures found in the resources tree
   (CC BY-NC-SA 4.0: manifest + resources-path only, nothing vendored).
 * :mod:`.cadgenbench_pose` -- cadgenbench rotation/translation twin STEPs +
   the ``open_shell.step`` invalid-solid oracle (Apache-2.0, vendored).
+* :mod:`.cadgenbench_broken` -- cadgenbench's known-bad mating-feature jigs
+  with PINNED reference scores: a grader-regression substrate (Apache-2.0,
+  manifest-only -- kernel-bound to regenerate, so nothing vendored).
 * :mod:`.manifold_meshes` -- manifold's crash-reproducer OBJ meshes and
   triangulation polygon corpus (Apache-2.0, small files vendored).
 * :mod:`.cad_coder_heldout` -- CAD-Coder's 100-part GT-STEP + reference-code
@@ -69,6 +72,7 @@ __all__ = [
 LOADERS: Tuple[str, ...] = (
     "brepnet_steps",
     "cadgenbench_pose",
+    "cadgenbench_broken",
     "manifold_meshes",
     "cad_coder_heldout",
     "birdhouse_nversion",
@@ -250,6 +254,7 @@ from harnesscad.eval.corpus.fixtures import birdhouse_nversion   # noqa: E402
 from harnesscad.eval.corpus.fixtures import brepnet_steps        # noqa: E402
 from harnesscad.eval.corpus.fixtures import cad_coder_heldout    # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadclaw_bom          # noqa: E402
+from harnesscad.eval.corpus.fixtures import cadgenbench_broken   # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadgenbench_pose     # noqa: E402
 from harnesscad.eval.corpus.fixtures import manifold_meshes      # noqa: E402
 from harnesscad.eval.corpus.fixtures import step_canaries        # noqa: E402
@@ -258,6 +263,7 @@ from harnesscad.eval.corpus.fixtures import step_canaries        # noqa: E402
 _MODULES: Dict[str, object] = {
     "brepnet_steps": brepnet_steps,
     "cadgenbench_pose": cadgenbench_pose,
+    "cadgenbench_broken": cadgenbench_broken,
     "manifold_meshes": manifold_meshes,
     "cad_coder_heldout": cad_coder_heldout,
     "birdhouse_nversion": birdhouse_nversion,

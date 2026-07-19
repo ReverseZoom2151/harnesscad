@@ -1,0 +1,297 @@
+{
+  "source_repo": "https://github.com/huggingface/cadgenbench",
+  "source_path": "resources/cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric",
+  "license": "Apache-2.0",
+  "attribution": "cadgenbench, Copyright 2026 Hugging Face. Apache License 2.0. The jig_metric STEP fixtures are procedurally authored by tests/fixtures/jig_metric/generate.py (build123d) and are NOT derived from CADPrompt -- no third-party dataset licence attaches. Not vendored (768 KB, kernel-bound to regenerate): files are read from resources/ when present.",
+  "snapshot_date": "2026-07-19",
+  "entries": [
+    {
+      "name": "test_1/candidates/broken_1_small_hole",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/candidates/broken_1_small_hole.step",
+      "sha256": "32aead21d624f1202a4ff5107cd8c2d91517393d1ead8469ef10219e916c9474",
+      "bytes": 19075,
+      "format": "step"
+    },
+    {
+      "name": "test_1/candidates/broken_2_offset_hole",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/candidates/broken_2_offset_hole.step",
+      "sha256": "fbdc7fb5c377a03bbdf182bd341e3ce16ed3a454d8bb9c5f37f165902917f0a0",
+      "bytes": 19070,
+      "format": "step"
+    },
+    {
+      "name": "test_1/candidates/broken_3_no_hole",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/candidates/broken_3_no_hole.step",
+      "sha256": "0ce500539bb769ef652540bd83ad79be93a28dd0a9740e4181fda584791b320c",
+      "bytes": 15412,
+      "format": "step"
+    },
+    {
+      "name": "test_1/candidates/correct",
+      "role": "candidate_correct",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/candidates/correct.step",
+      "sha256": "eae85359288642e710cbe780a83270d7601cf450c9c5e4c33266b54822871053",
+      "bytes": 19067,
+      "format": "step"
+    },
+    {
+      "name": "test_1/gt",
+      "role": "gt",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/gt.step",
+      "sha256": "eae85359288642e710cbe780a83270d7601cf450c9c5e4c33266b54822871053",
+      "bytes": 19067,
+      "format": "step"
+    },
+    {
+      "name": "test_1/jig_1__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_1/jig_1__1__KOR.step",
+      "sha256": "82f1a0deee852f6b8a84fec2f2d4f52e4b3f6987db63e9279686f71c98ae9035",
+      "bytes": 5590,
+      "format": "step"
+    },
+    {
+      "name": "test_2/candidates/broken_1_wrong_spacing",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/candidates/broken_1_wrong_spacing.step",
+      "sha256": "c7297f4a309e738b2df8a34387d32d2a24f59b57f4462c0c9d44dedd06f00366",
+      "bytes": 29971,
+      "format": "step"
+    },
+    {
+      "name": "test_2/candidates/broken_2_missing_hole",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/candidates/broken_2_missing_hole.step",
+      "sha256": "9188f3dcca58116120db429b95b5da5a6dbf6496253564fd65227d23a077b7fc",
+      "bytes": 26276,
+      "format": "step"
+    },
+    {
+      "name": "test_2/candidates/broken_3_wrong_diameter",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/candidates/broken_3_wrong_diameter.step",
+      "sha256": "649c8bada947e2b031245da56455384cc8a910a69317f994bba6f6388cf4c140",
+      "bytes": 29907,
+      "format": "step"
+    },
+    {
+      "name": "test_2/candidates/correct",
+      "role": "candidate_correct",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/candidates/correct.step",
+      "sha256": "f5ce96da95f2947b15cf251b2138fa0aa57a3be06478bf54e719811ddd8a2217",
+      "bytes": 29907,
+      "format": "step"
+    },
+    {
+      "name": "test_2/gt",
+      "role": "gt",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/gt.step",
+      "sha256": "f5ce96da95f2947b15cf251b2138fa0aa57a3be06478bf54e719811ddd8a2217",
+      "bytes": 29907,
+      "format": "step"
+    },
+    {
+      "name": "test_2/jig_1__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/jig_1__1__KOR.step",
+      "sha256": "4c4b5ee59c632db8528fbdf562ade7473aabee84fbdb1fd2042d27ceec3d3257",
+      "bytes": 5555,
+      "format": "step"
+    },
+    {
+      "name": "test_2/jig_1__2__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/jig_1__2__KOR.step",
+      "sha256": "9e773a5fccc79cff90164148cc387ccdb9711398ffd41989705abf96c809f23c",
+      "bytes": 5563,
+      "format": "step"
+    },
+    {
+      "name": "test_2/jig_1__3__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/jig_1__3__KOR.step",
+      "sha256": "fd65772e9c006648f72b7ff2bc0a57005bc81c7d2e57d56997f5820ab0204b69",
+      "bytes": 5563,
+      "format": "step"
+    },
+    {
+      "name": "test_2/jig_1__4__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_2/jig_1__4__KOR.step",
+      "sha256": "6d0212c1ad393af9fe333c8ba32962db270267572bbcaeee214865fc91b8b223",
+      "bytes": 5571,
+      "format": "step"
+    },
+    {
+      "name": "test_3/candidates/broken_1_cylinder_boss",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/candidates/broken_1_cylinder_boss.step",
+      "sha256": "76bb277c52f4cf8b05bd1ec16ef1b53ef9236dcc5f4426be95920119d5718031",
+      "bytes": 40385,
+      "format": "step"
+    },
+    {
+      "name": "test_3/candidates/broken_2_rotated_boss",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/candidates/broken_2_rotated_boss.step",
+      "sha256": "6e2d65448ce18c8ae676a52cdcd08a9e1ca28c24fc674925a1ec9a3d9a17f192",
+      "bytes": 59590,
+      "format": "step"
+    },
+    {
+      "name": "test_3/candidates/broken_3_shifted_holes",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/candidates/broken_3_shifted_holes.step",
+      "sha256": "3b9bdab03b6a26ce3bc7f2dc1f9a369b816ed6ee3bb32048408037298c714166",
+      "bytes": 58746,
+      "format": "step"
+    },
+    {
+      "name": "test_3/candidates/correct",
+      "role": "candidate_correct",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/candidates/correct.step",
+      "sha256": "d5a562a57bb868efc5e66a7728e6ef35bc4a89a61983954d81be5f7a5c5342ee",
+      "bytes": 58746,
+      "format": "step"
+    },
+    {
+      "name": "test_3/gt",
+      "role": "gt",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/gt.step",
+      "sha256": "d5a562a57bb868efc5e66a7728e6ef35bc4a89a61983954d81be5f7a5c5342ee",
+      "bytes": 58746,
+      "format": "step"
+    },
+    {
+      "name": "test_3/jig_1__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/jig_1__1__KOR.step",
+      "sha256": "c232b1d20d0d8bfdbac130cddf20444a9869aa68cda8e87017e64cae7ceb210e",
+      "bytes": 5558,
+      "format": "step"
+    },
+    {
+      "name": "test_3/jig_1__2__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/jig_1__2__KOR.step",
+      "sha256": "2b92235d4ac69d6cd177e8f893e6b62a834caadad84e8412042d4cf955a43283",
+      "bytes": 5550,
+      "format": "step"
+    },
+    {
+      "name": "test_3/jig_1__3__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/jig_1__3__KOR.step",
+      "sha256": "2b997142dd793a15acea9fef396fa85ff22ff63da1fbd56c99ad69cb367bbdfd",
+      "bytes": 5558,
+      "format": "step"
+    },
+    {
+      "name": "test_3/jig_1__4__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/jig_1__4__KOR.step",
+      "sha256": "fc248c2320b602c48d0a21dd6829146152936bdbab221259ee55ebe8918dcc53",
+      "bytes": 5550,
+      "format": "step"
+    },
+    {
+      "name": "test_3/jig_1__5__KIR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_3/jig_1__5__KIR.step",
+      "sha256": "3b161f6708d7b87b08a802207d72a36a8019fc4d47fb7c5a02a02a04fdd7c5b9",
+      "bytes": 23342,
+      "format": "step"
+    },
+    {
+      "name": "test_4/candidates/broken_1_narrow_slot",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/candidates/broken_1_narrow_slot.step",
+      "sha256": "33643b931e7825adb31ce2c53d92adda8a04aa2871266b1fa13f594b2db5a300",
+      "bytes": 38071,
+      "format": "step"
+    },
+    {
+      "name": "test_4/candidates/broken_2_slot_offset",
+      "role": "broken",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/candidates/broken_2_slot_offset.step",
+      "sha256": "ba1e255962c97c739abb806728ccff666752eb113783300b052e95eb50afb778",
+      "bytes": 37971,
+      "format": "step"
+    },
+    {
+      "name": "test_4/candidates/correct",
+      "role": "candidate_correct",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/candidates/correct.step",
+      "sha256": "bbcf09c2b994bcdc65bd128d1b7b843de3c610ad66204968f308bede31270226",
+      "bytes": 37971,
+      "format": "step"
+    },
+    {
+      "name": "test_4/gt",
+      "role": "gt",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/gt.step",
+      "sha256": "bbcf09c2b994bcdc65bd128d1b7b843de3c610ad66204968f308bede31270226",
+      "bytes": 37971,
+      "format": "step"
+    },
+    {
+      "name": "test_4/jig_1__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/jig_1__1__KOR.step",
+      "sha256": "d07f1545809e3357ad646da1db89ebeecbc22c57a3dd53e13ec6a4eedff452b8",
+      "bytes": 5598,
+      "format": "step"
+    },
+    {
+      "name": "test_4/jig_2__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/jig_2__1__KOR.step",
+      "sha256": "50f14e49ffa2956d102f16557cac49ab6737a21d3562e51f1b2f80dbed286002",
+      "bytes": 5606,
+      "format": "step"
+    },
+    {
+      "name": "test_4/jig_3__1__KOR",
+      "role": "sub_volume",
+      "vendored": null,
+      "resource": "cad_repos/cadgenbench-main/cadgenbench-main/tests/fixtures/jig_metric/test_4/jig_3__1__KOR.step",
+      "sha256": "e0a881aa85f4478a04ecf3bcf955fc7d6188f04360725be72fb1900e35ab9bb6",
+      "bytes": 17957,
+      "format": "step"
+    }
+  ]
+}
