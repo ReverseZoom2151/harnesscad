@@ -71,8 +71,12 @@ class TestCheckerAcceptsEveryBenign(unittest.TestCase):
 
 
 class TestDocumentedGapsAreStillOpen(unittest.TestCase):
-    """If one of these starts failing, the checker got BETTER -- move the case
-    out of the gap set and celebrate. It must never fail silently."""
+    """A documented gap is a case check_cad_code returns ok=True on -- a KNOWN
+    hole, kept visible until closed. The two originally here (subclasses-escape,
+    breakpoint) have since been closed and moved to the attack set, so the gap
+    set is empty and the goal state. If a future pass adds a gap, this test
+    keeps it honestly uncaught until someone fixes it; the day the checker
+    catches it, this fails and forces the case to move to _ATTACKS."""
 
     def test_gaps_remain_uncaught(self):
         for case in adv.gap_cases():
@@ -82,6 +86,16 @@ class TestDocumentedGapsAreStillOpen(unittest.TestCase):
                 report.ok,
                 "documented gap %s is now CAUGHT (%s) -- update the corpus"
                 % (case.name, sorted(set(report.codes()))))
+
+    def test_the_two_original_gaps_are_now_closed(self):
+        """Regression: the subclasses-escape and breakpoint holes stay shut."""
+        by_name = {c.name: c for c in adv.attack_cases()}
+        for name in ("gap_subclasses_escape", "gap_breakpoint"):
+            self.assertIn(name, by_name, "%s must be an attack now" % name)
+            report = check_cad_code(by_name[name].snippet(),
+                                    kernel=by_name[name].kernel,
+                                    required_def=None)
+            self.assertFalse(report.ok, "%s regressed to uncaught" % name)
 
 
 class TestSelfcheckPasses(unittest.TestCase):

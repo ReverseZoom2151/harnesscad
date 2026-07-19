@@ -36,6 +36,7 @@ __all__ = [
     "CADQUERY_IMPORT_ROOTS",
     "BUILD123D_IMPORT_ROOTS",
     "FREECAD_IMPORT_ROOTS",
+    "BLOCKED_ATTRS",
     "BLOCKED_CALLS",
     "BLOCKED_NAMES",
     "SafetyViolation",
@@ -51,14 +52,36 @@ FREECAD_IMPORT_ROOTS: Set[str] = {"Draft", "FreeCAD", "Mesh", "Part", "Sketcher"
 
 BLOCKED_CALLS: Set[str] = {
     "__import__",
+    "breakpoint",  # drops into pdb == arbitrary interactive execution
     "compile",
     "eval",
     "exec",
+    "getattr",  # dynamic attribute access defeats the static dunder block below
     "globals",
     "input",
     "locals",
     "open",
+    "setattr",
     "vars",
+}
+#: Attribute names whose ACCESS is an introspection escape, independent of the
+#: object they hang off. ``().__class__.__base__.__subclasses__()`` reaches
+#: ``Popen`` without ever naming ``subprocess`` -- an import-allowlist AST gate
+#: provably cannot see that by watching imports, so the traversal itself is what
+#: gets blocked. Real CAD-generation code never walks the type hierarchy or a
+#: function's globals/closure; blocking these has no legitimate false positive.
+BLOCKED_ATTRS: Set[str] = {
+    "__base__",
+    "__bases__",
+    "__class__",
+    "__closure__",
+    "__code__",
+    "__dict__",
+    "__func__",
+    "__globals__",
+    "__mro__",
+    "__self__",
+    "__subclasses__",
 }
 BLOCKED_NAMES: Set[str] = {
     "__builtins__",
@@ -184,6 +207,14 @@ def check_cad_code(
 
         if isinstance(node, ast.Name) and node.id in BLOCKED_NAMES:
             violations.append(SafetyViolation("blocked_name", f"Blocked name used: {node.id}"))
+
+        if isinstance(node, ast.Attribute) and node.attr in BLOCKED_ATTRS:
+            violations.append(
+                SafetyViolation(
+                    "blocked_attr",
+                    f"Blocked introspection attribute: .{node.attr}",
+                )
+            )
 
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name) and node.func.id in BLOCKED_CALLS:

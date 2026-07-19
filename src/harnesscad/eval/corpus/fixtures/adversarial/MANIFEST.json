@@ -187,7 +187,7 @@
     },
     {
       "name": "gap_subclasses_escape",
-      "role": "gap",
+      "role": "attack",
       "vendored": "snippets/gap_subclasses_escape.py.txt",
       "resource": null,
       "sha256": "be7bfa2374fca9eb6f468639e72de80fff8a412f4b5f428f5b3b40756a4012d7",
@@ -196,7 +196,7 @@
     },
     {
       "name": "gap_breakpoint",
-      "role": "gap",
+      "role": "attack",
       "vendored": "snippets/gap_breakpoint.py.txt",
       "resource": null,
       "sha256": "1724f8b087a40c4b41983a06275b03c7f1bdf4b182d0ff118c72947b00f64c62",

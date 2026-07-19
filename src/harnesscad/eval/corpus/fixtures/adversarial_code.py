@@ -133,6 +133,20 @@ _ATTACKS: Dict[str, Tuple[str, Tuple[str, ...], str]] = {
         "import build123d under the cadquery kernel: build123d is allowed for "
         "the build123d kernel but NOT for cadquery -- proves the allowlist is "
         "per-kernel, not global."),
+    # These two were documented as OPEN GAPS when this corpus was authored --
+    # check_cad_code returned ok=True on both. They were then closed in
+    # code_safety.py (breakpoint added to BLOCKED_CALLS; a BLOCKED_ATTRS set
+    # blocks introspection-dunder traversal, and getattr/setattr were blocked so
+    # the traversal cannot be reached dynamically). They are attacks now, and
+    # the corpus proves the fix by requiring the checker to flag them.
+    "gap_subclasses_escape": ("cadquery", ("blocked_attr",),
+        "().__class__.__base__.__subclasses__() walks the type graph to reach "
+        "Popen without naming a blocked module. Closed by blocking access to the "
+        "introspection dunders (__class__/__base__/__subclasses__/...) outright: "
+        "an import allowlist cannot see this, but the traversal itself can."),
+    "gap_breakpoint": ("cadquery", ("blocked_call",),
+        "breakpoint() drops into pdb (arbitrary interactive execution). Closed "
+        "by adding breakpoint to BLOCKED_CALLS."),
 }
 
 #: name -> (kernel, why). Legitimate CAD that MUST pass -- the over-refusal
@@ -154,19 +168,14 @@ _BENIGN: Dict[str, Tuple[str, str]] = {
         "the FreeCAD allowlist."),
 }
 
-#: name -> (kernel, why-it-slips). Documented structural blind spots: the
-#: checker returns ok=True on these today. NOT a bug to fix here -- a stated
-#: limit of an import-allowlist AST gate.
-_GAPS: Dict[str, Tuple[str, str]] = {
-    "gap_subclasses_escape": ("cadquery",
-        "().__class__.__base__.__subclasses__() walks the object graph to reach "
-        "Popen without ever naming a blocked module; the call routes through a "
-        "subscript, so _attribute_root() finds no blocked Name. An import "
-        "allowlist provably cannot see this."),
-    "gap_breakpoint": ("cadquery",
-        "breakpoint() drops into pdb (arbitrary interactive execution) yet is "
-        "absent from BLOCKED_CALLS, so the checker passes it."),
-}
+#: name -> (kernel, why-it-slips). Documented structural blind spots the checker
+#: returns ok=True on. EMPTY now: the two originally documented here
+#: (subclasses-escape, breakpoint) were closed in code_safety.py and moved into
+#: ``_ATTACKS`` where the corpus asserts the checker flags them. A new gap found
+#: in a future pass goes here, and stays here only until it is fixed -- the point
+#: of the role is that it is temporary. An empty _GAPS is the goal state, not a
+#: missing feature.
+_GAPS: Dict[str, Tuple[str, str]] = {}
 
 
 @dataclass(frozen=True)
