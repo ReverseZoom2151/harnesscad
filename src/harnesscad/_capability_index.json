@@ -9521,6 +9521,32 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.fabrication.dxf_preflight",
+      "imports": [
+        "harnesscad.io.formats.dxf",
+        "harnesscad.io.formats.dxf.DxfDocument",
+        "harnesscad.io.formats.dxf.Entity",
+        "harnesscad.io.formats.dxf.Layer"
+      ],
+      "layer": "domain",
+      "name": "dxf_preflight",
+      "package": "fabrication",
+      "summary": "Structural preflight for an already-parsed neutral DXF drawing.",
+      "symbols": [
+        "DxfPreflightFinding",
+        "DxfPreflightMetrics",
+        "DxfPreflightReport",
+        "dxf_preflight",
+        "main"
+      ],
+      "tags": [
+        "drawings",
+        "fabrication",
+        "format",
+        "io"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.fabrication.feature_attributes",
       "imports": [
         "harnesscad.domain.fabrication.feature_taxonomy",
@@ -9835,6 +9861,8 @@
         "harnesscad.domain.fabrication.brick_assembly.validate",
         "harnesscad.domain.fabrication.brick_coloring",
         "harnesscad.domain.fabrication.brick_coloring.assign_brick_colors",
+        "harnesscad.domain.fabrication.dxf_preflight",
+        "harnesscad.domain.fabrication.dxf_preflight.dxf_preflight",
         "harnesscad.domain.fabrication.feature_attributes",
         "harnesscad.domain.fabrication.feature_attributes.extract_attributes",
         "harnesscad.domain.fabrication.feature_difficulty",
@@ -9898,6 +9926,10 @@
         "harnesscad.domain.fabrication.workflow_taxonomy.WORKFLOWS",
         "harnesscad.domain.fabrication.workflow_taxonomy.available_workflows",
         "harnesscad.domain.fabrication.workflow_taxonomy.workflows_in_category",
+        "harnesscad.io.formats.dxf",
+        "harnesscad.io.formats.dxf.DxfDocument",
+        "harnesscad.io.formats.dxf.Entity",
+        "harnesscad.io.formats.dxf.Layer",
         "harnesscad.registry"
       ],
       "layer": "domain",
@@ -9916,6 +9948,7 @@
         "compare",
         "difficulty",
         "discover",
+        "dxf_preflight",
         "export_plan",
         "feature_attributes",
         "feature_minima",
