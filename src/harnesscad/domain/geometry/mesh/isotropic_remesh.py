@@ -1,42 +1,50 @@
 """Isotropic remeshing: split / collapse / flip / smooth.
 
-Derived from kerf (MIT, Copyright (c) 2026 Imran Paruk).
+The goal is a triangulation whose edges all sit near a requested length *L*
+and whose vertices have near-regular valence.  Each iteration applies four
+passes in order:
 
-The pure-Python algorithm uses these deterministic passes:
+1. **Refine.**  Every interior edge longer than ``4/3 * L`` is marked, a
+   midpoint is inserted on each marked edge, and every face is re-triangulated
+   in one batch according to how many of its three edges were marked (one,
+   two or three).  Marking the whole set before rebuilding keeps the pass
+   order-independent and lets a face split symmetrically instead of one edge
+   at a time.
+2. **Coarsen.**  Interior edges shorter than ``4/5 * L`` are collapsed,
+   shortest first.  Within a round the one-rings of an accepted collapse are
+   frozen, so several disjoint collapses commit together.
+3. **Equalise.**  Interior edges are flipped when the flip lowers the total
+   deviation of the four incident vertices from their target valence (6 in
+   the interior, 4 on the boundary).  Flips are likewise batched over
+   disjoint vertex neighbourhoods.
+4. **Relax.**  Interior vertices step toward the centroid of their one-ring
+   (uniform Laplacian, strength 0.5) with the step projected out of the
+   area-weighted vertex normal, so the surface is retiled without being
+   inflated or shrunk.
 
-1. split every edge longer than ``4/3 * L`` at its midpoint, processed
-   longest-first (one edge split per pass with the edge map rebuilt each
-   pass, bounded at 20 passes per iteration);
-2. collapse every interior edge shorter than ``4/5 * L`` into its midpoint,
-   processed shortest-first (one collapse per pass, bounded at 20 passes);
-3. flip interior edges when doing so reduces the total deviation of the four
-   incident vertices from the target valence (6 for interior vertices, 4 for
-   boundary vertices);
-4. tangentially smooth interior vertices: move each vertex toward the
-   centroid of its one-ring (uniform Laplacian, strength 0.5) with the update
-   projected onto the tangent plane of the area-weighted vertex normal.
+Boundary contract
+-----------------
+A boundary edge is one carried by a single face.  Boundary edges are never
+split and never collapsed, boundary vertices are never repositioned, and an
+interior edge joining two boundary vertices is left alone because collapsing
+it would pinch the rim.  An open patch therefore keeps its boundary polygon
+vertex-for-vertex and length-for-length.
 
-The four steps run for ``iterations`` cycles (default 5) and degenerate
-triangles are dropped at the end.  Boundary contract: boundary edges are
-never split or collapsed, and boundary vertices are never moved -- an open
-patch keeps its boundary polygon exactly.
+Manifold contract
+-----------------
+A collapse is admitted only when the endpoints' one-rings intersect in
+exactly the apexes of the two faces on the edge (the link condition), and a
+flip is refused when the new diagonal already exists.  Both guards keep a
+closed mesh closed and prevent duplicated directed edges.
 
-Design notes:
+Determinism
+-----------
+Candidate lists are sorted on (metric, lower index, upper index) and every
+traversal of a set is sorted before use -- including the neighbour sums in
+the relaxation pass, since floating-point addition is not associative.  Two
+runs on the same input produce bit-identical output.
 
-* The split pass skips boundary edges so the boundary polygon is preserved.
-* The collapse pass moves the surviving vertex to the edge midpoint for a
-  pure interior edge; for an interior/boundary edge pair it collapses into
-  the boundary vertex (position kept), and it skips edges whose endpoints are
-  both on the boundary.  A link condition (the one-ring intersection of the
-  endpoints must be exactly the set of opposite vertices) is checked so a
-  collapse cannot create a non-manifold edge.
-* The flip is orientation-aware so the winding stays consistent, and it
-  refuses a flip that would duplicate an existing edge.
-* Target valence is 6 for interior and 4 for boundary vertices, with valence
-  counted as the number of distinct one-ring neighbours.
-
-Pure stdlib, deterministic: every priority queue is sorted with the vertex
-indices as tie-breakers.
+Pure stdlib.
 """
 
 from __future__ import annotations
@@ -51,12 +59,13 @@ Point = Tuple[float, float, float]
 Tri = Tuple[int, int, int]
 Edge = Tuple[int, int]
 
-_MAX_SPLIT_PASSES = 20
-_MAX_COLLAPSE_PASSES = 20
-_MAX_FLIP_SWEEPS = 10
-_SMOOTH_STRENGTH = 0.5
+_MAX_REFINE_ROUNDS = 6
+_MAX_COARSEN_ROUNDS = 8
+_MAX_EQUALISE_SWEEPS = 8
+_RELAX_STRENGTH = 0.5
 _INTERIOR_TARGET_VALENCE = 6
 _BOUNDARY_TARGET_VALENCE = 4
+_TINY = 1e-12
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +91,7 @@ def isotropic_remesh(
     target_edge_length : float
         Desired average edge length after remeshing.
     iterations : int
-        Number of split -> collapse -> flip -> smooth cycles (default 5).
+        Number of refine -> coarsen -> equalise -> relax cycles (default 5).
 
     Returns
     -------
@@ -94,419 +103,453 @@ def isotropic_remesh(
     if target_edge_length <= 0:
         raise ValueError("target_edge_length must be positive")
 
-    verts: List[List[float]] = [
+    points: List[List[float]] = [
         [float(p[0]), float(p[1]), float(p[2])] for p in vertices
     ]
-    faces: List[List[int]] = _triangulate(triangles)
+    faces: List[Tri] = _as_triangles(triangles)
 
-    if not verts or not faces:
-        return {"vertices": [tuple(v) for v in verts], "faces": []}
+    if not points or not faces:
+        return {"vertices": [(p[0], p[1], p[2]) for p in points], "faces": []}
 
     length = float(target_edge_length)
-    split_thresh = (4.0 / 3.0) * length
-    collapse_thresh = (4.0 / 5.0) * length
+    upper = (4.0 / 3.0) * length
+    lower = (4.0 / 5.0) * length
 
-    for _iteration in range(int(iterations)):
-        faces = _split_long_edges(verts, faces, split_thresh)
-        faces = _collapse_short_edges(verts, faces, collapse_thresh)
-        faces = _flip_edges(verts, faces)
-        _smooth_vertices(verts, faces)
+    for _cycle in range(int(iterations)):
+        faces = _refine(points, faces, upper)
+        faces = _coarsen(points, faces, lower)
+        faces = _equalise(faces)
+        _relax(points, faces)
 
-    # Clean up any degenerate triangles introduced.
     faces = [f for f in faces if len(set(f)) == 3]
 
     return {
-        "vertices": [(v[0], v[1], v[2]) for v in verts],
+        "vertices": [(p[0], p[1], p[2]) for p in points],
         "faces": [(f[0], f[1], f[2]) for f in faces],
     }
 
 
 # ---------------------------------------------------------------------------
-# triangulation (handle quads and higher n-gons by fanning)
+# input conditioning
 # ---------------------------------------------------------------------------
 
 
-def _triangulate(faces: Sequence[Sequence[int]]) -> List[List[int]]:
-    tris: List[List[int]] = []
+def _as_triangles(faces: Sequence[Sequence[int]]) -> List[Tri]:
+    """Pass triangles through; fan any larger polygon from its first corner."""
+    out: List[Tri] = []
     for face in faces:
-        indices = [int(v) for v in face]
-        n = len(indices)
-        if n < 3:
-            continue
-        if n == 3:
-            tris.append(indices)
-        else:
-            for i in range(1, n - 1):
-                tris.append([indices[0], indices[i], indices[i + 1]])
-    return tris
+        ring = [int(v) for v in face]
+        for k in range(1, len(ring) - 1):
+            out.append((ring[0], ring[k], ring[k + 1]))
+    return out
 
 
 # ---------------------------------------------------------------------------
-# helper geometry / topology
+# geometry and topology helpers
 # ---------------------------------------------------------------------------
 
 
-def _edge_length(verts: List[List[float]], a: int, b: int) -> float:
-    va, vb = verts[a], verts[b]
-    return math.sqrt(
-        (va[0] - vb[0]) ** 2 + (va[1] - vb[1]) ** 2 + (va[2] - vb[2]) ** 2
-    )
+def _key(i: int, j: int) -> Edge:
+    return (i, j) if i < j else (j, i)
 
 
-def _midpoint(verts: List[List[float]], a: int, b: int) -> List[float]:
-    va, vb = verts[a], verts[b]
-    return [0.5 * (va[i] + vb[i]) for i in range(3)]
+def _span(points: Sequence[Sequence[float]], i: int, j: int) -> float:
+    a, b = points[i], points[j]
+    dx, dy, dz = a[0] - b[0], a[1] - b[1], a[2] - b[2]
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
 
 
-def _ekey(a: int, b: int) -> Edge:
-    return (a, b) if a < b else (b, a)
+def _halfway(points: Sequence[Sequence[float]], i: int, j: int) -> List[float]:
+    a, b = points[i], points[j]
+    return [0.5 * (a[0] + b[0]), 0.5 * (a[1] + b[1]), 0.5 * (a[2] + b[2])]
 
 
-def _build_edge_map(faces: List[List[int]]) -> Dict[Edge, List[int]]:
-    """Map undirected edge (min, max) -> list of incident face indices."""
-    edge_map: Dict[Edge, List[int]] = {}
-    for fi, f in enumerate(faces):
-        n = len(f)
-        for k in range(n):
-            edge_map.setdefault(_ekey(f[k], f[(k + 1) % n]), []).append(fi)
-    return edge_map
+def _incidence(faces: Sequence[Tri]) -> Dict[Edge, List[int]]:
+    """Undirected edge -> indices of the faces carrying it."""
+    table: Dict[Edge, List[int]] = {}
+    for index, face in enumerate(faces):
+        table.setdefault(_key(face[0], face[1]), []).append(index)
+        table.setdefault(_key(face[1], face[2]), []).append(index)
+        table.setdefault(_key(face[2], face[0]), []).append(index)
+    return table
 
 
-def _boundary_edges(edge_map: Dict[Edge, List[int]]) -> Set[Edge]:
-    return {e for e, fs in edge_map.items() if len(fs) == 1}
+def _rim_vertices(table: Dict[Edge, List[int]]) -> Set[int]:
+    """Vertices touched by an edge that carries only one face."""
+    rim: Set[int] = set()
+    for (i, j), carriers in table.items():
+        if len(carriers) == 1:
+            rim.add(i)
+            rim.add(j)
+    return rim
 
 
-def _boundary_vertices(edge_map: Dict[Edge, List[int]]) -> Set[int]:
-    verts: Set[int] = set()
-    for a, b in _boundary_edges(edge_map):
-        verts.add(a)
-        verts.add(b)
-    return verts
+def _one_rings(faces: Sequence[Tri]) -> Dict[int, Set[int]]:
+    rings: Dict[int, Set[int]] = {}
+    for face in faces:
+        for k in range(3):
+            a, b = face[k], face[(k + 1) % 3]
+            rings.setdefault(a, set()).add(b)
+            rings.setdefault(b, set()).add(a)
+    return rings
 
 
-def _vertex_adjacency(faces: List[List[int]]) -> Dict[int, Set[int]]:
-    adj: Dict[int, Set[int]] = {}
-    for f in faces:
-        n = len(f)
-        for k in range(n):
-            a, b = f[k], f[(k + 1) % n]
-            adj.setdefault(a, set()).add(b)
-            adj.setdefault(b, set()).add(a)
-    return adj
+def _apex(face: Tri, i: int, j: int) -> Optional[int]:
+    """The corner of *face* that is neither *i* nor *j*."""
+    found = [v for v in face if v != i and v != j]
+    return found[0] if len(found) == 1 else None
 
 
 # ---------------------------------------------------------------------------
-# (1) split long edges (longest-first, boundary edges never split)
+# pass 1 -- refine: batched midpoint insertion on over-long interior edges
 # ---------------------------------------------------------------------------
 
 
-def _split_long_edges(
-    verts: List[List[float]],
-    faces: List[List[int]],
-    threshold: float,
-) -> List[List[int]]:
-    """Split interior edges longer than *threshold* at their midpoints.
+def _refine(points: List[List[float]],
+            faces: List[Tri],
+            upper: float) -> List[Tri]:
+    """Insert midpoints on interior edges longer than *upper*.
 
-    One split per pass, edge map rebuilt each pass, bounded at
-    ``_MAX_SPLIT_PASSES`` passes.  Boundary edges are never split (see the
-    module docstring design notes).
+    Every over-long edge in the current mesh is marked first, then the face
+    list is rebuilt in a single sweep.  A face is re-triangulated according
+    to which of its three edges carry a midpoint; when two do, the leftover
+    quadrilateral is split along its shorter diagonal so the pass does not
+    manufacture slivers.
     """
-    changed = True
-    passes_left = _MAX_SPLIT_PASSES
-    while changed and passes_left > 0:
-        passes_left -= 1
-        changed = False
-        edge_map = _build_edge_map(faces)
-        boundary = _boundary_edges(edge_map)
-        long_edges = [
-            (e, _edge_length(verts, e[0], e[1]))
-            for e in edge_map
-            if e not in boundary and _edge_length(verts, e[0], e[1]) > threshold
-        ]
-        if not long_edges:
+    for _round in range(_MAX_REFINE_ROUNDS):
+        table = _incidence(faces)
+        marked = sorted(
+            edge for edge, carriers in table.items()
+            if len(carriers) == 2 and _span(points, edge[0], edge[1]) > upper
+        )
+        if not marked:
             break
-        # Longest first; vertex indices break ties deterministically.
-        long_edges.sort(key=lambda item: (-item[1], item[0][0], item[0][1]))
-        for (a, b), _len in long_edges:
-            if a >= len(verts) or b >= len(verts):
-                continue
-            if _edge_length(verts, a, b) <= threshold:
-                continue
-            mid_vi = len(verts)
-            verts.append(_midpoint(verts, a, b))
-            key = _ekey(a, b)
-            incident = set(_build_edge_map(faces).get(key, []))
-            new_faces: List[List[int]] = []
-            for fi, f in enumerate(faces):
-                if fi not in incident:
-                    new_faces.append(f)
-                    continue
-                n = len(f)
-                inserted = False
-                for k in range(n):
-                    if _ekey(f[k], f[(k + 1) % n]) == key:
-                        p0, p1 = f[k], f[(k + 1) % n]
-                        opp = f[(k + 2) % n]  # valid only for a triangle
-                        new_faces.append([p0, mid_vi, opp])
-                        new_faces.append([mid_vi, p1, opp])
-                        inserted = True
-                        break
-                if not inserted:
-                    new_faces.append(f)
-            faces = new_faces
-            changed = True
-            break  # restart the outer while after one split
+
+        midpoint: Dict[Edge, int] = {}
+        for edge in marked:
+            midpoint[edge] = len(points)
+            points.append(_halfway(points, edge[0], edge[1]))
+
+        rebuilt: List[Tri] = []
+        for a, b, c in faces:
+            mab = midpoint.get(_key(a, b))
+            mbc = midpoint.get(_key(b, c))
+            mca = midpoint.get(_key(c, a))
+            rebuilt.extend(_split_face(points, (a, b, c), mab, mbc, mca))
+        faces = rebuilt
     return faces
 
 
+def _quad(points: Sequence[Sequence[float]],
+          p: int, q: int, r: int, s: int) -> List[Tri]:
+    """Triangulate the CCW quadrilateral p-q-r-s along its shorter diagonal."""
+    if _span(points, p, r) <= _span(points, q, s):
+        return [(p, q, r), (p, r, s)]
+    return [(p, q, s), (q, r, s)]
+
+
+def _split_face(points: Sequence[Sequence[float]],
+                face: Tri,
+                mab: Optional[int],
+                mbc: Optional[int],
+                mca: Optional[int]) -> List[Tri]:
+    """Re-triangulate one face given the midpoints marked on its edges."""
+    a, b, c = face
+    present = (mab is not None, mbc is not None, mca is not None)
+
+    if present == (False, False, False):
+        return [face]
+    if present == (True, True, True):
+        return [(a, mab, mca), (mab, b, mbc), (mca, mbc, c),
+                (mab, mbc, mca)]
+
+    # Exactly one midpoint: bisect the face from the opposite corner.
+    if present == (True, False, False):
+        return [(a, mab, c), (mab, b, c)]
+    if present == (False, True, False):
+        return [(a, b, mbc), (a, mbc, c)]
+    if present == (False, False, True):
+        return [(b, c, mca), (b, mca, a)]
+
+    # Exactly two midpoints: one corner triangle plus a quadrilateral.
+    if present == (True, True, False):
+        return [(mab, b, mbc)] + _quad(points, a, mab, mbc, c)
+    if present == (False, True, True):
+        return [(mbc, c, mca)] + _quad(points, a, b, mbc, mca)
+    return [(mca, a, mab)] + _quad(points, mab, b, c, mca)
+
+
 # ---------------------------------------------------------------------------
-# (2) collapse short edges (shortest-first, boundary preserved)
+# pass 2 -- coarsen: collapse under-length interior edges
 # ---------------------------------------------------------------------------
 
 
-def _collapse_legal(
-    faces: List[List[int]],
-    edge_map: Dict[Edge, List[int]],
-    a: int,
-    b: int,
-) -> bool:
-    """Link condition: the shared one-ring of *a* and *b* must be exactly the
-    opposite vertices of the faces incident on edge (a, b).  Otherwise the
-    collapse would fuse two triangles onto one edge (non-manifold)."""
-    adj = _vertex_adjacency(faces)
-    opposite: Set[int] = set()
-    for fi in edge_map.get(_ekey(a, b), []):
-        for v in faces[fi]:
-            if v != a and v != b:
-                opposite.add(v)
-    shared = adj.get(a, set()) & adj.get(b, set())
-    return shared == opposite
+def _link_condition(edge: Edge,
+                    faces: Sequence[Tri],
+                    table: Dict[Edge, List[int]],
+                    rings: Dict[int, Set[int]]) -> bool:
+    """True when merging the endpoints cannot create a duplicated edge.
 
-
-def _collapse_short_edges(
-    verts: List[List[float]],
-    faces: List[List[int]],
-    threshold: float,
-) -> List[List[int]]:
-    """Collapse interior edges shorter than *threshold*.
-
-    One collapse per pass (shortest first), bounded at
-    ``_MAX_COLLAPSE_PASSES`` passes.  Boundary edges are never collapsed.
-    An edge with exactly one boundary endpoint collapses into the boundary
-    vertex without moving it; an interior edge between two boundary vertices
-    is skipped (it would pinch the boundary).
+    The endpoints may share only the apexes of the two faces on the edge; any
+    further common neighbour would end up joined to the survivor twice, which
+    is the classic non-manifold outcome of a careless collapse.
     """
-    for _pass in range(_MAX_COLLAPSE_PASSES):
-        edge_map = _build_edge_map(faces)
-        boundary = _boundary_edges(edge_map)
-        boundary_verts = _boundary_vertices(edge_map)
-        short_edges = [
-            (e, _edge_length(verts, e[0], e[1]))
-            for e in edge_map
-            if e not in boundary and _edge_length(verts, e[0], e[1]) < threshold
-        ]
-        if not short_edges:
-            break
-        # Shortest first; vertex indices break ties deterministically.
-        short_edges.sort(key=lambda item: (item[1], item[0][0], item[0][1]))
+    carriers = table.get(edge, [])
+    if len(carriers) != 2:
+        return False
+    apexes: Set[int] = set()
+    for index in carriers:
+        corner = _apex(faces[index], edge[0], edge[1])
+        if corner is None:
+            return False
+        apexes.add(corner)
+    shared = rings.get(edge[0], set()) & rings.get(edge[1], set())
+    return shared == apexes
 
-        collapsed = False
-        for (a, b), _len in short_edges:
-            a_bnd = a in boundary_verts
-            b_bnd = b in boundary_verts
-            if a_bnd and b_bnd:
-                continue  # would move or pinch the boundary
-            if not _collapse_legal(faces, edge_map, a, b):
+
+def _coarsen(points: List[List[float]],
+             faces: List[Tri],
+             lower: float) -> List[Tri]:
+    """Collapse interior edges shorter than *lower*, shortest first.
+
+    A round gathers every candidate, then commits as many as have disjoint
+    one-rings; the mesh is rebuilt once and the next round re-measures.  An
+    edge with one boundary endpoint collapses onto that endpoint so the rim
+    does not move, and an edge with two boundary endpoints is skipped.
+    """
+    for _round in range(_MAX_COARSEN_ROUNDS):
+        table = _incidence(faces)
+        rim = _rim_vertices(table)
+        rings = _one_rings(faces)
+
+        candidates = sorted(
+            (_span(points, edge[0], edge[1]), edge[0], edge[1])
+            for edge, carriers in table.items()
+            if len(carriers) == 2
+            and _span(points, edge[0], edge[1]) < lower
+        )
+        if not candidates:
+            break
+
+        frozen: Set[int] = set()
+        substitute: Dict[int, int] = {}
+        moves: List[Tuple[int, List[float]]] = []
+
+        for _distance, first, second in candidates:
+            if first in frozen or second in frozen:
                 continue
-            if a_bnd:
-                keep, gone = a, b  # keep the boundary vertex where it is
-            elif b_bnd:
-                keep, gone = b, a
+            first_on_rim, second_on_rim = first in rim, second in rim
+            if first_on_rim and second_on_rim:
+                continue
+            if not _link_condition((first, second), faces, table, rings):
+                continue
+
+            if first_on_rim:
+                survivor, absorbed = first, second
+            elif second_on_rim:
+                survivor, absorbed = second, first
             else:
-                keep, gone = a, b
-                verts[keep] = _midpoint(verts, a, b)
-            new_faces: List[List[int]] = []
-            for f in faces:
-                new_f = [keep if vi == gone else vi for vi in f]
-                if len(set(new_f)) == 3:  # drop degenerates
-                    new_faces.append(new_f)
-            faces = new_faces
-            collapsed = True
-            break  # rebuild the edge map after one collapse
-        if not collapsed:
+                survivor, absorbed = first, second
+                moves.append((survivor, _halfway(points, first, second)))
+
+            substitute[absorbed] = survivor
+            frozen.add(first)
+            frozen.add(second)
+            frozen |= rings.get(first, set())
+            frozen |= rings.get(second, set())
+
+        if not substitute:
             break
+
+        for vertex, position in moves:
+            points[vertex] = position
+
+        rebuilt: List[Tri] = []
+        for face in faces:
+            a = substitute.get(face[0], face[0])
+            b = substitute.get(face[1], face[1])
+            c = substitute.get(face[2], face[2])
+            if a != b and b != c and a != c:
+                rebuilt.append((a, b, c))
+        faces = rebuilt
     return faces
 
 
 # ---------------------------------------------------------------------------
-# (3) valence-optimising edge flips
+# pass 3 -- equalise: valence-improving edge flips
 # ---------------------------------------------------------------------------
 
 
-def _flip_edges(
-    verts: List[List[float]],
-    faces: List[List[int]],
-) -> List[List[int]]:
-    """Flip interior edges to reduce deviation from the target valence.
+def _equalise(faces: List[Tri]) -> List[Tri]:
+    """Flip interior edges that bring valences closer to their targets.
 
-    Target valence: 6 for interior vertices, 4 for boundary vertices.
-    For an interior edge (a, b) shared by triangles with
-    opposite vertices c and d, a flip replaces the edge (a, b) with (c, d)
-    when the summed valence deviation of a, b, c, d decreases.  The flip is
-    orientation-aware so the winding stays consistent, and is refused when
-    the edge (c, d) already exists.
+    Flipping the edge (a, b) of the two faces with apexes c and d replaces it
+    with (c, d): a and b each lose a neighbour while c and d each gain one.
+    The flip is taken when the summed absolute deviation from the target
+    valence strictly drops.  Rewrites are orientation-aware, so the winding
+    survives, and are batched over disjoint vertex neighbourhoods.
     """
-    edge_map = _build_edge_map(faces)
-    boundary_verts = _boundary_vertices(edge_map)
+    faces = list(faces)
 
-    # Valence = number of distinct one-ring neighbours.
-    valence: Dict[int, int] = {
-        v: len(nbrs) for v, nbrs in _vertex_adjacency(faces).items()
-    }
+    for _sweep in range(_MAX_EQUALISE_SWEEPS):
+        table = _incidence(faces)
+        rim = _rim_vertices(table)
+        rings = _one_rings(faces)
+        valence = {vertex: len(ring) for vertex, ring in rings.items()}
+        existing = set(table)
 
-    def _target(v: int) -> int:
-        if v in boundary_verts:
-            return _BOUNDARY_TARGET_VALENCE
-        return _INTERIOR_TARGET_VALENCE
+        def target(vertex: int) -> int:
+            if vertex in rim:
+                return _BOUNDARY_TARGET_VALENCE
+            return _INTERIOR_TARGET_VALENCE
 
-    changed = True
-    sweeps_left = _MAX_FLIP_SWEEPS
-    while changed and sweeps_left > 0:
-        sweeps_left -= 1
-        changed = False
-        edge_map = _build_edge_map(faces)
-        boundary = _boundary_edges(edge_map)
-        existing_edges = set(edge_map)
-        for e in sorted(edge_map):
-            if e in boundary:
+        def deviation(vertex: int, shift: int = 0) -> int:
+            return abs(valence.get(vertex, 0) + shift - target(vertex))
+
+        frozen: Set[int] = set()
+        applied = False
+
+        for edge in sorted(table):
+            carriers = table[edge]
+            if len(carriers) != 2:
                 continue
-            fi_list = edge_map[e]
-            if len(fi_list) != 2:
+            a, b = edge
+            left, right = carriers
+            c = _apex(faces[left], a, b)
+            d = _apex(faces[right], a, b)
+            if c is None or d is None or c == d:
                 continue
-            fi0, fi1 = fi_list
-            f0, f1 = faces[fi0], faces[fi1]
-            a, b = e
-            c_list = [v for v in f0 if v != a and v != b]
-            d_list = [v for v in f1 if v != a and v != b]
-            if len(c_list) != 1 or len(d_list) != 1:
+            if _key(c, d) in existing:
                 continue
-            c, d = c_list[0], d_list[0]
-            if c == d or _ekey(c, d) in existing_edges:
+            if frozen & {a, b, c, d}:
                 continue
 
-            def _dev(v: int, delta: int = 0) -> int:
-                return abs(valence.get(v, 0) + delta - _target(v))
-
-            before = _dev(a) + _dev(b) + _dev(c) + _dev(d)
-            after = _dev(a, -1) + _dev(b, -1) + _dev(c, 1) + _dev(d, 1)
+            before = deviation(a) + deviation(b) + deviation(c) + deviation(d)
+            after = (deviation(a, -1) + deviation(b, -1)
+                     + deviation(c, 1) + deviation(d, 1))
             if after >= before:
                 continue
 
-            # Orientation-aware rewrite: let f_ab be the face holding the
-            # directed edge a->b (opposite vertex c'), f_ba the other.
-            # (a, b, c') + (b, a, d') -> (a, d', c') + (d', b, c').
-            if _has_directed_edge(f0, a, b):
-                f_ab, f_ba, ia, ib = fi0, fi1, c, d
-            elif _has_directed_edge(f1, a, b):
-                f_ab, f_ba, ia, ib = fi1, fi0, d, c
+            # Identify which face runs a->b so the two replacements keep the
+            # original winding: (a, b, x) + (b, a, y) -> (a, y, x) + (y, b, x).
+            if _runs(faces[left], a, b):
+                ccw_face, cw_face, near, far = left, right, c, d
+            elif _runs(faces[right], a, b):
+                ccw_face, cw_face, near, far = right, left, d, c
             else:
-                continue  # inconsistent winding; leave the edge alone
-            faces[f_ab] = [a, ib, ia]
-            faces[f_ba] = [ib, b, ia]
-            valence[a] = valence.get(a, 0) - 1
-            valence[b] = valence.get(b, 0) - 1
-            valence[c] = valence.get(c, 0) + 1
-            valence[d] = valence.get(d, 0) + 1
-            existing_edges.discard(_ekey(a, b))
-            existing_edges.add(_ekey(c, d))
-            changed = True
-            # Face lists changed under edge_map; rebuild before continuing.
+                continue  # inconsistent winding: leave this edge alone
+
+            faces[ccw_face] = (a, far, near)
+            faces[cw_face] = (far, b, near)
+
+            existing.discard(edge)
+            existing.add(_key(c, d))
+            frozen |= {a, b, c, d}
+            frozen |= rings.get(a, set())
+            frozen |= rings.get(b, set())
+            applied = True
+
+        if not applied:
             break
     return faces
 
 
-def _has_directed_edge(face: List[int], a: int, b: int) -> bool:
-    n = len(face)
-    for k in range(n):
-        if face[k] == a and face[(k + 1) % n] == b:
-            return True
-    return False
+def _runs(face: Tri, a: int, b: int) -> bool:
+    """True when *face* traverses the directed edge a -> b."""
+    return ((face[0] == a and face[1] == b)
+            or (face[1] == a and face[2] == b)
+            or (face[2] == a and face[0] == b))
 
 
 # ---------------------------------------------------------------------------
-# (4) tangential Laplacian smoothing
+# pass 4 -- relax: tangential Laplacian smoothing
 # ---------------------------------------------------------------------------
 
 
-def _smooth_vertices(
-    verts: List[List[float]],
-    faces: List[List[int]],
-    strength: float = _SMOOTH_STRENGTH,
-) -> None:
-    """Move each interior vertex toward the centroid of its one-ring,
-    projected onto the tangent plane of the area-weighted vertex normal.
-    Boundary vertices are not moved."""
-    edge_map = _build_edge_map(faces)
-    boundary_verts = _boundary_vertices(edge_map)
-    adj = _vertex_adjacency(faces)
+def _relax(points: List[List[float]],
+           faces: Sequence[Tri],
+           strength: float = _RELAX_STRENGTH) -> None:
+    """Slide interior vertices toward their one-ring centroid, tangentially.
 
-    # Per-vertex normal: sum of (area-weighted, i.e. unnormalised cross
-    # product) incident face normals.
-    normals: List[List[float]] = [[0.0, 0.0, 0.0] for _ in verts]
-    for f in faces:
-        pa, pb, pc = verts[f[0]], verts[f[1]], verts[f[2]]
+    The Laplacian offset is projected out of the vertex normal so the pass
+    redistributes vertices across the surface without displacing it.  The
+    normal is the normalised sum of the incident faces' cross products, which
+    weights each face by twice its area.  Boundary vertices stay put.
+    """
+    table = _incidence(faces)
+    rim = _rim_vertices(table)
+    rings = _one_rings(faces)
+
+    normals: List[List[float]] = [[0.0, 0.0, 0.0] for _ in points]
+    for a, b, c in faces:
+        pa, pb, pc = points[a], points[b], points[c]
         ux, uy, uz = pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]
         vx, vy, vz = pc[0] - pa[0], pc[1] - pa[1], pc[2] - pa[2]
-        nx = uy * vz - uz * vy
-        ny = uz * vx - ux * vz
-        nz = ux * vy - uy * vx
-        for vi in f:
-            normals[vi][0] += nx
-            normals[vi][1] += ny
-            normals[vi][2] += nz
-    for n in normals:
-        mag = math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2])
-        if mag > 1e-12:
-            n[0] /= mag
-            n[1] /= mag
-            n[2] /= mag
+        nx, ny, nz = (uy * vz - uz * vy,
+                      uz * vx - ux * vz,
+                      ux * vy - uy * vx)
+        for corner in (a, b, c):
+            slot = normals[corner]
+            slot[0] += nx
+            slot[1] += ny
+            slot[2] += nz
 
-    new_positions: Dict[int, List[float]] = {}
-    for vi in range(len(verts)):
-        if vi in boundary_verts:
+    updated: List[Tuple[int, List[float]]] = []
+    for vertex in range(len(points)):
+        if vertex in rim:
             continue
-        neighbours = adj.get(vi)
+        neighbours = rings.get(vertex)
         if not neighbours:
             continue
-        cx = cy = cz = 0.0
-        for nb in neighbours:
-            cx += verts[nb][0]
-            cy += verts[nb][1]
-            cz += verts[nb][2]
-        inv = 1.0 / len(neighbours)
-        dx = cx * inv - verts[vi][0]
-        dy = cy * inv - verts[vi][1]
-        dz = cz * inv - verts[vi][2]
-        n = normals[vi]
-        mag = math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2])
-        if mag > 1e-12:
-            dot = dx * n[0] + dy * n[1] + dz * n[2]
-            dx -= dot * n[0]
-            dy -= dot * n[1]
-            dz -= dot * n[2]
-        new_positions[vi] = [
-            verts[vi][0] + strength * dx,
-            verts[vi][1] + strength * dy,
-            verts[vi][2] + strength * dz,
-        ]
 
-    for vi, pos in new_positions.items():
-        verts[vi] = pos
+        # Sorted so the accumulation order -- and hence the rounding -- is
+        # fixed regardless of set iteration order.
+        sx = sy = sz = 0.0
+        ordered = sorted(neighbours)
+        for other in ordered:
+            sx += points[other][0]
+            sy += points[other][1]
+            sz += points[other][2]
+        scale = 1.0 / len(ordered)
+        here = points[vertex]
+        dx = sx * scale - here[0]
+        dy = sy * scale - here[1]
+        dz = sz * scale - here[2]
+
+        nx, ny, nz = normals[vertex]
+        magnitude = math.sqrt(nx * nx + ny * ny + nz * nz)
+        if magnitude > _TINY:
+            nx, ny, nz = nx / magnitude, ny / magnitude, nz / magnitude
+            along = dx * nx + dy * ny + dz * nz
+            dx -= along * nx
+            dy -= along * ny
+            dz -= along * nz
+
+        updated.append((vertex, [here[0] + strength * dx,
+                                 here[1] + strength * dy,
+                                 here[2] + strength * dz]))
+
+    for vertex, position in updated:
+        points[vertex] = position
 
 
 # ---------------------------------------------------------------------------
 # selfcheck fixtures and validators
 # ---------------------------------------------------------------------------
+
+
+def _build_edge_map(faces: Sequence[Sequence[int]]) -> Dict[Edge, List[int]]:
+    """Undirected edge -> carrying face indices (accepts list-form faces)."""
+    table: Dict[Edge, List[int]] = {}
+    for index, face in enumerate(faces):
+        n = len(face)
+        for k in range(n):
+            table.setdefault(_key(face[k], face[(k + 1) % n]), []).append(index)
+    return table
+
+
+def _boundary_edges(table: Dict[Edge, List[int]]) -> Set[Edge]:
+    return {edge for edge, carriers in table.items() if len(carriers) == 1}
 
 
 def _unit_cube() -> Tuple[List[Point], List[Tri]]:
@@ -562,19 +605,17 @@ def _directed_edge_check(faces: Sequence[Tri]) -> Tuple[bool, bool]:
     return unique, closed
 
 
-def _all_edge_lengths(verts: Sequence[Point], faces: Sequence[Tri]) -> List[float]:
+def _all_edge_lengths(verts: Sequence[Point],
+                      faces: Sequence[Tri]) -> List[float]:
     seen: Set[Edge] = set()
     lengths: List[float] = []
     for f in faces:
         for k in range(3):
-            e = _ekey(f[k], f[(k + 1) % 3])
+            e = _key(f[k], f[(k + 1) % 3])
             if e in seen:
                 continue
             seen.add(e)
-            pa, pb = verts[e[0]], verts[e[1]]
-            lengths.append(math.sqrt(
-                (pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2 + (pa[2] - pb[2]) ** 2
-            ))
+            lengths.append(_span(verts, e[0], e[1]))
     return lengths
 
 
@@ -588,10 +629,7 @@ def _boundary_polygon(
     for a, b in _boundary_edges(edge_map):
         positions.add(verts[a])
         positions.add(verts[b])
-        pa, pb = verts[a], verts[b]
-        total += math.sqrt(
-            (pa[0] - pb[0]) ** 2 + (pa[1] - pb[1]) ** 2 + (pa[2] - pb[2]) ** 2
-        )
+        total += _span(verts, a, b)
     return positions, total
 
 
@@ -651,7 +689,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     unique, _ = _directed_edge_check(p_faces)
     assert unique, "patch result has a duplicated directed edge"
     after_positions, after_length = _boundary_polygon(p_verts, p_faces)
-    corners = {(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (1.0, 1.0, 0.0)}
+    corners = {(0.0, 0.0, 0.0), (1.0, 0.0, 0.0),
+               (0.0, 1.0, 0.0), (1.0, 1.0, 0.0)}
     tol = 1e-9
 
     def _present(target_pt: Point, pool: Set[Point]) -> bool:
