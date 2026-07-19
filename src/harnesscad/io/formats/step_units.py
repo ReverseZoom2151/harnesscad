@@ -332,8 +332,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="STEP SI_UNIT / CONVERSION_BASED_UNIT / "
                     "UNCERTAINTY_MEASURE_WITH_UNIT extraction to a "
-                    "scale-to-mm factor + global tolerance (cadquery "
-                    "importer policy + kerf step_reader).",
+                    "scale-to-mm factor + global tolerance.",
     )
     parser.add_argument("--selfcheck", action="store_true",
                         help="parse synthetic STEP snippets in mm, m, and "
