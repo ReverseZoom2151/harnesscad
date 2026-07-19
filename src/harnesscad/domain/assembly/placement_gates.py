@@ -1,23 +1,19 @@
 """Bounding-box assembly-placement gates (adjacency + floating-part).
 
-Ported from CADCLAW's ``adjacency.py`` and ``floating.py`` -- two of its
-assembly verification gates.  CADCLAW checks an authored CAD assembly for
-mis-placed components using nothing but part bounding boxes:
+The gates check an authored CAD assembly for mis-placed components using only
+part bounding boxes:
 
 *   **Adjacency gate** (:func:`adjacency_check`) -- every part of type ``source``
     must have a part of type ``target`` within ``max_distance`` (centre-to-centre).
     Catches scattered or wrongly-placed components ("every motor needs a bracket
-    within 50 mm").  Mirror of ``AdjacencyCheck``.
+    within 50 mm").
 *   **Floating-part gate** (:func:`floating_check`) -- every non-exempt part must
     be within ``max_gap`` of at least one *structural* anchor part (bbox-to-bbox
     gap).  Catches parts that pass inventory and interference checks yet are
     disconnected from the assembly (the "idler floating in the centre" bug).
-    Mirror of ``FloatingCheck``.
 
-Both gates in the original operate on CadQuery solids via ``.BoundingBox()``.
 Here a part is the pure-data :class:`Part` (a label + an axis-aligned bounding
-box), so the gates are stdlib-only and deterministic -- the exact geometric
-predicate is preserved, only the geometry source is abstracted.  The
+box), so the gates are stdlib-only and deterministic. The
 :func:`bbox_distance` helper (minimum L2 gap between two AABBs, zero when they
 overlap) is the shared distance primitive.
 

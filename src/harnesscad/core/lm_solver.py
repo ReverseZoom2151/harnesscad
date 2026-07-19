@@ -1,9 +1,7 @@
-"""Levenberg-Marquardt 2D constraint solver, ported from ezpz (Rust).
+"""Levenberg-Marquardt 2D constraint solver.
 
-A THIRD, independent constraint method for the harness, ported from the ezpz
-2D constraint solver (https://github.com/, ``ezpz/src/solver.rs`` +
-``analysis.rs``).  It is deliberately *not* the same algorithm as either existing
-method:
+This third independent constraint method is deliberately not the same algorithm
+as either existing method:
 
 * :class:`core.constraints.ConstraintGraph` is a **union-find rank** analysis
   over an abstract DOF model -- combinatorial, never touches real coordinates.
@@ -19,7 +17,7 @@ strengthens the geometry oracle.  The residual formulation here also makes the
 solver constraint-agnostic -- any differentiable residual can be added, not only
 the fixed vocabulary a rank model understands.
 
-Algorithm (ezpz ``solver.rs``):
+Algorithm:
 
 * residuals ``r(x)`` are stacked from every constraint; the objective is
   ``sum r_i^2``.

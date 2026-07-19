@@ -1,7 +1,6 @@
 """Deterministic exploded-view layout for an occurrence-structured assembly.
 
-Ported from ``packages/cadjs/src/lib/viewer/explodedView.js`` of the ``text-to-cad``
-(CAD Skills) repository.  Given the axis-aligned bounds of every part of an
+Given the axis-aligned bounds of every part of an
 assembly plus each part's occurrence id (see
 ``programs.t2cmain_cad_ref_selectors``), it produces the translation each part
 must receive so the assembly reads as an exploded drawing.  The harness had no

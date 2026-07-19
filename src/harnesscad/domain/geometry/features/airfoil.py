@@ -1,11 +1,7 @@
 """NACA 4-digit airfoil coordinate generation (deterministic, stdlib-only).
 
-Ported from the ``05-naca-airfoil-wing.scad`` benchmark bundled with CADAM
-(Adam-CAD's open-source text-to-CAD web app). CADAM is an LLM front-end that
-emits OpenSCAD; the airfoil *math* it emits for the tapered-wing benchmark is a
-fully deterministic, closed-form parametrisation of the classic NACA 4-digit
-series. The harness previously carried no airfoil generator (only an unrelated
-CadQuery reference lives under ``resources/``), so this module supplies it.
+This module implements the closed-form parametrisation of the classic NACA
+4-digit series.
 
 The NACA 4-digit designation ``MPTT`` encodes three normalised parameters over
 a unit chord ``x in [0, 1]``:
