@@ -1,0 +1,4389 @@
+{
+  "source_repo": "https://github.com/anniedoris/CADBench",
+  "source_path": "cad_repos/CADBench-main/CADBench-main/tested_models",
+  "license": "MIT",
+  "attribution": "CADBench (Doris et al. 2026, DeCoDELab; arXiv:2605.10873), MIT (c)2026 Annie Doris. Per-program execution-status + error-message logs under tested_models/*/*/r1/bench*_results/bench*_logs.json (486 files, ~1.44M rows). These are MODEL-GENERATED eval OUTPUT (noisy), so the raw files are MANIFEST-ONLY (paths + SHA-256, resolved from resources/ at runtime, degrade-to-empty). The distinct status codes and the error-string categories are extracted into the loader as facts with citation, NOT the raw rows.",
+  "snapshot_date": "2026-07-20",
+  "total_rows": 1437679,
+  "status_row_counts": {
+    "0": 506440,
+    "1": 922186,
+    "2": 9053
+  },
+  "entries": [
+    {
+      "name": "cadcoder/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "bd9069fef1d69427c8c2e8f677c503a339976a22df647d692959d884cf4c6e90",
+      "bytes": 1363250,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "d2c65b33cdf0dcbaa57b88ec8a213ed1220da849197e940bccd088ee67f21ab0",
+      "bytes": 1262829,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "7d7dce2ef11f77e7d4ec78ab11af973b0055dbcc12f6a410c1ef391a5b38fcb8",
+      "bytes": 1362978,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "9fec1902fe4aa33f81e0ec2bd39ebfbb0da9beff3051666be8a70317e8a857de",
+      "bytes": 1287437,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "99ca26f7b9ad92fd68fbb3aaa11892e5208ee71a0e8c7d2b9f0f53b433e24fc5",
+      "bytes": 1245411,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "29dcd41566d7f02b32e3f30e0f073cea7d758b827ac59d3e3ec97ddeb2b43e36",
+      "bytes": 1318111,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "2f7825b27009a25185ca572a7270d03d81bd35f907fe9331478ad9dd8f22946e",
+      "bytes": 1365188,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "fe192e6a760a456fd938e6295a4153cc9f294a78c74b0ece526a24fb00ea0ac2",
+      "bytes": 1264424,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "827d53e6515cd3c9843ca99fcb53700b5a7d43e6d68adcf96e756cad8a383705",
+      "bytes": 1365710,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "46515a8ed03d1402f1419fe20f07f6e90c50d5205bfc5ff9a6a4a7dd32c1f8ec",
+      "bytes": 1291106,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "a1c9f9912870318d0bda0a3801612e530de16fc6f5983aa7d39c5b03a55288fc",
+      "bytes": 1251779,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "a2e909f93b8882805d8b3812f79b112da336c46ff1666d9523859c23cec21dd5",
+      "bytes": 1323101,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "64aabda27304f272e284301785debcc4a38612aa7754e4e7b028ac1e9583f296",
+      "bytes": 1365491,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "2591a1c12fb4323b6cfdee9f611c4d4d59dc1e318982c9750541cf96b983cb63",
+      "bytes": 1264386,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "fa8cb2908dcf732357af5b335b4f5fd2428327ad15185bba0e5ae9791d4214b8",
+      "bytes": 1365801,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "7e6a5617ad7410b1964986870565d4375b01f969256c2a8570ffb85bee2e0ae2",
+      "bytes": 1289631,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "61a21108c34e443442a09a7c56eccc7d0f1cdfa9eae01475a1c11824957b2f81",
+      "bytes": 1251088,
+      "format": "json"
+    },
+    {
+      "name": "cadcoder/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadcoder/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "bd052dabb0a589f13a4a3f589063ccd6f6498ed1c5babb96869c2beea7d4cd42",
+      "bytes": 1320817,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "a0815517403d4f7307a29569123d7352c1edf75bb19fcdab7ebf881ffea51585",
+      "bytes": 1362871,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "b6a18ca2a8228a0712dbf8e700fb4ef5dcb418deb7a7c40755ae88a57323edc3",
+      "bytes": 1263776,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "41009c5dffc3fe4f5884b27ddbd30dcbc84ee1f139f13a72beab911e69b7169b",
+      "bytes": 1364326,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "f792b8fbed2159202c3e71c08643e5b095b85e0f785a63f3161a78ba2110bf34",
+      "bytes": 1287588,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "709bca585aee76df8c3b33a5a20e8c77fc4b1259fdd4968c53d7cbe7c2fda0cb",
+      "bytes": 1248613,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "b59e4dbf59ea350aa9b9fed33a89c3dc8d4811244b1ddce13b160d1aec1f1a53",
+      "bytes": 1321898,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "abbb9f12bdba080d15c864b4efc3f7cdeec9489f0160479b25b7ef792eea433b",
+      "bytes": 1362027,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "5c64be0fa35b5b1dd8145bcc2a12ff22271ae6fb8c8332c2a8023fb3c5c5df72",
+      "bytes": 1263998,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "a7324166fa885135fdb5d1f914893ce400faca77d41a259651293623e9d397d4",
+      "bytes": 1364492,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "72efe8584dbf4657a7caa6840a93a27c62aa0a3a852d82717d950e202a9c7f96",
+      "bytes": 1288188,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "2c6f61f15ca997ac43b72e91b50231324cff36bd8c62d5469a7704ac4fa9118c",
+      "bytes": 1248640,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "451d0d65ca32040be3bc2ce77b9c1ff7beb70f27543f8a639425bd259131d471",
+      "bytes": 1322809,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "c39ee84bb6aab911c692a62f34bbb9cd73331838427b699568922d4f9f85c566",
+      "bytes": 1362444,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "ae352dadf3a3b3591d4e2b0846ab4fb8b78f2d4008a82b62e95276e4a83a732c",
+      "bytes": 1263927,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "e03de7007aac1d3afdf610f6d66dd3ffecdf35b154561f9016d61e0d31530f0b",
+      "bytes": 1364569,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "f9b68a423941ff79f47bd1f9fc8abad87df97daa06ba731c11360e93956e6de1",
+      "bytes": 1288730,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "dad72a7091de8e030056de09b16a1eca0a384f4e91203b88dda14372971a64c7",
+      "bytes": 1248368,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "4fc18b23aa94ec7eca5893f4779b8269a38dc715345e093162bb0ceb9350dcdd",
+      "bytes": 1322839,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "c5721e5f1c2d09a173fef1d25615aa54ed7a419af48ec2cd482aef72c0a5a2c8",
+      "bytes": 1351696,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "cf8951980e8585b64207483953bc81c70bc950ba80d931d45d52b55fa68b4c51",
+      "bytes": 1245444,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "0d5ef2b91e3563431ada5d5ce9836de27a986baaf578584539af187d48562577",
+      "bytes": 1349896,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "4972b0bffd5a817544ac7498d17bb1bc98d62eb632b389d2b79398538d127b99",
+      "bytes": 1274658,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "71d1a2f2e67c432b0f244d47174946b222a7eee293f93bca39a6c07764c75922",
+      "bytes": 1234683,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "7c8b8a63abee8c7e645d6d420d87b9419d6a85ff75832cce93f5abf1e3dc3958",
+      "bytes": 1310808,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "ad6572ecaf6b28b6baa70f8bd62d0e444f3d7e9e1173a9a166db517c562e80ed",
+      "bytes": 1351537,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "e5166b69601e9f2eefdb1e026281c27fda99dd4444835e48ab1508da3505b997",
+      "bytes": 1245211,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "974a0799b220d64693d7676f3e933121678a00c64b5fd570cdc3486f91b32348",
+      "bytes": 1350001,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "acd4aabcef47fe0aa4cf816d9df591532a8698f0eaa1fc48b59f4a6744e4b641",
+      "bytes": 1274699,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "00d73070c4e3198dc5268d989289e3f442ed2e7f16f6123ce23216de57a73264",
+      "bytes": 1234787,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "8a8b9811f4f6bbd3b628e802a3afc716e3571fb359b62961761772ca362cd858",
+      "bytes": 1310831,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "89dbaf5beac734f9fd395a99c4ff293a6ea7d9eb73a9c8a0e0b398e4eb7964fc",
+      "bytes": 1351675,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "10769d8eaf4f02ee2927e9a5eca64c77562ba192d494ae054cf246fb46d50257",
+      "bytes": 1245223,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "de8e9a7c08ba7385f3f5281c43381a767b3985899f808c2db727535d7986e825",
+      "bytes": 1349806,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "54e2d52bae8ecd1161004348529a2385c96d6b67f27a9f7dc858d0edf059e01f",
+      "bytes": 1274631,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "7bb48611ba4ac9f2015ae51a765ec16eab44671c31a634f6832e30e9d0e14fe3",
+      "bytes": 1234790,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve/noisy_mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "977b4193cd27fcb54720db765c074fd8fe2c5e19d6875eee19618e21ce7e8f45",
+      "bytes": 1310752,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchA_results/benchA_logs.json",
+      "sha256": "2b8127f22dcef5cbe940f38fc4627f5a1f51013048d752a26a8db1bf30e3de66",
+      "bytes": 1364643,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchB_results/benchB_logs.json",
+      "sha256": "e50531b46969ab247d1bf227372e1ce03f0146694eeeac63c1b3df76c6318697",
+      "bytes": 1263076,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchE_results/benchE_logs.json",
+      "sha256": "24754cf4efc2a3aef730d492769090ffc54fc31bc1cc205ebb1901e0f0b5ec72",
+      "bytes": 1364843,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchF_results/benchF_logs.json",
+      "sha256": "ef0098eb0d439aaf43c0a7de20515e643d17845c2999ee653a692b4e5e1c6c49",
+      "bytes": 1287268,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchM_results/benchM_logs.json",
+      "sha256": "cf0b79e9043e709870cbdeb15a030556985ab78783f4e6d7cdf67bed0457375c",
+      "bytes": 1241944,
+      "format": "json"
+    },
+    {
+      "name": "cadevolve_ourimages/r1/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadevolve_ourimages/r1/benchO_results/benchO_logs.json",
+      "sha256": "31c0166d824709ee58715eed25d407e4af815bfedd858f1f52437b0ea096a34e",
+      "bytes": 1319836,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchA_results/benchA_logs.json",
+      "sha256": "20314701d496471c88486bbb5005b260b770954a449f33a93ab2c793529a2296",
+      "bytes": 1370390,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchB_results/benchB_logs.json",
+      "sha256": "e8ff7baeafce791e59711c90e86af6a0349c0bee8e4f92dc32444911d8a79886",
+      "bytes": 1267278,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchE_results/benchE_logs.json",
+      "sha256": "8039c785f9513c857c53b97f4ddbd467cf31d5c5dc54b7a3e063e67eef0be062",
+      "bytes": 1369254,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchF_results/benchF_logs.json",
+      "sha256": "af6954096abc2da3e3dfde7a0fd271eac7225e4f2d4eccb9509f4195f46ea837",
+      "bytes": 1294297,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchM_results/benchM_logs.json",
+      "sha256": "040ca660e71e25b2c1af422af74fad7dddf10a6800cae66071a90e3792db2c29",
+      "bytes": 1254345,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/mesh/benchO_results/benchO_logs.json",
+      "sha256": "5ac4b4e092c86fc4d0a959fa2df8143ccd7c0db94bdacf2f9870c8ac8e8f587d",
+      "bytes": 1325759,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchA_results/benchA_logs.json",
+      "sha256": "4765f0c9f333f9cf090b73e5ae6a25319c834c55fb301126dc0ce9675eeefd33",
+      "bytes": 64778,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchB_results/benchB_logs.json",
+      "sha256": "d8d94bb4e21a20f399cc0cbd4ddb4b513081b9a2293832941646de7ab527e74a",
+      "bytes": 61740,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchE_results/benchE_logs.json",
+      "sha256": "a56582b9b3f73d1c640a7b84f6c2e36672643cdc228603f4dd41102b96e7e32e",
+      "bytes": 65257,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchF_results/benchF_logs.json",
+      "sha256": "3c104092a996e64f951aad3614e5c419bf6092ef140e96d3ed361c5d60997dcd",
+      "bytes": 62541,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchM_results/benchM_logs.json",
+      "sha256": "0479a471b1b5f27062c149de9300f461dc056057b4b911a41ffd861d5b72ae76",
+      "bytes": 21026,
+      "format": "json"
+    },
+    {
+      "name": "cadfit/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadfit/noisy_mesh/benchO_results/benchO_logs.json",
+      "sha256": "548f18b4276f6a207eb98fe80ff8a3cb8fcc3a02dc83bb8abd8c6182fd199402",
+      "bytes": 16029,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "d0761fe4890b35820f16edf01192997f35f2b7f4cd03197de20afdf3ccdb4a13",
+      "bytes": 1362114,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "4d597fc79e3063fa2ffb7d18d068dda9394178ff34ada4a10bc5f9359c4344b7",
+      "bytes": 1260630,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "ba991596f385209c1eaab6cf8a0eff7e987203af0946da670f3bab9b127db375",
+      "bytes": 1359833,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "1a4394ead1092ac04f097d4d6d5c15c19be9ba8ac422d14e11a359df3bc1a743",
+      "bytes": 1285689,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "66e0e5b410824ee5547929a5b72fccbec0ad1a8b9fd746f29fde0f82b229f9ba",
+      "bytes": 1245866,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "4f9a666accc8ade052b0f79406bacd7ee99588134017b587e5a6017c29b565f0",
+      "bytes": 1318135,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "8f23bd78a33789a4f6e213ec3723ea167b3095e6bd1128385cb7786a234e4dcd",
+      "bytes": 1360988,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "7b6ff7a8060aa9d086e1dedffc56f7e107df768453caa7c11aba6de679355661",
+      "bytes": 1260433,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "ece87f7e9ba71d431a203b3ddc7d3d4b2baa1928b5da0e445b0462c9e01df7d3",
+      "bytes": 1359544,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "01831616f1560cf20863ebe0d4dfb835868b102868e4e5b9dc97419b6191e183",
+      "bytes": 1285580,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "765e09d7b82b2d5f9cd6c34bce872ea010970148facb5639db5318a8ca69a9cd",
+      "bytes": 1245783,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "3a05bcbda277c3ab0e82e412f294892e3f2f4f42b8c05631817980fb81782ec8",
+      "bytes": 1318385,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "eda5ac818d964ba700017227e4fdbe7c5c6dcfd73baca5bc76a6a73c98a8be10",
+      "bytes": 1360531,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "376649806008fb6c1e072af7ec1c43af744258fc2d82dc43917590e58256343c",
+      "bytes": 1261310,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "c457e0d9e9bbb83891b118e074d6bb279de058c0f1724b2de4d5abf7c2178225",
+      "bytes": 1359827,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "74cda2424472f9b2eef918293acee199f2cf809001a4a2ff1be5b2f900b98ee3",
+      "bytes": 1285113,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "6b82b2b3ab6c268ae9bf8abb224a4cf9aafe009992c20a0cdc9643fcd3e63604",
+      "bytes": 1245833,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "79fe8758661ed0ac7b7a3aebc3e579e659f0056ed32f7732ab951c61027847db",
+      "bytes": 1318445,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "e04afd141c1dd0768bdbeccb71de581cc82ebab0855d20bc791c8a0486e8a551",
+      "bytes": 1359644,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "cf94fe72e44cac00c47e24c0aaddf791084adf216f99228d81130acbf710ff8c",
+      "bytes": 1257267,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "f6b3e0e6e062ab2b20b8c0637386d104920b612eb21e803e57d14d95880de1ce",
+      "bytes": 1357434,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "48c6745ac20eebf3136c9bc9fe24058a12bcfe8aa3e2dccb6f93122ce631ce9f",
+      "bytes": 1282639,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "78337cf48671f859dd1f03f177eac1a0089a74f931fefb93c5845ca55616572c",
+      "bytes": 1243966,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "14377a4bf9ce8ae90c63490bd01cd2314b75798ab593cad69e9e0edeb8034e87",
+      "bytes": 1317355,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "5aa71fa0e6b28b2a50b768b3c95e4fe59d09ca63afd0ae2c274b8e3f0996402a",
+      "bytes": 1359271,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "9b86de4ce7ff3429e923b22dc2cbd3d9d07b7f1613c92f046d59b85c5e6c65ca",
+      "bytes": 1257005,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "a7230fd2e7c00fde3599f043aabac4f520184b4e160853bcff7d8993645b9860",
+      "bytes": 1357398,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "cd8a54220b0043aab61be0a43fede804649767c54365878712d406c5eadd5e61",
+      "bytes": 1282681,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "53c7798068cc204268559d92ed821177c13963f647ece3f9167a745a28f49dae",
+      "bytes": 1244042,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "66fe47a63979490529f0e0b74af692a10de243c50a4d3d86f8f881f1a74d976e",
+      "bytes": 1317414,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "79d49a5d00cf819223f7aed86aa4aea7f6b28dd08973117fc1a2936ea2d78049",
+      "bytes": 1359500,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "39ed612104980571d6bf14ce73c5924a32ae69d5001120ca15347b8783fa9845",
+      "bytes": 1257285,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "be81a54cdbdedb77b58c51e3b2cd1f41e630190af3816a457295a853aebda45c",
+      "bytes": 1357283,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "7ac0a7e661b74b635f6bcc5b498134f35e7124be5e7f882d3257ce5db64019be",
+      "bytes": 1282669,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "4dc269605bd471fd2d56ed99468a00a4170e6c3b6c391438dd6b5a74c9e9fa06",
+      "bytes": 1244233,
+      "format": "json"
+    },
+    {
+      "name": "cadrecode/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrecode/noisy_mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "fc1e46ee1233a49076987c8ea8f0e7c4ea4808baa22a67d3cee50951b8314eed",
+      "bytes": 1317253,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchA_results/benchA_logs.json",
+      "sha256": "d98631c52d5953446210a9ce319cf3c66617fb862bbf3363af8cdd9aa198df4e",
+      "bytes": 1350470,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchB_results/benchB_logs.json",
+      "sha256": "41aefaa8cceb53b9be05d6dffe3cdf1261ab9a5290780fcf7382704e5d41f4b5",
+      "bytes": 1250409,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchE_results/benchE_logs.json",
+      "sha256": "d2eccf8eb1be5cc6e58a0f2b04d12ca09235f32c2b9ecdd6c5e6816b81f867e2",
+      "bytes": 1347932,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchF_results/benchF_logs.json",
+      "sha256": "8e6668da35bd367e227051826a80159d36eba084186b5e568156d0e7b8adcd5f",
+      "bytes": 1274882,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchM_results/benchM_logs.json",
+      "sha256": "8a21a775e008ad2185a81a4409ccee6f4dfc6c4fd15e1f8950b7e84a1e3d610f",
+      "bytes": 1234819,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r1/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r1/benchO_results/benchO_logs.json",
+      "sha256": "2ea18cc492434b05c36ab2f11df6fccb805bfd7f3dea61e5b19190b824f381c9",
+      "bytes": 1302183,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchA_results/benchA_logs.json",
+      "sha256": "920f13cfdcece257d05753872fa2074905ea1cd1d6906fd9f0c5f9a1570bc104",
+      "bytes": 1350644,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchB_results/benchB_logs.json",
+      "sha256": "2be2bf58b75fc26630bc60fab82421122129ced51381ad6f8f3f83b46a959711",
+      "bytes": 1250351,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchE_results/benchE_logs.json",
+      "sha256": "ee76b5331909c12034d8b054fe6a137143bf35399714d4146d834e8e3d1eabb8",
+      "bytes": 1348059,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchF_results/benchF_logs.json",
+      "sha256": "5a800027ec7586a14bf55d4a1ea6d8a26ab01b64e199fe0a38e5a1fdfce013f3",
+      "bytes": 1274793,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchM_results/benchM_logs.json",
+      "sha256": "4b936f56849f526063a99a8660aefe47751a62901874ee9134cffb1811a63766",
+      "bytes": 1234833,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r2/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r2/benchO_results/benchO_logs.json",
+      "sha256": "c4ddb4aea0249a95cd7957b15ad2cca175dec648482cbd48b8ddf367101434f8",
+      "bytes": 1302110,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchA_results/benchA_logs.json",
+      "sha256": "d0ff942e26a7017e25f232218f0e1ad6daa54ec138b20dc23392321a4f87870c",
+      "bytes": 1350365,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchB_results/benchB_logs.json",
+      "sha256": "5310885b0b699d8a1c542dde804cf52e92fa8690d55458ad9e6882ca2eb41e10",
+      "bytes": 1250257,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchE_results/benchE_logs.json",
+      "sha256": "e2b5e2bcf03ecc3aa99bdf83c91bf7a9cdde4e3059c8ec83036059676cffec72",
+      "bytes": 1348101,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchF_results/benchF_logs.json",
+      "sha256": "1afb8440471f1c081f115be0b39d07306c7d29de875aa8614e2a7cac230a898c",
+      "bytes": 1121819,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchM_results/benchM_logs.json",
+      "sha256": "ebaef8cf9de407a285b1e93e49f1389413d0f4b9726cb498aa5a896b3afc8b96",
+      "bytes": 1234775,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_ourimages/r3/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_ourimages/r3/benchO_results/benchO_logs.json",
+      "sha256": "b314bc0e613638fba8577f42617cbc2107b4b9ee42375440fde853f1d7792c74",
+      "bytes": 1302179,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "9aee32642da710f17f80e5e2d99ca78452e38257c0366cee07c484614505ec3c",
+      "bytes": 1362420,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "c2ea681ec05c38d86f9fc1c6f2973dc3b7172e7e936b5be338be9f28f4d42b2b",
+      "bytes": 1261136,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "9a93a27f8832b9e5ec3f268ebbc07df6fa47d02c832dda224f006e2baef18b95",
+      "bytes": 1362525,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "236929bbd17f8854e6a678cb4090488d3d1a59e68c1bb2da057ac258753f2bf1",
+      "bytes": 1286377,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "7bf709b61a58df88b9e37d8b4f1c2287f6e4dd612f39f823a1d41b80f72a20f2",
+      "bytes": 1247339,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "68b5d8f18365430a3fe2a04cfd2bc0deb44e757106217559f4c5a63e2fb7b2a3",
+      "bytes": 1317973,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "8d5fd6fb9901444786be41daa25db839332da02b9c186ede804f71b084085697",
+      "bytes": 1363004,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "aa1cf87cd438f71c1a04f6235f404b69f9274baf26a9c1b0e41c7d1c1a8d5dd1",
+      "bytes": 1261279,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "a1bdc553d9c02805626fcbb4f2457aa7b3a236d0a9b265d49819c015d7af5071",
+      "bytes": 1362493,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "000cb0356c4b50160b3a8370b8fdd418ca9b4ed0e6241e666741cd440ec27b7f",
+      "bytes": 1286114,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "3402a4386a9e67614e266e44f73bca0f4b9ea57b4a4b840df201d10a9e0052fe",
+      "bytes": 1247216,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "4793f505ccf83a3f7cfee38d4e3669a183d470da75cc741a06187a66f969bfb2",
+      "bytes": 1318078,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "e0894affddba8af5a46e98582b7e3ad07a780d29cc6547efd99f1ad52ede2c41",
+      "bytes": 1362503,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "38c7110c65309695055341831183d812a376c9546f251f33c84089a86aceb62d",
+      "bytes": 1261291,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "bfb80f777b1424457eff7bedc966a990e7062c610cbc112db244d45ca0fff72f",
+      "bytes": 1361955,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "89fdb1c9dba8dc7a04c3cd4f13f0ccfa9b9ec802d93f103d633ad89e0a67eff5",
+      "bytes": 1286996,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "2e38f6aa7d41b1fee1061c6066c3424a99b7640553ef8cc87dc882bd0cd62f8c",
+      "bytes": 159867,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "bd21c2367763e96149f9dfdb4f9bc799802ec085c2ec62fee7b2e76734f073fe",
+      "bytes": 1317936,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchA_results/benchA_logs.json",
+      "sha256": "7ba2c26de0868249da926cf8c1b099d6d12a5544017a5c408e7df0b0bb6cfa66",
+      "bytes": 1360994,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchB_results/benchB_logs.json",
+      "sha256": "43c70465e5a98333d56d13a9fb5fb60c06a087ebc0fe41f8d9ed71c7b3287a97",
+      "bytes": 1260998,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchE_results/benchE_logs.json",
+      "sha256": "7b33f5fc22c0431cea52f1214ab9bed2f320e3a4b7f43f92f8d848f0ecd4f88c",
+      "bytes": 1360285,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchF_results/benchF_logs.json",
+      "sha256": "e8f74ec04d5dc544532b1767a9b278eb3e69fef0cd23470fdda6eeb0cc54f747",
+      "bytes": 1286511,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchM_results/benchM_logs.json",
+      "sha256": "3c79a84c492a9597cef51be6a2ef87ddb5a69937bedddb572558eef055485d87",
+      "bytes": 1246080,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r1/benchO_results/benchO_logs.json",
+      "sha256": "f2c79e99755c58f44a73dbaaccede464f168aaa45110b0ed8e3390cb60c82aeb",
+      "bytes": 1317895,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchA_results/benchA_logs.json",
+      "sha256": "d112102b816c2f377cca57e82fde0b76219ddc86c3e8c611180b4fd2171c03c1",
+      "bytes": 1362012,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchB_results/benchB_logs.json",
+      "sha256": "adeef35afd119f6242a02b5d4d832e2033d983d221fe41e494d5a7223e542c4e",
+      "bytes": 1260783,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchE_results/benchE_logs.json",
+      "sha256": "d84d763389a23f2babbb95b6ab4630c0d5241f8231b2c3f1724bda055f621bb8",
+      "bytes": 1361592,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchF_results/benchF_logs.json",
+      "sha256": "a588922042245d7f0f08f8ec1071d6226b565612f5b2588fd9174e95de3a7b69",
+      "bytes": 1285948,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchM_results/benchM_logs.json",
+      "sha256": "83e4a5452b9ad05ea62e74f734670fb93638add43800f19ea9925157a490f4bb",
+      "bytes": 1246720,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r2/benchO_results/benchO_logs.json",
+      "sha256": "dd5287dd81480e9c803f8d6ae55349ecf1ce115136ea809e5f887b9afffc2310",
+      "bytes": 1318239,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchA_results/benchA_logs.json",
+      "sha256": "8b6f8c39596c4733e1670abce1c5c4026c4371e599ebe190e48c44cd9cd3638f",
+      "bytes": 1360660,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchB_results/benchB_logs.json",
+      "sha256": "6a15ccf131e6838da3fa177847124c824b49bdbc44eabd91170f7fc55a3703d0",
+      "bytes": 1260668,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchE_results/benchE_logs.json",
+      "sha256": "e3a104c4e486088993efd053b8e84791f669ace1f6f2cdc36066097ced14cd91",
+      "bytes": 1360987,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchF_results/benchF_logs.json",
+      "sha256": "6119d18c672c0c704ca6ff1371559c8bb4bd496d12f32f95eff6c8d10a997917",
+      "bytes": 1286617,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchM_results/benchM_logs.json",
+      "sha256": "2fe149dbe8c2306ba0a3cbcb6cd63e744189c032da97b172c3c80c0f31eb3833",
+      "bytes": 1246792,
+      "format": "json"
+    },
+    {
+      "name": "cadrille_pc/noisy_mesh/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/cadrille_pc/noisy_mesh/r3/benchO_results/benchO_logs.json",
+      "sha256": "1edde26832df8d8be4cd78bc57a338e9f4b1fe5a4bf1916dcb4da3233d77ee09",
+      "bytes": 1317596,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "5e829067e7d1bb9c62eff0253d7a846b521c46be7901589da9818d567b8e52f4",
+      "bytes": 1353890,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "e460e0ffb3d1ad8defc1f090348544c8e797dc6937ad2a12eafc278c8c9bbbab",
+      "bytes": 1259492,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "058bc84e61e17a2d0c0c7b24e963f2b785187201c8c374959e0834b416c7ead1",
+      "bytes": 1349723,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "b20e102b387082b19cb88c6a2f8338a0a2e968fa23db85b6a25d950eabe56d02",
+      "bytes": 1282818,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "f9bfce98421c47b4358c1b674864cf6a54273ca0c182282a0e08f0b013998c6e",
+      "bytes": 1240128,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "72e81e146e6a564c296128942010867bef0c1f8eed75c3bf5df3b162a6919e52",
+      "bytes": 1303625,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "9e9559899e92bdb61fd082d149c34aa8ea2f145ae191a645d6a104bdb8c4651a",
+      "bytes": 1353196,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "bc7072ceadd806f1fb2c0075fcdcb25eb55f08a04b79adeab3e79f1499cd3984",
+      "bytes": 1259531,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "9e57da3663cc1ef146e06eb87eb70d340a616b0a54f600ed5eb7d9114b95d501",
+      "bytes": 1350270,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "3e22b32a08ec6f893aca22564bcffba04c2c61fb66a6e6fd52b9fe9b44fdb308",
+      "bytes": 1281441,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "d2bc3ea4c95f0f8a67f6a8d340e4271b99129072167d5362362c09301f5bb68c",
+      "bytes": 1240486,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "a3c5bc1bc7146b787d6c1c690e66afa7843b81fd69c20b33f0bf1cb636fe4cc6",
+      "bytes": 1301388,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "56d18f350ddc462aad8240fb64dcc46ae814664ee53f719959272162299f6f35",
+      "bytes": 1354481,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "89e986f9ef85c9314f5e8b52a6ad122e8b962416061c4cdd4b9720a17673cd8b",
+      "bytes": 1259928,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "691466e184bd3fcf686831f3533f0470018329231564610b6aa6a39ff0e86c8e",
+      "bytes": 1349853,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "95381b3978042aa46567e2367fde348e4ca49110f1e81f729bbd214423d4ca15",
+      "bytes": 1281054,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "cf4367ec95efb59484458396b3237d85c60408b70d944da8f58df5201dcba262",
+      "bytes": 1240948,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "6e6d7c1ac52f4fc36c5519aa9bd4506b71c4aa5a778a4be3c360b80eb59c97d4",
+      "bytes": 1302035,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "8d0984666c88ede22c950bc09fcfb7b05e2319a59cd00a1b74aa8ec067d185cb",
+      "bytes": 1354337,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "ba2bbb2f51676c3bae5ae475747af7a815a962f0bcecc6a1c3cb6b2cd4760a0e",
+      "bytes": 1259670,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "6d215953e7f63d202c3505933650cbf0ffcdf112240bd31c5190e0a08d9969c7",
+      "bytes": 1352627,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "7e650b1289ef184869d03c62aa75cbd5413eac62cd5e71e3a22d060b15243b08",
+      "bytes": 1281769,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "2b9f2314c56992f10814913169868757540a531ef807b960fa2d7d986a5cd6b4",
+      "bytes": 1242669,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "5e82720e2ac8fb20377c41be560ef9882ce8576896318f9df699838aa2584bc7",
+      "bytes": 1306913,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "a6835f346ccca7aa244754f1c8fa5f8667016c049569bf0d78e3e2ae05812362",
+      "bytes": 1355020,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "a68677b630b48d2376cbf314e6733f3e98b23138d4ce528a838347d41f8ae5da",
+      "bytes": 1259822,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "f1f6635f5e5c472d6b092279237e127748eb339cb4223441707b81b9f1b0270c",
+      "bytes": 1353240,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "4bc79e6eec000c5ee7d39c9d00fd5786ef314b840da0d394461910445bf72558",
+      "bytes": 1282589,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "c39888c484a4c1e5c26235d9ab663754e9b95fdcf99621bf687a6ea8d3e481a7",
+      "bytes": 1241790,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "0e7818e833b2e4160d7e2a9b1da78a916cc2bf42b6ac837c66aed844c0ed2cbf",
+      "bytes": 1305608,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "ba31940f861a0c57f8909f731e60b706897c49f06559b88b5c56f2f7cdebf0e7",
+      "bytes": 1354260,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "19a5f0793523cb835eef99c3dbc1fc6b417e77a02cd6e1f236e5c49adfbb221f",
+      "bytes": 1259856,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "78f5d96f094ceb388df9f3dfc8f97f7c206688f723e983d628b749db22b235bf",
+      "bytes": 1353158,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "5513f4acab0d3a2a975a055e589b0e05b27a0841a8ef7ca06556682452a58815",
+      "bytes": 1282220,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "db6cef5012f96259621deb3ee3b581625c6d7b6869da91bf58eed71f502d1a4c",
+      "bytes": 1242096,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "3c872c5edd65d1d9bdacc4b10cdeae2d81edebf02f5d1d09cc9d1624aeed302a",
+      "bytes": 1305952,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "a244bb634cd7c6c92e1401e14a8698053f7154133301f66b70172a0a194aab25",
+      "bytes": 1354678,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "002656d23ccbe12fe9147fe03afd056bd315a7d73a3254578e38ff11bfb9d97e",
+      "bytes": 1259794,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "541eee141bea1c0c37dde394916e431a04e963168773851fb5b4adcfdb0d649c",
+      "bytes": 1349912,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "66fa54ad63284ef8d450b169fb45619bcc68a44c0d7665987ce8d213eb7250e1",
+      "bytes": 1280588,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "9a7155fd4d8a46d18a2ba1e000b67febae11779faa0321e955bb25ce561995dc",
+      "bytes": 1241535,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "4f1513029b91f0b3edb6e32d38a36857f32d91e245b1519fb6d37e980eea22e3",
+      "bytes": 1307137,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "fad9341f0501be4ffc7f90cdb1ee66d0a87843f8eec79f3cf11b3f64ae7a3cd0",
+      "bytes": 1352982,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "c616b957ac2d3bb05a8d9c95c37f1b908d7bf181ba5e45ed18313bd24db27d7f",
+      "bytes": 1259394,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "4167a438f7a1a2bd2cfdf81e903479827d6e77d496832975a5813b5d05697307",
+      "bytes": 1350877,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "ebbe5cc95a1437caa912305dc669a659bffd6c4084070205b5b411b90ef84993",
+      "bytes": 1281359,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "ff67f317d5b78b428aa7d6f73b22017451fe5f05342633ed8722da16f4a73cb4",
+      "bytes": 1241091,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "4f20b2ac63c41e4248cce50360ebfd1a56b15ca94f46529660e3f90031d2c7c1",
+      "bytes": 1303601,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "5564ead1d1054187227ebb88e1db78c0cb664565d9e97d2d9a845835bfa14509",
+      "bytes": 1352926,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "5709963b2252844e1731d84a4592e96d7ea3038b01f0a1236d56d571891c5791",
+      "bytes": 1258369,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "8b43523adfb066e5d5c4668fb8ad7ad7a45981d835105ab577125c334e09e8a2",
+      "bytes": 1350824,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "22b8e223ab679bcba016c22bc04d0005db78e4a39313b124b6b47c521753f561",
+      "bytes": 1281306,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "d40e12a215c15ed519d83740a0ba0db6c29d2387912d5fd5c7ba2c7e12e0c6f0",
+      "bytes": 1239959,
+      "format": "json"
+    },
+    {
+      "name": "claude4.7/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/claude4.7/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "3ec8e92197d5c4599cd05330a1cd418f36453d74c40eba6df442b6fbe277daae",
+      "bytes": 1303650,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "2bee79a7f9bdf75d656d98dba185e8ae1c6c998af4a750a41639a173905ee5df",
+      "bytes": 1358433,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "829c58d723e044126daeae0ea3e4bce1657c1f49b1fc7032c295070052af1a2d",
+      "bytes": 1264407,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "6d1f281933b02cab43d666c20fc32eee85b6b270dc0c85036b748d3b80825d75",
+      "bytes": 1351310,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "3441cbb0c6f592ab0ca36c31b258dfe82bd8d261185e81c9feef36e6d1d5e061",
+      "bytes": 1287041,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "eb5e59dc4f2567e631ed0bd9e358e97bd4d0a95c424323253ca44db3e6979add",
+      "bytes": 1248349,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "43e0bb3ab9d30749add8eee2373d03fb89424190449e6302f68f3c7742395958",
+      "bytes": 1304484,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "f979d3e612a2979a550009c561532482211c1bb11d1975ffbf27e56f70699e78",
+      "bytes": 1360769,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "4d7731401ba690adf29857a075bdd908d6b291b883e6d0e7e57aaad6bd82173a",
+      "bytes": 1261317,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "ca0cb07febd79e74d1c07bcfb05d9739aa8cf94205ae0b4fd3aa3dfd95a93094",
+      "bytes": 1351246,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "687470151417d2df95668f29ded6e2bbf55ce0dbdb9768587893d3a8a36373e5",
+      "bytes": 1286342,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "7d54b43cf415b0bf6cc523eb891625853ea52b8f006d4472f9c2f2c23fdf8ef3",
+      "bytes": 1247233,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "0c44cd4ab10a5fc46eadd8346fd922edf0357a56f60a80222b89cabd0389786c",
+      "bytes": 1304389,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "822dcb38e8b7e8900c537abf9b6f1e39e92cae8f3a101f36280e0abd00420ec5",
+      "bytes": 1363804,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "4ecbd3d89804a0fe90d0108851fe71196ec9c01448b1e41e825090ee6934125e",
+      "bytes": 1262035,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "65ef3f274d114264c01c94ce525f488d211512768028958eaf6f308ff90da8d0",
+      "bytes": 1351287,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "8c9c5c9482a82d3938474a474044d40878896116c1a59c5364f2da24f8c99f63",
+      "bytes": 1286536,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "ef1a50dd04b40cb5ca057c3808c311eade24f07c67d7f9af3707103ce0eba4a6",
+      "bytes": 1245601,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "34a62d935e8486eac85390811a6012f98824ae1cabea7649b4845365c16c2c86",
+      "bytes": 1304903,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "03e3593eff7bfda7e4523271f24e01b4b2eaeed8b000047a7e90a72b6a59e835",
+      "bytes": 1354533,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "277bc0b8d64cdfea7fe497dd8f0abc0938631f5d2c94fd6b31e4cc2808c0a477",
+      "bytes": 1262979,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "d29298047980c2197137fb9957215a402b6e49250d59123c3aaba2f227ba7091",
+      "bytes": 1353617,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "220354cbd27c3db8e56de2cae8a1c86e4c36e0b0cf9e13e15ab4b4c9a0154187",
+      "bytes": 1284266,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "a205d3edcac4f770c93a86173b80f7ccee76e30431834b18b226e448bd2bf5f0",
+      "bytes": 1246118,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "0d438fe823ea8532b488ba0047ec6c2e4a64cb2638fe75e4410141ba29e51dcf",
+      "bytes": 1302480,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "80a34dea55b03f89b14b0b8006fd2708e8ce95e5e6094f6a50677c83f889fc29",
+      "bytes": 1355684,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "18ef30ef864fe334d63744646a445fc02d7e70c153d3d96886bbdee06487a659",
+      "bytes": 1260651,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "d08c8c81f4bfafec311a84403ef89ca88fdb099a1359cb424343818f55d1d15e",
+      "bytes": 1348855,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "6faa22fa67604991b8faa0b09ee653eae5b47053740968c6ad16fc5c38a97f84",
+      "bytes": 1287105,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "8a7e6469a4e8a8002dfc4ccbf22edb3b98d00837f798c68dbbceadcdd0a60248",
+      "bytes": 1246765,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "03b858ede6094d285a0a5380b9c02318606a7eaabf4cae307bb08b32f898567d",
+      "bytes": 1303880,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "164466a8fd34856e9eb189a470dfc196b5594af37c4c10906243acf6618bfa69",
+      "bytes": 1359619,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "a03bf8899dcace582f427b277068a5cda8bf685002b3d18ee9cdafaf9f02d4b7",
+      "bytes": 1261349,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "771d6a3479f78b2763335c2a8f02a1f663768b98b0fc6eb65fdf45d5ea0db9cf",
+      "bytes": 1353146,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "4c3b25814060580f911cae02f7b38fabed9b1ff0e68ef1f7c29bc4fb866ba3f9",
+      "bytes": 1284967,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "f28fad04890d125898e93174f3e1cbcc807b82841ec56b7bffaf3f9b79f1ac93",
+      "bytes": 1245889,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "c55c8d49ccda74a03ecbcc590c656fe957d615702b75028a52ff671070f3fe12",
+      "bytes": 1305052,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "fd1590a45b4cbba6f9ad7f7d271ee19b12142c90a0edb2b4fe88093184dc3437",
+      "bytes": 1360829,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "38cce627e136d0d514ba899c319ae3011bf08c69ef94f0ad73f52cbc2282784b",
+      "bytes": 1262270,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "7eb0d53d95b867c0f576e33d29282983721f71ec81fc39babcf6c3d5ebb0dea2",
+      "bytes": 1351844,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "780e603a40a32bc9465b6e6e8479f77ac53e5afe095f8aae39ddaeb85ae3020d",
+      "bytes": 1287396,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "bd67c7add6fd3b9ebe9c00af9c1133f5ad9fb7e15e459090ec7eaae555dc5602",
+      "bytes": 1243756,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "610f67cddc32c9928fab0cca234f2156a467a24c1635a72bb7d7ff1b8401dd20",
+      "bytes": 1302341,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "434362bdec662cbff084d89df5402d18ca2712f82484a274cf9dceff807b4fba",
+      "bytes": 1360856,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "c5b477b6115532d2e52e39d9e1f1bb19353ee36e5f74dee6e238ee222d6394c1",
+      "bytes": 1262261,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "4ef99964ed61b7fccc721f2ff8a2ff7c1d2f754285158e3901538168461c6fc5",
+      "bytes": 1352795,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "b0d769e66526b55917efa11111fa2f6de0345ece2a35786c548f9b86b73c596b",
+      "bytes": 1284895,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "da220dc6a63cf1419aed05ee6e0fd34630b02ee217a65f88667ec35f78350098",
+      "bytes": 1245780,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "c760fff6b74c75e4eb9a60a7d758aa69ce0df07e6434de3e481a014de6d0ac57",
+      "bytes": 1304932,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "8155dacac7376728e6b83642855e5b0f6c3317d0026b3f46b0d9e63e07e61d96",
+      "bytes": 1360896,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "c76de589e03c5b762e844dd9c8d19ed3f980a6252db15a7af978478a621741f3",
+      "bytes": 1260861,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "76e76c93772b6f09b34c5a5e5737f030f08f73e58e0f2d95d44d13d9e945e129",
+      "bytes": 1351864,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "0d20aa1cac501037c8980c726b7b5cd6d017609b12fe77bcba91e73d16d0a55c",
+      "bytes": 1284140,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "b1a63f6cca03af58ab7bb059f3497630559cff61a0bdbd0e38e3e5712c86e5fa",
+      "bytes": 1243464,
+      "format": "json"
+    },
+    {
+      "name": "gemini3.1/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gemini3.1/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "a5c52b414becaeb02103fd97726d9bda3f9537828d0dd2632456b7117d33ed6b",
+      "bytes": 1303315,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "f59521eaddafc557aea93ad7837fa7153d6e34806e08d46baa03eb3a9713bb75",
+      "bytes": 1341323,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "de321d2b2713915b92cea8af74d4afb75492f34605397ac6ed2f2cd6b59351e2",
+      "bytes": 1258048,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "3bd07420085fbe895f0f9a71d058f466091c1bfdf230919aedc7d2c29c164082",
+      "bytes": 1343558,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "b61aefc8739ab26fad7dcc37b32479a7b4380eb2a7357dd018d3a2c2b046affe",
+      "bytes": 1274261,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "cd895c0b373d56922f6d87c701148bc2b41596ab5080b0ef48c420e97ba154e3",
+      "bytes": 1228183,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "036bc1f8eef568f31a5af813d402caa6a5d765d5cd175ee1451a080b20de045d",
+      "bytes": 1287465,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "e5254e59864b27241cc65d8a849c1a5d22c6951bdd28e95236af7cbcb107c021",
+      "bytes": 1340422,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "cf8b132b278d51dbff8a78e4ccb3a677de0bbfa4e4480f6e45e8cf0c72e2742e",
+      "bytes": 1258311,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "6452179a8b4af22463e78ad100aa8d1c57ef4b6e02ebb90c3b0670b68aeeb3ab",
+      "bytes": 1344489,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "26027e7c4226a126269790ee48aa863afc73ea0f8547af6483e10c299525fd8a",
+      "bytes": 1274140,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "ba93657c6b492de3eef1b7be259e6e34c7f92dfe3f52bc9def06633093af5983",
+      "bytes": 1228360,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "247f6d33714a5a21dd0225cab2ddc53f2850a4814885379e4a66149d7128696a",
+      "bytes": 1287909,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "3a787c98f00c9def4715e3a611955559fd432e50b682f545d5e875b9de1511f4",
+      "bytes": 1340895,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "4edc47b94f7cf7704cac7d6bfbfbf9767cb408091c97d88bc7791caaaf76c343",
+      "bytes": 1257931,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "5c5bac025c7319131817bee6b43d99378e1313929608796a8d88827eea3a6a9b",
+      "bytes": 1344747,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "25c903033cc086f7534c562e67ab590b5fcbc86bbcd4ff0d3e7bdd501c121df7",
+      "bytes": 1274167,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "875d8185e6e5569488372c9213adbf4b6c1f02ee34d53b1c3a8fe0cd04f8fa56",
+      "bytes": 1230265,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "4a9121d7ee3139c54321898cc2b665ed9e14179c84fb23f3be3da006f56084e7",
+      "bytes": 1288631,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "1b497e40b6300e3ccae5586228ea479734906407fdc03cf520aeee8134deff2d",
+      "bytes": 1341444,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "36a62bb13856d499794fba1220d31a8386370e72f6968e9539b92b66e3b6ad5c",
+      "bytes": 1257477,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "c4b1e800af5c9e3c37f0f9b1fbcfc68755bf3c338ba45ad3178bf8f87840fa62",
+      "bytes": 1346479,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "515a7a6ab8daf75e20bdf0c35cbe8c2253e8f1940cec45f10d30431ab33d67e8",
+      "bytes": 1274527,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "5abde2a6cf9afd252579d1bffec6a55fd6fc604d8557ace37c21ac23194187ca",
+      "bytes": 1227876,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "bc81cb06aa7926a67f08ebceec947d811c1c72e065879955a281ce8b8f30de03",
+      "bytes": 1288379,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "c5a0b8065d52da42cfe24e7557559d7db6bf2c4242c09f823a7ee2b67e9fcf55",
+      "bytes": 1340285,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "b485425bec73703d5768e2f99ede137a2638ec9f3734f12bf1e7d539280185cf",
+      "bytes": 1258570,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "be6376e1b8fc1c520c762c3f4f5dbf4e2cf8f3a3fca4207036ef30256f91e834",
+      "bytes": 1344610,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "4dec9a7872b0c346ab0bcb828974a00bcb5e210240304662883e7823d6807de6",
+      "bytes": 1274746,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "669168e22f704cd4ae0daa2fed50b9f7f4d3292562d5c09ce7c40444bb1b7180",
+      "bytes": 1227951,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "5aa36215c7a1072ca385a2378c6ab4fac0a764e699908ac6f5c5efdceaf044a7",
+      "bytes": 1292254,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "e52d2dfad45414ed893568054dc5403af4c0b7423cad3ca46985fc52903b5ba5",
+      "bytes": 1342156,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "46c59b74fc0afdf9aeff7c964f71baadb9f0db35b7d57b331e8c8665a8130bc9",
+      "bytes": 1257416,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "05b36375ba60704f3e3f9dbfecc13dff46c33ebfc53ed258bc0dfbc47eabbced",
+      "bytes": 1345076,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "843687b0a4e003ecc501a5d75a98f8c0e692ae6b1cc517051acf81074e840688",
+      "bytes": 1274515,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "081e378698495f123a29e4eb7bd66bd406b20b8571dd1a41210c13adf20bee08",
+      "bytes": 1227532,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "4b090ee547e79d10215f91e7e06d8ead2319f90312f95963038f5a0b705c56fe",
+      "bytes": 1289823,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "732f64e52ffe2bb2a5a116f503b4a1094f591576538b79fcc1da84506d6777a4",
+      "bytes": 1341660,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "bf477458d6f79bc678733e43d7e367eb4e5646486dc035c8246bb205243c691d",
+      "bytes": 1258013,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "696ae876f4e606a964fe9fdc43613993c1f6bbe45b408a1c8a68eba42ac31632",
+      "bytes": 1344541,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "84178ba720b5ba7cddfbfaac700b6f6ac8cf9229c49446e54796501e931cf7d3",
+      "bytes": 1275035,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "83b91b438e7df9ae4a4eae6bd2b711a8b36f6b4b3b0ed2bd3851d4a7285aface",
+      "bytes": 1229467,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "b32589fd181cb2582d9220d2b272fc4423b115df42453abb0841ced2bb5c669a",
+      "bytes": 1288634,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "4b7ee2569315e2c1a123c51d8757a14cf05e17e8e918efac90cd597735d36602",
+      "bytes": 1343505,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "c734383c229837e951a4c00e13cd0c52a30642000f5638842f6ba349f8ebea2b",
+      "bytes": 1257747,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "c2aa7cdc85b5dba95cf8e9e594a4174553fa27b61fcd748416d3264661bffb15",
+      "bytes": 1337213,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "9432860f76df0fabc0a703fa73ddd0e5283f72885006d9ef23f6c49699bed5c6",
+      "bytes": 1274655,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "896175a008b4a9c6812ca2476676168e33ed348215a6f0c986e4df8fe005ae82",
+      "bytes": 1228197,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "6c76a00a8f9f2b22d4247a4557061e2f08196d21216ccccd878c767520285e77",
+      "bytes": 1285080,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "ddac3de34e38670b7701ed8e145a37bbaf505a98fd30debb03b58dfecfbca9bf",
+      "bytes": 1342842,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "aa3970a658f20be77276585081eeee8c81964a030b692eec112ccd96928d3edf",
+      "bytes": 1258430,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "08a122f7a7d49a091033795cbef417a4c72864ecec1c0325dde627b578cd8632",
+      "bytes": 1343227,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "dceacde4174557770f077c2c6157929c103ae85bc852fb1824adc248c506b05d",
+      "bytes": 1275917,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "45ce78e914cd47ca03f99e513b6008c5c7e089a29d0ce902c98f2812b22f04cb",
+      "bytes": 1230829,
+      "format": "json"
+    },
+    {
+      "name": "gpt5.4/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/gpt5.4/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "933fa65ffe4c0986f7685dac3f3482d1c821e793c70342f7b8ae0663fd80004e",
+      "bytes": 1289014,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "3b9e849f91fa0aba3fa042d6670fc52e6e75320b4b94f1550dea1ddc8f46eb13",
+      "bytes": 1338510,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "a1ca6f6ebfa4539ef2d1e8206ef6ccc03fbaf05e71a6bb36d3f479fa564da9d2",
+      "bytes": 1253818,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "682e411792049cea8824fb8cd7267ec286fa86130854408ac89a87ad55c3753f",
+      "bytes": 1343615,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "1c3117992d8538424e7014e683241fb7f78c8e9b1d0a82361f6058c7f7007ab4",
+      "bytes": 1269035,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "a5141925f42fe4febdeed173daf2cf3fcfe65fe01ac542463d867bc5d6226425",
+      "bytes": 1228451,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "8d467d0e8af10b34803f2a08b43fe2d5b2894fe4f8ca344ed05ba0b8898a78ea",
+      "bytes": 1283611,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "82f00ba9ce9178790380779e7de1b7477a16032977a3e2eeaee7115c8fd9cd30",
+      "bytes": 1339591,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "2c32db904244e3bafadc02e43512835104a549481bc22aa565f01f76c840884d",
+      "bytes": 1253506,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "0e4acaff7372a89bada8478312da1bed43289fded0dc794f9db3bb0ad363c722",
+      "bytes": 1342046,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "dc7511f7951b2fde7bf643e8d57b1704138523f8450f9951de13009c0c249e2d",
+      "bytes": 1267558,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "315222d0f862866e45b79b7128d95241e83e5b5fbc781561194c6ef8ac6d49c1",
+      "bytes": 1229788,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "e62d95fe3175aae03285a645f59b61dfb54aa502889fa138886f7b0cb2bbce18",
+      "bytes": 1284938,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "9cd0a4481ea350499cfe6442fb17b994435ba85255021e27128f63c83963db8f",
+      "bytes": 1337815,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "12722c7cb89f240ebc935005965f9493f15107e07dc7f26052ea8a89ae83121e",
+      "bytes": 1254534,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "4377ca53d859033ced7f96f3cf8e1ddfc043f334ed64870ed909094d4276dceb",
+      "bytes": 1341809,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "609e86d4f069b6b2a601235bf3c1efc91f93f73dde04a12782c8e9a92c197a0d",
+      "bytes": 1267968,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "c1079accf73562cfeed544ee1c75f6b22270902a59134a7c6cfe78635653fcad",
+      "bytes": 1231098,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "3f6d53bbd88ffd26a9a05124722e98f7832f3823670cdb99073add4308246d6b",
+      "bytes": 1286539,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "85fdc3816c981903a95350158d1a85c8042faa42abcd782690cf2586d697c3ea",
+      "bytes": 1346546,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "503d5faf19eb0ee8ca6195cea9225154e58f44fb630f5c4bfd4239f153c012e9",
+      "bytes": 1251653,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "5483bdd3387ca73b4b33dfaad1b793c1b3867afe380f912fa568a1aacdd4bf86",
+      "bytes": 1350384,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "39a2d87966075cb90977a125586a1214488d35e7d58c58b8f2c7311ad8834480",
+      "bytes": 1273338,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "19e7fa9c123b493bd152fd6c94239c16c4f245bc6ac437fda6567d45724ce12d",
+      "bytes": 1229520,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "6fb47be90f1600f7caa3e6256daccb7be1b8e48dddc9c44bbd1c0627fefc7503",
+      "bytes": 1290518,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "cb502792cf35d67688798f95b09027b129ae795f2f30a35e7ea793f4a80b2c7e",
+      "bytes": 1346030,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "815bb97b8a9764e63424962e7e27a29c6634cdb6e190eac11452d74683dd1863",
+      "bytes": 1252501,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "f55562e229227c4df91d0a9c0d644b61f2bd9645ed98d65e5b0f650ee15b0fdc",
+      "bytes": 1349955,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "dc06148cf6391e658d76aadc794a229c63b636010a0856efb4d050cb7bf38539",
+      "bytes": 1273242,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "96fb32d939afff1d6898d6fa7f12456698a63f61f3fcea4aa4d18a107fc991c2",
+      "bytes": 1229363,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "2d9ca045b8288243bed1f1e317286c9ea50a8972837f20a012de22dc52e9ab44",
+      "bytes": 1290167,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "f15826a52dba5fd046104644ef966d588d8ab721803dff620379be73aba00498",
+      "bytes": 1346715,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "ec33efc80777bf4a52ff39266308ec72d91ab3f0736f5eb9316a5ef21a0e5cb0",
+      "bytes": 1252805,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "364823832d50819b1d38e69cee95c74ff969b10c41ae9da1c252f84d2d49b6e3",
+      "bytes": 1349511,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "a6c94af1f2f485709be17e219aa6ecc5966a946567b4d167c71d99978db6435a",
+      "bytes": 1273039,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "c697fae7a6692db436cc29749d6ec6eb8711f1206ce616b1c782c51c69822a8c",
+      "bytes": 1228641,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "0d9fb720f510ae9e4bb7d1e1e610b54dd9bb8073e329b520a5c2804219cbc2bc",
+      "bytes": 1288672,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "a5df9adf2d3b4dbfb8b8b66297824f3d41bf5bf5a4ba4951dc996c5dff6b08fd",
+      "bytes": 1342963,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "361ea35d1f6ab21c78f5f8e79e580142526f9efece6a2d9f1ad8732413b00dd1",
+      "bytes": 1255739,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "cd6d4e63ab9ab54d4289d324186af8228c6990287ae732b4f86ddece1a56d413",
+      "bytes": 1347594,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "d2e358a0a0f6f40fed3df33d571ac56eb9f3c420ffac5df3772b45d88d9bf572",
+      "bytes": 1271721,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "bf7b08e5144a0a8f403cc2d7c19e03767064d59fc5e5c36226d07d5d711660e0",
+      "bytes": 1231521,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "8c536dfe6ba4188efdd617ffea4718b431c8b858bbe26264bf0a82743419cb18",
+      "bytes": 1288068,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "44c438ce3c9ffffe201c383e28ab347d352f51f927d0c00430fff4422d4f8924",
+      "bytes": 1341752,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "1b53600d7936c8988ab6be9165d28db80c27e4d1cf0d91b20ed544f9ead489b6",
+      "bytes": 1256521,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "ddea991152e78ad6f0ca0260f493adddf01945bd1256a0b8428b78e9023cb327",
+      "bytes": 1346122,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "77c3cb51452ed25e6b59b86902b81148326f7e51562a75bde3abe4e994da6064",
+      "bytes": 1272295,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "0a820c085509f2ccb51dfba63ffa711dfbab709dbf71694ad77756fdc4c72d62",
+      "bytes": 1233318,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "ecb860abc60a019460dffc1a51702df88d1f9dba6f0dbeefd53580c4ae82431a",
+      "bytes": 1289874,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "4ee912dbb2b304e6968c42f7e89342d6189cecb643ae875105ce17887ddf11eb",
+      "bytes": 1344397,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "6a131b52b8f5dfbeaff74e3e73b1ad5c2fd9d3af04a46df828490e1600cc23fa",
+      "bytes": 1256401,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "7f257683b73642cee9dcd56f425980f6c407bf5b4d53701dcec5301dd4269489",
+      "bytes": 1347593,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "522c67ffeb5e2a07470b1fd36d1b8056e7c3ca3666860f5575098c226933ccb4",
+      "bytes": 1271824,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "51d76ec18f41f73db373de98abf21525646f9ebdef3c3cbbb4e544e12dc2035c",
+      "bytes": 1231965,
+      "format": "json"
+    },
+    {
+      "name": "kimi_2.6/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/kimi_2.6/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "87a5a9d3ac9ca7ef1f7558519c4e6f6319464383d7a5b2e6f34c5e3759660a90",
+      "bytes": 1289588,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "9056c8a11558e2f26c464b70a67dad2b553ceff9e361a159f42a4df322211ff4",
+      "bytes": 1349446,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "a1de29c836c5ab7968fd5b2c5bd40c2dad414ae0686082d65a711ed163a634a0",
+      "bytes": 1255458,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "0e0114745e96655c81ebae24dcd8ffd0364f8f8a800697eb659c1b9e542b8d55",
+      "bytes": 1347658,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "50e0ba68e78bc47cea3b84f6aa7326dfb4004e411bda8c5e72b75c21fb9870ea",
+      "bytes": 1272713,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "d1048837f0659661354e65d0b56b101238f54857122bf36340a4b4e07df07478",
+      "bytes": 1234249,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "ab57abaaf5620e7b57b6b3b5aa4f5ff5833fb4c0e63f3764a7238f1d8a6e884a",
+      "bytes": 1303540,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "156f0c40db60e1f8f29a3f80eb00236afa5e03c65219f59ad91f789292136518",
+      "bytes": 1351739,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "02f2e6a69b728313bd236a901b9ee2b3a4d7f8c4cf4f7e02415e34810453cab5",
+      "bytes": 1256146,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "54f48d1a790b309155c11dcd5cdca538578ea4a09dcf098280300b155f5cf6b2",
+      "bytes": 1350659,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "612c44c9563c7aa7c243b4593b37aba3c3783b3abe0f0ae977c968436f72f908",
+      "bytes": 1273416,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "4765def77716d29d5032785e3e7610d18f074eeba2a639bb666cf1679bc24d0e",
+      "bytes": 1237010,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "b1d97a3a15d09b79c58fe6fb6cba5837f5bb82a6b4b75dfdebeeebe26f254316",
+      "bytes": 1304209,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "7d2158f095633f13059a5d9d794439ff516390e4b601b16621ad8b17e98f342d",
+      "bytes": 1349163,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "b54d7358634916e77b3e4f20ba2d99429f7181f9c049feacb0a702ee4288e6ae",
+      "bytes": 1259085,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "76928345327aee05c906910b49b6331f337f4030cf1d1cb55412f9143ec6d04f",
+      "bytes": 1348026,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "2dae119b1745d321a36896f6b5167f1a8ffdbb2f7ad2fcfa72c25ba5ce59bb97",
+      "bytes": 1276369,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "29cad03dbfa5ab8789336c8b15f834936277f813de6bf0ce9028d5ebb25ac3db",
+      "bytes": 1236497,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "3ecca92fca8a7dd0170ee49862070dc6e7891785758c18ec7eb2456dccf640d0",
+      "bytes": 1302076,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "7297a4a9fda1291bece2be8b9af25a77bea5bfc1c643c89afd8954a5a29419e4",
+      "bytes": 1352908,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "938adf3b77f3f581ef3bf92e9a37c02fb23d8fa5fbb489dc6233fd5905af6081",
+      "bytes": 1258356,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "5141ee251a9adca43447016ea0cba03d086c4bc0bbe9b65593f68e9f96f673c3",
+      "bytes": 1352143,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "a206dc13fa7763ebecc7a48fcaad8f9112a97ee36674697995f76dc68f7b26c5",
+      "bytes": 1279631,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "d369e72a06d52ec3fa6742fff8518a1ffac24d0ebf82b9a566ff640b9f7f3551",
+      "bytes": 1237885,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "efebbd35b7d155fef71ce388941f547eec4842c67cd4fffa79ac9af84f5b52e7",
+      "bytes": 1306065,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "b7270e46a4b417bc9ed5d51dbf203d0a8ff44f9cae7de65c64882cd95e8e1b50",
+      "bytes": 1354255,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "f54e65bc7017688fe81e4039fe9883b44b2af8ce10b8793db922a042ea9a23c7",
+      "bytes": 1258985,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "5bac57abfa3666b386ed05928c881ef53a722d411470cb2480b940b36da6ac66",
+      "bytes": 1356695,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "489b1d9fa4feb7fde21ede9d5b4d0bf35a023c7849913fcbd0b698fb3efddf2d",
+      "bytes": 1280138,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "ed0ba2ddfa5a2d621f28e57c1357d363fb6de4c4484a567969c729705beb6a9c",
+      "bytes": 1236756,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "41307b5308d89f4c3a751ed21bdc7a3a9f2efe667f01db7193a35a6b00aca57b",
+      "bytes": 1306042,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "c6edbcf1fcfd0a6295983910d17a99e7379473c4c27b40350e70822ba53aa65c",
+      "bytes": 1355672,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "817949441158ab2921ff1d4cb909af70473be997bc23dad3e817cd28635ce479",
+      "bytes": 1255789,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "5e72d7b2824ef0047d0b1e82e45f6e3ff769ab1e7d30a89ad65f14bd7c5beb5f",
+      "bytes": 1354335,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "fb2a752f5b47e69ed4155528ed0a3ab48750eb5d79e6200393c0478499a44bf3",
+      "bytes": 1283350,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "ab862d443805c81e86c5142c0c4443e4ff3bd8955c6e644752cb36fe2f481f4a",
+      "bytes": 1238472,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "22c2f99a9491335422fdd78e703fbfb811c53c8aa1996463e6f32b5e7859fef9",
+      "bytes": 1306087,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "5e03a8870b0ae3ee0208c2dc261364322d95bbc0efd701fcd73e9c89bc0152e8",
+      "bytes": 1351131,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "7b77d35624310aa16a89a96ea37f92a4ef28b8d50fa942a574f4bfbb687e0640",
+      "bytes": 1257657,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "e6736d6473db2620b72846a71e5d60624cfc5a1be6f59e8cdd046beb512ddace",
+      "bytes": 1353721,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "b96cc2cdd62f7316fdbacb24d0a6c5e9ff14e2275c3098b9a631fc4d3eaa5bee",
+      "bytes": 1282622,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "175977aab8050d002712054ae676155d66241ebf9ce33606851fb5ae024e6136",
+      "bytes": 1240584,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "65d21a8a493dc49cfb0cdc875601505e6344149b87ed33148fd74844663e3782",
+      "bytes": 1308424,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "72a6f3c1592189deef442cbb64f59f54ea5a8ef34f776963856d8fa754c9ab15",
+      "bytes": 1351529,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "b4115ea1a150a875161c042939570013c9f0e5b02d4a14418dfcb7f7fbe5f007",
+      "bytes": 1261363,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "d0af5a93da555434596663b4e1fb0dbb6175d6072816e94bc2a8c02e2e8ff477",
+      "bytes": 1350853,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "feeade5fac0066c75a9a7ef701402daf63882636fa4e92cd438ab6d1e298296b",
+      "bytes": 1275940,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "e773325d469ee26af56d8d4c2089e733bbafabaafb65efe24382ce8c1fd6102b",
+      "bytes": 1239090,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "ef027d61632dd2747c835260d77edaf14ec68cddf7fd6aa5fc5e3a269251ec50",
+      "bytes": 1312141,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "3ccd6955b7d5c539fd148a744d2d1adcd3dd8d18eaf8bd15c834e37fbbf1d759",
+      "bytes": 1349415,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "7253a59f4b046712efbf4714281b83cf3f0a830d11f6c7e238080425e8fa4555",
+      "bytes": 1259535,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "0437db188ffae7d16bca4506bd9f18db2a7cc4450ac965aab83407a5af53b614",
+      "bytes": 1351001,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "80241243502ff448182f12cab83bd99151f21ae6d96bde87f19ff404c455c8c6",
+      "bytes": 1276780,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "af2cd5a3ac1009174bcbbaf5d2dc3efd1d3d5f98691c2038535630869b4e09c8",
+      "bytes": 1237315,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.527b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.527b/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "ed740d247b21126f72cdbfd9e52b1e8c9eaaccd8ec703965b3ef6a7625fa4ac8",
+      "bytes": 1308614,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchA_results/benchA_logs.json",
+      "sha256": "bdfde58f6695cb703ef5da54a689635b104bad0b9149e891cd97d46c8147867c",
+      "bytes": 1291295,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchB_results/benchB_logs.json",
+      "sha256": "7ad92f8fc2157ad5a5231b3d192406f917863b0a2a34d136ef9b20f7e30855e4",
+      "bytes": 1201948,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchE_results/benchE_logs.json",
+      "sha256": "732eb20fa72e156c7fd76ff6d98e2ee8f97b8108a93dd8dd4a0f12c743f56cae",
+      "bytes": 1297130,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchF_results/benchF_logs.json",
+      "sha256": "3189c19a705dc0393be697a7f0c30407ec232f7555160c4c6cf82bf33446ad6b",
+      "bytes": 1217656,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchM_results/benchM_logs.json",
+      "sha256": "6731e1046fb649cc25bb5b352e972fbbf31fa66ce2493979b7f34624e62f6beb",
+      "bytes": 1178663,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r1/benchO_results/benchO_logs.json",
+      "sha256": "8e8e6b4fe5674464bd6bd3211e8940b32876d31e938dd66f59f092c82abc7c43",
+      "bytes": 1245143,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchA_results/benchA_logs.json",
+      "sha256": "929dbd0d899c975134e608d7dda2d65f968fd8971b38cbc86931fd5b230aa3d8",
+      "bytes": 1290928,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchB_results/benchB_logs.json",
+      "sha256": "ee1a71fb50a6b32bc8d0e1b4eac7d654e05bcf501e176d6d25456a37c9fbec58",
+      "bytes": 1202538,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchE_results/benchE_logs.json",
+      "sha256": "43d78dcc49d1d9157d00a5e16751ad50e324698337fb0dd9ee96340ce5285eca",
+      "bytes": 1297298,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchF_results/benchF_logs.json",
+      "sha256": "2e0bccb29794bc52364dc0fb269ee99385720667c536c14fa2290d65280b2ac8",
+      "bytes": 1217383,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchM_results/benchM_logs.json",
+      "sha256": "2463ca8f2334ff528ceb842846f584a7be143580acb946221d20cb9732f2fa91",
+      "bytes": 1178458,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r2/benchO_results/benchO_logs.json",
+      "sha256": "0bc2471e0ae3c6d3be9cc9dad3212d149a51536d43b1ec673191eb69e2a2df05",
+      "bytes": 1245069,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchA_results/benchA_logs.json",
+      "sha256": "c528538d8d403193c9e27c866ff9e0920024ec78672266d88276d47e0a794dab",
+      "bytes": 1292453,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchB_results/benchB_logs.json",
+      "sha256": "9499ba32f02ddbc4b91749647e76bb20c048e3ae5783540cc02efea865f26c27",
+      "bytes": 1201786,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchE_results/benchE_logs.json",
+      "sha256": "afc2cd0bc3c09acdc361eb545e27a13c3a6b042f48e3c45c239e3e92a4625dd0",
+      "bytes": 1298111,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchF_results/benchF_logs.json",
+      "sha256": "239a77051cd75529329c1af9632563a315e31b342cc9f4f7d6f45130696580ea",
+      "bytes": 1218911,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchM_results/benchM_logs.json",
+      "sha256": "c6d6ddf20eff9e22073d2e8381942b0c17d5a4a540c7442133ea3e3738f5f149",
+      "bytes": 1179803,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/multiview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/multiview/r3/benchO_results/benchO_logs.json",
+      "sha256": "66509bbb8eea6abbdfad365c8ed1fc3d8c0ce1fa7937e1eed3417e41c7612a8b",
+      "bytes": 1244666,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchA_results/benchA_logs.json",
+      "sha256": "10f728e887fa10baad731791befe32c923cf2ea5ab59dfd1e2ab4b9539e3db3f",
+      "bytes": 1309462,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchB_results/benchB_logs.json",
+      "sha256": "144724c54d2afcf95d43b3b7e9807be6fb288e0a3d5693adf90543f230c39aef",
+      "bytes": 1223081,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchE_results/benchE_logs.json",
+      "sha256": "f58475c09eb27ef061c29bd46f05ea15e42f8c8d2def3c1878655b5a67164733",
+      "bytes": 1317920,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchF_results/benchF_logs.json",
+      "sha256": "802ecaf36de27917cc2a870f6508f04b25418c327289b1cf3e1aee8a9b78ebab",
+      "bytes": 1239491,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchM_results/benchM_logs.json",
+      "sha256": "623887e306a65634578baa159716194fc76a109c495f2b3b31d11fb66c20f13d",
+      "bytes": 1199339,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r1/benchO_results/benchO_logs.json",
+      "sha256": "35f844287bc6db1771ffac4a729537666a080e582df3c42c62ed72c71b68063f",
+      "bytes": 1261439,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchA_results/benchA_logs.json",
+      "sha256": "ffaa904bac346a5481d00cb3fe620ddb3bfa967de6da24e051ecfb80c31be06d",
+      "bytes": 1308230,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchB_results/benchB_logs.json",
+      "sha256": "fa2fed2e8434420693058bcd4925971cf6b6e6a1f6e0b03054e969854c15005a",
+      "bytes": 1221466,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchE_results/benchE_logs.json",
+      "sha256": "198b42c77bcfd411675be3f3f61043c66cb79d65c82e3322e9398666a063dff4",
+      "bytes": 1316445,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchF_results/benchF_logs.json",
+      "sha256": "f1f035c53649943ef95991a30f099ec8c3103e3c8ded53305572fbcf13e00059",
+      "bytes": 1241140,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchM_results/benchM_logs.json",
+      "sha256": "0cf2cedebcfa62c80e36e67842ed74c7412988ef702ce8ce478b9eb59a7e9442",
+      "bytes": 1198059,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r2/benchO_results/benchO_logs.json",
+      "sha256": "1969929cf7f1caf55c62bdf3bfc41e4fa0759e63beda116bf220ee1eac54d91a",
+      "bytes": 1260208,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchA_results/benchA_logs.json",
+      "sha256": "ac0f1b6a763b80e93274a4f1583e3d0eded5eb5a355afc4d8c0fee1bfce2d4e8",
+      "bytes": 1310028,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchB_results/benchB_logs.json",
+      "sha256": "65189b04b405f87a3bf1140916622ae43184de8b0e05eb9f8020576e6c369d9a",
+      "bytes": 1222933,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchE_results/benchE_logs.json",
+      "sha256": "1462646c396284bdc56f45d8ef1dff43049e1a9643fd825dae71c8473fda791a",
+      "bytes": 1316659,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchF_results/benchF_logs.json",
+      "sha256": "24d589dfa8f6100a248bc34708259372c373373effcfe8575c50cf27eb98be01",
+      "bytes": 1239567,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchM_results/benchM_logs.json",
+      "sha256": "59c3c6f7ab208239be0b73402719077678fdfb39f471f97466b6564ef8e16474",
+      "bytes": 1199079,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/pbr/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/pbr/r3/benchO_results/benchO_logs.json",
+      "sha256": "9bf7a41cb752efe0b79e9a248916667681a0b82b88b03ec0bd05e18fad95778d",
+      "bytes": 1262046,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchA_results/benchA_logs.json",
+      "sha256": "9e44e54ffda36c48e7bc857ceb3288d835467341264f4d3610af5516f511ebf6",
+      "bytes": 1302095,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchB_results/benchB_logs.json",
+      "sha256": "f0ef58ae06a066ee10cf06442d0fda778b91e59306fff76fd37ed1c4cf93ec85",
+      "bytes": 1221784,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchE_results/benchE_logs.json",
+      "sha256": "7eb4f14de773605230d7703feb7d25bd4a66e720913143709fa1dde59d4dfc66",
+      "bytes": 1308332,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchF_results/benchF_logs.json",
+      "sha256": "8ee46f6e2efe124bbfc881b6c4b33900471c3353abdbb5002de93b9a93669dd7",
+      "bytes": 1232053,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchM_results/benchM_logs.json",
+      "sha256": "f76a62cff910b548158cc8bc5df5b0bec13eb31eae97c1c2acfea16dd09f45aa",
+      "bytes": 1192261,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r1/benchO_results/benchO_logs.json",
+      "sha256": "969ab4d751d2c4c346deb0d40b19a80a996f74fa222dcda65960e866fff97d47",
+      "bytes": 1263786,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchA_results/benchA_logs.json",
+      "sha256": "5681d1352b883f06ccc347348f120f9fb4502adb74f1a1eaa53bd1fc262558bc",
+      "bytes": 1303737,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchB_results/benchB_logs.json",
+      "sha256": "674b71b76f2acacae3fa242b350d62b46cdc05d79eecbf4040047bf01b633dd1",
+      "bytes": 1218636,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchE_results/benchE_logs.json",
+      "sha256": "17d470220638a4fb64518fa2be9a4d5718e0ef99b9e5e04093e23bf92fe688a2",
+      "bytes": 1308844,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchF_results/benchF_logs.json",
+      "sha256": "3f849af855d057778d78b1b5fe119c140325c3ae133b552cf178d9e50e6a86ea",
+      "bytes": 1232704,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchM_results/benchM_logs.json",
+      "sha256": "add214dae0afb041721a43b439fde15b2d5b6792c8ae50b19b18e8b251d90e1e",
+      "bytes": 1192244,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r2/benchO_results/benchO_logs.json",
+      "sha256": "43986225d2388cb5f1b7d1b19083124716a037adf58b29d693e7affc54077a1a",
+      "bytes": 1264843,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchA",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchA_results/benchA_logs.json",
+      "sha256": "17253fe02a5fafcf79bddb30af947f37830a734e0815c0564338b7d1f6a3b418",
+      "bytes": 1304235,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchB",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchB_results/benchB_logs.json",
+      "sha256": "c18600b6fc377af738bf4624d3da96ddf71cf8546c1b6336859a681853f45ca2",
+      "bytes": 1222110,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchE",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchE_results/benchE_logs.json",
+      "sha256": "c2ee9f540ee7c349af9f8eea587eeb7329c1d92109f1060d1e9ca679a847b05c",
+      "bytes": 1310374,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchF",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchF_results/benchF_logs.json",
+      "sha256": "197e7a0ef4b2883ff68a839a8f90d20e1b905eae347dc16b700a7f8ef92adc06",
+      "bytes": 1231914,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchM",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchM_results/benchM_logs.json",
+      "sha256": "d6bd4743d8c440c60ce70ad3b9cebd9fdb51aca1738393dd4fa3e086e6e72107",
+      "bytes": 1190648,
+      "format": "json"
+    },
+    {
+      "name": "qwen3.59b/singleview/benchO",
+      "role": "exec_log",
+      "vendored": null,
+      "resource": "cad_repos/CADBench-main/CADBench-main/tested_models/qwen3.59b/singleview/r3/benchO_results/benchO_logs.json",
+      "sha256": "22a01fd21cf61b196d5bbe233f1f530d5cd571e928d63d706273ac760148d352",
+      "bytes": 1261674,
+      "format": "json"
+    }
+  ]
+}

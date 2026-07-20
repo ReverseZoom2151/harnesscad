@@ -30,6 +30,9 @@ imports the highest-value REAL fixtures found in the resources tree
   photographs of 50 3D-printed DeepCAD objects with closed-vocabulary capture
   axes and an Object_ID->DeepCAD_ID map (no LICENSE, DeepCAD-derived: manifest-
   only, metadata rows/axes/map embedded as facts, no pixels vendored).
+* :mod:`.cadbench_exec_logs` -- CADBench's 486 per-program execution logs: raw
+  files manifest-only, with the distinct status codes + error-string categories
+  extracted as a machine-checkable taxonomy (MIT eval output, nothing vendored).
 
 Every loader is reachable through this hub: :data:`LOADERS` names them,
 :func:`loader` returns one by name, and :func:`availability` is the per-source
@@ -84,6 +87,7 @@ LOADERS: Tuple[str, ...] = (
     "step_canaries",
     "adversarial_code",
     "real_photo_heldout",
+    "cadbench_exec_logs",
 )
 
 
@@ -258,6 +262,7 @@ from harnesscad.eval.corpus.fixtures import adversarial_code     # noqa: E402
 from harnesscad.eval.corpus.fixtures import birdhouse_nversion   # noqa: E402
 from harnesscad.eval.corpus.fixtures import brepnet_steps        # noqa: E402
 from harnesscad.eval.corpus.fixtures import cad_coder_heldout    # noqa: E402
+from harnesscad.eval.corpus.fixtures import cadbench_exec_logs   # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadclaw_bom          # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadgenbench_broken   # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadgenbench_pose     # noqa: E402
@@ -277,6 +282,7 @@ _MODULES: Dict[str, object] = {
     "step_canaries": step_canaries,
     "adversarial_code": adversarial_code,
     "real_photo_heldout": real_photo_heldout,
+    "cadbench_exec_logs": cadbench_exec_logs,
 }
 
 assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"
