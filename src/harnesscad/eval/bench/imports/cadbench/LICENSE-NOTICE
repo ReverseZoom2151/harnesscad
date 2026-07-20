@@ -1,0 +1,24 @@
+The JSON files under this directory are vendored verbatim from the CADBench
+project, tested_models/{model}/{modality}/r1/bench{A,B,E,F,M,O}_results/ .
+
+Only the AGGREGATE baseline metric outputs are vendored:
+  * bench*_metrics.json           -- per-(model,modality,bench) overall scores
+  * bench*_per_label_metrics.json -- the same, split easy/medium/hard
+
+These are computed OUTPUTS of the MIT-licensed CADBench evaluation code
+(Mean/Median/Std/Adjusted stats, VSR, Timeout Rate, code-size metrics). They
+carry NO per-object dataset provenance (no file ids, no STEP/STL/image/mesh
+content): they are eval numbers, not benchmark task data. The task data
+(DeepCAD / Fusion360 / ABC / Objaverse / MCB derived STEP/STL/image/mesh) is
+NOT vendored here -- it is HuggingFace-hosted, absent from the checkout, and
+under a mixed/non-commercial license (see the repo's DATASET_LICENSE.md).
+
+Source: CADBench (resources/cad_repos/CADBench-main/CADBench-main)
+License: MIT License, Copyright (c) 2026 Annie Doris
+Paper:   Doris et al., "CADBench: A Multimodal Benchmark for AI-Assisted CAD
+         Program Generation", arXiv:2605.10873 (DeCoDELab)
+
+Redistribution permitted under the MIT License; the full license text is in
+the source repository's LICENSE file. Provenance (resources-relative source
+path, SHA-256, byte count, role) for every vendored file is recorded in
+MANIFEST.json alongside this notice.

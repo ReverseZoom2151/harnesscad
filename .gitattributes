@@ -1,0 +1,3 @@
+# Vendored CADBench baseline metric JSONs are byte-exact reference values whose
+# SHA-256 is pinned in MANIFEST.json -- never apply text/EOL normalisation.
+src/harnesscad/eval/bench/imports/cadbench/** -text
