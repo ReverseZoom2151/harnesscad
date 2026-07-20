@@ -26,6 +26,10 @@ imports the highest-value REAL fixtures found in the resources tree
   code-safety gate, whose ``--selfcheck`` RUNS ``check_cad_code`` over every
   case (spatialhero taxonomy, reimplemented: MIT-declared but no LICENSE file,
   nothing vendored verbatim).
+* :mod:`.real_photo_heldout` -- GenCAD-Code's real-photo held-out set: 400 real
+  photographs of 50 3D-printed DeepCAD objects with closed-vocabulary capture
+  axes and an Object_ID->DeepCAD_ID map (no LICENSE, DeepCAD-derived: manifest-
+  only, metadata rows/axes/map embedded as facts, no pixels vendored).
 
 Every loader is reachable through this hub: :data:`LOADERS` names them,
 :func:`loader` returns one by name, and :func:`availability` is the per-source
@@ -79,6 +83,7 @@ LOADERS: Tuple[str, ...] = (
     "cadclaw_bom",
     "step_canaries",
     "adversarial_code",
+    "real_photo_heldout",
 )
 
 
@@ -257,6 +262,7 @@ from harnesscad.eval.corpus.fixtures import cadclaw_bom          # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadgenbench_broken   # noqa: E402
 from harnesscad.eval.corpus.fixtures import cadgenbench_pose     # noqa: E402
 from harnesscad.eval.corpus.fixtures import manifold_meshes      # noqa: E402
+from harnesscad.eval.corpus.fixtures import real_photo_heldout   # noqa: E402
 from harnesscad.eval.corpus.fixtures import step_canaries        # noqa: E402
 
 #: name -> loader module, for :func:`loader`. Keys are exactly :data:`LOADERS`.
@@ -270,6 +276,7 @@ _MODULES: Dict[str, object] = {
     "cadclaw_bom": cadclaw_bom,
     "step_canaries": step_canaries,
     "adversarial_code": adversarial_code,
+    "real_photo_heldout": real_photo_heldout,
 }
 
 assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"
