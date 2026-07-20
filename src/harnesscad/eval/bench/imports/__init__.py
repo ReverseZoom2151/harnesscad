@@ -27,6 +27,11 @@ mapped onto shapes the harness already grades with -- the corpus Brief fields
 * :mod:`.cadjudge_prompts` -- cad-judge's three-abstraction-tier prompts per
   part (Apache-2.0; ``prompts.json`` vendored, the ``.pth`` weights are
   skipped entirely): prompt-robustness cases.
+* :mod:`.cadbench_baselines` -- CADBench's committed baseline leaderboard values
+  (Doris et al. 2026; MIT, the aggregate metric JSONs vendored, the mixed-license
+  HF task data never touched): typed ``(model, modality, bench, difficulty)`` ->
+  metric rows, plus an adapter onto the hard-corpus board's ``Standing`` so a run
+  can be ranked against these external comparators. NOT a brief source.
 
 Discipline shared by every loader (same as ``eval/corpus/fixtures``):
 
@@ -93,13 +98,16 @@ LOADERS: Tuple[str, ...] = (
     "cadam_textcad_briefs",
     "intentforge_refusals",
     "cadjudge_prompts",
+    "cadbench_baselines",
 )
 
 #: The subset of :data:`LOADERS` that emits :class:`ImportedBrief` records.
 #: ``intentforge_refusals`` is deliberately absent: its cases are prompt ->
 #: expected-REJECTION oracle pairs, so they are NOT briefs to build from
-#: (turning a refusal canary into a build brief would invert its meaning). It
-#: is reachable through :func:`loader` like every other source.
+#: (turning a refusal canary into a build brief would invert its meaning).
+#: ``cadbench_baselines`` is also absent: it emits leaderboard COMPARATOR rows
+#: (aggregate scores of other models), not buildable tasks. Both are reachable
+#: through :func:`loader` like every other source.
 BRIEF_LOADERS: Tuple[str, ...] = (
     "graphcad_cadbench",
     "agentscad_tasks",
@@ -301,6 +309,7 @@ class ImportedBrief:
 # --------------------------------------------------------------------------- #
 
 from harnesscad.eval.bench.imports import agentscad_tasks         # noqa: E402
+from harnesscad.eval.bench.imports import cadbench_baselines      # noqa: E402
 from harnesscad.eval.bench.imports import cadam_textcad_briefs    # noqa: E402
 from harnesscad.eval.bench.imports import cadjudge_prompts        # noqa: E402
 from harnesscad.eval.bench.imports import graphcad_cadbench       # noqa: E402
@@ -316,6 +325,7 @@ _MODULES: Dict[str, Any] = {
     "cadam_textcad_briefs": cadam_textcad_briefs,
     "intentforge_refusals": intentforge_refusals,
     "cadjudge_prompts": cadjudge_prompts,
+    "cadbench_baselines": cadbench_baselines,
 }
 
 assert tuple(_MODULES) == LOADERS, "LOADERS and the route table disagree"
