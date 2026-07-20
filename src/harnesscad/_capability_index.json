@@ -2959,14 +2959,13 @@
       "layer": "agents",
       "name": "failure_knowledge",
       "package": "memory",
-      "summary": "AgentSCAD's CAD failure-mode knowledge, as UNVERIFIED skill-pack recipes.",
+      "summary": "CAD failure-mode knowledge, as UNVERIFIED skill-pack recipes.",
       "symbols": [
         "build_failure_pack",
         "main",
         "register_failure_knowledge"
       ],
       "tags": [
-        "agent",
         "memory",
         "verify"
       ]
@@ -10544,7 +10543,7 @@
       "layer": "domain",
       "name": "fillet_feasibility",
       "package": "geometry",
-      "summary": "Fillet-feasibility preflight predicate (deterministic, stdlib-only).",
+      "summary": "Rolling-ball fillet feasibility preflight (deterministic, stdlib-only).",
       "symbols": [
         "CylindricalFace",
         "EdgePreflight",
@@ -12882,7 +12881,7 @@
       "layer": "domain",
       "name": "constraint_type_ids",
       "package": "geometry",
-      "summary": "Onshape ``ConstraintType`` integer-id enum (SketchGraphs, verbatim fact table).",
+      "summary": "Onshape sketch-constraint type ids (``ConstraintType``, a fact table).",
       "symbols": [
         "ConstraintType",
         "has_parameters",
@@ -12893,7 +12892,6 @@
       "tags": [
         "constraints",
         "geometry",
-        "graph",
         "sketch"
       ]
     },
@@ -13602,7 +13600,7 @@
       "layer": "domain",
       "name": "sew",
       "package": "geometry",
-      "summary": "Tolerant face-to-shell sewing with tolerance monotonicity and healing.",
+      "summary": "Tolerant sewing of independent faces into shells, plus a healing pass.",
       "symbols": [
         "HealReport",
         "SewFace",
@@ -13621,7 +13619,6 @@
         "features",
         "geometry",
         "repair",
-        "tolerancing",
         "topology"
       ]
     },
@@ -14450,7 +14447,7 @@
       "layer": "domain",
       "name": "topology_optimize",
       "package": "geometry",
-      "summary": "Manufacturing-constrained, multi-load-case SIMP topology optimization.",
+      "summary": "Compliance minimisation on a structured 2D grid under manufacturing rules.",
       "symbols": [
         "Mesh2D",
         "apply_filter",
@@ -23066,7 +23063,7 @@
       "layer": "domain",
       "name": "part_catalog",
       "package": "standards",
-      "summary": "Standard-parts catalog (anvilate).",
+      "summary": "Standard-parts catalog: clearance holes, fasteners, pins, bearings,",
       "symbols": [
         "Bearing",
         "CapScrew",
@@ -23101,6 +23098,8 @@
         "washer_sizes"
       ],
       "tags": [
+        "assembly",
+        "mechanical",
         "standards"
       ]
     },
@@ -24162,6 +24161,29 @@
       ],
       "tags": [
         "parsing"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.designqa_scorers",
+      "imports": [],
+      "layer": "eval",
+      "name": "designqa_scorers",
+      "package": "bench",
+      "summary": "Six automatic QA graders for FSAE-rules multimodal QA (DesignQA family).",
+      "symbols": [
+        "bleu2",
+        "character_f1",
+        "extract_yes_no",
+        "main",
+        "normalize_answer",
+        "rouge_l",
+        "rule_number_f1",
+        "score",
+        "token_f1",
+        "yesno_accuracy"
+      ],
+      "tags": [
+        "benchmark"
       ]
     },
     {
@@ -25683,6 +25705,35 @@
         "textcad_manifest"
       ],
       "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.bench.imports.cadbench_baselines",
+      "imports": [
+        "harnesscad.eval.bench.imports",
+        "harnesscad.eval.bench.imports.Manifest",
+        "harnesscad.eval.bench.imports.load_manifest",
+        "harnesscad.eval.bench.protocols.tiered_leaderboard",
+        "harnesscad.eval.bench.protocols.tiered_leaderboard.rank_leaderboard",
+        "harnesscad.eval.leaderboard.hardcorpus_board",
+        "harnesscad.eval.leaderboard.hardcorpus_board.Standing",
+        "harnesscad.eval.leaderboard.hardcorpus_board.ranking"
+      ],
+      "layer": "eval",
+      "name": "cadbench_baselines",
+      "package": "bench",
+      "summary": "CADBench's committed baseline leaderboard values, as typed comparator rows.",
+      "symbols": [
+        "BaselineRow",
+        "main",
+        "manifest",
+        "rows",
+        "to_scorecard_row",
+        "to_standing",
+        "to_standings"
+      ],
+      "tags": [
+        "benchmark"
+      ]
     },
     {
       "dotted": "harnesscad.eval.bench.imports.cadjudge_prompts",
@@ -28537,6 +28588,31 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.corpus.fixtures.cadbench_exec_logs",
+      "imports": [
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.Manifest",
+        "harnesscad.eval.corpus.fixtures.load_manifest",
+        "harnesscad.eval.corpus.fixtures.sha256_of"
+      ],
+      "layer": "eval",
+      "name": "cadbench_exec_logs",
+      "package": "corpus",
+      "summary": "CADBench per-program execution-status + error taxonomy (facts + log manifest).",
+      "symbols": [
+        "ErrorCategory",
+        "StatusCode",
+        "classify_error",
+        "log_files",
+        "main",
+        "manifest",
+        "status_code"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.corpus.fixtures.cadclaw_bom",
       "imports": [
         "harnesscad.eval.corpus.fixtures",
@@ -28652,6 +28728,34 @@
       "tags": [
         "meshing",
         "verify"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.corpus.fixtures.real_photo_heldout",
+      "imports": [
+        "harnesscad.eval.corpus.fixtures",
+        "harnesscad.eval.corpus.fixtures.Manifest",
+        "harnesscad.eval.corpus.fixtures.fixtures_dir",
+        "harnesscad.eval.corpus.fixtures.load_manifest",
+        "harnesscad.eval.corpus.fixtures.sha256_of"
+      ],
+      "layer": "eval",
+      "name": "real_photo_heldout",
+      "package": "corpus",
+      "summary": "GenCAD-Code's real-photo held-out set: image->CAD robustness, REAL not synthetic.",
+      "symbols": [
+        "PhotoRecord",
+        "available_photos",
+        "axes",
+        "id_map",
+        "main",
+        "manifest",
+        "photo_records",
+        "records_by_axis",
+        "resolve_deepcad_id"
+      ],
+      "tags": [
+        "vision"
       ]
     },
     {
