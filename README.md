@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="HarnessCAD - verifier-first text-to-CAD" width="640">
+  <img src="assets/banner.svg" alt="HarnessCAD" width="720">
 </p>
 
 <p align="center">
