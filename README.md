@@ -1,4 +1,6 @@
-<h1 align="center">HarnessCAD</h1>
+<p align="center">
+  <img src="assets/banner.svg" alt="HarnessCAD - verifier-first text-to-CAD" width="640">
+</p>
 
 <p align="center">
   An agentic text-to-CAD harness: CAD operations are verified before the kernel runs them.
