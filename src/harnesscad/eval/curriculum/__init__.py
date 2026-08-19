@@ -34,7 +34,7 @@ sequence.
 
 from __future__ import annotations
 
-from harnesscad.eval.curriculum import complexity, difficulty, ordering
+from harnesscad.eval.curriculum import complexity, difficulty, ordering, validate
 from harnesscad.eval.curriculum.complexity import (
     ComplexityFeatures,
     task_features,
@@ -57,6 +57,7 @@ __all__ = [
     "complexity",
     "difficulty",
     "ordering",
+    "validate",
     "ComplexityFeatures",
     "task_features",
     "task_score",
