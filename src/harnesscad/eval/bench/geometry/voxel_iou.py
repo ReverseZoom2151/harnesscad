@@ -1,126 +1,29 @@
-"""Voxel-IoU and viewpoint-error metrics for sketch-to-3D reconstruction.
+"""Back-compat shim: voxel_iou moved into the geometry layer.
 
-This reports two deterministic quantitative metrics against a ShapeNet-style
-ground truth:
-
-* **Voxel IoU**: a reconstructed shape and the ground-truth
-  shape are voxelised onto a common occupancy grid and scored by the volumetric
-  Jaccard index |A AND B| / |A OR B|.  This is the headline reconstruction
-  fidelity number.
-
-* **Viewpoint error**: the network's predicted camera pose (elevation
-  and azimuth Euler angles) is compared with the ground-truth pose by mean
-  absolute error (MAE) -- and, as used in a training loss term, by mean
-  squared error over the pose vector.  Azimuth is an angle on a circle, so
-  this module offers a circular MAE that accounts for wrap-around (e.g.
-  350 deg vs 10 deg differ by 20 deg, not 340).
-
-Per-category scores are also averaged into a single "mean" column; a
-category-mean helper is provided.
-
-Everything is stdlib-only and deterministic.  Occupancy grids are given as sets
-of integer ``(i, j, k)`` voxel indices (sparse) so the metric never allocates a
-dense volume.  The learned encoder-decoder, SoftRas renderer and CLIP guidance
-that *produce* the shapes and poses are external.
+The voxel-IoU / viewpoint-error primitives are general geometry, not an
+eval-only concern, so the module now lives at
+``harnesscad.domain.geometry.volumes.voxel_iou`` (alongside tsdf /
+marching_cubes).  This shim keeps the old ``harnesscad.eval.bench.geometry``
+import path working so eval-side callers do not break.  It can be removed once
+those callers are repointed at the new location.
 """
 
-from __future__ import annotations
+from harnesscad.domain.geometry.volumes.voxel_iou import (  # moved; kept as a shim
+    azimuth_mae,
+    category_mean,
+    circular_abs_error,
+    pose_mae,
+    pose_mse,
+    voxel_iou,
+    voxelize_points,
+)
 
-import math
-from typing import Dict, Iterable, Mapping, Sequence, Tuple
-
-Voxel = Tuple[int, int, int]
-
-
-def voxel_iou(a: Iterable[Voxel], b: Iterable[Voxel]) -> float:
-    """Volumetric IoU |A AND B| / |A OR B| of two sparse occupancy sets.
-
-    Two empty grids are defined to have IoU 1.0 (they agree perfectly on
-    "nothing is occupied").
-    """
-    sa = set(a)
-    sb = set(b)
-    union = len(sa | sb)
-    if union == 0:
-        return 1.0
-    return len(sa & sb) / union
-
-
-def voxelize_points(
-    points: Sequence[Sequence[float]],
-    *,
-    origin: Sequence[float] = (0.0, 0.0, 0.0),
-    spacing: float = 1.0,
-) -> set:
-    """Map continuous ``(x, y, z)`` points to a set of integer voxel indices.
-
-    A point falls in voxel ``floor((p - origin) / spacing)`` per axis.  Useful to
-    build occupancy sets from sampled surface / interior points before scoring.
-    """
-    if spacing <= 0.0:
-        raise ValueError("spacing must be positive")
-    ox, oy, oz = origin
-    out = set()
-    for p in points:
-        x, y, z = p
-        out.add(
-            (
-                int(math.floor((x - ox) / spacing)),
-                int(math.floor((y - oy) / spacing)),
-                int(math.floor((z - oz) / spacing)),
-            )
-        )
-    return out
-
-
-def pose_mse(pred: Sequence[float], gt: Sequence[float]) -> float:
-    """Mean squared error over a pose vector (paper Eq. 4, L_v = ||gt - pred||^2).
-
-    Returned as the mean of squared per-component differences.
-    """
-    if len(pred) != len(gt):
-        raise ValueError("pose vectors must have equal length")
-    if not pred:
-        raise ValueError("pose vector must be non-empty")
-    return sum((p - g) ** 2 for p, g in zip(pred, gt)) / len(pred)
-
-
-def pose_mae(pred: Sequence[float], gt: Sequence[float]) -> float:
-    """Mean absolute error over a pose vector (Table 2 metric)."""
-    if len(pred) != len(gt):
-        raise ValueError("pose vectors must have equal length")
-    if not pred:
-        raise ValueError("pose vector must be non-empty")
-    return sum(abs(p - g) for p, g in zip(pred, gt)) / len(pred)
-
-
-def circular_abs_error(pred: float, gt: float, *, period: float = 360.0) -> float:
-    """Absolute angular difference on a circle of given period (degrees default).
-
-    Returns the shortest wrap-around distance in ``[0, period/2]`` -- e.g.
-    ``circular_abs_error(350, 10) == 20``.  Appropriate for azimuth angles.
-    """
-    if period <= 0.0:
-        raise ValueError("period must be positive")
-    d = abs(pred - gt) % period
-    return min(d, period - d)
-
-
-def azimuth_mae(
-    pred: Sequence[float], gt: Sequence[float], *, period: float = 360.0
-) -> float:
-    """Mean circular absolute error between predicted and GT azimuth angles."""
-    if len(pred) != len(gt):
-        raise ValueError("azimuth sequences must have equal length")
-    if not pred:
-        raise ValueError("azimuth sequence must be non-empty")
-    return sum(
-        circular_abs_error(p, g, period=period) for p, g in zip(pred, gt)
-    ) / len(pred)
-
-
-def category_mean(per_category: Mapping[str, float]) -> float:
-    """Unweighted mean over per-category scores (the paper's "mean" column)."""
-    if not per_category:
-        raise ValueError("need at least one category")
-    return sum(per_category.values()) / len(per_category)
+__all__ = [
+    "voxel_iou",
+    "voxelize_points",
+    "pose_mse",
+    "pose_mae",
+    "circular_abs_error",
+    "azimuth_mae",
+    "category_mean",
+]

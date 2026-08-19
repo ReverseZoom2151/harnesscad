@@ -199,9 +199,10 @@ def voxel_iou_score(a: Sequence[Vec3], b: Sequence[Vec3],
 
     A common axis-aligned grid is derived from the combined bounding box and
     ``resolution`` cells along the longest axis, then both clouds are voxelised
-    (via :mod:`bench.magic3d_voxel_metrics`) and scored by Jaccard index.
+    (via :mod:`harnesscad.domain.geometry.volumes.voxel_iou`) and scored by the
+    Jaccard index.
     """
-    from harnesscad.eval.bench.geometry.voxel_iou import voxel_iou, voxelize_points
+    from harnesscad.domain.geometry.volumes.voxel_iou import voxel_iou, voxelize_points
 
     if resolution < 1:
         raise ValueError("resolution must be >= 1")
