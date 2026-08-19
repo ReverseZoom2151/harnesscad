@@ -100,10 +100,25 @@ def baseline(path: str = BASELINE_PATH) -> dict:
         return json.load(fh)
 
 
-def check(report: Any, census: Optional[dict] = None) -> LivenessGateReport:
-    """Score a `field_liveness.FieldLivenessReport` against the committed census."""
+def check(report: Any, census: Optional[dict] = None,
+          shard: int = 0, nshard: int = 1) -> LivenessGateReport:
+    """Score a `field_liveness.FieldLivenessReport` against the committed census.
+
+    When sharded, ``report`` holds only this shard's cells, so the census must be
+    sliced to the same (op, field) stripe -- otherwise every OTHER shard's census
+    entry would look "revived" here (it is in ``known`` but, unmeasured, not in
+    ``dead``). The stripe is by index into ``op_fields()``, identical to the
+    partition ``field_liveness.run`` applies, so the union of shards checks every
+    census entry exactly once.
+    """
     base = census if census is not None else baseline()
     known = set(base.get("dead", []))
+    if nshard > 1:
+        from harnesscad.eval.selftest import field_liveness
+        mine = {"%s.%s" % (t, f)
+                for i, (t, f) in enumerate(field_liveness.op_fields())
+                if i % nshard == shard}
+        known = {k for k in known if k.split(":", 1)[1] in mine}
 
     dead = {_key(c) for c in report.dead}
     unmapped = ["%s.%s" % (t, f) for t, f in getattr(report, "unmapped", [])]
@@ -118,10 +133,10 @@ def check(report: Any, census: Optional[dict] = None) -> LivenessGateReport:
     return out
 
 
-def measure(backends: Sequence[str] = ("frep",)):
+def measure(backends: Sequence[str] = ("frep",), shard: int = 0, nshard: int = 1):
     from harnesscad.eval.selftest import field_liveness
 
-    return field_liveness.run(backends=list(backends))
+    return field_liveness.run(backends=list(backends), shard=shard, nshard=nshard)
 
 
 def write_baseline(report: Any, path: str = BASELINE_PATH) -> dict:
@@ -172,16 +187,28 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--json", action="store_true", dest="as_json")
     parser.add_argument("--update", action="store_true",
                         help="re-census. Deliberate act: the diff is the review.")
+    parser.add_argument("--shard", type=int, default=0,
+                        help="this shard's index, 0..nshard-1 (the (op, field) "
+                             "cells are partitioned by index modulo nshard)")
+    parser.add_argument("--nshard", type=int, default=1,
+                        help="total number of shards (default 1 = the full run). "
+                             "Each shard runs only its cells' geometry and applies "
+                             "the ratchet to the census entries for those cells.")
 
 
 def run(args: argparse.Namespace) -> int:
     backends = tuple(getattr(args, "backends", None) or ("frep",))
-    rep = measure(backends)
+    nshard = max(1, int(getattr(args, "nshard", 1)))
+    shard = int(getattr(args, "shard", 0))
+    if getattr(args, "update", False) and nshard > 1:
+        raise SystemExit("--update re-censuses the FULL matrix; do not combine it "
+                         "with --shard/--nshard (run the whole census in one process)")
+    rep = measure(backends, shard=shard, nshard=nshard)
     if getattr(args, "update", False):
         doc = write_baseline(rep)
         print("wrote %s (%d dead field(s))" % (BASELINE_PATH, len(doc["dead"])))
         return 0
-    gate = check(rep)
+    gate = check(rep, shard=shard, nshard=nshard)
     if getattr(args, "as_json", False):
         print(json.dumps(gate.to_dict(), indent=2, sort_keys=True))
     else:

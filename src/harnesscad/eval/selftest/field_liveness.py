@@ -805,8 +805,17 @@ class FieldLivenessReport:
 def run(backends: Optional[Sequence[str]] = None,
         ops: Optional[Sequence[str]] = None,
         factory: Optional[BackendFactory] = None,
-        timeout_s: float = DEFAULT_TIMEOUT_S) -> FieldLivenessReport:
-    """The full matrix: every (op, field) x every requested backend."""
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        shard: int = 0, nshard: int = 1) -> FieldLivenessReport:
+    """The full matrix: every (op, field) x every requested backend.
+
+    ``shard``/``nshard`` stripe the (op, field) PAIRS by index so CI can run the
+    expensive geometry N-ways parallel. Cells are fully independent (each
+    resolves its own backend and builds isolated sessions), so the stripe is a
+    pure partition -- the union of all shards is the full run. ``unmapped`` stays
+    GLOBAL (it is a cheap, geometry-free schema check that every shard can afford
+    to compute in full), so no shard can miss a newly-added field.
+    """
     wanted = tuple(backends) if backends is not None else BACKENDS
     report = FieldLivenessReport(unmapped=unmapped())
     live: List[str] = []
@@ -820,6 +829,8 @@ def run(backends: Optional[Sequence[str]] = None,
 
     pairs = [(t, f) for (t, f) in op_fields()
              if ops is None or t in set(ops)]
+    if nshard > 1:
+        pairs = [p for i, p in enumerate(pairs) if i % nshard == shard]
     for name in wanted:
         for tag, fname in pairs:
             if name not in live:
