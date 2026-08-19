@@ -58,6 +58,13 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
                         help="property streams to generate (default: 200)")
     parser.add_argument("--seed", type=int, default=20260714,
                         help="property corpus seed (default: 20260714)")
+    parser.add_argument("--shard", type=int, default=0,
+                        help="this property shard's index, 0..nshard-1. The seeded "
+                             "corpus is partitioned by stream index modulo nshard, "
+                             "so the union of all shards is the full run.")
+    parser.add_argument("--nshard", type=int, default=1,
+                        help="total number of property shards (default 1 = no "
+                             "split). Only affects --properties.")
     parser.add_argument("--json", action="store_true", dest="as_json",
                         help="emit the whole report as JSON")
     parser.add_argument("--strict", action="store_true",
@@ -114,8 +121,17 @@ def run(args: argparse.Namespace) -> int:
             live = available(backends)
         else:
             live = [b for b in ("frep",) if available([b])] or ["frep"]
-        rep_p = properties.run(backends=live, count=int(getattr(args, "count", 200)),
-                               seed=int(getattr(args, "seed", 20260714)))
+        count = int(getattr(args, "count", 200))
+        seed = int(getattr(args, "seed", 20260714))
+        nshard = max(1, int(getattr(args, "nshard", 1)))
+        shard = int(getattr(args, "shard", 0))
+        # Every shard generates the SAME full seeded corpus and runs its index
+        # stripe of it; the union across shards is the unsharded run bit-for-bit.
+        # (Lowering --count would run different streams, not a partition.)
+        corpus = properties.generate_corpus(count, seed)
+        if nshard > 1:
+            corpus = [c for i, c in enumerate(corpus) if i % nshard == shard]
+        rep_p = properties.run(backends=live, count=count, seed=seed, corpus=corpus)
         out["properties"] = rep_p.to_dict()
         findings += len(rep_p.violations)
         text.append(properties.format_text(rep_p))
