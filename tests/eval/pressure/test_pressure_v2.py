@@ -14,31 +14,28 @@ from harnesscad.eval.pressure import (loops, oracle, prompts, session, shape,
 from harnesscad.eval.pressure.briefs import brief_by_id
 from harnesscad.eval.pressure.metrics import grade
 from harnesscad.eval.pressure.model import ScriptedClient
+from harnesscad.eval.selftest import probe as _probe
 
-# The differential oracle can only AGREE across engines that are actually
-# installed. frep is stdlib and always present; the exact B-rep kernels (cadquery,
-# build123d, ...) live behind optional extras, so a bare CI runner has frep alone.
-# A test that asserts a multi-engine consensus (engines_agreeing >= 2, and no
-# engine crashing on a valid part) is not measuring the oracle when the kernels
-# are absent -- it is measuring the box. It SKIPS there rather than asserting a
-# softer number that would hide a real single-engine regression.
+# The differential oracle's whole value is catching what ONE engine misses: it
+# ranks a sound candidate over a broken one, and reaches a multi-engine
+# consensus, only because independent kernels disagree about the broken part.
+# frep is stdlib and always present; the exact kernels (cadquery, build123d,
+# truck, openscad, ...) live behind optional extras, so a bare CI runner has frep
+# alone -- and frep by itself cannot separate every good part from every trap
+# (that is precisely why the oracle exists). A test of the multi-engine oracle is
+# not measuring the oracle when only one engine is installed; it is measuring the
+# box. Those tests SKIP there rather than assert a softer thing that would hide a
+# real single-engine regression.
 #
-# The gate is IMPORTABILITY, not probe.available(): a cadquery/build123d backend
-# CONSTRUCTS lazily without importing its kernel, so resolve()/available() report
-# it present and it only crashes when an op is applied. Those two are the sole
-# engines that crash (rather than skip cleanly) on a bare runner -- the subprocess
-# engines report unavailable when their binary is missing -- so importing both is
-# exactly the condition under which `engines_crashed == 0` can hold.
-def _brep_kernels_importable() -> bool:
-    for _mod in ("cadquery", "build123d"):
-        try:
-            __import__(_mod)
-        except Exception:  # noqa: BLE001 - a missing extra is the whole point
-            return False
-    return True
-
-
-GEOMETRIC_LINEUP_INSTALLED = _brep_kernels_importable()
+# probe.available() is now an HONEST count: server._make_backend probes each
+# backend's real availability (cadquery/build123d import; the subprocess engines'
+# binaries) before claiming it, so an engine that cannot run is reported absent
+# rather than resolving lazily and crashing on the first op. len(available) >= 2
+# is therefore exactly "the differential oracle has something to differentiate."
+MULTI_ENGINE = len(_probe.available(_probe.GEOMETRIC_BACKENDS)) >= 2
+_MULTI_ENGINE_REASON = (
+    "the differential oracle needs >= 2 installed geometry engines to "
+    "differentiate candidates; a bare CI runner has frep alone")
 
 V1_BRIEFS = (
     "plate_hole_four", "strip_hole_row", "l_bracket", "step_block",
@@ -269,16 +266,16 @@ BROKEN = [{"op": "new_sketch", "plane": "XY"},
 
 class TestOracleSelector(unittest.TestCase):
 
+    @unittest.skipUnless(MULTI_ENGINE, _MULTI_ENGINE_REASON)
     def test_a_sound_candidate_outranks_a_broken_one(self):
+        # BROKEN is an over-thick shell that frep alone builds without complaint;
+        # only an independent kernel's disagreement drops it below GOOD. This is
+        # the differential oracle's reason to exist, so it needs >= 2 engines.
         best, scores = oracle.rank([BROKEN, GOOD])
         self.assertEqual(best, 1)
         self.assertGreater(scores[1].key, scores[0].key)
 
-    @unittest.skipUnless(
-        GEOMETRIC_LINEUP_INSTALLED,
-        "the differential oracle needs the optional B-rep kernels (cadquery, "
-        "build123d) installed to reach a multi-engine consensus with no engine "
-        "crashing; a bare CI runner has frep alone")
+    @unittest.skipUnless(MULTI_ENGINE, _MULTI_ENGINE_REASON)
     def test_the_oracle_reads_six_engines(self):
         s = oracle.score_ops(GOOD)
         self.assertTrue(s.built)
@@ -300,7 +297,12 @@ class TestSelectionArms(unittest.TestCase):
     def _client(self, responses):
         return ScriptedClient(responses, name="scripted")
 
+    @unittest.skipUnless(MULTI_ENGINE, _MULTI_ENGINE_REASON)
     def test_oracle_bon_picks_the_candidate_the_oracle_prefers(self):
+        # Oracle best-of-N ranks BROKEN below GOOD only through cross-engine
+        # disagreement -- the multi-engine oracle again. (The self-consistency
+        # control below needs no guard: it selects by majority VOTE, not the
+        # oracle, so it is meaningful on frep alone.)
         b = brief_by_id("trap_hole_oversize")
         c = self._client([BROKEN, GOOD, BROKEN])
         arms = c and loops.run_sampling(c, b, seed=1, n=3)
