@@ -12099,6 +12099,26 @@
       ]
     },
     {
+      "dotted": "harnesscad.domain.geometry.pointcloud.distance_metrics",
+      "imports": [],
+      "layer": "domain",
+      "name": "distance_metrics",
+      "package": "geometry",
+      "summary": "Point-cloud and sampled-curve distances -- plain geometry, no scoring.",
+      "symbols": [
+        "chamfer_distance",
+        "closed_curve_distance",
+        "curve_distance",
+        "sampled_curve_distance"
+      ],
+      "tags": [
+        "benchmark",
+        "curves",
+        "geometry",
+        "pointcloud"
+      ]
+    },
+    {
       "dotted": "harnesscad.domain.geometry.pointcloud.patch_tokeniser",
       "imports": [],
       "layer": "domain",
@@ -17919,14 +17939,14 @@
     {
       "dotted": "harnesscad.domain.reconstruction.brep.chain_complex_nms",
       "imports": [
+        "harnesscad.domain.geometry.pointcloud.distance_metrics",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.chamfer_distance",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.sampled_curve_distance",
         "harnesscad.domain.reconstruction.brep.chain_complex",
         "harnesscad.domain.reconstruction.brep.chain_complex.ChainComplex",
         "harnesscad.domain.reconstruction.brep.chain_complex.Curve",
         "harnesscad.domain.reconstruction.brep.chain_complex.Patch",
-        "harnesscad.domain.reconstruction.brep.chain_complex.make_complex",
-        "harnesscad.eval.bench.geometry.complex_matching",
-        "harnesscad.eval.bench.geometry.complex_matching.chamfer_distance",
-        "harnesscad.eval.bench.geometry.complex_matching.sampled_curve_distance"
+        "harnesscad.domain.reconstruction.brep.chain_complex.make_complex"
       ],
       "layer": "domain",
       "name": "chain_complex_nms",
@@ -24599,6 +24619,13 @@
     {
       "dotted": "harnesscad.eval.bench.geometry.complex_matching",
       "imports": [
+        "harnesscad.domain.geometry.pointcloud.distance_metrics",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.BIG",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics._dist",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.chamfer_distance",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.closed_curve_distance",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.curve_distance",
+        "harnesscad.domain.geometry.pointcloud.distance_metrics.sampled_curve_distance",
         "harnesscad.domain.reconstruction.brep.chain_complex",
         "harnesscad.domain.reconstruction.brep.chain_complex.ChainComplex",
         "harnesscad.eval.bench.sketch.set_prediction_f1",
@@ -24610,19 +24637,15 @@
       "summary": "Evaluation metrics for B-Rep chain complexes (ComplexGen, SIGGRAPH 2022).",
       "symbols": [
         "PRF",
-        "chamfer_distance",
-        "closed_curve_distance",
         "complex_chamfer",
         "complex_points",
         "corner_cost_matrix",
         "curve_cost_matrix",
-        "curve_distance",
         "evaluate_complex",
         "match",
         "matched_chamfer",
         "patch_cost_matrix",
         "prf_from_matches",
-        "sampled_curve_distance",
         "structure_prf",
         "topology_prf"
       ],

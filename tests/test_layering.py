@@ -19,12 +19,11 @@ scope -- the direct module body plus any module-level ``try/if/with/for/while``
 that runs at import -- are treated as violations; imports nested inside a
 ``def``/``class`` are ignored.
 
-Going-forward enforcement: any NEW top-level outward edge fails this test.  A
-small set of PRE-EXISTING edges is recorded in ``KNOWN_BASELINE`` below as
-documented debt; that set may only ever SHRINK.  When it reaches zero this
-becomes a pure hard gate.  Removing an edge from the code but leaving its
-baseline entry is harmless (it is reported, not failed) so that concurrent
-cleanups never break this test.
+Enforcement: any top-level outward edge fails this test.  ``KNOWN_BASELINE``
+below recorded the pre-existing edges as documented debt and was allowed only to
+SHRINK; it has now reached zero, so this is a pure hard gate.  Removing an edge
+from the code but leaving a baseline entry is harmless (it is reported, not
+failed) so that concurrent cleanups never break this test.
 """
 
 from __future__ import annotations
@@ -46,18 +45,26 @@ FORBIDDEN_PREFIXES = ("harnesscad.eval", "harnesscad.io.surfaces")
 INWARD_PREFIXES = ("harnesscad.domain", "harnesscad.core")
 
 #: Pre-existing top-level outward edges, as ``"<relpath>::<module>"`` (relpath is
-#: POSIX, relative to the harnesscad package root).  This is technical debt to be
-#: driven to zero as each edge is relocated or made lazy by its owner; the set
-#: must only ever shrink.  None of these is the relocated ``voxel_iou`` module
-#: (its one caller was already lazy) -- a fresh top-level voxel_iou edge would
-#: therefore fail this test, which is the point.
-KNOWN_BASELINE = frozenset(
-    {
-        "domain/reconstruction/brep/chain_complex_nms.py::harnesscad.eval.bench.geometry.complex_matching",
-        "domain/reconstruction/fitting/pointcloud_candidates.py::harnesscad.eval.bench.judges.compiler_judge",
-        "domain/reconstruction/scene/answer_engine.py::harnesscad.eval.bench.data.qa_query_schema",
-    }
-)
+#: POSIX, relative to the harnesscad package root).  This was technical debt to be
+#: driven to zero as each edge was relocated or made lazy by its owner; the set
+#: must only ever shrink.
+#:
+#: IT IS NOW EMPTY, so this file is a PURE HARD GATE: any top-level import of
+#: ``harnesscad.eval.*`` or ``harnesscad.io.surfaces.*`` from ``core`` or
+#: ``domain`` fails, with no grandfathering left.  Do not add entries here.  The
+#: eleven original edges were cleared as follows:
+#:
+#:   * the five ``verifiers.verify`` edges (cisp/protocol, contract, environment,
+#:     harness, loop) -- Severity/Diagnostic/VerifyReport/Verifier are op-contract
+#:     PROTOCOL types and moved to ``harnesscad.core.diagnostics``; verify.py
+#:     re-exports them, so the old import path is unchanged;
+#:   * ``chain_complex_nms`` -- the chamfer / sampled-curve distances are plain
+#:     geometry and moved to
+#:     ``harnesscad.domain.geometry.pointcloud.distance_metrics``, re-exported by
+#:     ``eval.bench.geometry.complex_matching`` (same pattern as ``voxel_iou``);
+#:   * the remaining five (cli, ingest_pipeline, pipeline, pointcloud_candidates,
+#:     answer_engine) -- call-time-only, so the import became function-local.
+KNOWN_BASELINE = frozenset()
 
 
 def _matches(module: str, prefixes) -> bool:
