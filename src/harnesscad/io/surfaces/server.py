@@ -52,6 +52,16 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
     if name == "cadquery":
         try:
             from harnesscad.io.backends import cadquery as cadquery_backend  # type: ignore
+            # The wrapper imports cleanly WITHOUT the kernel and defers `import
+            # cadquery` to op-apply time, so constructing it is not proof the
+            # kernel is installed. Probe availability here -- otherwise resolve()
+            # reports the backend present and it CRASHES on the first op, which a
+            # bare CI runner then miscounts as a kernel crash rather than a clean
+            # "not installed" skip (differential oracle, engine consensus).
+            if not cadquery_backend.CadQueryBackend.available():
+                return (StubBackend(), "stub",
+                        "cadquery backend unavailable (cadquery/OCCT not "
+                        "importable); fell back to stub")
             return cadquery_backend.CadQueryBackend(), "cadquery", None
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",
@@ -60,6 +70,11 @@ def _make_backend(name: str) -> Tuple[Any, str, Optional[str]]:
         # The second OCCT B-rep front-end: build123d (algebra mode) over OCP.
         try:
             from harnesscad.io.backends import build123d as build123d_backend  # type: ignore
+            # Same lazy-kernel caveat as cadquery: probe before claiming present.
+            if not build123d_backend.Build123dBackend.available():
+                return (StubBackend(), "stub",
+                        "build123d backend unavailable (build123d/OCP not "
+                        "importable); fell back to stub")
             return build123d_backend.Build123dBackend(), "build123d", None
         except Exception as exc:  # pragma: no cover - depends on optional dep
             return (StubBackend(), "stub",
