@@ -212,9 +212,15 @@ class TestLoop(unittest.TestCase):
         _server, result = apply_ops(cube_ops(30.0))
         self.assertTrue(result["ok"])
         codes = {d["code"] for d in result["diagnostics"]}
-        # The fleet does report unfixable metadata errors at verify_level=full...
-        self.assertIn("missing-metadata", codes)
-        # ...and the loop does not push them at the model.
+        # The fleet does report unfixable advisory findings at verify_level=full.
+        # Against the CISP op vocabulary, which cannot express release metadata,
+        # the completeness verifier now reports `completeness-unmeasurable` rather
+        # than firing `missing-metadata` on every part alike (see
+        # verifiers/completeness.py: a rule that fires on 100% of inputs carries
+        # no information). It is the same kind of finding for this test's purpose:
+        # advisory chatter the op set cannot fix.
+        self.assertIn("completeness-unmeasurable", codes)
+        # ...and the loop does not push it at the model.
         self.assertEqual(blocking_diagnostics(result), [])
 
     def test_unparseable_output_is_retried_as_a_typed_diagnostic(self):
