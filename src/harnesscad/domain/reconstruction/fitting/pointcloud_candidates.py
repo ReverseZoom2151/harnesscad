@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from harnesscad.eval.bench.judges.compiler_judge import symmetric_chamfer
 
 
 @dataclass(frozen=True)
@@ -17,6 +16,12 @@ class PointCloudCandidate:
 
 def select_pointcloud_candidate(cloud, provider, compiler, sampler, *,
                                 count=10, sample_count=1024, seed=0):
+    # Lazy: the compiler judge is eval-layer scoring code and sits outside
+    # domain (tests/test_layering.py).  This selector borrows exactly one
+    # helper from it -- the squared-distance symmetric chamfer -- and only
+    # when it actually scores a candidate.
+    from harnesscad.eval.bench.judges.compiler_judge import symmetric_chamfer
+
     attempts = []
     for index in range(count):
         try:

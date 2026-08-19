@@ -34,8 +34,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional, Tuple
 
-from harnesscad.eval.bench.data.qa_query_schema import CadQaQuestion, PropertyFilter
 from harnesscad.agents.rag.segmentation_grounding import Part, ground
+
+# The QA query schema (CadQaQuestion / PropertyFilter) is defined by the bench
+# corpus that asks the questions, and bench sits OUTSIDE domain, so it must not
+# be imported at module scope (tests/test_layering.py).  Both uses below are
+# call-time isinstance guards, so the import is function-local.
 
 # Position properties resolve against these attribute keys, in order.
 _POSITION_KEYS = {
@@ -62,6 +66,8 @@ class Answer:
 
 
 def _passes_filters(part, filters):
+    from harnesscad.eval.bench.data.qa_query_schema import PropertyFilter
+
     for f in filters:
         if not isinstance(f, PropertyFilter):
             raise TypeError("filters must be PropertyFilter instances")
@@ -109,6 +115,8 @@ def answer_question(model, question):
 
     Returns an :class:`Answer`. Deterministic.
     """
+    from harnesscad.eval.bench.data.qa_query_schema import CadQaQuestion
+
     if not isinstance(question, CadQaQuestion):
         raise TypeError("question must be a CadQaQuestion")
 
