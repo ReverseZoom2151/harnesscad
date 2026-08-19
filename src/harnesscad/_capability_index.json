@@ -2906,6 +2906,31 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.memory.case_library",
+      "imports": [
+        "harnesscad.agents.memory.persistence",
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.default_similarity",
+        "harnesscad.agents.memory.store",
+        "harnesscad.agents.memory.store.Similarity"
+      ],
+      "layer": "agents",
+      "name": "case_library",
+      "package": "memory",
+      "summary": "case_library -- the CASE track of the dual-track agent memory.",
+      "symbols": [
+        "Case",
+        "CaseIntent",
+        "CaseLibrary",
+        "CaseOutcome",
+        "ToolCall"
+      ],
+      "tags": [
+        "agent",
+        "memory"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.memory.decay",
       "imports": [],
       "layer": "agents",
@@ -3010,6 +3035,38 @@
       ]
     },
     {
+      "dotted": "harnesscad.agents.memory.learned_retrieval",
+      "imports": [
+        "harnesscad.agents.memory.case_library",
+        "harnesscad.agents.memory.case_library.Case",
+        "harnesscad.agents.memory.case_library.CaseLibrary",
+        "harnesscad.agents.memory.persistence",
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.default_similarity",
+        "harnesscad.agents.memory.skill_utility",
+        "harnesscad.agents.memory.skill_utility.UtilitySkill",
+        "harnesscad.agents.memory.skill_utility.UtilitySkillLibrary",
+        "harnesscad.agents.memory.skill_utility.internalise_trajectory",
+        "harnesscad.agents.memory.store",
+        "harnesscad.agents.memory.store.Similarity"
+      ],
+      "layer": "agents",
+      "name": "learned_retrieval",
+      "package": "memory",
+      "summary": "learned_retrieval -- utility-learned recall over the dual-track memory.",
+      "symbols": [
+        "CaseValueModel",
+        "DualTrackAgentMemory",
+        "EpisodeSelection",
+        "terminal_reward"
+      ],
+      "tags": [
+        "benchmark",
+        "memory",
+        "rag"
+      ]
+    },
+    {
       "dotted": "harnesscad.agents.memory.observation_ledger",
       "imports": [],
       "layer": "agents",
@@ -3075,6 +3132,33 @@
         "parse_frontmatter_lists"
       ],
       "tags": [
+        "memory"
+      ]
+    },
+    {
+      "dotted": "harnesscad.agents.memory.skill_utility",
+      "imports": [
+        "harnesscad.agents.memory.case_library",
+        "harnesscad.agents.memory.case_library.Case",
+        "harnesscad.agents.memory.case_library.ToolCall",
+        "harnesscad.agents.memory.persistence",
+        "harnesscad.agents.memory.similarity",
+        "harnesscad.agents.memory.similarity.default_similarity",
+        "harnesscad.agents.memory.store",
+        "harnesscad.agents.memory.store.Similarity"
+      ],
+      "layer": "agents",
+      "name": "skill_utility",
+      "package": "memory",
+      "summary": "skill_utility -- the SKILL track of the dual-track agent memory.",
+      "symbols": [
+        "SkillDoc",
+        "UtilitySkill",
+        "UtilitySkillLibrary",
+        "internalise_trajectory"
+      ],
+      "tags": [
+        "agent",
         "memory"
       ]
     },
@@ -12117,6 +12201,26 @@
       "tags": [
         "benchmark",
         "curves",
+        "geometry",
+        "pointcloud"
+      ]
+    },
+    {
+      "dotted": "harnesscad.domain.geometry.pointcloud.normal_consistency",
+      "imports": [],
+      "layer": "domain",
+      "name": "normal_consistency",
+      "package": "geometry",
+      "summary": "Normal Consistency (NC) between two oriented point clouds.",
+      "symbols": [
+        "cosine_similarity",
+        "nearest_index",
+        "nearest_indices",
+        "normal_consistency",
+        "symmetric_normal_consistency",
+        "vector_norm"
+      ],
+      "tags": [
         "geometry",
         "pointcloud"
       ]
@@ -24403,6 +24507,32 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.generative.rlcad_set_metrics",
+      "imports": [
+        "harnesscad.domain.reconstruction.evaluate.pointcloud_emd",
+        "harnesscad.domain.reconstruction.evaluate.pointcloud_emd.mean_emd",
+        "harnesscad.eval.bench.generative.one_nna",
+        "harnesscad.eval.bench.generative.one_nna.voxel_jsd",
+        "harnesscad.eval.bench.geometry.chamfer",
+        "harnesscad.eval.bench.geometry.chamfer.symmetric_chamfer"
+      ],
+      "layer": "eval",
+      "name": "rlcad_set_metrics",
+      "package": "bench",
+      "summary": "RLCAD set-level generative metrics: COV, MMD-CD / MMD-EMD, JSD.",
+      "symbols": [
+        "chamfer_distance",
+        "coverage",
+        "emd_distance",
+        "mmd",
+        "set_report",
+        "voxel_jsd"
+      ],
+      "tags": [
+        "benchmark"
+      ]
+    },
+    {
       "dotted": "harnesscad.eval.bench.generative.sequence_set_ratios",
       "imports": [],
       "layer": "eval",
@@ -25274,6 +25404,23 @@
       ]
     },
     {
+      "dotted": "harnesscad.eval.bench.harness.build_invalidity",
+      "imports": [],
+      "layer": "eval",
+      "name": "build_invalidity",
+      "package": "bench",
+      "summary": "Build-time Invalidity Ratio (IR) and Executability over a generated set.",
+      "symbols": [
+        "BuildReport",
+        "build_report",
+        "executability_percent",
+        "failure_census",
+        "invalidity_ratio_percent",
+        "is_invalid"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.bench.harness.candidate_scaling",
       "imports": [],
       "layer": "eval",
@@ -25321,6 +25468,22 @@
       "tags": [
         "benchmark"
       ]
+    },
+    {
+      "dotted": "harnesscad.eval.bench.harness.correction_budget",
+      "imports": [],
+      "layer": "eval",
+      "name": "correction_budget",
+      "package": "bench",
+      "summary": "SUC / Pass@1 / AVG Re -- the correction-budget stability triple.",
+      "symbols": [
+        "StabilityReport",
+        "attempt_succeeded",
+        "compare",
+        "first_success_index",
+        "stability_report"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.bench.harness.correction_trajectory",
@@ -26849,10 +27012,13 @@
         "harnesscad.eval.bench.analytic_fea",
         "harnesscad.eval.bench.designqa_scorers",
         "harnesscad.eval.bench.generative",
+        "harnesscad.eval.bench.generative.brep_set_metrics",
         "harnesscad.eval.bench.generative.diversity_feature_space",
         "harnesscad.eval.bench.generative.diversity_similarity_matrix",
         "harnesscad.eval.bench.generative.fid",
         "harnesscad.eval.bench.generative.one_nna",
+        "harnesscad.eval.bench.generative.rlcad_set_metrics",
+        "harnesscad.eval.bench.generative.sequence_set_ratios",
         "harnesscad.eval.bench.geometry",
         "harnesscad.eval.bench.geometry.accuracy_completeness",
         "harnesscad.eval.bench.geometry.betti_exact",
@@ -26885,7 +27051,9 @@
         "harnesscad.eval.bench.geometry.topology_euler",
         "harnesscad.eval.bench.geometry.voxel_iou",
         "harnesscad.eval.bench.harness",
+        "harnesscad.eval.bench.harness.build_invalidity",
         "harnesscad.eval.bench.harness.choice_optimality",
+        "harnesscad.eval.bench.harness.correction_budget",
         "harnesscad.eval.bench.harness.tool_retrieval",
         "harnesscad.eval.bench.judges",
         "harnesscad.eval.bench.judges.compiler_judge",
@@ -29113,6 +29281,99 @@
       ],
       "tags": [
         "drawings"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.curriculum.complexity",
+      "imports": [],
+      "layer": "eval",
+      "name": "complexity",
+      "package": "curriculum",
+      "summary": "Structural complexity of a HarnessCAD task, measured from its op stream.",
+      "symbols": [
+        "ComplexityFeatures",
+        "curve_count",
+        "feature_depth",
+        "features",
+        "op_tag",
+        "score",
+        "task_features",
+        "task_id",
+        "task_ops",
+        "task_score"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.curriculum.difficulty",
+      "imports": [
+        "harnesscad.eval.curriculum",
+        "harnesscad.eval.curriculum.complexity",
+        "harnesscad.eval.curriculum.ordering"
+      ],
+      "layer": "eval",
+      "name": "difficulty",
+      "package": "curriculum",
+      "summary": "Empirical task difficulty, measured from observed outcomes.",
+      "symbols": [
+        "DifficultyLedger",
+        "TaskOutcome",
+        "as_reward",
+        "empirical_difficulty",
+        "order_by_measured"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.curriculum.ordering",
+      "imports": [
+        "harnesscad.data.dataengine.curation.primitive_curriculum",
+        "harnesscad.data.dataengine.curation.primitive_curriculum.PRIMITIVE_ORDER",
+        "harnesscad.data.dataengine.curation.primitive_curriculum.primitive_rank",
+        "harnesscad.eval.curriculum",
+        "harnesscad.eval.curriculum.complexity"
+      ],
+      "layer": "eval",
+      "name": "ordering",
+      "package": "curriculum",
+      "summary": "Curriculum ordering: present a task collection simple-to-complex.",
+      "symbols": [
+        "batches",
+        "flat_key",
+        "hierarchical_key",
+        "level_rank",
+        "order_table",
+        "order_tasks",
+        "stages",
+        "structural_level"
+      ],
+      "tags": []
+    },
+    {
+      "dotted": "harnesscad.eval.curriculum.validate",
+      "imports": [
+        "harnesscad.eval.bench.judges.judge_human_agreement",
+        "harnesscad.eval.bench.judges.judge_human_agreement.kendall_tau_b",
+        "harnesscad.eval.bench.judges.judge_human_agreement.spearman",
+        "harnesscad.eval.curriculum",
+        "harnesscad.eval.curriculum.complexity",
+        "harnesscad.eval.curriculum.ordering",
+        "harnesscad.eval.pressure.briefs",
+        "harnesscad.eval.pressure.briefs.BRIEFS"
+      ],
+      "layer": "eval",
+      "name": "validate",
+      "package": "curriculum",
+      "summary": "Sanity check: does the computed complexity agree with the hand labels?",
+      "symbols": [
+        "correlation",
+        "main",
+        "pressure_briefs",
+        "render",
+        "report"
+      ],
+      "tags": [
+        "verify"
       ]
     },
     {
@@ -33238,6 +33499,40 @@
       "tags": [
         "reliability"
       ]
+    },
+    {
+      "dotted": "harnesscad.eval.rl.reward",
+      "imports": [
+        "harnesscad.domain.geometry.pointcloud.normal_consistency",
+        "harnesscad.domain.geometry.pointcloud.normal_consistency.normal_consistency",
+        "harnesscad.domain.geometry.volumes.voxel_iou",
+        "harnesscad.domain.geometry.volumes.voxel_iou.voxel_iou",
+        "harnesscad.domain.geometry.volumes.voxel_iou.voxelize_points",
+        "harnesscad.domain.reconstruction.evaluate.pointcloud_emd",
+        "harnesscad.domain.reconstruction.evaluate.pointcloud_emd.mean_emd",
+        "harnesscad.eval.bench.geometry.chamfer_unit_cube",
+        "harnesscad.eval.bench.geometry.chamfer_unit_cube.chamfer_distance",
+        "harnesscad.eval.bench.geometry.hausdorff_iogt",
+        "harnesscad.eval.bench.geometry.hausdorff_iogt.UNIT_CUBE_DIAGONAL"
+      ],
+      "layer": "eval",
+      "name": "reward",
+      "package": "rl",
+      "summary": "Composite, target-comparing reward for the CAD RL environment.",
+      "symbols": [
+        "RewardBreakdown",
+        "ShapeSample",
+        "apply_frame",
+        "composite_reward",
+        "composite_reward_value",
+        "exec_gate",
+        "iou_term",
+        "mmd_term",
+        "nc_term",
+        "process_score",
+        "shared_unit_cube_frame"
+      ],
+      "tags": []
     },
     {
       "dotted": "harnesscad.eval.run.reference_loop",
@@ -39145,6 +39440,8 @@
         "harnesscad.io.backends.stub",
         "harnesscad.io.backends.stub.StubBackend",
         "harnesscad.io.surfaces",
+        "harnesscad.io.surfaces.mcp",
+        "harnesscad.io.surfaces.mcp.masking",
         "harnesscad.io.surfaces.mcp.tools",
         "harnesscad.io.surfaces.mcp.tools.ToolCatalog",
         "harnesscad.io.surfaces.mcp.tools.reward_from_apply",
@@ -39181,6 +39478,50 @@
         "is_notification",
         "parse",
         "result"
+      ],
+      "tags": [
+        "surface"
+      ]
+    },
+    {
+      "dotted": "harnesscad.io.surfaces.mcp.masking",
+      "imports": [
+        "harnesscad.core.cisp",
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Severity",
+        "harnesscad.domain.geometry.topology.selector_dsl",
+        "harnesscad.domain.geometry.topology.selector_dsl.SelectorError",
+        "harnesscad.domain.geometry.topology.selector_dsl.parse",
+        "harnesscad.eval.verifiers.kernel_preflight",
+        "harnesscad.eval.verifiers.kernel_preflight.BoundingBox",
+        "harnesscad.eval.verifiers.kernel_preflight.ShapeInfo",
+        "harnesscad.eval.verifiers.kernel_preflight.preflight_fillet",
+        "harnesscad.eval.verifiers.kernel_preflight.preflight_shell",
+        "harnesscad.eval.verifiers.precheck",
+        "harnesscad.eval.verifiers.precheck.PrecheckRules",
+        "harnesscad.eval.verifiers.precheck._PlanState"
+      ],
+      "layer": "io",
+      "name": "masking",
+      "package": "surfaces",
+      "summary": "Valid-action masking for the CAD gym -- by PREFLIGHT, not by trial execution.",
+      "symbols": [
+        "MaskComparison",
+        "StateView",
+        "Verdict",
+        "action_mask",
+        "bind_action",
+        "compare_masks",
+        "default_proposals",
+        "mask_verdicts",
+        "op_verdict",
+        "state_view",
+        "trial_verdict",
+        "valid_actions"
       ],
       "tags": [
         "surface"
@@ -39253,6 +39594,8 @@
         "harnesscad.core.cisp.ops.parse_op",
         "harnesscad.core.diagnostics",
         "harnesscad.core.diagnostics.Severity",
+        "harnesscad.eval.rl.reward",
+        "harnesscad.eval.rl.reward.composite_reward",
         "harnesscad.io.surfaces",
         "harnesscad.io.surfaces.mcp.annotations",
         "harnesscad.io.surfaces.mcp.annotations.Annotations",
@@ -39273,6 +39616,7 @@
         "ToolResult",
         "ToolValidationError",
         "UnknownToolError",
+        "composite_reward_from_apply",
         "reward_from_apply",
         "reward_from_verify"
       ],
