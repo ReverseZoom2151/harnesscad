@@ -74,15 +74,33 @@ def size() -> int:
     return len(_heldout.BRIEFS)
 
 
-def score(solver: Solver) -> HeldOutReport:
+def _briefs(limit: Optional[int] = None):
+    """The held-out briefs, optionally the first ``limit`` of them.
+
+    ``limit`` exists for ONE reason: a smoke test. Driving a real model over the
+    whole split costs hundreds of calls, and a runner that cannot be proven on
+    two briefs will be proven on none. A limited run is NOT a result -- the
+    report says so by carrying the smaller ``n``, so nothing can mistake a
+    two-brief rate for the corpus's.
+    """
+    briefs = _heldout.BRIEFS
+    if limit is not None and int(limit) > 0:
+        briefs = briefs[:int(limit)]
+    return briefs
+
+
+def score(solver: Solver, limit: Optional[int] = None) -> HeldOutReport:
     """Run ``solver`` on every held-out brief; report BOTH oracles and the gap.
 
     The solver is given the brief's TEXT and nothing else, so it cannot be handed
     the answer key through its own input.
+
+    ``limit`` scores only the first N briefs (a smoke test; see :func:`_briefs`).
     """
-    r = HeldOutReport(n=len(_heldout.BRIEFS))
+    selected = _briefs(limit)
+    r = HeldOutReport(n=len(selected))
     ious: List[float] = []
-    for brief in _heldout.BRIEFS:
+    for brief in selected:
         try:
             ops = list(solver(brief.text))
         except Exception as exc:                              # noqa: BLE001
@@ -108,7 +126,7 @@ def score(solver: Solver) -> HeldOutReport:
     return r
 
 
-def reference_score() -> HeldOutReport:
+def reference_score(limit: Optional[int] = None) -> HeldOutReport:
     """Score the held-out split against its own reference solutions.
 
     The corpus's self-test. If a reference does not pass its own oracle the brief is
@@ -116,7 +134,7 @@ def reference_score() -> HeldOutReport:
     anyway because nobody ran it; this is run in the test suite.
     """
     by_text = {b.text: b.reference for b in _heldout.BRIEFS}
-    return score(lambda text: by_text[text])
+    return score(lambda text: by_text[text], limit=limit)
 
 
 @dataclass
