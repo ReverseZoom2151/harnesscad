@@ -30,7 +30,7 @@ from typing import Any, Dict, List, Optional
 
 from harnesscad.core.cisp.ops import CONSTRAINT_DOF, _REGISTRY, parse_op
 from harnesscad.io.surfaces.mcp.annotations import Annotations, annotate
-from harnesscad.eval.verifiers.verify import Severity
+from harnesscad.core.diagnostics import Severity
 
 
 # ===========================================================================
