@@ -636,8 +636,14 @@ def cmd_agent(args: argparse.Namespace) -> int:
 
 def cmd_bench(args: argparse.Namespace) -> int:
     # Imported here so the metric registry (and the bench tree it adapts) is only
-    # touched when the `bench` subcommand actually runs.
-    from harnesscad.eval.bench import registry as bench_registry
+    # touched when the `bench` subcommand actually runs.  Guarded so that when
+    # eval/bench has been split into its own distribution and is not installed,
+    # the verb degrades gracefully instead of crashing the whole CLI.
+    try:
+        from harnesscad.eval.bench import registry as bench_registry
+    except ImportError:
+        print("the bench extra is not installed", file=sys.stderr)
+        return 1
 
     return bench_registry.run(args)
 
@@ -1058,9 +1064,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench = sub.add_parser(
         "bench",
         help="metric registry + suite runner (--list/--suites/--suite <name>)")
-    from harnesscad.eval.bench import registry as _bench_registry
-
-    _bench_registry.add_arguments(p_bench)
+    # Guarded so the CLI still builds (and every other verb keeps working) when
+    # eval/bench has been split out and is not installed; the verb stays
+    # registered and reports the missing extra via cmd_bench when invoked.
+    try:
+        from harnesscad.eval.bench import registry as _bench_registry
+    except ImportError:
+        pass
+    else:
+        _bench_registry.add_arguments(p_bench)
     p_bench.set_defaults(func=cmd_bench)
 
     p_report = sub.add_parser(
