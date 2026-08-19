@@ -46,7 +46,6 @@ from harnesscad.io.backends.stub import StubBackend
 from harnesscad.agents.llm.base import LLM
 from harnesscad.core.loop import HarnessSession
 from harnesscad.core.trace import Tracer
-from harnesscad.eval.reliability.loopdetect import LoopDetector
 
 
 # The default model used only when the caller injects no `llm`. Kept as a
@@ -458,6 +457,11 @@ def build(
             _LOG.info("memory: %s", memory_note)
 
     planner = Planner(resolved_llm, memory=memory)
+
+    # Lazy: the repetition detector is reliability instrumentation and lives in
+    # the eval layer, which sits outside core (tests/test_layering.py). It is
+    # needed only when this builder actually assembles a harness.
+    from harnesscad.eval.reliability.loopdetect import LoopDetector
 
     # THE ONE LOOP, fully configured. `executor=None` means the harness mints its
     # own SessionToolExecutor: guardrail hard gate -> human-approval tier ->

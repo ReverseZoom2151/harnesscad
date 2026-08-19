@@ -53,7 +53,6 @@ INWARD_PREFIXES = ("harnesscad.domain", "harnesscad.core")
 #: therefore fail this test, which is the point.
 KNOWN_BASELINE = frozenset(
     {
-        "core/pipeline.py::harnesscad.eval.reliability.loopdetect",
         "domain/reconstruction/brep/chain_complex_nms.py::harnesscad.eval.bench.geometry.complex_matching",
         "domain/reconstruction/fitting/pointcloud_candidates.py::harnesscad.eval.bench.judges.compiler_judge",
         "domain/reconstruction/scene/answer_engine.py::harnesscad.eval.bench.data.qa_query_schema",
