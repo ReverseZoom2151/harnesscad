@@ -13,12 +13,19 @@ import unittest
 
 from harnesscad.eval.hardcorpus import discriminative as disc
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 class TestDiscriminative(unittest.TestCase):
 
     def setUp(self):
         self.verdicts = [disc.grade_case(nm) for nm in disc.CASES]
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_controls_hold_for_every_case(self):
         for v in self.verdicts:
             self.assertTrue(v.controls_hold,
@@ -36,6 +43,7 @@ class TestDiscriminative(unittest.TestCase):
                              "%s: the near-miss passed the probe family; the probe "
                              "is not discriminating" % v.id)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_every_near_miss_at_least_fools_the_geometric_family(self):
         # MUSE gates on watertight+manifold+valid; every near-miss must pass that.
         for v in self.verdicts:
@@ -43,6 +51,7 @@ class TestDiscriminative(unittest.TestCase):
                             "%s: the near-miss did not even pass MUSE's geometric "
                             "stage; it would be caught upstream" % v.id)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_the_headline_cases_fool_iou_and_chamfer_too(self):
         # dia/pos/cbore/fillet must beat the FULL Text2CAD-Bench grader.
         full = {v.id: v for v in self.verdicts if v.scored == "full"}
@@ -52,6 +61,7 @@ class TestDiscriminative(unittest.TestCase):
                           % name)
             self.assertGreaterEqual(full[name].weak_near["iou"], disc.weak.IOU_MATCH)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_shell_face_is_the_muse_blind_spot(self):
         v = next(x for x in self.verdicts if x.id == "shell_face")
         # volume, genus and watertight are IDENTICAL to the correct part.

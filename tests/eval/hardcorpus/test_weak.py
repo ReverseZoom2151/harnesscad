@@ -14,6 +14,12 @@ import unittest
 from harnesscad.core.cisp.ops import AddRectangle, Extrude, Hole, NewSketch
 from harnesscad.eval.hardcorpus import weak
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 def _plate_hole(x, y, d):
     return [NewSketch("XY"), AddRectangle("sk1", 0, 0, 60, 40), Extrude("sk1", 12),
@@ -22,12 +28,14 @@ def _plate_hole(x, y, d):
 
 class TestWeak(unittest.TestCase):
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_the_weak_grader_passes_a_correct_answer(self):
         ops = _plate_hole(20, 20, 12)
         s = weak.score_weak(ops, ops)
         self.assertTrue(s.passes)
         self.assertAlmostEqual(s.iou, 1.0, places=2)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_the_weak_grader_passes_the_8_vs_12mm_hole(self):
         # The measured blind spot: an 8 mm hole where 12 mm was asked scores high
         # IoU and passes. If this ever fails, our IoU has been made stricter than
@@ -40,6 +48,7 @@ class TestWeak(unittest.TestCase):
                                 "IoU %s dropped below the pre-registered bar" % s.iou)
         self.assertTrue(s.passes, "the field's grader must be fooled here")
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_the_weak_grader_passes_the_displaced_hole(self):
         near = _plate_hole(40, 20, 10)
         correct = _plate_hole(20, 20, 10)

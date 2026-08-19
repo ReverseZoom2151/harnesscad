@@ -15,6 +15,12 @@ from harnesscad.eval.corpus.spec import Split
 from harnesscad.eval.hardcorpus import generate, oracle
 from harnesscad.io import gate
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 class TestGenerate(unittest.TestCase):
 
@@ -31,6 +37,7 @@ class TestGenerate(unittest.TestCase):
             self.assertEqual(p.bbox, q.bbox)
             self.assertEqual(p.reference, q.reference)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_every_dev_reference_solves_its_own_oracle(self):
         for b in generate.all_briefs(1, Split.DEV):
             s = oracle.grade_reference(b)
@@ -39,11 +46,13 @@ class TestGenerate(unittest.TestCase):
             self.assertTrue(s.solved, "%s: reference fails its own oracle: %s"
                             % (b.id, s.reasons))
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_every_heldout_reference_solves_its_own_oracle(self):
         for b in generate.all_briefs(7919, Split.HELDOUT):
             s = oracle.grade_reference(b)
             self.assertTrue(s.solved, "%s: %s" % (b.id, s.reasons))
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_every_reference_passes_the_gate(self):
         for b in generate.all_briefs(1, Split.DEV):
             built = oracle.occt.build(b.reference)

@@ -16,9 +16,16 @@ from harnesscad.eval.hardcorpus import constraints as con
 from harnesscad.eval.hardcorpus import occt
 from harnesscad.io import gate
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 class TestConstraints(unittest.TestCase):
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_every_reference_satisfies_and_passes_the_gate(self):
         for b in con.BRIEFS:
             r = con.grade(b, b.reference)
@@ -30,6 +37,7 @@ class TestConstraints(unittest.TestCase):
             self.assertTrue(gate.check(eng, source=eng).ok,
                             "%s reference fails the gate" % b.id)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_a_second_answer_satisfies_but_has_low_iou(self):
         # The point of the whole module: many shapes satisfy, so IoU is undefined
         # as a grader. Two satisfying answers disagree on shape.
@@ -45,6 +53,7 @@ class TestConstraints(unittest.TestCase):
                             "%s: two satisfying answers score IoU %.3f -- if that "
                             "were near 1, IoU could grade this brief" % (b.id, iou))
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_a_violating_part_is_caught(self):
         b = con.BRIEFS[0]                              # bracket: fits 50x50x20
         # A part that overflows the envelope must fail the envelope constraint.
@@ -57,6 +66,7 @@ class TestConstraints(unittest.TestCase):
         env = next(x for x in r.results if x.name == "envelope")
         self.assertFalse(env.satisfied)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_a_part_with_no_bolt_hole_fails_bolt_constraint(self):
         b = con.BRIEFS[0]
         no_hole = [NewSketch("XY"), AddRectangle("sk1", 0, 0, 50, 50),
@@ -65,6 +75,7 @@ class TestConstraints(unittest.TestCase):
         bolt = next(x for x in r.results if x.name == "bolt_bore")
         self.assertFalse(bolt.satisfied)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_bending_uses_an_exact_section_modulus(self):
         # A too-thin part must exceed the allowable stress under the load case.
         b = con.BRIEFS[0]

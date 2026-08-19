@@ -12,12 +12,19 @@ import unittest
 
 from harnesscad.eval.hardcorpus import score
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 class TestScore(unittest.TestCase):
 
     def test_size_is_positive(self):
         self.assertGreater(score.size(), 0)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_held_out_references_pass_their_own_oracle(self):
         r = score.reference_score()
         self.assertEqual(r.oracle_solved, r.n,
@@ -25,6 +32,7 @@ class TestScore(unittest.TestCase):
                          % r.failed)
         self.assertEqual(r.built, r.n)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_a_wrong_solver_is_caught_and_the_field_is_fooled(self):
         # A solver that always drills an 8 mm hole in a 60x40x12 plate: a valid,
         # watertight part that the field's IoU passes on the hole briefs but the
@@ -41,6 +49,7 @@ class TestScore(unittest.TestCase):
         # It builds valid parts, so at least some are weak-passed while oracle-failed.
         self.assertGreaterEqual(r.built, 1)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_near_miss_audit_shows_the_gap(self):
         a = score.near_miss_audit()
         self.assertGreater(a.n, 0)

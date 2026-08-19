@@ -15,6 +15,12 @@ from harnesscad.core.cisp.ops import (AddCircle, AddRectangle, Extrude, Hole,
                                       NewSketch)
 from harnesscad.eval.hardcorpus import occt
 
+try:
+    import cadquery  # noqa: F401
+    HAVE_CQ = True
+except Exception:  # noqa: BLE001
+    HAVE_CQ = False
+
 
 def _plate(a, b, c, hole=None):
     ops = [NewSketch("XY"), AddRectangle("sk1", 0, 0, a, b), Extrude("sk1", c)]
@@ -26,21 +32,25 @@ def _plate(a, b, c, hole=None):
 
 class TestOcct(unittest.TestCase):
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_volume_is_exact(self):
         b = _plate(60, 40, 12)
         self.assertAlmostEqual(occt.volume_of(b.shape), 60 * 40 * 12, places=3)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_point_membership_is_exact(self):
         b = _plate(60, 40, 12, hole=(20, 20, 10))
         self.assertEqual(occt.classify(b.shape, (5, 5, 6)), "in")     # solid corner
         self.assertEqual(occt.classify(b.shape, (20, 20, 6)), "out")  # hole axis
         self.assertEqual(occt.classify(b.shape, (30, 20, 30)), "out")  # above part
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_bore_radius_recovers_the_hole(self):
         b = _plate(60, 40, 12, hole=(20, 20, 12))
         r = occt.bore_radius_at(b.shape, (20, 20), 6)
         self.assertAlmostEqual(r, 6.0, places=1)      # 12 mm dia -> r = 6
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_section_second_moment_matches_bh3_over_12(self):
         # a 20 (Y) x 6 (Z) bar: I about the Y-centroidal axis = b*h^3/12 with
         # b along Y (20) and h along Z (6) -> 20*6^3/12 = 360.
@@ -52,6 +62,7 @@ class TestOcct(unittest.TestCase):
         self.assertAlmostEqual(sec.c, 3.0, places=3)
         self.assertAlmostEqual(sec.section_modulus, 360.0 / 3.0, places=2)
 
+    @unittest.skipUnless(HAVE_CQ, "cadquery/OCP not installed")
     def test_boolean_iou_of_a_part_with_itself_is_one(self):
         b = _plate(60, 40, 12)
         self.assertAlmostEqual(occt.boolean_iou(b.shape, b.shape), 1.0, places=3)
