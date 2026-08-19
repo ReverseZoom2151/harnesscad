@@ -22,7 +22,7 @@ Use this skill when the user asks to build CAD geometry from a natural-language 
 
 ## Verbs
 
-Available verbs: agent, apply, assembly, bench, build, capabilities, catalog, core, cua, dataset, demo, drawings, ecosystem, edit, export, fabricate, formats, gallery, generate, govern, grounding, ingest, judge, numeric, pdd, pressure, procedural, program, reconstruct, reliability, render, report, search, selftest, spec, ui, vision.
+Available verbs: agent, apply, assembly, bench, build, capabilities, catalog, core, cua, dataset, demo, drawings, ecosystem, edit, export, fabricate, formats, gallery, generate, govern, grounding, hardcorpus, ingest, judge, numeric, pdd, pressure, procedural, program, reconstruct, reliability, render, report, search, selftest, spec, ui, vision.
 
 - `agent`: agent surface: envelopes, gates, approval-gated edits, tool metrics
 - `apply`: run a JSON array of ops
@@ -45,6 +45,7 @@ Available verbs: agent, apply, assembly, bench, build, capabilities, catalog, co
 - `generate`: generation strategies driving a session (deterministic stub planner)
 - `govern`: governance surface: security gates, research evidence, audit closure
 - `grounding`: CAD-viewport grounding stack: catalogue, set-of-marks, corpora
+- `hardcorpus`: hard corpus: score a real model on the held-out split and print BOTH columns -- the field's weak grader and the measured oracle -- plus the gap between them
 - `ingest`: decode an existing model (CAD tokens or a mesh) into editable CISP ops
 - `judge`: deterministic CAD graders: cad-score, betti, best-of-n, compiler-review
 - `numeric`: numeric building blocks: diffusion, flow/ODE, noise schedules, multiscale, distillation, state-space

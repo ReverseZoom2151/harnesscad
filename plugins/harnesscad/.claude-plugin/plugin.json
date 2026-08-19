@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "metadata": {
-    "command_count": 37,
+    "command_count": 38,
     "generated_from": "harnesscad.core.cli.build_parser"
   },
   "name": "harnesscad",
