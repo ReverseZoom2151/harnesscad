@@ -172,6 +172,24 @@ INPUT_KINDS: Tuple[str, ...] = (
     "qa_evidence",   # {"answer","evidence","expected","observation_fields"}
     "scores",        # list[float]                      -- aligned rating series
     "feasibility",   # float in [0, 1]                  -- perceived/verified rating
+    # -- kinds added with the fourth adapter wave -------------------------------
+    "constraint_ops",  # list[[label, [node_index, ...]], ...]  -- EdgeOp rows
+    "sketch_primitives",  # list[[ptype, flag, [p0..p6]], ...]  -- PPA primitives,
+                     #   coordinates ALREADY normalised to [0, 1] (the module's
+                     #   documented precondition for ACC_ppar)
+    "solid_tree",    # {"pairs": [{"sketch": {"faces": [...]},
+                     #   "extrusion": {"params": [int x10]}}]}  -- geofusion Solid
+    "scene",         # {"pose": id, "objects": [{"shape","position",
+                     #   "rotation","size"}]}          -- sketch2cad scene graph
+    "latent_voxels",  # {"coords": [[i,j,k], ...], "values": [[float, ...], ...],
+                     #  "keep": [[i,j,k], ...]}      -- gold side carries "keep"
+    "fea_answer",    # pred {"computed": float}; gold {"case_id","metric"}
+    "rubric_case",   # pred {"context": {...}}; gold {"items": [...],
+                     #  "expected_components": int}  -- deterministic rubric
+    "manufacturing_design",  # {"material","process","components","clearances"}
+    "functional_design",     # {"structures","must_have","nice_to_have",
+                     #  "parameters","parameter_ranges","ground_contacts",
+                     #  "center_of_mass","load_bearing_members"}
 )
 
 
@@ -1387,6 +1405,189 @@ def _perceived_actual_gap(pred: dict, gold: dict):
 
 
 # ---------------------------------------------------------------------------
+# Fourth adapter wave. The two remaining MUSE design-intent pillars. MUSE
+# (Dong et al.) scores a generated design on three binary-sub-criteria pillars:
+# Assemblability (already bound above as ``geometry.assemblability``),
+# Manufacturability and Functionality. All three take ONE injected structured
+# design and return {sub_a: 0/1, sub_b: 0/1, "average": float}; the reference is
+# the design brief carried in the same payload, exactly as the paper's rubric
+# poses it. These two are bound the same way their sibling pillar is.
+# ---------------------------------------------------------------------------
+
+def _edge_ops(payload) -> list:
+    from harnesscad.domain.reconstruction.sketch.dof_mask import EdgeOp
+    return [EdgeOp(str(row[0]), [int(i) for i in row[1]]) for row in payload]
+
+
+def _autoconstraint_f1(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sketch import autoconstraint_f1 as m
+    # NOTE the module's argument order is (ground_truth, predicted).
+    score = m.sketch_scores(_edge_ops(gold["constraint_ops"]),
+                            _edge_ops(pred["constraint_ops"]))
+    return {"precision": float(score.precision), "recall": float(score.recall),
+            "f1": float(score.f1), "num_correct": float(score.num_correct)}
+
+
+def _ppa_sketch(payload):
+    from harnesscad.domain.reconstruction.sketch import primitives as pp
+    return pp.Sketch([pp.Primitive.from_row(str(row[0]), int(row[1]),
+                                            [float(v) for v in row[2]])
+                      for row in payload])
+
+
+def _primitive_prediction(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sketch import primitive_prediction_eval as m
+    gt = _ppa_sketch(gold["sketch_primitives"])
+    hyp = _ppa_sketch(pred["sketch_primitives"])
+    if len(gt) == 0 or len(hyp) == 0:
+        # The paper's accuracies degenerate to a vacuous 1.0 on an empty GT and
+        # the Chamfer term is +inf; refuse rather than report either.
+        raise ValueError("PPA evaluation needs a non-empty sketch on both sides")
+    report = m.evaluate(gt, hyp)
+    return {"acc_ptype": float(report["ACC_ptype"]),
+            "acc_flag": float(report["ACC_flag"]),
+            "acc_ppar": float(report["ACC_ppar"]),
+            "chamfer": float(report["chamfer"]),
+            "matched": float(report["matched"])}
+
+
+def _geofusion_solid(payload):
+    from harnesscad.domain.reconstruction.tokens import geofusion as gf
+    pairs = []
+    for pair in payload["pairs"]:
+        faces = []
+        for face in pair["sketch"]["faces"]:
+            loops = []
+            for loop in face["loops"]:
+                loops.append(gf.Loop(tuple(
+                    gf.Curve(str(c["kind"]), tuple(int(v) for v in c["params"]))
+                    for c in loop["curves"])))
+            faces.append(gf.Face(tuple(loops)))
+        pairs.append(gf.SePair(
+            gf.Sketch(tuple(faces)),
+            gf.Extrusion(tuple(int(v) for v in pair["extrusion"]["params"]))))
+    return gf.Solid(tuple(pairs))
+
+
+def _structure_consistency(pred: dict, gold: dict):
+    from harnesscad.eval.bench.sequence import structure_consistency as m
+    p = _geofusion_solid(pred["solid_tree"])
+    g = _geofusion_solid(gold["solid_tree"])
+    scores = m.structure_f1(p, g)
+    return {"precision": float(scores["precision"]),
+            "recall": float(scores["recall"]), "f1": float(scores["f1"]),
+            "structure_match": float(m.structure_match(p, g))}
+
+
+def _scene_objects(payload):
+    from harnesscad.domain.reconstruction.tokens import sketch2cad_scene as sc
+    return [sc.SceneObject(str(o["shape"]),
+                           tuple(float(v) for v in o["position"]),
+                           tuple(float(v) for v in o["rotation"]),
+                           tuple(float(v) for v in o["size"]))
+            for o in payload]
+
+
+def _scene_reconstruction(pred: dict, gold: dict):
+    from harnesscad.domain.reconstruction.tokens import sketch2cad_scene as sc
+    from harnesscad.eval.bench.vision import scene_reconstruction as m
+    report = m.evaluate_scene(pred["scene"]["pose"], gold["scene"]["pose"],
+                              _scene_objects(pred["scene"]["objects"]),
+                              _scene_objects(gold["scene"]["objects"]),
+                              sc.SHAPE_TYPES)
+    px, py, pz = report.position_error
+    sx, sy, sz = report.size_error
+    yaw, pitch = report.rotation_error
+    return {"pose_accuracy": float(report.pose_acc),
+            "classification_f1": float(report.classification_f1),
+            "position_error_x": float(px), "position_error_y": float(py),
+            "position_error_z": float(pz),
+            "size_error_x": float(sx), "size_error_y": float(sy),
+            "size_error_z": float(sz),
+            "rotation_error_yaw": float(yaw),
+            "rotation_error_pitch": float(pitch),
+            "matched": float(report.matched)}
+
+
+def _latent_field(payload: dict) -> Dict[Tuple[int, int, int], List[float]]:
+    """``{"coords": [[i,j,k], ...], "values": [[...], ...]}`` -> tuple-keyed dict.
+
+    The module keys its latents by integer voxel coordinate, which JSON cannot
+    express; the conversion is done here (and identically for both sides and for
+    the keep mask) so the module's ``c in edited_latents`` membership tests see
+    exactly the same normalised keys on every side.
+    """
+    coords = [tuple(int(v) for v in c) for c in payload["coords"]]
+    values = [[float(v) for v in row] for row in payload["values"]]
+    if len(coords) != len(values):
+        raise ValueError("latent coords/values length mismatch")
+    return dict(zip(coords, values))
+
+
+def _edit_preservation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import edit_boundary_coherence as m
+    edited = _latent_field(pred["latent_voxels"])
+    source = _latent_field(gold["latent_voxels"])
+    keep = [tuple(int(v) for v in c) for c in gold["latent_voxels"]["keep"]]
+    mse = m.preservation_mse(edited, source, keep)
+    worst = m.preservation_max_error(edited, source, keep)
+    if mse is None or worst is None:
+        raise ValueError("keep mask selects no voxel present on both sides")
+    return {"preservation_mse": float(mse),
+            "preservation_max_error": float(worst)}
+
+
+def _fea_oracle(pred: dict, gold: dict):
+    from harnesscad.eval import bench as _bench  # noqa: F401  (package marker)
+    from harnesscad.eval.bench import analytic_fea as m
+    spec = gold["fea_answer"]
+    oracle = m.case(str(spec["case_id"]), str(spec["metric"]))
+    if not oracle.is_oracle:
+        # The module states outright that these rows answer a regression
+        # question, not a correctness one; grading against them would be a lie.
+        raise ValueError("case %r/%r is flagged is_oracle=False"
+                         % (spec["case_id"], spec["metric"]))
+    computed = float(pred["fea_answer"]["computed"])
+    denom = abs(oracle.value)
+    deviation = 0.0 if denom == 0.0 else abs(computed - oracle.value) / denom
+    return {"within_tolerance": float(oracle.within_tolerance(computed)),
+            "relative_deviation": float(deviation),
+            "gating": float(oracle.gating)}
+
+
+def _rubric_deductions(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import rubric_deductions as m
+    spec = gold["rubric_case"]
+    measurements = dict(pred["rubric_case"]["context"])
+    # expected_components is ground truth (the planned assembly count) but the
+    # module carries it on the measurement context, so it is merged in here.
+    if "expected_components" in spec:
+        measurements["expected_components"] = int(spec["expected_components"])
+    ctx = m.MetricsContext(**measurements)
+    scored = m.score_rubric(list(spec["items"]), ctx)
+    return {"weighted_score": float(m.weighted_rubric_score(scored)),
+            "mean_item_score": (float(sum(s["score"] for s in scored) / len(scored))
+                                if scored else 0.0),
+            "n_deductions": float(sum(len(s["deductions"]) for s in scored))}
+
+
+def _manufacturability(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import manufacturability_score as m
+    report = m.muse_manufacturability(pred["manufacturing_design"])
+    return {"manufacturable": float(report["manufacturable"]),
+            "well_toleranced": float(report["well_toleranced"]),
+            "average": float(report["average"])}
+
+
+def _functionality(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import functionality_score as m
+    report = m.muse_functionality(pred["functional_design"])
+    return {"functional": float(report["functional"]),
+            "robust": float(report["robust"]),
+            "average": float(report["average"])}
+
+
+# ---------------------------------------------------------------------------
 # The adapter table: metric name -> (module dotted, kind, inputs, adapter).
 #
 # It binds adapters to MODULES; the metric objects themselves are materialised
@@ -1637,6 +1838,29 @@ _ADAPTER_TABLE: Tuple[Tuple[str, str, str, Tuple[str, ...], Adapter], ...] = (
      "generative", ("scores",), _feasibility_correlation),
     ("generative.perceived_actual_gap", _P + "judges.perceived_actual_gap",
      "generative", ("feasibility",), _perceived_actual_gap),
+
+    # -- fourth adapter wave ---------------------------------------------------
+    ("geometry.manufacturability", _P + "protocols.manufacturability_score",
+     "geometry", ("manufacturing_design",), _manufacturability),
+    ("geometry.functionality", _P + "protocols.functionality_score", "geometry",
+     ("functional_design",), _functionality),
+    ("geometry.edit_preservation", _P + "geometry.edit_boundary_coherence",
+     "geometry", ("latent_voxels",), _edit_preservation),
+    ("geometry.fea_oracle", _P + "analytic_fea", "geometry",
+     ("fea_answer",), _fea_oracle),
+    ("geometry.rubric_deductions", _P + "judges.rubric_deductions", "geometry",
+     ("rubric_case",), _rubric_deductions),
+
+    ("sketch.autoconstraint_f1", _P + "sketch.autoconstraint_f1", "sketch",
+     ("constraint_ops",), _autoconstraint_f1),
+    ("sketch.primitive_prediction", _P + "sketch.primitive_prediction_eval",
+     "sketch", ("sketch_primitives",), _primitive_prediction),
+
+    ("sequence.structure_consistency", _P + "sequence.structure_consistency",
+     "sequence", ("solid_tree",), _structure_consistency),
+
+    ("vision.scene_reconstruction", _P + "vision.scene_reconstruction", "vision",
+     ("scene",), _scene_reconstruction),
 )
 
 
@@ -1654,8 +1878,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "needs an injected solid-modelling adapter (inertia frames, symmetry search)"),
     (_P + "geometry.primitive_fidelity",
      "no docstring; the meaning of its five positional arguments is not recoverable"),
-    (_P + "geometry.edit_boundary_coherence",
-     "needs an edit/keep voxel-mask partition and a source shape, not a pred/gold pair"),
     (_P + "sequence.error_taxonomy",
      "classifies a FreeCAD execution stderr string; requires running the code"),
     (_P + "sequence.controllability",
@@ -1824,8 +2046,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "sweeps a decision threshold over a whole population of {distance, accepted} records"),
     (_P + "judges.judge_efficiency",
      "aggregates judge latency/cost/cache telemetry, no prediction-vs-gold comparison"),
-    (_P + "judges.rubric_deductions",
-     "scores a geometry-kernel MetricsContext (watertight/manifold/OCCT) from an execution pipeline"),
     (_P + "judges.similarity_triplets",
      "measures a rater's self-consistency / transitivity via a chooser callable, not pred/gold"),
     (_P + "judges.vqa_score",
@@ -1876,16 +2096,8 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "builds a triangular soft training-target distribution + its soft cross-entropy loss"),
     (_P + "sequence.hierarchy_edit_consistency",
      "grades CodeTree/ControlMask edit-hierarchy objects; the flat pred/gold payload has none"),
-    (_P + "sequence.structure_consistency",
-     "compares parsed geofusion Solid trees; the flat pred/gold payload carries no Solid"),
     (_P + "sketch.concept_library",
      "scores a discovered concept Library's compactness/coverage over a corpus, not a sample"),
-    (_P + "sketch.autoconstraint_f1",
-     "scores EdgeOp constraint objects (dof_mask); the flat pred/gold payload carries none"),
-    (_P + "sketch.primitive_prediction_eval",
-     "matches normalized pp.Sketch primitive objects; the flat pred/gold payload has none"),
-    (_P + "vision.scene_reconstruction",
-     "scores sketch2cad SceneObject pose/object graphs; the flat pred/gold payload has none"),
     (_P + "geometry.cd_tolerance_recall",
      "tolerance-recall AUC over a population of precomputed Chamfer distances, not per-sample"),
     (_P + "geometry.constraint_editability",
@@ -1894,8 +2106,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "edit-operation taxonomy + 1-7 VLM rating rubric over injected DINO/CLIP similarities"),
 
     # -- third wave: top-level oracles / population benchmarks / harnesses -------
-    (_P + "analytic_fea",
-     "closed-form FEA answer key grading a solver's computed scalar, not generated-vs-gold CAD"),
     (_P + "bikebench_metrics",
      "population-level diversity/novelty scoring against a reference set, not one pred/gold pair"),
     (_P + "multiobjective",
