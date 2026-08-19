@@ -157,14 +157,34 @@ import sys
 from typing import List, Optional
 
 from harnesscad.io.formats import registry as formats
-from harnesscad.io.surfaces.server import BACKENDS, CISPServer
 
 # The `--backend` choices are the server's BACKENDS, not a second hand-kept list:
 # adding a backend in one place must not be able to leave the CLI behind.
 # `blender`, `openscad` and `freecad` shell out to a real external kernel; when
 # that binary is absent they degrade to the stub and say so, so the choice is
 # always offerable. `cadquery` and `freecad` are the real B-rep kernels.
-BACKEND_CHOICES = list(BACKENDS)
+def _backend_choices() -> List[str]:
+    """The server's BACKENDS, read LAZILY.
+
+    io/surfaces is the interaction-surface layer and sits outside core, so it
+    must not be imported at module scope (tests/test_layering.py). The list is
+    only needed while the parser is being built, which is call time.
+    """
+    from harnesscad.io.surfaces.server import BACKENDS
+
+    return list(BACKENDS)
+
+
+def __getattr__(name: str):
+    """Keep the module-level ``cli.BACKEND_CHOICES`` name working.
+
+    It used to be a module constant; it is now derived on demand so that reading
+    it -- rather than importing this module -- is what reaches the surface layer.
+    """
+    if name == "BACKEND_CHOICES":
+        return _backend_choices()
+    raise AttributeError("module {0!r} has no attribute {1!r}".format(__name__, name))
+
 
 #: Loop strategies `harnesscad build --strategy` offers. Mirrored (and asserted
 #: identical, tests/core/test_cli_strategy.py) from `core.pipeline.STRATEGIES`,
@@ -224,6 +244,10 @@ def _print_refusal(exc: "Exception") -> None:
 
 
 def _run_ops(ops: List[dict], backend: str, verify: str = "core") -> dict:
+    # Lazy: io/surfaces sits OUTSIDE core, so a module-scope import here would
+    # block extracting either layer (tests/test_layering.py).
+    from harnesscad.io.surfaces.server import CISPServer
+
     server = CISPServer(backend=backend, verify_level=verify)
     return server.applyOps(ops)
 
@@ -252,6 +276,8 @@ def cmd_demo(args: argparse.Namespace) -> int:
     # it is the shop window for what the harness can catch. Fleet findings are
     # advisory: they are printed, but they do not fail the demo.
     level = "core" if getattr(args, "core_only", False) else "full"
+    from harnesscad.io.surfaces.server import CISPServer  # lazy: outward layer
+
     server = CISPServer(backend=args.backend, verify_level=level)
     result = server.applyOps([dict(op) for op in DEMO_OPS])
     _print_result(result)
@@ -365,6 +391,8 @@ def cmd_export(args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
+    from harnesscad.io.surfaces.server import CISPServer  # lazy: outward layer
+
     server = CISPServer(backend=args.backend)
     result = server.applyOps(ops)
     _print_result(result)
@@ -404,6 +432,8 @@ def cmd_render(args: argparse.Namespace) -> int:
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+
+    from harnesscad.io.surfaces.server import CISPServer  # lazy: outward layer
 
     server = CISPServer(backend=args.backend)
     result = server.applyOps(ops)
@@ -745,6 +775,8 @@ def cmd_pdd(args: argparse.Namespace) -> int:
     # it through io/gate.py. The pipeline hard-depends on no kernel; this executor
     # supplies one so the CLI can run a real part end to end.
     def executor(op_list):
+        from harnesscad.io.surfaces.server import CISPServer  # lazy: outward layer
+
         server = CISPServer(backend=args.backend)
         server.applyOps([dict(op) for op in op_list])
         return server.session
@@ -773,7 +805,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_apply = sub.add_parser("apply", help="run a JSON array of ops")
     p_apply.add_argument("ops", help="path to a JSON array of ops")
-    p_apply.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
+    p_apply.add_argument("--backend", default="stub", choices=_backend_choices())
     p_apply.add_argument(
         "--verify", default="core", choices=["core", "full"],
         help="'core' runs the three core checks; 'full' runs the whole discovered "
@@ -782,7 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_apply.set_defaults(func=cmd_apply)
 
     p_demo = sub.add_parser("demo", help="run the built-in constrained-plate sample")
-    p_demo.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
+    p_demo.add_argument("--backend", default="stub", choices=_backend_choices())
     p_demo.add_argument("--core-only", action="store_true", dest="core_only",
                         help="run only the core verifiers (skip the discovered fleet)")
     p_demo.set_defaults(func=cmd_demo)
@@ -790,7 +822,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_build = sub.add_parser(
         "build", help="build a part from a natural-language brief via the LLM planner")
     p_build.add_argument("brief", help="natural-language design brief")
-    p_build.add_argument("--backend", default="cadquery", choices=BACKEND_CHOICES)
+    p_build.add_argument("--backend", default="cadquery", choices=_backend_choices())
     p_build.add_argument("--model", default=None, help="model name for the default LLM client")
     p_build.add_argument("--out", default=None, help="write the exported STEP to this path")
     p_build.add_argument("--trace", default=None, help="write JSONL trace events to this path")
@@ -824,7 +856,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("out", help="output path; the extension picks the format")
     p_export.add_argument("--ops", default=None,
                           help="path to a JSON array of ops (default: the built-in demo)")
-    p_export.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
+    p_export.add_argument("--backend", default="stub", choices=_backend_choices())
     p_export.add_argument(
         "--force", action="store_true",
         help="write the artifact even when the output gate refuses it. The "
@@ -839,7 +871,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("--ops", default=None,
                           help="path to a JSON array of ops (default: the built-in demo)")
     p_render.add_argument("--backend", default="frep",
-                          choices=BACKEND_CHOICES,
+                          choices=_backend_choices(),
                           help="geometry backend (default: frep -- it meshes anything)")
     p_render.add_argument("--view", default="iso",
                           choices=sorted(render_views()),
@@ -870,7 +902,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["deepcad", "skexgen", "hnc", "vitruvion", "mesh"],
         help="the token family to decode with -- MANDATORY and never guessed: the "
              "quantisers are mutually incompatible ('mesh' takes the point-cloud path)")
-    p_ingest.add_argument("--backend", default="stub", choices=BACKEND_CHOICES)
+    p_ingest.add_argument("--backend", default="stub", choices=_backend_choices())
     p_ingest.add_argument("--arc-policy", default="chord", dest="arc_policy",
                           choices=["chord", "reject"],
                           help="CISP has no arc op: approximate arcs by their chord "
@@ -1140,7 +1172,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--ops", required=True,
         help="path to a JSON array of CISP ops -- the plan the model built "
              "(the pipeline never generates it)")
-    p_pdd.add_argument("--backend", default="stub", choices=BACKEND_CHOICES,
+    p_pdd.add_argument("--backend", default="stub", choices=_backend_choices(),
                        help="geometry backend used to build the part (default: stub)")
     p_pdd.add_argument(
         "--measurement", default=None,

@@ -72,7 +72,6 @@ from harnesscad.domain.reconstruction.tokens import vitruvion_primitives as vitr
 from harnesscad.io.ingest.decompile import decompile as _decompile_solid
 from harnesscad.io.ingest.point_cloud import canonicalize_cloud as _canonicalize_cloud
 from harnesscad.io.ingest.tokenization_audit import audit_tokenization as _audit_tokens
-from harnesscad.io.surfaces.server import CISPServer
 
 __all__ = [
     "FAMILIES",
@@ -847,6 +846,11 @@ def _as_rows(tokens: Any, width: int, family: str) -> List[Tuple[int, ...]]:
 # Stage 3: apply to a HarnessSession
 # --------------------------------------------------------------------------- #
 def _apply(ops: Sequence[Op], backend: str) -> dict:
+    # Lazy: the surface layer sits OUTSIDE domain, so importing it at module
+    # scope would block extracting either one (tests/test_layering.py). Stage 3
+    # is the only stage that needs a server, and only when it actually runs.
+    from harnesscad.io.surfaces.server import CISPServer
+
     server = CISPServer(backend=backend)
     result = server.applyOps([op.to_dict() for op in ops])
     result = dict(result)
