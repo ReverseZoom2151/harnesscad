@@ -179,16 +179,21 @@ jobs:
           # cold-start each. We now run this shard's modules `nproc`-way parallel
           # with per-process temp files -- same isolation, a fraction of the wall.
           run_one() {
-            f="$1"; mod="${f%.py}"; mod="${mod//\//.}"
+            # A UNIT is a module, or a TestCase class / method inside one (the
+            # planner splits the few giant modules so they stop being a floor).
+            # Recover the owning file by walking back to the longest prefix that
+            # is a real .py, so annotations still point at a clickable path.
+            unit="$1"; mod="$unit"
+            while [ -n "$mod" ] && [ ! -f "${mod//.//}.py" ]; do mod="${mod%.*}"; done
+            f="${mod//.//}.py"
             out="$(mktemp)"
             t0=$(date +%s.%N)
-            python -m unittest "$mod" >"$out" 2>&1
+            python -m unittest "$unit" >"$out" 2>&1
             rc=$?
             t1=$(date +%s.%N)
-            # Per-module wall time, machine-parseable. Scraped to regenerate
-            # tests/module_runtimes.json, which drives the balanced sharding
-            # below (a few modules cost 100x the median; round-robin by name
-            # would pile them into one shard).
+            # Per-unit wall time, machine-parseable, attributed to the MODULE so
+            # the rows of a split module SUM back to it. Scraped to regenerate
+            # tests/module_runtimes.json, which drives the packing below.
             awk "BEGIN{printf \"MODTIME\\t%.2f\\t%s\\n\", $t1-$t0, \"$mod\"}"
             if [ "$rc" -eq 0 ]; then rm -f "$out"; return 0; fi
             # A nonzero exit is NOT automatically a test failure. cadquery/OCP
@@ -203,22 +208,27 @@ jobs:
             if grep -qE '^OK($| )' "$out" \
                && ! grep -qE '^(FAILED|ERROR)' "$out" \
                && ! grep -qE 'Ran 0 tests' "$out"; then
-              echo "::warning file=$f::$mod passed but crashed at teardown (rc=$rc, OCCT segfault) -- treated as pass"
+              echo "::warning file=$f::$unit passed but crashed at teardown (rc=$rc, OCCT segfault) -- treated as pass"
               rm -f "$out"
               return 0
             fi
-            echo "::error file=$f::FAILED $mod (rc=$rc)"
+            echo "::error file=$f::FAILED $unit (rc=$rc)"
             tail -n 40 "$out"
             rm -f "$out"
             return 1
           }
           export -f run_one
-          sel="$(mktemp)"; i=0
-          while IFS= read -r f; do
-            if [ $(( i % NSHARD )) -eq "$SHARD" ]; then echo "$f" >> "$sel"; fi
-            i=$((i+1))
-          done < <(find tests -name 'test_*.py' | sort)
-          echo "shard $SHARD/$NSHARD: $(wc -l < "$sel") module(s), $(nproc)-way parallel"
+          # Pack by MEASURED COST, not by name. Round-robin over the sorted file
+          # list dealt the two ~850s pressure modules into different shards and
+          # left others nearly idle (tests(7)=892s against tests(2)=205s), and the
+          # matrix only finishes when its slowest shard does. shard_plan.py packs
+          # longest-first into the lightest shard and splits the giants by
+          # TestCase class/method so no single module is a floor. See its module
+          # docstring; tests/test_shard_plan.py asserts the partition is exact.
+          sel="$(mktemp)"
+          python tests/shard_plan.py --shard "$SHARD" --nshard "$NSHARD" > "$sel"
+          python tests/shard_plan.py --nshard "$NSHARD" --explain
+          echo "shard $SHARD/$NSHARD: $(wc -l < "$sel") unit(s), $(nproc)-way parallel"
           # xargs keeps going on failures (no -exit) and returns 123 if any
           # invocation failed, so the whole shard runs and the step still fails
           # loudly if any module failed.
