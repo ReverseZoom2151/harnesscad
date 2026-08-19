@@ -56,7 +56,11 @@ __all__ = [
 ]
 
 #: Where the gallery is written, relative to the repo root.
-DEFAULT_OUT = os.path.join("assets", "gallery")
+# A repo-relative, forward-slash literal ON PURPOSE: os.path.join bakes in the
+# host separator, so a Windows run would surface "assets\gallery" as the argparse
+# default and the generated plugin docs would drift from a Linux CI regeneration.
+# Forward slashes open() correctly on every platform.
+DEFAULT_OUT = "assets/gallery"
 
 #: Hero render size. Fixed, so every image in the gallery composes on a page.
 WIDTH, HEIGHT, SSAA = 1200, 900, 2

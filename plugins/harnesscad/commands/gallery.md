@@ -17,7 +17,7 @@ harnesscad gallery [--list] [--build] [--out <out>] [--only <only>] [--no-compar
 
 - `--list`: print the catalogue (name, capability, backend)
 - `--build`: build + render + QC every catalogued part
-- `--out`: output directory (default: assets\gallery) (default: assets\gallery)
+- `--out`: output directory (default: assets/gallery) (default: assets/gallery)
 - `--only`: render just this part
 - `--no-compare`: skip the cross-backend comparison strip
 - `--json`: emit the catalogue / manifest as JSON

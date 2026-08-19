@@ -387,7 +387,7 @@ def _build(part, backend: str):
 
 
 def run(part_name: str = "shell-and-holes", backend: str = "frep",
-        out_dir: str = os.path.join("assets", "gallery", "formats"),
+        out_dir: str = "assets/gallery/formats",  # forward-slash literal: see render_gallery.DEFAULT_OUT
         log=None) -> FormatMatrix:
     """Build ONE part from a CISP op stream, then push it through every codec.
 
@@ -507,7 +507,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="formats-matrix", description=__doc__)
     parser.add_argument("--part", default="shell-and-holes")
     parser.add_argument("--backend", default="frep")
-    parser.add_argument("--out", default=os.path.join("assets", "gallery", "formats"))
+    parser.add_argument("--out", default="assets/gallery/formats")  # forward-slash literal (deterministic docs)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
