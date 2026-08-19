@@ -139,6 +139,39 @@ INPUT_KINDS: Tuple[str, ...] = (
     "scored_candidates",  # {"scores": [float], "labels": [0|1]}
     "similarity",    # list[list[float]]               -- pairwise similarity matrix
     "design",        # {"curves": [{"kind": str, "points": [(x, y), ...]}, ...]}
+    # -- kinds added with the third adapter wave --------------------------------
+    "relations",     # {element_id: relation_type}      -- declared geometric relations
+    "edit_entities", # {"before": [id], "after": [id], "intended_region": [id],
+                     #  "modified": [id]}               -- id sets around one edit
+    "occupancy",     # {coord_key: count}               -- voxel occupancy histogram
+    "constraint_values",  # {name: g_value}             -- one design's constraint g(x)
+    "requirement_contract",  # {"requirements": [[name, category, op, threshold]],
+                     #  "measurements": {name: value}}  -- typed FEA requirements
+    "edit_ops",      # list[str]                        -- CAD edit-operation names
+    "reward_audit",  # {"actual": [{"type": str}], "expected": [{"type": str}],
+                     #  "candidate_distance": float, "baseline_distance": float}
+    "op_dicts",      # list[{"op": str, ...}]           -- op-DAG entries (tag+params)
+    "cae_eval",      # {"u_max","sigma_max","cost","delta","sigma_allow","kappa"}
+    "counts",        # list[float]                      -- object-count series
+    "defects",       # {"predicted": [str], "truth": [str]}  -- defect-class sets
+    "choice_answers",# {"chosen": [label], "key": [label]}  -- multiple-choice trial
+    "feature_names", # list[str]                        -- machining-feature name set
+    "feature_counts",# {feature_name: quantity}         -- feature multiplicity dict
+    "volume_fraction",  # float                         -- topology-opt volume fraction
+    "parameters",    # {param_name: value}              -- orthographic parameter map
+    "dimension_extraction",  # {"extracted": [{"value","label"}],
+                     #  "expected": [{"value","labels"}]}  -- drawing dimensions
+    "assembly_design",  # {"target_graph","inferred_graph","interfaces","process"}
+    "grounded_ids",  # {"ranked": [int], "truth": [int], "selected": [int]}
+    "id_ranking",    # {"ranked": [id], "gt": id}       -- one retrieval query
+    "name_ranking",  # list[str]                        -- ordered method-name ranking
+    "option_choice", # {"choice": int, "costs": [float|None]}  -- pick-one-of-N
+    "tool_case",     # {"required": [str], "returned": [str]}  -- tool retrieval
+    "answer_text",   # str                             -- free-text QA answer
+    "qa_graded",     # {"value": ..., "expected": ..., "kind": str, ...}
+    "qa_evidence",   # {"answer","evidence","expected","observation_fields"}
+    "scores",        # list[float]                      -- aligned rating series
+    "feasibility",   # float in [0, 1]                  -- perceived/verified rating
 )
 
 
@@ -1041,6 +1074,319 @@ def _diversity_similarity_matrix(pred: dict, gold: dict):
 
 
 # ---------------------------------------------------------------------------
+# Third adapter wave. Same rules: modules untouched, every adaptation lives here,
+# each adapter declares only inputs a sample can honestly carry. This wave reaches
+# into the protocols/judges/harness buckets for the modules that are genuine
+# per-sample prediction-vs-reference scorers (many of those buckets are task
+# harnesses, data splits or LLM-judge shims, which stay in UNADAPTED_REASONS).
+# ---------------------------------------------------------------------------
+
+# -- geometry (wave 3)
+
+def _scaled_chamfer_reward(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import scaled_chamfer_reward as m
+    result = m.compute_reward(list(pred["points"]), list(gold["points"]))
+    return {"reward": float(result.reward), "scd": float(result.scd)}
+
+
+def _compiler_chamfer(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import compiler_judge as m
+    return float(m.symmetric_chamfer(list(pred["points"]), list(gold["points"])))
+
+
+def _solver_feedback(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import geometric_solver_feedback as m
+    records = m.solver_feedback(_mesh(pred), _mesh(gold))
+    return {rec["category"] + "_abs_diff": float(rec["abs_diff"]) for rec in records}
+
+
+def _design_distance_curve(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import design_distance_curve as m
+    return float(m.design_distance(_design(pred), _design(gold)))
+
+
+def _edit_relation_preservation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import edit_ranked_metrics as m
+    rel = m.relation_preservation(dict(gold["relations"]), dict(pred["relations"]))
+    return {"relation_fraction": float(rel["fraction"]),
+            "relations_preserved": float(rel["preserved"]),
+            "relations_declared": float(rel["declared"]),
+            "retention": float(m.retention(gold["relations"], pred["relations"]))}
+
+
+def _identity_preservation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import identity_preservation as m
+    before = gold["edit_entities"]["before"]
+    after = pred["edit_entities"]["after"]
+    region = gold["edit_entities"]["intended_region"]
+    modified = pred["edit_entities"].get("modified", ())
+    return {"preservation": float(m.identity_preservation(before, after, region, modified)),
+            "locality": float(m.edit_locality(before, after, region, modified))}
+
+
+def _occupancy_jsd(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import edit_alignment as m
+    value = m.occupancy_jsd(dict(pred["occupancy"]), dict(gold["occupancy"]))
+    if value is None:
+        raise ValueError("occupancy histograms must be non-empty")
+    return float(value)
+
+
+def _constraint_satisfaction(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import constrained_multiobjective as m
+    constraints = {k: float(v) for k, v in pred["constraint_values"].items()}
+    return {"constraint_satisfaction": float(m.constraint_satisfaction(constraints)),
+            "feasible": float(m.design_feasible(constraints))}
+
+
+def _typed_requirements(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import typed_requirements as m
+    reqs = [m.Requirement(str(r[0]), str(r[1]), str(r[2]), float(r[3]))
+            for r in gold["requirement_contract"]["requirements"]]
+    measured = {k: float(v)
+                for k, v in pred["requirement_contract"]["measurements"].items()}
+    report = m.grade(reqs, measured)
+    return {"mean_requirement_pass": float(report["mean_requirement_pass"]),
+            "strict_pass": float(report["strict_pass"])}
+
+
+def _cae_feasibility(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import cad_cae_closed_loop as m
+    p, g = pred["cae_eval"], gold["cae_eval"]
+    feas = m.evaluate_feasibility(float(p["u_max"]), float(p["sigma_max"]),
+                                  float(p["cost"]), float(g["delta"]),
+                                  float(g["sigma_allow"]), float(g["kappa"]))
+    return {"n_satisfied": float(feas.n_satisfied), "feasible": float(feas.feasible),
+            "constraint_reward": float(m.constraint_reward(feas.n_satisfied))}
+
+
+def _assemblability(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import assemblability_score as m
+    report = m.muse_assemblability(pred["assembly_design"])
+    return {"assembly_ready": float(report["assembly_ready"]),
+            "connectable": float(report["connectable"]),
+            "average": float(report["average"])}
+
+
+# -- sequence (wave 3)
+
+def _edit_operation_f1(pred: dict, gold: dict):
+    from harnesscad.eval.bench.geometry import edit_taxonomy as m
+    result = m.edit_operation_fscore(list(pred["edit_ops"]), list(gold["edit_ops"]))
+    return {k: float(v) for k, v in result.items()}
+
+
+def _reward_hacking(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import reward_hacking as m
+    audit = m.reward_hacking_audit(
+        list(pred["reward_audit"]["actual"]),
+        list(gold["reward_audit"]["expected"]),
+        candidate_distance=float(pred["reward_audit"]["candidate_distance"]),
+        baseline_distance=(float(gold["reward_audit"]["baseline_distance"])
+                           if gold["reward_audit"].get("baseline_distance") is not None
+                           else None))
+    return {"n_flags": float(len(audit["flags"])),
+            "geometry_improved": float(audit["geometry_improved"])}
+
+
+def _cad_sequence_f1(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import metrics as m
+    result = m.cad_sequence_f1(list(pred["op_dicts"]), list(gold["op_dicts"]))
+    if result is None:
+        raise ValueError("reference ops missing")
+    return {"precision": float(result["precision"]), "recall": float(result["recall"]),
+            "f1": float(result["f1"])}
+
+
+# -- vision (wave 3)
+
+def _quantity_alignment(pred: dict, gold: dict):
+    from harnesscad.eval.bench.vision import quantity_alignment as m
+    p = [float(v) for v in pred["counts"]]
+    g = [float(v) for v in gold["counts"]]
+    errors = m.counting_errors(p, g)
+    align = m.multi_level_alignment(p, g)
+    return {"mae": float(errors["mae"]), "rmse": float(errors["rmse"]),
+            "exact_level": float(align["exact_level"]),
+            "bin_level": float(align["bin_level"]), "score": float(align["score"])}
+
+
+def _defect_confusion(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import defect_confusion as m
+    query = {"predicted": list(pred["defects"]["predicted"]),
+             "truth": list(gold["defects"]["truth"])}
+    tally = m.perfect_prediction_tally([query])
+    return {"perfect": float(tally["perfect"]),
+            "perfect_present": float(tally["perfect_present"]),
+            "perfect_absent": float(tally["perfect_absent"])}
+
+
+def _description_match(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import description_match as m
+    correct, total = m.score_trial(list(pred["choice_answers"]["chosen"]),
+                                   list(gold["choice_answers"]["key"]))
+    return {"correct": float(correct), "total": float(total),
+            "accuracy": float(correct / total) if total else 0.0}
+
+
+def _dfm_feature_recognition(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import dfm_scoring as m
+    result = m.feature_recognition(list(pred["feature_names"]),
+                                   list(gold["feature_names"]))
+    return {k: float(v) for k, v in result.items()
+            if isinstance(v, (int, float, bool))}
+
+
+def _mfr_quantity(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import manufacturing_feature_recognition as m
+    result = m.evaluate_design(dict(pred["feature_counts"]),
+                               dict(gold["feature_counts"]))
+    return {k: float(v) for k, v in result.items()}
+
+
+def _volume_fraction_error(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import topopt_metrics as m
+    return {"vfe_percent": float(m.volume_fraction_error(
+        float(pred["volume_fraction"]), float(gold["volume_fraction"])))}
+
+
+def _orthographic_reasoning(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import orthographic_reasoning as m
+    report = m.score_sample(dict(pred["parameters"]), dict(gold["parameters"]))
+    return {"accuracy": float(report.accuracy), "correct": float(report.correct),
+            "total": float(report.total)}
+
+
+def _dimension_extraction(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import drawing_analysis_rubric as m
+    result = m.score_dimension_extraction(list(pred["dimension_extraction"]["extracted"]),
+                                          list(gold["dimension_extraction"]["expected"]))
+    return {"value_points": float(result["value_points"]),
+            "label_points": float(result["label_points"]),
+            "extra_penalty": float(result["extra_penalty"]),
+            "score": float(result["score"]), "max": float(result["max"])}
+
+
+# -- retrieval (wave 3)
+
+def _pairwise_edge(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import pairwise_edge_protocol as m
+    predicted = m.partition_to_edges([int(v) for v in pred["cluster_labels"]])
+    reference = m.partition_to_edges([int(v) for v in gold["cluster_labels"]])
+    return {"edge_accuracy": float(m.edge_accuracy(predicted, reference)),
+            "balanced_accuracy": float(m.balanced_accuracy(predicted, reference))}
+
+
+def _grounding(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import grounding_metrics as m
+    case = m.GroundingCase(
+        ranked=[int(v) for v in pred["grounded_ids"]["ranked"]],
+        truth={int(v) for v in gold["grounded_ids"]["truth"]},
+        selected=[int(v) for v in pred["grounded_ids"].get("selected", ())])
+    report = m.evaluate([case])
+    return {k.replace("@", "_at_"): float(v) for k, v in report.items()}
+
+
+def _text_to_cad(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import text_to_cad_retrieval as m
+    query = (list(pred["id_ranking"]["ranked"]), gold["id_ranking"]["gt"])
+    report = m.retrieval_report([query], ks=(1, 5))
+    out = {"recall_at_%d" % k: float(v) for k, v in report["recall"].items()}
+    out["medr"] = float(report["medr"])
+    out["rsum"] = float(report["rsum"])
+    return out
+
+
+def _ranking_agreement(pred: dict, gold: dict):
+    from harnesscad.eval.bench.retrieval import clustering_ensemble as m
+    a = [str(v) for v in pred["name_ranking"]]
+    b = [str(v) for v in gold["name_ranking"]]
+    return {"ranking_agreement": float(m.ranking_agreement(a, b)),
+            "kendall_tau": float(m.kendall_tau(a, b))}
+
+
+def _choice_optimality(pred: dict, gold: dict):
+    from harnesscad.eval.bench.harness import choice_optimality as m
+    costs = [None if c is None else float(c) for c in gold["option_choice"]["costs"]]
+    return {"optimal": float(m.is_optimal_choice(costs, int(pred["option_choice"]["choice"])))}
+
+
+def _tool_retrieval(pred: dict, gold: dict):
+    from harnesscad.eval.bench.harness import tool_retrieval as m
+    returned = [str(n) for n in pred["tool_case"]["returned"]]
+    case = {"task": "sample", "required": [str(n) for n in gold["tool_case"]["required"]]}
+    report = m.evaluate_tool_retrieval([case], lambda task, k: returned[:k],
+                                       k=len(returned) or 1)
+    row = report["rows"][0]
+    return {"recall": float(row["recall"]), "irrelevant": float(row["irrelevant"]),
+            "tokens": float(row["tokens"])}
+
+
+def _designqa(pred: dict, gold: dict):
+    from harnesscad.eval.bench import designqa_scorers as m
+    p, g = str(pred["answer_text"]), str(gold["answer_text"])
+    return {"token_f1": float(m.token_f1(p, g)),
+            "character_f1": float(m.character_f1(p, g)),
+            "bleu2": float(m.bleu2(p, g)), "rouge_l": float(m.rouge_l(p, g))}
+
+
+def _qa_grade(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import qa_grade_scale as m
+    spec = gold["qa_graded"]
+    grade = m.grade(pred["qa_graded"]["value"], spec["expected"],
+                    kind=spec.get("kind"),
+                    abs_tol=float(spec.get("abs_tol", 1e-6)),
+                    rel_tol=float(spec.get("rel_tol", 0.0)))
+    score = {m.CORRECT: 1.0, m.PARTIAL: 0.5, m.WRONG: 0.0}[grade.outcome]
+    return {"score": score,
+            "abs_error": float(grade.abs_error) if grade.abs_error is not None else 0.0}
+
+
+def _qa_evidence(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import qa_evidence_grading as m
+    answer = {"answer": pred["qa_evidence"]["answer"],
+              "evidence": tuple(pred["qa_evidence"].get("evidence", ()))}
+    result = m.grade_answer(answer, gold["qa_evidence"]["expected"],
+                            observation_fields=tuple(
+                                gold["qa_evidence"].get("observation_fields", ())))
+    return {"correct": float(bool(result["correct"])),
+            "grounded": float(bool(result["grounded"]))}
+
+
+# -- generative (wave 3)
+
+def _cad_qa_accuracy(pred: dict, gold: dict):
+    from harnesscad.eval.bench.protocols import unified_multitask as m
+    return float(m.cad_qa_accuracy([str(pred["answer_text"])],
+                                   [str(gold["answer_text"])]))
+
+
+def _judge_human_agreement(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import judge_human_agreement as m
+    x = [float(v) for v in pred["scores"]]
+    y = [float(v) for v in gold["scores"]]
+    return {"pearson": float(m.pearson(x, y)), "spearman": float(m.spearman(x, y)),
+            "kendall": float(m.kendall_tau_b(x, y))}
+
+
+def _feasibility_correlation(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import feasibility_novelty as m
+    x = [float(v) for v in pred["scores"]]
+    y = [float(v) for v in gold["scores"]]
+    mw = m.mann_whitney(x, y)
+    return {"spearman": float(m.spearman(x, y)), "u": float(mw["u"]),
+            "u_other": float(mw["u_other"])}
+
+
+def _perceived_actual_gap(pred: dict, gold: dict):
+    from harnesscad.eval.bench.judges import perceived_actual_gap as m
+    result = m.feasibility_gap(perceived=float(pred["feasibility"]),
+                               actual_verified=float(gold["feasibility"]))
+    return {"gap": float(result["gap"]), "perceived": float(result["perceived"]),
+            "actual_verified": float(result["actual_verified"])}
+
+
+# ---------------------------------------------------------------------------
 # The adapter table: metric name -> (module dotted, kind, inputs, adapter).
 #
 # It binds adapters to MODULES; the metric objects themselves are materialised
@@ -1215,6 +1561,82 @@ _ADAPTER_TABLE: Tuple[Tuple[str, str, str, Tuple[str, ...], Adapter], ...] = (
     ("generative.diversity_similarity_matrix",
      _P + "generative.diversity_similarity_matrix", "generative",
      ("similarity",), _diversity_similarity_matrix),
+
+    # -- third adapter wave ----------------------------------------------------
+    ("geometry.scaled_chamfer_reward", _P + "geometry.scaled_chamfer_reward",
+     "geometry", ("points",), _scaled_chamfer_reward),
+    ("geometry.compiler_chamfer", _P + "judges.compiler_judge", "geometry",
+     ("points",), _compiler_chamfer),
+    ("geometry.solver_feedback", _P + "judges.geometric_solver_feedback", "geometry",
+     ("mesh",), _solver_feedback),
+    ("geometry.design_distance_curve", _P + "geometry.design_distance_curve",
+     "geometry", ("design",), _design_distance_curve),
+    ("geometry.edit_relation_preservation", _P + "geometry.edit_ranked_metrics",
+     "geometry", ("relations",), _edit_relation_preservation),
+    ("geometry.identity_preservation", _P + "geometry.identity_preservation",
+     "geometry", ("edit_entities",), _identity_preservation),
+    ("geometry.occupancy_jsd", _P + "geometry.edit_alignment", "geometry",
+     ("occupancy",), _occupancy_jsd),
+    ("geometry.constraint_satisfaction", _P + "protocols.constrained_multiobjective",
+     "geometry", ("constraint_values",), _constraint_satisfaction),
+    ("geometry.typed_requirements", _P + "protocols.typed_requirements", "geometry",
+     ("requirement_contract",), _typed_requirements),
+    ("geometry.cae_feasibility", _P + "protocols.cad_cae_closed_loop", "geometry",
+     ("cae_eval",), _cae_feasibility),
+    ("geometry.assemblability", _P + "protocols.assemblability_score", "geometry",
+     ("assembly_design",), _assemblability),
+
+    ("sequence.edit_operation_f1", _P + "geometry.edit_taxonomy", "sequence",
+     ("edit_ops",), _edit_operation_f1),
+    ("sequence.reward_hacking", _P + "protocols.reward_hacking", "sequence",
+     ("reward_audit",), _reward_hacking),
+    ("sequence.cad_sequence_f1", _P + "protocols.metrics", "sequence",
+     ("op_dicts",), _cad_sequence_f1),
+
+    ("vision.quantity_alignment", _P + "vision.quantity_alignment", "vision",
+     ("counts",), _quantity_alignment),
+    ("vision.defect_confusion", _P + "protocols.defect_confusion", "vision",
+     ("defects",), _defect_confusion),
+    ("vision.description_match", _P + "protocols.description_match", "vision",
+     ("choice_answers",), _description_match),
+    ("vision.dfm_feature_recognition", _P + "protocols.dfm_scoring", "vision",
+     ("feature_names",), _dfm_feature_recognition),
+    ("vision.mfr_quantity", _P + "protocols.manufacturing_feature_recognition",
+     "vision", ("feature_counts",), _mfr_quantity),
+    ("vision.volume_fraction_error", _P + "protocols.topopt_metrics", "vision",
+     ("volume_fraction",), _volume_fraction_error),
+    ("vision.orthographic_reasoning", _P + "protocols.orthographic_reasoning",
+     "vision", ("parameters",), _orthographic_reasoning),
+    ("vision.dimension_extraction", _P + "protocols.drawing_analysis_rubric",
+     "vision", ("dimension_extraction",), _dimension_extraction),
+
+    ("retrieval.pairwise_edge", _P + "retrieval.pairwise_edge_protocol", "retrieval",
+     ("cluster_labels",), _pairwise_edge),
+    ("retrieval.grounding", _P + "retrieval.grounding_metrics", "retrieval",
+     ("grounded_ids",), _grounding),
+    ("retrieval.text_to_cad", _P + "retrieval.text_to_cad_retrieval", "retrieval",
+     ("id_ranking",), _text_to_cad),
+    ("retrieval.ranking_agreement", _P + "retrieval.clustering_ensemble", "retrieval",
+     ("name_ranking",), _ranking_agreement),
+    ("retrieval.choice_optimality", _P + "harness.choice_optimality", "retrieval",
+     ("option_choice",), _choice_optimality),
+    ("retrieval.tool_retrieval", _P + "harness.tool_retrieval", "retrieval",
+     ("tool_case",), _tool_retrieval),
+    ("retrieval.designqa", _P + "designqa_scorers", "retrieval",
+     ("answer_text",), _designqa),
+    ("retrieval.qa_grade", _P + "judges.qa_grade_scale", "retrieval",
+     ("qa_graded",), _qa_grade),
+    ("retrieval.qa_evidence", _P + "judges.qa_evidence_grading", "retrieval",
+     ("qa_evidence",), _qa_evidence),
+
+    ("generative.cad_qa_accuracy", _P + "protocols.unified_multitask", "generative",
+     ("answer_text",), _cad_qa_accuracy),
+    ("generative.judge_human_agreement", _P + "judges.judge_human_agreement",
+     "generative", ("scores",), _judge_human_agreement),
+    ("generative.feasibility_correlation", _P + "judges.feasibility_novelty",
+     "generative", ("scores",), _feasibility_correlation),
+    ("generative.perceived_actual_gap", _P + "judges.perceived_actual_gap",
+     "generative", ("feasibility",), _perceived_actual_gap),
 )
 
 
@@ -1234,8 +1656,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "no docstring; the meaning of its five positional arguments is not recoverable"),
     (_P + "geometry.edit_boundary_coherence",
      "needs an edit/keep voxel-mask partition and a source shape, not a pred/gold pair"),
-    (_P + "geometry.design_distance_curve",
-     "needs mrCAD Design objects (stroke geometry), which the sample schema lacks"),
     (_P + "sequence.error_taxonomy",
      "classifies a FreeCAD execution stderr string; requires running the code"),
     (_P + "sequence.controllability",
@@ -1252,8 +1672,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "needs a set of KNOWN and a set of UNKNOWN query scores; a sample carries neither"),
     (_P + "retrieval.fewshot_scaling",
      "a dataset-level scaling protocol over train/test splits and repeats"),
-    (_P + "retrieval.grounding_metrics",
-     "needs the model's SELECTED id set alongside the ranking; the schema has no such field"),
     (_P + "generative.brep_set_metrics",
      "set-level COV/MMD/JSD over a generated corpus vs a training corpus"),
     (_P + "generative.sequence_set_ratios",
@@ -1266,6 +1684,226 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "training-time loss masking, not an evaluation metric"),
     (_P + "sequence.tokenizer_frontier",
      "no docstring; a tokenizer-vocabulary sweep, not a pred/gold metric"),
+
+    # -- third wave: data-construction modules (splits, census, schemas) --------
+    (_P + "data.anomaly_splits",
+     "leakage-safe anomaly/open-set split builder, not a scored metric"),
+    (_P + "data.brep_masking",
+     "seeded B-rep masking-case generator + robustness driver over a predictor"),
+    (_P + "data.brep_splits",
+     "B-rep complexity-strata grouped train/val/test split builder"),
+    (_P + "data.cad_model_schema",
+     "queryable B-rep model schema + variant generator; no pred/gold scoring"),
+    (_P + "data.complexity_bands",
+     "single-description complexity-level estimator + band histogram, not pred/gold"),
+    (_P + "data.complexity_entropy",
+     "intrinsic script-complexity measures (entropy/param density), not pred/gold"),
+    (_P + "data.dataset_statistics",
+     "corpus-level dataset statistics/quality census over a record collection"),
+    (_P + "data.dedup",
+     "SkexGen branch-hash de-duplication + unique/dup census, not a metric"),
+    (_P + "data.difficulty_tiers",
+     "Text2CAD difficulty-tier classification + split-count validation"),
+    (_P + "data.domain_shift_audit",
+     "compares two dataset distributions for domain shift; corpus-level audit"),
+    (_P + "data.edit_splits",
+     "lineage-safe split leakage audit + SE-length balancing of records"),
+    (_P + "data.grouped_kfold",
+     "leakage-safe grouped k-fold cross-validation builder, not a scored metric"),
+    (_P + "data.history_quality_stats",
+     "HistCAD history-sequence dataset-quality census, not a per-sample metric"),
+    (_P + "data.image_perturbations",
+     "deterministic image-perturbation manifests + consistency driver, not a metric"),
+    (_P + "data.modality_complementarity",
+     "seeded point-corruption degradation/complementarity ablation harness"),
+    (_P + "data.modality_coverage_audit",
+     "per-modality coverage + parent-lineage leakage audit across splits"),
+    (_P + "data.nl_casebook",
+     "capability-contract checker over NL task intents, not a numeric pred/gold metric"),
+    (_P + "data.operation_coverage",
+     "dataset operation-coverage/diversity census over a sequence corpus"),
+    (_P + "data.operator_profile",
+     "CAD-operation/sequence-depth distribution profiling over records"),
+    (_P + "data.partname_pairs",
+     "Two-Parts pair-mining benchmark builder; its evaluators are set-level, not per-pair"),
+    (_P + "data.partname_tasks",
+     "assembly-name task-suite builder; its retrieval eval is corpus-level, not per-sample"),
+    (_P + "data.pointcloud_corruption",
+     "seeded point-cloud corruption manifest generator + robustness driver"),
+    (_P + "data.qa_query_schema",
+     "typed CAD-QA query schema dataclasses; no scoring function"),
+    (_P + "data.segmentation_manifests",
+     "geometry-prompted segmentation dataset manifests + consistency audit"),
+    (_P + "data.spatial_challenge_set",
+     "spatial challenge-set fixtures + result stratification, not a scored metric"),
+    (_P + "data.splits",
+     "source-aware benchmark split manifests + prompt-digest leakage audit"),
+    (_P + "data.stratify_mesh_complexity",
+     "CADPrompt mesh-complexity stratification + Table-1 census, not pred/gold"),
+    (_P + "data.task",
+     "CADBench-Verified task schema dataclass + JSON loaders; no scoring function"),
+    (_P + "data.tokenizer_split_audit",
+     "tokenizer-vs-backbone training-split overlap/leakage audit"),
+
+    # -- third wave: harness orchestration / run-log aggregation ----------------
+    (_P + "harness.acceptance_checklist",
+     "audits an agent tool-call trace against run-discipline rules, not a pred/gold metric"),
+    (_P + "harness.agent_cost",
+     "token/latency/price cost aggregator over a run log, not a scoring metric"),
+    (_P + "harness.candidate_scaling",
+     "best-so-far/cost/plateau curves over N ordered attempts, not one pred/gold pair"),
+    (_P + "harness.capability_retention",
+     "pre/post fine-tuning retention matrix via injected before/after scorers"),
+    (_P + "harness.correction_trajectory",
+     "summarises a multi-step validity/alignment trajectory, not a single pred/gold pair"),
+    (_P + "harness.cross_platform",
+     "runs injected platform adapters and records fidelity evidence; an orchestrator"),
+    (_P + "harness.evolution_dynamics",
+     "per-round proposed/accepted/novel ratios over an evolutionary run"),
+    (_P + "harness.feasibility",
+     "time-to-first-feasible tracker over an attempt stream; needs a clock"),
+    (_P + "harness.iterative_run_metrics",
+     "aggregates a batch of run records into convergence/error-rate tables"),
+    (_P + "harness.latency_speedup",
+     "deterministic latency/speedup model over pipeline timing components"),
+    (_P + "harness.metric_aggregation",
+     "min-max normalises and averages per-model metrics into a leaderboard"),
+    (_P + "harness.metric_correlation",
+     "Pearson correlation over aligned per-shape metric series, needs a results table"),
+    (_P + "harness.morphology_report",
+     "failure-aware batch summariser over a set of generation results"),
+    (_P + "harness.optimization_convergence",
+     "per-generation population convergence stats over an optimisation trajectory"),
+    (_P + "harness.point_budget",
+     "quality-vs-resource frontier table over rows grouped by point budget"),
+    (_P + "harness.prefix_completion",
+     "prefix/suffix cut helper + trapezoidal AUC utility, not a pred/gold match rate"),
+    (_P + "harness.pressure_correlation",
+     "corpus-wide point-biserial correlation study over a graded-attempts file"),
+    (_P + "harness.prompt_pack",
+     "parses and scores expected-rejection prompt-pack suites, not a numeric metric"),
+    (_P + "harness.resource_tradeoff",
+     "Pareto frontier over quality/memory/latency records, a selection not a metric"),
+    (_P + "harness.review_iterations",
+     "per-iteration validity/marginal-utility analysis over review-loop traces"),
+    (_P + "harness.run_summary",
+     "rolls per-sample results into a run summary + leaderboard rows"),
+    (_P + "harness.runner",
+     "the HarnessSession orchestration runner that invokes metrics, not itself one"),
+    (_P + "harness.seqlen_normalized",
+     "reweights a per-item metric across sequence-length buckets; needs a whole set"),
+    (_P + "harness.task_interaction",
+     "cross-task STL-vs-MTL interaction/negative-transfer report over a task set"),
+    (_P + "harness.task_modality_ablation",
+     "modality/objective ablation matrix + promotion decision, not per-sample scoring"),
+    (_P + "harness.tool_trajectory",
+     "static well-formedness audit of a tool-use trajectory, not a scored comparison"),
+
+    # -- third wave: dataset import / brief / prompt loaders --------------------
+    (_P + "imports.agentscad_tasks",
+     "loads AgentSCAD task briefs into contracts; construction, not scoring"),
+    (_P + "imports.cadam_textcad_briefs",
+     "loads graded design briefs with reference .scad paths; no scoring function"),
+    (_P + "imports.cadbench_baselines",
+     "imports CADBench's published leaderboard baseline numbers, not a pred/gold metric"),
+    (_P + "imports.cadjudge_prompts",
+     "loads DeepCAD-part abstraction-tier prompt briefs; prompt-corpus construction"),
+    (_P + "imports.graphcad_cadbench",
+     "loads rubric-annotated CADBench tasks; runs no judge and no scoring"),
+    (_P + "imports.intentforge_refusals",
+     "expected-rejection loader whose classify() returns a categorical verdict string"),
+    (_P + "imports.zoo_kcl_manifest",
+     "loads Zoo kcl-sample briefs with reference KCL paths; states no measurables"),
+
+    # -- third wave: set/corpus-level or single-input generative ----------------
+    (_P + "generative.text2cad_complexity",
+     "single-program complexity descriptor (L1-L3), not a pred-vs-gold comparison"),
+
+    # -- third wave: judge shims requiring an LLM/VLM, kernel, or population -----
+    (_P + "judges.judge_calibration",
+     "sweeps a decision threshold over a whole population of {distance, accepted} records"),
+    (_P + "judges.judge_efficiency",
+     "aggregates judge latency/cost/cache telemetry, no prediction-vs-gold comparison"),
+    (_P + "judges.rubric_deductions",
+     "scores a geometry-kernel MetricsContext (watertight/manifold/OCCT) from an execution pipeline"),
+    (_P + "judges.similarity_triplets",
+     "measures a rater's self-consistency / transitivity via a chooser callable, not pred/gold"),
+    (_P + "judges.vqa_score",
+     "thresholds an external VQA model's P(\"Yes\"); no prediction-vs-gold comparison"),
+
+    # -- third wave: retrieval inference algorithms / annotation sub-protocols ---
+    (_P + "retrieval.oversegmentation_init",
+     "clustering initializer + annotation-budget builder, not a prediction-vs-gold scorer"),
+    (_P + "retrieval.two_stage_cascade",
+     "retrieval inference cascade returning the matched model, not a score, and needs a DB"),
+
+    # -- third wave: protocol harnesses (judges, execution, leaderboards) --------
+    (_P + "protocols.appearance_invariance",
+     "audits shortcut behaviour over a case corpus via injected predict/compare callables"),
+    (_P + "protocols.benchmark_taxonomy",
+     "aggregates per-experiment scores across a roster of models into a leaderboard"),
+    (_P + "protocols.cad_score",
+     "composes already-computed shape/interface/topology axis sub-metrics, not raw pred/gold"),
+    (_P + "protocols.criteria",
+     "routes each criterion to injected image/script evaluators (a judge), not a scorer"),
+    (_P + "protocols.funnel_scorecard",
+     "gates/aggregates precomputed sandbox and pillar flags, not raw pred/gold geometry"),
+    (_P + "protocols.geometry_issue_flags",
+     "classifies an OCCT/CAD-kernel validator's issue payload; needs a live validator"),
+    (_P + "protocols.novelty_g_score",
+     "needs per-model corpus similarities plus VLM alignment verdicts, not one pred/gold pair"),
+    (_P + "protocols.parameter_dimension_scoring",
+     "arithmetic over per-requirement binary judgements produced by an external VLM judge"),
+    (_P + "protocols.qa_scoring",
+     "consumes pre-decided correctness booleans across answer runs + a chance baseline"),
+    (_P + "protocols.success_rate",
+     "corpus-level success/difficulty/failure-breakdown accounting, not a single pred/gold pair"),
+    (_P + "protocols.test_assertions",
+     "builds predicates that call a live B-rep model API; needs a CAD-kernel model object"),
+    (_P + "protocols.test_execution",
+     "exec()s generated model + CADTEST source against a live namespace; code execution"),
+    (_P + "protocols.test_suite_quality",
+     "runs test predicates against reference and mutant B-rep models; a mutation harness"),
+    (_P + "protocols.test_suite_runner",
+     "orchestrates running a CADTEST suite against a live model object, a runner not a metric"),
+    (_P + "protocols.tiered_leaderboard",
+     "aggregates precomputed per-sample CD/IR/IoU into cell + leaderboard tables"),
+    (_P + "protocols.vlm_rubric_scorecard",
+     "aggregates VLM-judge 0-10 rubric scores over a model's whole sample set"),
+
+    # -- third wave: training targets, libraries, and domain-object scorers ------
+    (_P + "sequence.soft_target_distribution",
+     "builds a triangular soft training-target distribution + its soft cross-entropy loss"),
+    (_P + "sequence.hierarchy_edit_consistency",
+     "grades CodeTree/ControlMask edit-hierarchy objects; the flat pred/gold payload has none"),
+    (_P + "sequence.structure_consistency",
+     "compares parsed geofusion Solid trees; the flat pred/gold payload carries no Solid"),
+    (_P + "sketch.concept_library",
+     "scores a discovered concept Library's compactness/coverage over a corpus, not a sample"),
+    (_P + "sketch.autoconstraint_f1",
+     "scores EdgeOp constraint objects (dof_mask); the flat pred/gold payload carries none"),
+    (_P + "sketch.primitive_prediction_eval",
+     "matches normalized pp.Sketch primitive objects; the flat pred/gold payload has none"),
+    (_P + "vision.scene_reconstruction",
+     "scores sketch2cad SceneObject pose/object graphs; the flat pred/gold payload has none"),
+    (_P + "geometry.cd_tolerance_recall",
+     "tolerance-recall AUC over a population of precomputed Chamfer distances, not per-sample"),
+    (_P + "geometry.constraint_editability",
+     "aggregates kernel-decided edit-reachability/constraint booleans, no gold reference"),
+    (_P + "edit.edit_taxonomy",
+     "edit-operation taxonomy + 1-7 VLM rating rubric over injected DINO/CLIP similarities"),
+
+    # -- third wave: top-level oracles / population benchmarks / harnesses -------
+    (_P + "analytic_fea",
+     "closed-form FEA answer key grading a solver's computed scalar, not generated-vs-gold CAD"),
+    (_P + "bikebench_metrics",
+     "population-level diversity/novelty scoring against a reference set, not one pred/gold pair"),
+    (_P + "multiobjective",
+     "grades a whole candidate population for Pareto quality (hypervolume), not per-sample"),
+    (_P + "provider_benchmark",
+     "a provider/model benchmark harness sweeping selectors via an injected call, not a metric"),
+    (_P + "registry",
+     "this registry/runner module itself, not a bench metric"),
 )
 
 
@@ -1359,6 +1997,8 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
         "geometry.edge_chamfer_recon",        # unit-box normalised CD + HD
         "geometry.hausdorff_iogt",            # symmetric point-cloud distance + IoGT
         "geometry.factorization_fidelity",    # raw CD + symmetry CD
+        "geometry.scaled_chamfer_reward",     # centroid + RMS-scale-normalised squared CD
+        "geometry.compiler_chamfer",          # raw symmetric squared CD (compiler judge)
     )),
     ("betti_topology", (
         "geometry.betti_graded",              # fuzzy log-ratio score in [0, 1]
@@ -1389,11 +2029,17 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
         "geometry.chamfer_refinement_2d",     # mrCAD refinement chamfer
         "sketch.set_prediction_f1",           # DAVINCI CD: chamfer over SAMPLED
                                               # points of Hungarian-matched primitives
+        "geometry.design_distance_curve",     # mrCAD exact point-to-curve distance
     )),
     ("primitive_f1", (
         "sequence.command_f1",                # per-command-family F1, positional
         "sequence.sequence_f1",               # CAD-SIGNet: Hungarian loop matching
         "sequence.primitive_f1_null_class",   # Text2CAD: bbox matching + Null class
+        "sequence.cad_sequence_f1",           # CADBench op-DAG entity/CAD F1
+    )),
+    ("clustering_agreement", (
+        "retrieval.clustering_external",      # NMI/ARI/ACC over cluster labels
+        "retrieval.pairwise_edge",            # Cluster3D correlation-clustering edge acc
     )),
     ("labelwise_agreement", (
         "vision.face_segmentation",           # per-face accuracy + macro IoU
