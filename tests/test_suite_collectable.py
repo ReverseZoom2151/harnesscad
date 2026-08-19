@@ -23,13 +23,48 @@ def _test_modules():
     return sorted(p for p in TESTS_DIR.rglob("test_*.py") if p.name != pathlib.Path(__file__).name)
 
 
-def _defines_testcase(tree):
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.ClassDef):
+def _base_name(base):
+    """The simple name of a class base node (``TestCase`` from either
+    ``unittest.TestCase`` or a bare ``TestCase``), or ``None``."""
+    return base.attr if isinstance(base, ast.Attribute) else getattr(base, "id", None)
+
+
+def _testcase_base_names():
+    """Every class name in the suite that transitively derives from TestCase.
+
+    ``TestCase`` itself, plus any shared harness base (e.g. ``TempDirTest`` in
+    ``tests/io/test_gate.py``) that a file may subclass instead of naming
+    ``TestCase`` directly. Resolved by name across the whole tree and closed to
+    a fixpoint, so a two-hop base (X(Y), Y(TestCase)) is recognised too. This is
+    a heuristic on names, not real MRO, but it matches how these files are
+    written and stops the guard from flagging a file that genuinely runs.
+    """
+    known = {"TestCase"}
+    # (class_name, [base_names]) for every class defined anywhere in the suite.
+    defs = []
+    for path in _test_modules():
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
             continue
-        for base in node.bases:
-            name = base.attr if isinstance(base, ast.Attribute) else getattr(base, "id", None)
-            if name == "TestCase":
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                defs.append((node.name, [_base_name(b) for b in node.bases]))
+    # Fixpoint: a class is a TestCase if any base is already known to be one.
+    changed = True
+    while changed:
+        changed = False
+        for name, bases in defs:
+            if name not in known and any(b in known for b in bases):
+                known.add(name)
+                changed = True
+    return known
+
+
+def _defines_testcase(tree, testcase_names):
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            if any(_base_name(b) in testcase_names for b in node.bases):
                 return True
     return False
 
@@ -45,10 +80,11 @@ def _module_level_test_functions(tree):
 
 class SuiteCollectableTest(unittest.TestCase):
     def test_every_test_file_defines_a_testcase(self):
+        testcase_names = _testcase_base_names()
         offenders = []
         for path in _test_modules():
             tree = ast.parse(path.read_text(encoding="utf-8"))
-            if not _defines_testcase(tree):
+            if not _defines_testcase(tree, testcase_names):
                 offenders.append(path.name)
         self.assertEqual(
             offenders,
