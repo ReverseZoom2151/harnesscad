@@ -10,7 +10,7 @@ metric registry + suite runner (--list/--suites/--suite <name>)
 ## Usage
 
 ```bash
-harnesscad bench [--list] [--suites] [--rivals] [--unadapted] [--kind <geometry|sequence|sketch|vision|retrieval|generative>] [--suite <suite>] [--input <input>] [--json]
+harnesscad bench [--list] [--suites] [--rivals] [--unadapted] [--kind <geometry|sequence|sketch|vision|retrieval|generative|process>] [--suite <suite>] [--input <input>] [--json]
 ```
 
 ## Arguments
@@ -19,7 +19,7 @@ harnesscad bench [--list] [--suites] [--rivals] [--unadapted] [--kind <geometry|
 - `--suites`: list the named suites and the metrics each selects
 - `--rivals`: list the rival families that must never be averaged
 - `--unadapted`: list bench modules with no adapter yet
-- `--kind`: filter --list by metric kind (choices: geometry, sequence, sketch, vision, retrieval, generative)
+- `--kind`: filter --list by metric kind (choices: geometry, sequence, sketch, vision, retrieval, generative, process)
 - `--suite`: run this named suite
 - `--input`: path to a JSON file of samples for --suite
 - `--json`: print the report as JSON
