@@ -28,7 +28,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from harnesscad.eval.bench.geometry.complex_matching import chamfer_distance, sampled_curve_distance
+from harnesscad.domain.geometry.pointcloud.distance_metrics import (
+    chamfer_distance, sampled_curve_distance)
 from harnesscad.domain.reconstruction.brep.chain_complex import (
     ChainComplex, Curve, Patch, make_complex)
 
