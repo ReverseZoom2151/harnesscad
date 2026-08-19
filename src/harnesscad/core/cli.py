@@ -708,6 +708,14 @@ def cmd_pressure(args: argparse.Namespace) -> int:
     return pressure_cli.run(args)
 
 
+def cmd_hardcorpus(args: argparse.Namespace) -> int:
+    # Imported here so the hard corpus (and litellm/ollama and the exact kernel,
+    # which only it needs) is only touched by `hardcorpus`.
+    from harnesscad.eval.hardcorpus import cli as hardcorpus_cli
+
+    return hardcorpus_cli.run(args)
+
+
 def _brief_from(brief: str) -> str:
     """The brief text: the contents of `brief` when it names a readable file,
     else the literal string. A part brief is short prose, so a bare string is
@@ -1142,6 +1150,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     _pressure_cli.add_arguments(p_pressure)
     p_pressure.set_defaults(func=cmd_pressure)
+
+    p_hardcorpus = sub.add_parser(
+        "hardcorpus",
+        help="hard corpus: score a real model on the held-out split and print "
+             "BOTH columns -- the field's weak grader and the measured oracle -- "
+             "plus the gap between them")
+    from harnesscad.eval.hardcorpus import cli as _hardcorpus_cli
+
+    _hardcorpus_cli.add_arguments(p_hardcorpus)
+    p_hardcorpus.set_defaults(func=cmd_hardcorpus)
 
     p_gallery = sub.add_parser(
         "gallery",

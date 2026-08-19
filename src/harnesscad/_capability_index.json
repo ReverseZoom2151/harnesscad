@@ -4217,6 +4217,8 @@
         "harnesscad.eval.gallery.render_gallery",
         "harnesscad.eval.grounding",
         "harnesscad.eval.grounding.registry",
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.cli",
         "harnesscad.eval.judge",
         "harnesscad.eval.judge.registry",
         "harnesscad.eval.pressure",
@@ -4273,6 +4275,7 @@
         "cmd_generate",
         "cmd_govern",
         "cmd_grounding",
+        "cmd_hardcorpus",
         "cmd_ingest",
         "cmd_judge",
         "cmd_numeric",
@@ -26833,9 +26836,17 @@
         "harnesscad",
         "harnesscad.domain.editing",
         "harnesscad.domain.editing.sketch_edit_schema",
+        "harnesscad.domain.reconstruction.sketch",
+        "harnesscad.domain.reconstruction.sketch.dof_mask",
+        "harnesscad.domain.reconstruction.sketch.dof_mask.EdgeOp",
+        "harnesscad.domain.reconstruction.sketch.primitives",
         "harnesscad.domain.reconstruction.tokens",
         "harnesscad.domain.reconstruction.tokens.deepcad_commands",
+        "harnesscad.domain.reconstruction.tokens.geofusion",
+        "harnesscad.domain.reconstruction.tokens.sketch2cad_scene",
+        "harnesscad.eval",
         "harnesscad.eval.bench",
+        "harnesscad.eval.bench.analytic_fea",
         "harnesscad.eval.bench.designqa_scorers",
         "harnesscad.eval.bench.generative",
         "harnesscad.eval.bench.generative.diversity_feature_space",
@@ -26857,6 +26868,7 @@
         "harnesscad.eval.bench.geometry.dimension_accuracy",
         "harnesscad.eval.bench.geometry.edge_chamfer_recon",
         "harnesscad.eval.bench.geometry.edit_alignment",
+        "harnesscad.eval.bench.geometry.edit_boundary_coherence",
         "harnesscad.eval.bench.geometry.edit_ranked_metrics",
         "harnesscad.eval.bench.geometry.edit_taxonomy",
         "harnesscad.eval.bench.geometry.factorization_fidelity",
@@ -26883,6 +26895,7 @@
         "harnesscad.eval.bench.judges.perceived_actual_gap",
         "harnesscad.eval.bench.judges.qa_evidence_grading",
         "harnesscad.eval.bench.judges.qa_grade_scale",
+        "harnesscad.eval.bench.judges.rubric_deductions",
         "harnesscad.eval.bench.protocols",
         "harnesscad.eval.bench.protocols.assemblability_score",
         "harnesscad.eval.bench.protocols.cad_cae_closed_loop",
@@ -26892,6 +26905,8 @@
         "harnesscad.eval.bench.protocols.description_match",
         "harnesscad.eval.bench.protocols.dfm_scoring",
         "harnesscad.eval.bench.protocols.drawing_analysis_rubric",
+        "harnesscad.eval.bench.protocols.functionality_score",
+        "harnesscad.eval.bench.protocols.manufacturability_score",
         "harnesscad.eval.bench.protocols.manufacturing_feature_recognition",
         "harnesscad.eval.bench.protocols.metrics",
         "harnesscad.eval.bench.protocols.orthographic_reasoning",
@@ -26931,11 +26946,14 @@
         "harnesscad.eval.bench.sequence.sequence_edit_distance",
         "harnesscad.eval.bench.sequence.sequence_f1",
         "harnesscad.eval.bench.sequence.sequence_length_stats",
+        "harnesscad.eval.bench.sequence.structure_consistency",
         "harnesscad.eval.bench.sequence.token_accuracy",
         "harnesscad.eval.bench.sketch",
+        "harnesscad.eval.bench.sketch.autoconstraint_f1",
         "harnesscad.eval.bench.sketch.entity_sketch_f1",
         "harnesscad.eval.bench.sketch.image_symmetry",
         "harnesscad.eval.bench.sketch.loop_curve_score",
+        "harnesscad.eval.bench.sketch.primitive_prediction_eval",
         "harnesscad.eval.bench.sketch.raster_vectorization",
         "harnesscad.eval.bench.sketch.set_prediction_f1",
         "harnesscad.eval.bench.sketch.sketch_chamfer_2d",
@@ -26952,6 +26970,7 @@
         "harnesscad.eval.bench.vision.point_weighted_panoptic",
         "harnesscad.eval.bench.vision.pointwise_semantic_eval",
         "harnesscad.eval.bench.vision.quantity_alignment",
+        "harnesscad.eval.bench.vision.scene_reconstruction",
         "harnesscad.eval.bench.vision.silhouette_iou",
         "harnesscad.eval.bench.vision.vision_metrics",
         "harnesscad.registry"
@@ -29872,6 +29891,27 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.hardcorpus.cli",
+      "imports": [
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.runner",
+        "harnesscad.eval.hardcorpus.solver",
+        "harnesscad.eval.hardcorpus.solver.DEFAULT_MAX_ATTEMPTS",
+        "harnesscad.eval.leaderboard",
+        "harnesscad.eval.leaderboard.hardcorpus_board"
+      ],
+      "layer": "eval",
+      "name": "cli",
+      "package": "hardcorpus",
+      "summary": "`harnesscad hardcorpus` -- run a real model against the held-out hard corpus.",
+      "symbols": [
+        "add_arguments",
+        "render_rows",
+        "run"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.hardcorpus.constraints",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -30142,6 +30182,37 @@
       "tags": []
     },
     {
+      "dotted": "harnesscad.eval.hardcorpus.runner",
+      "imports": [
+        "harnesscad.eval.hardcorpus",
+        "harnesscad.eval.hardcorpus.score",
+        "harnesscad.eval.hardcorpus.solver",
+        "harnesscad.eval.hardcorpus.solver.DEFAULT_MAX_ATTEMPTS",
+        "harnesscad.eval.hardcorpus.solver.ModelSolver",
+        "harnesscad.eval.leaderboard",
+        "harnesscad.eval.leaderboard.hardcorpus_board",
+        "harnesscad.eval.pressure.cache",
+        "harnesscad.eval.pressure.cache.CompletionCache",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.CachedClient",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.OllamaClient"
+      ],
+      "layer": "eval",
+      "name": "runner",
+      "package": "hardcorpus",
+      "summary": "Drive real models across the hard corpus's held-out split, resumably.",
+      "symbols": [
+        "cell_id",
+        "load_results",
+        "reference_submission",
+        "run",
+        "save_results",
+        "standings"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.eval.hardcorpus.score",
       "imports": [
         "harnesscad.core.cisp.ops",
@@ -30168,6 +30239,35 @@
       ],
       "tags": [
         "benchmark"
+      ]
+    },
+    {
+      "dotted": "harnesscad.eval.hardcorpus.solver",
+      "imports": [
+        "harnesscad.core.cisp.ops",
+        "harnesscad.core.cisp.ops.Op",
+        "harnesscad.eval.pressure.model",
+        "harnesscad.eval.pressure.model.Client",
+        "harnesscad.eval.pressure.model.extract_ops",
+        "harnesscad.eval.pressure.prompts",
+        "harnesscad.eval.pressure.prompts.SYSTEM_PROMPT",
+        "harnesscad.eval.pressure.prompts.format_parse_error",
+        "harnesscad.eval.pressure.prompts.user_prompt"
+      ],
+      "layer": "eval",
+      "name": "solver",
+      "package": "hardcorpus",
+      "summary": "An LLM-backed :data:`~harnesscad.eval.hardcorpus.score.Solver`.",
+      "symbols": [
+        "Attempt",
+        "ModelSolver",
+        "SolveRecord",
+        "brief_digest"
+      ],
+      "tags": [
+        "benchmark",
+        "llm",
+        "solver"
       ]
     },
     {
@@ -39151,8 +39251,8 @@
         "harnesscad.core.cisp.ops.CONSTRAINT_DOF",
         "harnesscad.core.cisp.ops._REGISTRY",
         "harnesscad.core.cisp.ops.parse_op",
-        "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Severity",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Severity",
         "harnesscad.io.surfaces",
         "harnesscad.io.surfaces.mcp.annotations",
         "harnesscad.io.surfaces.mcp.annotations.Annotations",
