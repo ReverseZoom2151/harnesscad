@@ -14,6 +14,16 @@ from harnesscad.eval.pressure import (loops, oracle, prompts, session, shape,
 from harnesscad.eval.pressure.briefs import brief_by_id
 from harnesscad.eval.pressure.metrics import grade
 from harnesscad.eval.pressure.model import ScriptedClient
+from harnesscad.eval.selftest import probe as _probe
+
+# The differential oracle can only AGREE across engines that are actually
+# installed. frep is stdlib and always present; the exact B-rep kernels (cadquery,
+# build123d, ...) live behind optional extras, so a bare CI runner has frep alone.
+# A test that asserts a multi-engine consensus (engines_agreeing >= 2) is not
+# measuring the oracle when only one engine exists -- it is measuring the box. It
+# SKIPS there rather than asserting a softer number that would hide a real
+# single-engine regression.
+GEOMETRIC_ENGINES = len(_probe.available(_probe.GEOMETRIC_BACKENDS))
 
 V1_BRIEFS = (
     "plate_hole_four", "strip_hole_row", "l_bracket", "step_block",
@@ -249,6 +259,11 @@ class TestOracleSelector(unittest.TestCase):
         self.assertEqual(best, 1)
         self.assertGreater(scores[1].key, scores[0].key)
 
+    @unittest.skipUnless(
+        GEOMETRIC_ENGINES >= 2,
+        "the differential oracle needs >= 2 installed geometry engines to reach "
+        "a multi-engine consensus; this box has %d (frep only on a bare runner)"
+        % GEOMETRIC_ENGINES)
     def test_the_oracle_reads_six_engines(self):
         s = oracle.score_ops(GOOD)
         self.assertTrue(s.built)
