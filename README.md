@@ -59,8 +59,11 @@ Two consequences of that stance are the reason the code is shaped the way it is:
   (and several other kernels) through the same op stream.
 - **Not a benchmark leaderboard that averages.** It runs benchmarks and refuses to
   average incompatible ones, which is a different thing.
-- **Not finished.** A large fraction of the modules are still imported by nothing but
-  their own test. The count is printed by `harnesscad capabilities --stats`, not
+- **Not finished.** The orphan ledger is empty -- 0 of 1,609 modules are imported by
+  nothing but their own test -- but that is a claim about wiring, not about
+  completeness. 122 benchmark entries remain unadapted, and they are reported with
+  reasons rather than given fabricated call sites. Both numbers are printed
+  (`harnesscad capabilities --stats`, `eval.bench.registry.unadapted()`), never
   estimated.
 - **Not a paper reproduction.** The domain layer is mined from a large corpus of
   text-to-CAD papers and CAD repositories, and no single one of them is the target.
@@ -414,6 +417,39 @@ harnesscad report                                          # mass, pose, toleran
 harnesscad capabilities --tag sdf
 ```
 
+## Programmable surfaces
+
+The same typed op stream is reachable four ways, so a program, an agent, a learner
+and a grader all drive the harness without any of them re-implementing the
+verification path.
+
+```python
+from harnesscad import sdk
+
+env = sdk.Environment(backend="frep")     # a CADGymEnv: reset() / step() / state()
+obs, reward, done, info = env.step(op)    # reward derived from the measured gate
+sdk.run_suite("deepcad", samples)         # 15 suites, 110 metrics, never averaged
+```
+
+- **SDK** (`harnesscad.sdk`) -- `Environment`, `Session`, `Op`, `load_ops`,
+  `run_suite`, `mcp_server`. A flat facade over the spine. `import harnesscad` stays
+  lazy, so nothing drags in a CAD kernel until something asks for one.
+- **MCP server** -- `python -m harnesscad.io.surfaces.mcp` speaks the Model Context
+  Protocol over stdio, handing a tool-calling agent the 34-op vocabulary and the same
+  typed diagnostics the CLI prints.
+- **RL environment** -- `CADGymEnv` is the familiar `reset()` / `step(action)` loop
+  returning `(obs, reward, done, info)`. The reward comes from the measured gate, and
+  that is the whole point: this environment can label its own trajectories, because
+  correctness here is *measured* rather than judged by a model.
+- **Benchmark surface** (`eval/bench/`) -- suites selected by name, rivals never
+  blended, with `eval/run/reference_loop.py` closing the loop end to end.
+
+The closed loop ships its own artifact rather than a claim: driving `CADGymEnv` with
+a scripted reference policy builds the part and measures 23,998.81 mm3 against the
+24,000.0 mm3 the brief demanded -- the residual is grid error, and it is reported,
+not rounded away. No model produced it; it is a reference trajectory, and the
+frontier run is still pending.
+
 ## Where the code lives
 
 ```text
@@ -443,11 +479,13 @@ the 2D case. None were reachable, so none were caught. This is the same discipli
 that later caught backends leaking wrong volumes once the differential oracle was
 wired up.
 
-The modules that remain unwired are reported with reasons rather than given
-fabricated call sites. Reinforcement-learning losses have no trainer here. Some
-modules need a renderer or human annotators that do not exist. A block of benchmark
-entries are dataset manifests and judge scaffolding, not metrics, and were never
-going to fit a `score(pred, gold)` seam.
+The entries that remain unadapted are reported with reasons rather than given
+fabricated call sites. Some need a renderer or human annotators that do not exist. A
+block of benchmark entries are dataset manifests and judge scaffolding, not metrics,
+and were never going to fit a `score(pred, gold)` seam. The preference-optimisation
+losses that once had no trainer now have one -- `agents/selftrain/` ships DPO, KTO,
+SFT and a grounding trainer -- but nothing has been trained with it here, and no
+checkpoint is claimed.
 
 Known correctness questions are recorded rather than quietly resolved, in
 [`docs/corpus/repo-ideas.md`](docs/corpus/repo-ideas.md) and the `audit/` notes.
