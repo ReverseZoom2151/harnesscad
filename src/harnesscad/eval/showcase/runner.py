@@ -38,7 +38,7 @@ def _ensure_dir(path: str) -> None:
 
 def render_record(ops: Sequence[dict], path: str, view: str = "hero",
                   width: int = SWEEP_WIDTH, height: int = SWEEP_HEIGHT,
-                  backend: str = "frep", ssaa: int = 1) -> Dict[str, Any]:
+                  backend: str = "frep", ssaa: int = 2) -> Dict[str, Any]:
     """Rebuild `ops` on a fresh session, render to `path`, then VALIDATE the PNG.
 
     Returns the image record: path, dims, the decoded statistics and whether the
