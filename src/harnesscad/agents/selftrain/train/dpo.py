@@ -88,12 +88,15 @@ def train_dpo(data_path: str, output_dir: str, *,
     robust loss. It must lie in ``[0, 0.5)`` -- DPO's label smoothing is a
     flip-probability, and >= 0.5 inverts the preference.
     """
-    require()
+    # Validate the cheap, GPU-free argument BEFORE requiring the training stack,
+    # so an invented label_smoothing is rejected with ValueError on a core-only
+    # box rather than being masked by require()'s RuntimeError.
     if not (0.0 <= label_smoothing < 0.5):
         raise ValueError(
             "label_smoothing must be the MEASURED oracle error rate in [0, 0.5); "
             "got %r. See selftrain.preference.ROBUST_DPO_NOTE -- do not guess it."
             % label_smoothing)
+    require()
 
     import torch
     from peft import get_peft_model, prepare_model_for_kbit_training, PeftModel
