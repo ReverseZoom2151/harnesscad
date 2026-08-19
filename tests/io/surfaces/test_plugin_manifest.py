@@ -177,6 +177,21 @@ class TestAuthoredSkills(unittest.TestCase):
         "cad-repair",
     ]
 
+    def setUp(self) -> None:
+        # test_op_vocabulary_reference_matches_the_real_registry reads the GLOBAL
+        # op registry and asserts an exact total. Nothing in this module mutates
+        # it, and CI runs each module in its own process -- but under an in-process
+        # `unittest discover`, a sibling test that registered a transient op would
+        # make the total non-deterministic. Snapshot it and restore in tearDown so
+        # the invariant is a function of the registry alone, whatever ran before.
+        from harnesscad.core.cisp.ops import _REGISTRY
+        self._registry_snapshot = dict(_REGISTRY)
+
+    def tearDown(self) -> None:
+        from harnesscad.core.cisp.ops import _REGISTRY
+        _REGISTRY.clear()
+        _REGISTRY.update(self._registry_snapshot)
+
     def test_the_suite_is_present(self) -> None:
         self.assertEqual(pm.hand_authored_skills(REPO_ROOT), self.EXPECTED)
 
