@@ -1,0 +1,316 @@
+{
+  "backend": "frep",
+  "built": 10,
+  "contract_pass": 10,
+  "episodes_closed": 10,
+  "leaderboard": {
+    "ranking": [
+      {
+        "built": 10,
+        "combined_rate": null,
+        "contract_and_oracle": null,
+        "contract_rate": null,
+        "contract_residual": null,
+        "contract_satisfied": null,
+        "failed": {},
+        "field_fooled": 0,
+        "fooled_rate": 0.0,
+        "gap": 0.0,
+        "mean_iou": null,
+        "n": 10,
+        "name": "reference-policy",
+        "oracle_rate": 1.0,
+        "oracle_solved": 10,
+        "weak_passed": 10,
+        "weak_rate": 1.0
+      },
+      {
+        "built": 9,
+        "combined_rate": null,
+        "contract_and_oracle": null,
+        "contract_rate": null,
+        "contract_residual": null,
+        "contract_satisfied": null,
+        "failed": {
+          "dev_chamfer_plate_60x40x10_d2": [
+            "bounding box wrong on x: 59.000 mm, brief says 60 mm (tol 0.675)",
+            "bounding box wrong on y: 38.999 mm, brief says 40 mm (tol 0.675)",
+            "bounding box wrong on z: 3.483 mm, brief says 10 mm (tol 0.675)",
+            "volume 6474.4 mm3, the closed form says 23162.7 mm3 (off by -72.0%, tolerance 3.5%)",
+            "point [30.0, 20.0, 5.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.00 mm away; positive means the point is outside the part"
+          ],
+          "dev_disc_d40_h12": [
+            "bounding box wrong on z: 3.600 mm, brief says 12 mm (tol 0.467)",
+            "volume 4524.2 mm3, the closed form says 15079.6 mm3 (off by -70.0%, tolerance 2.4%)",
+            "point [0.0, 0.0, 6.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.40 mm away; positive means the point is outside the part"
+          ],
+          "dev_fillet_plate_60x40x10_r3": [
+            "bounding box wrong on x: 59.197 mm, brief says 60 mm (tol 0.675)",
+            "bounding box wrong on y: 39.196 mm, brief says 40 mm (tol 0.675)",
+            "bounding box wrong on z: 3.103 mm, brief says 10 mm (tol 0.675)",
+            "volume 6556.2 mm3, the closed form says 23186.3 mm3 (off by -71.7%, tolerance 3.5%)",
+            "point [30.0, 20.0, 5.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.00 mm away; positive means the point is outside the part"
+          ],
+          "dev_hollow_box_60x40x20_t3": [
+            "the engine refused the plan at 'shell' (invalid-brep,invalid-mesh,under-constrained)"
+          ],
+          "dev_l_bracket_60x40": [
+            "bounding box wrong on z: 9.000 mm, brief says 30 mm (tol 0.675)",
+            "volume 15119.1 mm3, the closed form says 20160.0 mm3 (off by -25.0%, tolerance 1.8%)",
+            "point [3.0, 20.0, 27.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +18.00 mm away; positive means the point is outside the part"
+          ],
+          "dev_notched_block_40x40x20": [
+            "volume 31399.2 mm3, the closed form says 30000.0 mm3 (off by +4.7%, tolerance 1.8%)",
+            "point [5.0, 5.0, 10.0] must be EMPTY (it is on a hole's axis, or inside a cavity) but it is -4.00 mm from the surface; negative means the point is buried in material -- the feature is not there"
+          ],
+          "dev_plate_60x40x10": [
+            "bounding box wrong on z: 3.000 mm, brief says 10 mm (tol 0.675)",
+            "volume 7199.0 mm3, the closed form says 24000.0 mm3 (off by -70.0%, tolerance 3.5%)",
+            "point [30.0, 20.0, 5.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.00 mm away; positive means the point is outside the part"
+          ],
+          "dev_plate_hole_centre": [
+            "bounding box wrong on z: 3.600 mm, brief says 12 mm (tol 0.675)",
+            "volume 8457.0 mm3, the closed form says 28196.8 mm3 (off by -70.0%, tolerance 3.1%)",
+            "point [15.0, 10.0, 6.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.40 mm away; positive means the point is outside the part"
+          ],
+          "dev_plate_hole_four": [
+            "bounding box wrong on z: 3.000 mm, brief says 10 mm (tol 0.883)",
+            "volume 13925.0 mm3, the closed form says 46460.6 mm3 (off by -70.0%, tolerance 4.3%)",
+            "point [6.0, 6.0, 5.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.00 mm away; positive means the point is outside the part"
+          ],
+          "dev_spacer_d40_bore14": [
+            "bounding box wrong on z: 3.000 mm, brief says 10 mm (tol 0.467)",
+            "volume 3307.9 mm3, the closed form says 11027.0 mm3 (off by -70.0%, tolerance 2.7%)",
+            "point [13.5, 0.0, 5.0] must be SOLID MATERIAL (it is the middle of a wall, or the body of the part) but the surface is +2.00 mm away; positive means the point is outside the part"
+          ]
+        },
+        "field_fooled": 9,
+        "fooled_rate": 0.9,
+        "gap": 0.9,
+        "mean_iou": null,
+        "n": 10,
+        "name": "wrong-policy",
+        "oracle_rate": 0.0,
+        "oracle_solved": 0,
+        "weak_passed": 9,
+        "weak_rate": 0.9
+      }
+    ]
+  },
+  "model": "reference-policy",
+  "n_tasks": 10,
+  "note": "SCRIPTED REFERENCE POLICY -- not a model. Proves the agent-environment loop closes and the eval harness measures. Swap reference_policy for a model policy over the same env.",
+  "pass_rate": 1.0,
+  "rows": [
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        10.0
+      ],
+      "expected_volume": 24000.0,
+      "measured_bbox": [
+        60.0000315520723,
+        40.000106236284715,
+        9.999623616536457
+      ],
+      "measured_volume": 23998.80853899163,
+      "n_actions": 3,
+      "reasons": [],
+      "task_id": "dev_plate_60x40x10",
+      "total_reward": 3.0,
+      "volume_rel_error": 5e-05
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        40.0,
+        40.0,
+        12.0
+      ],
+      "expected_volume": 15079.644737231007,
+      "measured_bbox": [
+        40.00863801081226,
+        40.00863801081226,
+        12.000115997626589
+      ],
+      "measured_volume": 15081.351495177576,
+      "n_actions": 3,
+      "reasons": [],
+      "task_id": "dev_disc_d40_h12",
+      "total_reward": 3.0,
+      "volume_rel_error": 0.000113
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        12.0
+      ],
+      "expected_volume": 28196.814210510758,
+      "measured_bbox": [
+        59.99999300870029,
+        39.99981629191477,
+        12.000276320730288
+      ],
+      "measured_volume": 28191.533949993904,
+      "n_actions": 4,
+      "reasons": [],
+      "task_id": "dev_plate_hole_centre",
+      "total_reward": 4.0,
+      "volume_rel_error": 0.000187
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        80.0,
+        60.0,
+        10.0
+      ],
+      "expected_volume": 46460.619599741,
+      "measured_bbox": [
+        79.99984047666638,
+        60.000048250749195,
+        10.000006130223763
+      ],
+      "measured_volume": 46422.75863483466,
+      "n_actions": 7,
+      "reasons": [],
+      "task_id": "dev_plate_hole_four",
+      "total_reward": 7.0,
+      "volume_rel_error": 0.000815
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        40.0,
+        40.0,
+        10.0
+      ],
+      "expected_volume": 11026.990214100173,
+      "measured_bbox": [
+        40.008638010810024,
+        40.008638010810024,
+        10.000034002247986
+      ],
+      "measured_volume": 11026.521492420668,
+      "n_actions": 4,
+      "reasons": [],
+      "task_id": "dev_spacer_d40_bore14",
+      "total_reward": 4.0,
+      "volume_rel_error": 4.3e-05
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        20.0
+      ],
+      "expected_volume": 22296.0,
+      "measured_bbox": [
+        59.999976880622626,
+        40.00017895091945,
+        19.99959531037704
+      ],
+      "measured_volume": 22293.002284984766,
+      "n_actions": 4,
+      "reasons": [],
+      "task_id": "dev_hollow_box_60x40x20_t3",
+      "total_reward": 4.0,
+      "volume_rel_error": 0.000134
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        10.0
+      ],
+      "expected_volume": 23186.336052701583,
+      "measured_bbox": [
+        60.00668084186478,
+        40.006696848091174,
+        10.102776976594187
+      ],
+      "measured_volume": 23280.293111227023,
+      "n_actions": 4,
+      "reasons": [],
+      "task_id": "dev_fillet_plate_60x40x10_r3",
+      "total_reward": 4.0,
+      "volume_rel_error": 0.004052
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        10.0
+      ],
+      "expected_volume": 23162.666666666668,
+      "measured_bbox": [
+        60.00028196381845,
+        39.9998779296875,
+        10.413193627935495
+      ],
+      "measured_volume": 23217.441957921073,
+      "n_actions": 4,
+      "reasons": [],
+      "task_id": "dev_chamfer_plate_60x40x10_d2",
+      "total_reward": 4.0,
+      "volume_rel_error": 0.002365
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        40.0,
+        40.0,
+        20.0
+      ],
+      "expected_volume": 30000.0,
+      "measured_bbox": [
+        40.00007309582347,
+        40.00007309582347,
+        20.000005481178583
+      ],
+      "measured_volume": 29999.183630712065,
+      "n_actions": 7,
+      "reasons": [],
+      "task_id": "dev_notched_block_40x40x20",
+      "total_reward": 7.0,
+      "volume_rel_error": 2.7e-05
+    },
+    {
+      "completed": true,
+      "contract_pass": true,
+      "expected_bbox": [
+        60.0,
+        40.0,
+        30.0
+      ],
+      "expected_volume": 20160.0,
+      "measured_bbox": [
+        60.00010964373519,
+        40.000268735859144,
+        29.999825113148944
+      ],
+      "measured_volume": 20158.91854012319,
+      "n_actions": 7,
+      "reasons": [],
+      "task_id": "dev_l_bracket_60x40",
+      "total_reward": 7.0,
+      "volume_rel_error": 5.4e-05
+    }
+  ]
+}

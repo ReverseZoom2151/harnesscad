@@ -1,0 +1,81 @@
+{
+  "model": "reference-policy",
+  "note": "A real trajectory produced by driving CADGymEnv with the scripted reference policy -- NOT a model rollout.",
+  "outcome": {
+    "bbox_ok": true,
+    "built": true,
+    "completed": true,
+    "contract_pass": true,
+    "expected_bbox": [
+      60.0,
+      40.0,
+      10.0
+    ],
+    "expected_volume": 24000.0,
+    "final_digest": "4dd009cd7331fdebb59c8c63ec6259d5dd60f83e774b2896cc6842fc53c2bdbb",
+    "genus_ok": true,
+    "mean_reward": 1.0,
+    "measured_bbox": [
+      60.0000315520723,
+      40.000106236284715,
+      9.999623616536457
+    ],
+    "measured_volume": 23998.80853899163,
+    "model": "reference-policy",
+    "n_actions": 3,
+    "probes_ok": true,
+    "reasons": [],
+    "score": 0.99995,
+    "task_id": "dev_plate_60x40x10",
+    "total_reward": 3.0,
+    "unmeasurable": false,
+    "volume_ok": true,
+    "volume_rel_error": 5e-05
+  },
+  "task_id": "dev_plate_60x40x10",
+  "trajectory": {
+    "completed": true,
+    "num_fail": 0,
+    "num_success": 3,
+    "steps": [
+      {
+        "label": "success",
+        "think": "emit the new_sketch op (step 1/1); it advances the build toward the target part",
+        "tool_call": {
+          "arguments": {
+            "plane": "XY"
+          },
+          "name": "new_sketch"
+        },
+        "tool_response": "{\"applied\": 1, \"digest\": \"27e1e86d9d7007a6e4458457ab54e13fb0443d4a984f2477cf11c6a5b3cb032e\", \"done\": false, \"ok\": true, \"reward\": 1.0, \"validity_ok\": true}"
+      },
+      {
+        "label": "success",
+        "think": "emit the add_rectangle op (step 2/1); it advances the build toward the target part",
+        "tool_call": {
+          "arguments": {
+            "h": 40.0,
+            "sketch": "sk1",
+            "w": 60.0,
+            "x": 0,
+            "y": 0
+          },
+          "name": "add_rectangle"
+        },
+        "tool_response": "{\"applied\": 1, \"digest\": \"2228a69d1ae1ebdf62d3ccfefa58399719efeaf8e6e7b59e97330069ea190906\", \"done\": false, \"ok\": true, \"reward\": 1.0, \"validity_ok\": true}"
+      },
+      {
+        "label": "success",
+        "think": "emit the extrude op (step 3/1); it advances the build toward the target part",
+        "tool_call": {
+          "arguments": {
+            "distance": 10.0,
+            "sketch": "sk1"
+          },
+          "name": "extrude"
+        },
+        "tool_response": "{\"applied\": 1, \"digest\": \"4dd009cd7331fdebb59c8c63ec6259d5dd60f83e774b2896cc6842fc53c2bdbb\", \"done\": true, \"ok\": true, \"reward\": 1.0, \"validity_ok\": true}"
+      }
+    ]
+  }
+}
