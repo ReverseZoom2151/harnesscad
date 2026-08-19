@@ -672,6 +672,13 @@ ROOTS: Tuple[str, ...] = (
     # carbon/evidence accounting surface, and the red-team false-positive sweep.
     "harnesscad.domain.standards.accounting",
     "harnesscad.eval.redteam.run",
+    # The reference closed-loop runner: a `python -m` entry point (main() +
+    # __main__ + --selfcheck) that drives the CADGymEnv with a scripted policy
+    # to produce a real trajectory, eval table and leaderboard row. Reached by
+    # its committed test (tests/eval/run/test_reference_loop.py); nothing in the
+    # product imports it, because it IS the entry point. An entry point is not
+    # an orphan.
+    "harnesscad.eval.run.reference_loop",
 )
 
 
