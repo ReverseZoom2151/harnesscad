@@ -10,7 +10,7 @@ SELF-evaluation: the harness evaluating the harness. Six engines differentially 
 ## Usage
 
 ```bash
-harnesscad selftest [--differential] [--golden] [--fleet] [--properties] [--field-liveness] [--all] [--backend <backends>] [--fleet-backend <fleet_backend>] [--count <count>] [--seed <seed>] [--json] [--strict]
+harnesscad selftest [--differential] [--golden] [--fleet] [--properties] [--field-liveness] [--all] [--backend <backends>] [--fleet-backend <fleet_backend>] [--count <count>] [--seed <seed>] [--shard <shard>] [--nshard <nshard>] [--json] [--strict]
 ```
 
 ## Arguments
@@ -25,6 +25,8 @@ harnesscad selftest [--differential] [--golden] [--fleet] [--properties] [--fiel
 - `--fleet-backend`: the engine the fleet audit builds its corpora on (default: frep, which always works) (default: frep)
 - `--count`: property streams to generate (default: 200) (default: 200)
 - `--seed`: property corpus seed (default: 20260714) (default: 20260714)
+- `--shard`: this property shard's index, 0..nshard-1. The seeded corpus is partitioned by stream index modulo nshard, so the union of all shards is the full run. (default: 0)
+- `--nshard`: total number of property shards (default 1 = no split). Only affects --properties. (default: 1)
 - `--json`: emit the whole report as JSON
 - `--strict`: exit non-zero when an oracle finds something (default: 0 -- a finding is this command WORKING)
 
