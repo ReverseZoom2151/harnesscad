@@ -30977,10 +30977,14 @@
       "symbols": [
         "CachedClient",
         "Client",
-        "OllamaClient",
+        "ModelClient",
         "ScriptedClient",
         "extract_ops",
-        "ops_to_dicts"
+        "is_local",
+        "is_provider_qualified",
+        "ops_to_dicts",
+        "qualified_model",
+        "seed_is_honoured"
       ],
       "tags": []
     },

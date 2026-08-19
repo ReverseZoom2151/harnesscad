@@ -35,6 +35,55 @@ from harnesscad.eval.pressure.cache import CompletionCache, cache_key
 DEFAULT_API_BASE = "http://localhost:11434"
 
 
+# --------------------------------------------------------------------------- #
+# Provider routing
+#
+# litellm is ONE call shape across ~100 providers, so the only thing that ever
+# pinned this seam to local models was a hardcoded ``ollama/`` prefix. A model
+# string that already names a provider is passed through untouched, which is what
+# lets the same runner, cache, solver and graders drive a frontier model.
+# --------------------------------------------------------------------------- #
+def is_provider_qualified(model: str) -> bool:
+    """True when ``model`` already names a litellm provider.
+
+    The rule is a ``/`` BEFORE any ``:``, which is litellm's own convention and
+    needs no hardcoded provider list (so a provider added upstream tomorrow works
+    today). Ollama tags carry a colon and no slash -- ``qwen3.6:27b``, ``ornith:9b``
+    -- while provider-qualified names carry a slash -- ``anthropic/claude-...``,
+    ``openai/gpt-...``. The one ambiguous case is a namespaced *local* tag such as
+    ``library/llama3``; name it ``ollama/library/llama3`` to force local routing.
+    """
+    return "/" in model.split(":", 1)[0]
+
+
+def qualified_model(model: str) -> str:
+    """The name to hand litellm: bare tags are ollama, everything else passes through."""
+    return model if is_provider_qualified(model) else "ollama/%s" % model
+
+
+def is_local(model: str) -> bool:
+    """Whether this model runs against the local ollama daemon."""
+    return qualified_model(model).startswith("ollama/")
+
+
+#: Providers known to honour a ``seed``. Everything else may ignore it, so a run
+#: is reproducible only through the completion CACHE, not at the model level.
+SEEDED_PROVIDERS = ("ollama/", "openai/", "azure/")
+
+
+def seed_is_honoured(model: str) -> bool:
+    """Whether ``seed`` actually pins this model's sampling.
+
+    This repo claims determinism, so the claim has to be qualified rather than
+    quietly broken: ollama and OpenAI honour ``seed``; most hosted providers
+    ignore or reject it. When this returns False a re-run may produce different
+    text, and reproducibility comes only from the on-disk completion cache. The
+    runners record this alongside the results so a published row cannot imply a
+    reproducibility it does not have.
+    """
+    return qualified_model(model).startswith(SEEDED_PROVIDERS)
+
+
 class Client(Protocol):
     """Everything the loop needs from a model.
 
@@ -58,8 +107,16 @@ class Client(Protocol):
 # --------------------------------------------------------------------------- #
 # ollama
 # --------------------------------------------------------------------------- #
-class OllamaClient:
-    """A seeded ollama chat client, via litellm."""
+class ModelClient:
+    """A seeded chat client for ANY litellm provider, local or hosted.
+
+    Named for what it does now. ``OllamaClient`` remains as an alias below: six
+    call sites construct it, and a bare tag still routes to ollama, so every one
+    of them gained frontier providers without changing a line.
+
+    ``api_base`` is applied ONLY for local models. Sending ollama's localhost URL
+    to a hosted provider would either 404 or, worse, silently retarget the call.
+    """
 
     def __init__(self, model: str, seed: int = 0, temperature: float = 0.0,
                  api_base: str = DEFAULT_API_BASE, max_tokens: int = 1024,
@@ -72,23 +129,44 @@ class OllamaClient:
         self.max_tokens = int(max_tokens)
         self.timeout = float(timeout)
 
+    @property
+    def is_local(self) -> bool:
+        return is_local(self.model)
+
+    @property
+    def seed_is_honoured(self) -> bool:
+        return seed_is_honoured(self.model)
+
     def complete(self, messages: List[Dict[str, str]], attempt: int,
                  seed: Optional[int] = None,
                  temperature: Optional[float] = None) -> str:
         import litellm  # lazy: the package imports fine without it
 
         litellm.suppress_debug_info = True
-        resp = litellm.completion(
-            model=f"ollama/{self.model}",
-            messages=messages,
-            temperature=(self.temperature if temperature is None
-                         else float(temperature)),
-            seed=(self.seed if seed is None else int(seed)),
-            api_base=self.api_base,
-            max_tokens=self.max_tokens,
-            timeout=self.timeout,
-        )
+        kwargs: Dict[str, Any] = {
+            "model": qualified_model(self.model),
+            "messages": messages,
+            "temperature": (self.temperature if temperature is None
+                            else float(temperature)),
+            "seed": (self.seed if seed is None else int(seed)),
+            "max_tokens": self.max_tokens,
+            "timeout": self.timeout,
+        }
+        if self.is_local:
+            kwargs["api_base"] = self.api_base
+        else:
+            # Hosted providers reject params they do not implement (`seed` on
+            # Anthropic, for one). Dropping them is what makes one call shape
+            # work everywhere; `seed_is_honoured` is how the loss of model-level
+            # reproducibility is REPORTED rather than hidden.
+            litellm.drop_params = True
+        resp = litellm.completion(**kwargs)
         return resp.choices[0].message.content or ""
+
+
+#: Back-compat alias. A bare tag still means ollama, so existing call sites are
+#: unchanged; the name is kept because six modules construct it.
+OllamaClient = ModelClient
 
 
 class CachedClient:
