@@ -38,7 +38,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple, runtime_checkable
 
 from harnesscad.core.cisp.ops import Op, parse_op
-from harnesscad.eval.verifiers.verify import Diagnostic
+from harnesscad.core.diagnostics import Diagnostic
 
 
 class CapabilityError(RuntimeError):

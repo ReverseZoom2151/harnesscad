@@ -4125,8 +4125,8 @@
     {
       "dotted": "harnesscad.core.cisp.protocol",
       "imports": [
-        "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic"
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Diagnostic"
       ],
       "layer": "core",
       "name": "protocol",
@@ -4323,10 +4323,10 @@
     {
       "dotted": "harnesscad.core.contract",
       "imports": [
-        "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic",
-        "harnesscad.eval.verifiers.verify.Severity",
-        "harnesscad.eval.verifiers.verify.VerifyReport"
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Diagnostic",
+        "harnesscad.core.diagnostics.Severity",
+        "harnesscad.core.diagnostics.VerifyReport"
       ],
       "layer": "core",
       "name": "contract",
@@ -4346,15 +4346,33 @@
       ]
     },
     {
+      "dotted": "harnesscad.core.diagnostics",
+      "imports": [
+        "harnesscad.eval.verifiers.soundness",
+        "harnesscad.eval.verifiers.soundness.tier_of"
+      ],
+      "layer": "core",
+      "name": "diagnostics",
+      "package": "",
+      "summary": "Diagnostic protocol types -- the op contract's failure vocabulary.",
+      "symbols": [
+        "Diagnostic",
+        "Severity",
+        "Verifier",
+        "VerifyReport"
+      ],
+      "tags": []
+    },
+    {
       "dotted": "harnesscad.core.environment",
       "imports": [
         "harnesscad.core.cisp.ops",
         "harnesscad.core.cisp.ops.Op",
         "harnesscad.core.cisp.ops.parse_op",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Diagnostic",
         "harnesscad.core.loop",
-        "harnesscad.core.loop.HarnessSession",
-        "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic"
+        "harnesscad.core.loop.HarnessSession"
       ],
       "layer": "core",
       "name": "environment",
@@ -4443,6 +4461,9 @@
         "harnesscad.core.contract",
         "harnesscad.core.contract.Contract",
         "harnesscad.core.contract.ContractCheck",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Diagnostic",
+        "harnesscad.core.diagnostics.Severity",
         "harnesscad.core.loop",
         "harnesscad.core.loop.HarnessSession",
         "harnesscad.core.trace",
@@ -4452,9 +4473,6 @@
         "harnesscad.eval.reliability.executor.SessionToolExecutor",
         "harnesscad.eval.reliability.executor.ToolExecutor",
         "harnesscad.eval.reliability.executor._make_policy",
-        "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic",
-        "harnesscad.eval.verifiers.verify.Severity",
         "harnesscad.io.surfaces.ui.approval",
         "harnesscad.io.surfaces.ui.approval.ApprovalPolicy"
       ],
@@ -4505,6 +4523,11 @@
         "harnesscad.core.cisp.protocol",
         "harnesscad.core.cisp.protocol.ApplyOpsResult",
         "harnesscad.core.cisp.provenance",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.Diagnostic",
+        "harnesscad.core.diagnostics.Severity",
+        "harnesscad.core.diagnostics.Verifier",
+        "harnesscad.core.diagnostics.VerifyReport",
         "harnesscad.core.state.opdag",
         "harnesscad.core.state.opdag.OpDAG",
         "harnesscad.core.trace",
@@ -4514,10 +4537,6 @@
         "harnesscad.eval.verifiers.registry.model_state",
         "harnesscad.eval.verifiers.registry.run_all",
         "harnesscad.eval.verifiers.verify",
-        "harnesscad.eval.verifiers.verify.Diagnostic",
-        "harnesscad.eval.verifiers.verify.Severity",
-        "harnesscad.eval.verifiers.verify.Verifier",
-        "harnesscad.eval.verifiers.verify.VerifyReport",
         "harnesscad.eval.verifiers.verify.default_verifiers",
         "harnesscad.io.backends.base",
         "harnesscad.io.backends.base.GeometryBackend",
@@ -34514,7 +34533,13 @@
     {
       "dotted": "harnesscad.eval.verifiers.verify",
       "imports": [
-        "harnesscad.eval.verifiers",
+        "harnesscad.core.diagnostics",
+        "harnesscad.core.diagnostics.DIAGNOSTIC_WIRE_V1_KEYS",
+        "harnesscad.core.diagnostics.DIAGNOSTIC_WIRE_VERSION",
+        "harnesscad.core.diagnostics.Diagnostic",
+        "harnesscad.core.diagnostics.Severity",
+        "harnesscad.core.diagnostics.Verifier",
+        "harnesscad.core.diagnostics.VerifyReport",
         "harnesscad.eval.verifiers.geometry",
         "harnesscad.eval.verifiers.geometry.BRepValidityCheck",
         "harnesscad.eval.verifiers.soundness",
@@ -34525,12 +34550,8 @@
       "package": "verifiers",
       "summary": "Verification layer \u2014 the plural verifier the harness is built around.",
       "symbols": [
-        "Diagnostic",
-        "Severity",
         "SketchConstraintCheck",
         "SolidPresenceCheck",
-        "Verifier",
-        "VerifyReport",
         "default_verifiers"
       ],
       "tags": [

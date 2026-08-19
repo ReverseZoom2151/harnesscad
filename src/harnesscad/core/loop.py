@@ -42,8 +42,8 @@ from harnesscad.core.state.opdag import OpDAG
 if TYPE_CHECKING:  # pragma: no cover - typing only, never imported at runtime
     from harnesscad.core.cisp import op_gate as _op_gate
 from harnesscad.core.trace import NullTracer, Tracer
-from harnesscad.eval.verifiers.verify import (Diagnostic, Severity, VerifyReport,
-                                              Verifier, default_verifiers)
+from harnesscad.core.diagnostics import (Diagnostic, Severity, Verifier,
+                                         VerifyReport)
 
 
 #: Verification levels for HarnessSession.
@@ -93,7 +93,13 @@ class HarnessSession:
                  quirk_preflight: bool = False) -> None:
         self.backend = backend
         self.opdag = OpDAG()
-        self.verifiers = verifiers if verifiers is not None else default_verifiers()
+        if verifiers is None:
+            # Lazy: the DEFAULT verifier fleet is eval-layer code, and core must
+            # not import eval at module scope (tests/test_layering.py). A caller
+            # that passes its own verifiers never touches eval at all.
+            from harnesscad.eval.verifiers.verify import default_verifiers
+            verifiers = default_verifiers()
+        self.verifiers = verifiers
         # NullTracer is the default: tracing is opt-in and zero-cost, so a
         # HarnessSession(backend) behaves exactly as before.
         self.tracer = tracer if tracer is not None else NullTracer()

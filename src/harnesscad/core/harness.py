@@ -38,7 +38,7 @@ from harnesscad.core.contract import Contract, ContractCheck
 from harnesscad.agents.llm.structured import ParsedOps
 from harnesscad.core.loop import HarnessSession
 from harnesscad.core.trace import NullTracer, Tracer
-from harnesscad.eval.verifiers.verify import Diagnostic, Severity
+from harnesscad.core.diagnostics import Diagnostic, Severity
 
 
 # The harness-level event kinds (in addition to the loop's own EVENT_KINDS in

@@ -12,90 +12,23 @@ ERROR-severity diagnostic makes the report `ok == False`.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import List, Optional, Protocol
+from typing import List
 
-from harnesscad.eval.verifiers import soundness as _soundness
-
-#: The diagnostic wire format is VERSIONED, explicitly, because it crosses four
-#: JSON boundaries (MCP, A2A, the JSONL tracer, the pressure experiment's
-#: results file) and one of them is frozen.
-#:
-#: v1 -- severity/code/message/where. What `assets/pressure/results.json`
-#:       recorded. Reproduce it with :meth:`Diagnostic.to_dict_v1`.
-#: v2 -- v1 + `soundness`, the RESOLVED tier of the rule that spoke.
-#:
-#: v1 omitted `soundness`, and that omission was a bug in a fix: the whole point
-#: of soundness tiering is that only PROVEN/MEASURED diagnostics may instruct a
-#: model, and the tier evaporated at every serialization boundary. A remote MCP
-#: client could not tell a theorem from a guess. v2 is the default because a
-#: correct tier on the wire is worth more than a byte-identical wire.
-DIAGNOSTIC_WIRE_VERSION = 2
-DIAGNOSTIC_WIRE_V1_KEYS = ("severity", "code", "message", "where")
-
-
-class Severity(str, Enum):
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
-@dataclass
-class Diagnostic:
-    severity: Severity
-    code: str
-    message: str
-    where: Optional[str] = None
-    #: Soundness tier of the rule that produced this diagnostic -- "proven",
-    #: "measured" or "heuristic" (harnesscad.eval.verifiers.soundness). Stamped
-    #: by the fleet dispatcher, which knows the emitting verifier. `None` means
-    #: "not stamped"; soundness.tier_of then falls back to the code index and,
-    #: failing that, to HEURISTIC. Only PROVEN/MEASURED diagnostics are fed back
-    #: into a model's retry prompt: a wrong instruction is worse than none.
-    soundness: Optional[str] = None
-
-    def to_dict(self) -> dict:
-        """The v2 wire form: v1 plus the RESOLVED soundness tier.
-
-        `soundness` is never None on the wire. An unstamped diagnostic is
-        resolved through `soundness.tier_of`, which falls back to the code index
-        and then to HEURISTIC -- failing closed. A consumer on the far side of a
-        JSON boundary can therefore apply the same gate the in-process planner
-        applies, which is the whole point of the tier.
-        """
-        d = self.to_dict_v1()
-        d["soundness"] = _soundness.tier_of(self)
-        return d
-
-    def to_dict_v1(self) -> dict:
-        """The FROZEN v1 wire form, byte-identical to what the pressure run recorded.
-
-        Kept so a re-run of `eval/pressure` can be compared against
-        `assets/pressure/results.json` key-for-key. This is the only place the
-        old format is promised; the type no longer holds the experiment hostage.
-        """
-        return {
-            "severity": self.severity.value,
-            "code": self.code,
-            "message": self.message,
-            "where": self.where,
-        }
-
-
-@dataclass
-class VerifyReport:
-    diagnostics: List[Diagnostic] = field(default_factory=list)
-
-    @property
-    def ok(self) -> bool:
-        return not any(d.severity is Severity.ERROR for d in self.diagnostics)
-
-
-class Verifier(Protocol):
-    name: str
-
-    def check(self, backend, opdag) -> VerifyReport: ...
+# The diagnostic VOCABULARY (Severity / Diagnostic / VerifyReport, the Verifier
+# protocol and the wire constants) is contract, not scoring: it is what an op
+# application returns, and core/cisp, core/contract, core/environment,
+# core/harness and core/loop all speak it. It therefore lives in
+# `harnesscad.core.diagnostics` and is re-exported here unchanged, so every
+# existing `from harnesscad.eval.verifiers.verify import Diagnostic` keeps
+# working. Only the verifier LOGIC below is eval-layer code.
+from harnesscad.core.diagnostics import (  # noqa: F401  (re-export)
+    DIAGNOSTIC_WIRE_V1_KEYS,
+    DIAGNOSTIC_WIRE_VERSION,
+    Diagnostic,
+    Severity,
+    Verifier,
+    VerifyReport,
+)
 
 
 class SketchConstraintCheck:
