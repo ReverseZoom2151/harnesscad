@@ -76,7 +76,13 @@ def cube_ops(size: float = 30.0, fillet: Optional[float] = None,
         ops.append({"op": "hole", "face_or_sketch": "f1", "x": size / 2,
                     "y": size / 2, "diameter": hole, "through": True})
     if fillet is not None:
-        ops.append({"op": "fillet", "edges": ["f1"], "radius": fillet})
+        # Empty selector == every edge (the uniform blend). "f1" was harmless
+        # filler when frep ignored the edge selector, but frep now resolves
+        # selectors against the body's real edges (per-edge fillets) and would
+        # reject "f1" -- a FEATURE id, not an edge selector -- as bad-value
+        # before the RADIUS_TOO_LARGE preflight ever runs. Round every edge so
+        # the fillet actually applies and the preflight gate can judge it.
+        ops.append({"op": "fillet", "edges": [], "radius": fillet})
     return ops
 
 
