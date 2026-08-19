@@ -6,7 +6,11 @@
 "pytest passes" swapped for "geometry verifier passes":
 
   - **Action space** = the CISP ops (a step applies one or more ops through the
-    session's applyOps -> regen -> verify -> checkpoint spine).
+    session's applyOps -> regen -> verify -> checkpoint spine). ``action_space()``
+    is the full set; ``valid_action_space()`` / ``action_mask()`` are the
+    RLCAD-style VALID action set for the current state, computed by preflight
+    verification rather than by trial execution (see :mod:`mcp.masking`). The
+    boolean mask rides in the observation as ``action_mask``.
   - **Hybrid observation** = a geometry/B-rep summary (JSON: feature tree,
     sketch DOF, validity, digest) **+ a render hook** (lazy import of
     :mod:`render`; a placeholder note when no kernel/solid is present). Image
@@ -28,6 +32,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from harnesscad.io.backends.stub import StubBackend
 from harnesscad.core.cisp.ops import Op, parse_op
 from harnesscad.core.loop import HarnessSession
+from harnesscad.io.surfaces.mcp import masking
 from harnesscad.io.surfaces.mcp.tools import ToolCatalog, reward_from_apply
 
 
@@ -35,13 +40,19 @@ class CADGymEnv:
     """A Gym-style wrapper over a HarnessSession + geometry backend."""
 
     def __init__(self, backend=None, verifiers=None,
-                 max_steps: Optional[int] = None) -> None:
+                 max_steps: Optional[int] = None,
+                 mask_actions: bool = True) -> None:
         # A backend *instance* is reused across resets (its .reset() is called by
         # the session), so no ground truth or stale geometry survives a reset.
         self._backend = backend if backend is not None else StubBackend()
         self._verifiers = verifiers
         self.max_steps = max_steps
         self._catalog = ToolCatalog()
+        #: Publish the valid-action mask in the observation (RL libraries read a
+        #: boolean mask alongside the obs). Computed by PREFLIGHT, never by
+        #: trial execution -- see mcp/masking.py. Set False for the pre-masking
+        #: observation shape.
+        self.mask_actions = bool(mask_actions)
         self.session: Optional[HarnessSession] = None
         self._steps = 0
         self._last_reward = 0.0
@@ -118,9 +129,48 @@ class CADGymEnv:
         """The MCP tool catalog describing the action space."""
         return self._catalog
 
-    def action_space(self) -> List[str]:
-        """Names of the op tools an agent may emit as actions."""
-        return [t.name for t in self._catalog.op_tools()]
+    def action_space(self, masked: bool = False) -> List[str]:
+        """Names of the op tools an agent may emit as actions.
+
+        The default is the FULL action space (unchanged contract). ``masked=True``
+        is the RLCAD "valid action set": exactly the tools that pass preflight in
+        the current state.
+        """
+        names = [t.name for t in self._catalog.op_tools()]
+        if not masked:
+            return names
+        return self.valid_action_space(names=names)
+
+    def valid_action_space(self, proposals=None, names=None,
+                           numeric: bool = True) -> List[str]:
+        """The subset of the action space that would pass preflight right now.
+
+        RLCAD (arXiv:2503.18549, Alg.1) computes this by trial-executing every
+        candidate in the CAD kernel; here it is computed by PREFLIGHT
+        VERIFICATION (:mod:`mcp.masking`) -- same question, no kernel round trip.
+        Pass ``proposals`` ({name: op or args dict}) to mask concrete
+        parameterised actions instead of the default-bound ones.
+        """
+        if names is None:
+            names = [t.name for t in self._catalog.op_tools()]
+        return masking.valid_actions(self.session, proposals, names=names,
+                                     numeric=numeric)
+
+    def action_mask(self, proposals=None, names=None,
+                    numeric: bool = True) -> Dict[str, bool]:
+        """``{action name -> bool}`` for the current state (the boolean mask)."""
+        if names is None:
+            names = [t.name for t in self._catalog.op_tools()]
+        return masking.action_mask(self.session, proposals, names=names,
+                                   numeric=numeric)
+
+    def action_mask_verdicts(self, proposals=None, names=None,
+                             numeric: bool = True) -> Dict[str, Any]:
+        """``{action name -> Verdict}`` -- the mask plus WHY each action failed."""
+        if names is None:
+            names = [t.name for t in self._catalog.op_tools()]
+        return masking.mask_verdicts(self.session, proposals, names=names,
+                                     numeric=numeric)
 
     # --- internals --------------------------------------------------------
     def _coerce_action(self, action) -> List[Op]:
@@ -148,7 +198,7 @@ class CADGymEnv:
         backend = self.session.backend
         validity = self._catalog.read_resource("cad://model/validity", self.session)
         render_meta = self._render_meta()
-        return {
+        obs: Dict[str, Any] = {
             "feature_tree": {
                 "summary": backend.query("summary"),
                 "ops": [op.to_dict() for op in self.session.opdag.ops()],
@@ -159,6 +209,14 @@ class CADGymEnv:
             "step": self._steps,
             "render": render_meta,
         }
+        if self.mask_actions:
+            # The valid-action mask, computed by preflight (no kernel round
+            # trips). "action_mask" is the boolean vector RL libraries consume;
+            # "valid_actions" is the same thing as the RLCAD action set.
+            mask = self.action_mask()
+            obs["action_mask"] = mask
+            obs["valid_actions"] = sorted(n for n, ok in mask.items() if ok)
+        return obs
 
     def _render_meta(self) -> Dict[str, Any]:
         """Availability-only render metadata for the compact obs (no bytes)."""
