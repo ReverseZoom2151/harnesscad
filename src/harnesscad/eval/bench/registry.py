@@ -1877,11 +1877,15 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
     (_P + "geometry.solid_iou",
      "needs an injected solid-modelling adapter (inertia frames, symmetry search)"),
     (_P + "geometry.primitive_fidelity",
-     "no docstring; the meaning of its five positional arguments is not recoverable"),
+     "undocumented: only its normal-pair term is a pred/gold comparison, the rest are "
+     "pre-computed error/satisfaction lists, and it neither normalises the normals nor "
+     "reconciles the opposite polarities into one number"),
     (_P + "sequence.error_taxonomy",
      "classifies a FreeCAD execution stderr string; requires running the code"),
     (_P + "sequence.controllability",
-     "needs a FlexCAD mask target plus the pre-edit model; a pred/gold pair has neither"),
+     "a three-argument (original, mask target, predicted) boolean check with no gold "
+     "edited model, and it records an unlocatable mask run as changed=True, conflating "
+     "'edited' with 'unknown'"),
     (_P + "retrieval.nt_xent_loss",
      "a training objective over dropout views, not a prediction-vs-ground-truth metric"),
     (_P + "retrieval.graph_nt_xent_loss",
@@ -2033,7 +2037,9 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
     (_P + "imports.graphcad_cadbench",
      "loads rubric-annotated CADBench tasks; runs no judge and no scoring"),
     (_P + "imports.intentforge_refusals",
-     "expected-rejection loader whose classify() returns a categorical verdict string"),
+     "expected-rejection loader whose classify() returns one of three categorical "
+     "verdict strings with no published numeric ordering (is refused_offlabel 0.5 or "
+     "1.0?), and which reads the vendored case JSON off disk on every call"),
     (_P + "imports.zoo_kcl_manifest",
      "loads Zoo kcl-sample briefs with reference KCL paths; states no measurables"),
 
@@ -2075,7 +2081,9 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
     (_P + "protocols.parameter_dimension_scoring",
      "arithmetic over per-requirement binary judgements produced by an external VLM judge"),
     (_P + "protocols.qa_scoring",
-     "consumes pre-decided correctness booleans across answer runs + a chance baseline"),
+     "consumes pre-decided correctness booleans across answer runs + a chance baseline; "
+     "its one answer-vs-key comparator is defined over many runs x many questions, not "
+     "one pred/gold pair"),
     (_P + "protocols.success_rate",
      "corpus-level success/difficulty/failure-breakdown accounting, not a single pred/gold pair"),
     (_P + "protocols.test_assertions",
