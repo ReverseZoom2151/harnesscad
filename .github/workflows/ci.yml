@@ -191,10 +191,12 @@ jobs:
             python -m unittest "$unit" >"$out" 2>&1
             rc=$?
             t1=$(date +%s.%N)
-            # Per-unit wall time, machine-parseable, attributed to the MODULE so
-            # the rows of a split module SUM back to it. Scraped to regenerate
-            # tests/module_runtimes.json, which drives the packing below.
-            awk "BEGIN{printf \"MODTIME\\t%.2f\\t%s\\n\", $t1-$t0, \"$mod\"}"
+            # Per-unit wall time, machine-parseable. Attributed to BOTH the unit
+            # and its module: module rows SUM back to a whole-module cost, while
+            # the unit column gives the per-class/per-method cost that lets the
+            # planner stop guessing an even split for the modules it divides.
+            # Scraped to regenerate tests/module_runtimes.json.
+            awk "BEGIN{printf \"MODTIME\\t%.2f\\t%s\\t%s\\n\", $t1-$t0, \"$mod\", \"$unit\"}"
             if [ "$rc" -eq 0 ]; then rm -f "$out"; return 0; fi
             # A nonzero exit is NOT automatically a test failure. cadquery/OCP
             # segfault the interpreter at teardown (exit 139), AFTER unittest has

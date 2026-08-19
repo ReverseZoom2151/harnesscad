@@ -135,10 +135,15 @@ def units() -> List[Tuple[str, float]]:
     """(unit, estimated seconds) for the whole suite, heaviest first.
 
     A unit is a module, except for modules over :data:`SPLIT_THRESHOLD_S`, which
-    are split by :func:`split_of`. A split module's time is divided evenly across
-    its parts: per-part timings are not measured, and an even split is both
-    unbiased and self-correcting, since a part that is in fact heavier simply
-    lands in a shard that finishes later this once.
+    are split by :func:`split_of`.
+
+    A split part is costed from its OWN measurement when the table has one, and
+    only falls back to an even share of the module otherwise. The even share is a
+    poor estimate and was measurably so: splitting the giants evenly predicted
+    455s per shard and delivered 577s, because a module's cost is rarely spread
+    evenly across its classes -- one class usually dominates and lands in a shard
+    that then finishes late. The runner records per-unit times precisely so this
+    guess can be replaced by a measurement on the next regeneration.
     """
     runtimes, default = load_runtimes()
     out: List[Tuple[str, float]] = []
@@ -148,9 +153,15 @@ def units() -> List[Tuple[str, float]]:
         if not parts:
             out.append((module, cost))
             continue
-        each = cost / float(len(parts))
-        for part in parts:
-            out.append(("%s.%s" % (module, part), each))
+        names = ["%s.%s" % (module, part) for part in parts]
+        measured = {n: runtimes[n] for n in names if n in runtimes}
+        # Whatever is unmeasured shares out the module time the measured parts
+        # do not already account for, so the parts still sum to the module.
+        rest = max(cost - sum(measured.values()), 0.0)
+        spare = len(names) - len(measured)
+        each = (rest / spare) if spare else 0.0
+        for name in names:
+            out.append((name, measured.get(name, each)))
     out.sort(key=lambda kv: (-kv[1], kv[0]))
     return out
 
