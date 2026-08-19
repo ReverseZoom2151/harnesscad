@@ -63,7 +63,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        oracle: [differential, properties, golden]
+        oracle: [differential, golden]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -73,6 +73,29 @@ jobs:
       - run: pip install -e .
       - name: selftest --${{ matrix.oracle }} --strict
         run: python -m harnesscad.core.cli selftest --${{ matrix.oracle }} --backend frep --strict
+
+  # -------------------------------------------------------------------------
+  # 2a. The properties oracle -- metamorphic laws over a seeded 200-stream
+  #     corpus. It was the pipeline's long pole (~33 min in one process); the
+  #     corpus is a pure per-stream partition (no baseline, no cross-stream
+  #     state), so we stripe it N-ways by stream index. Union of shards == the
+  #     full run; any shard red => job red.
+  # -------------------------------------------------------------------------
+  properties:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - name: selftest --properties shard ${{ matrix.shard }}/8
+        run: python -m harnesscad.core.cli selftest --properties --backend frep --strict --shard ${{ matrix.shard }} --nshard 8
 
   # -------------------------------------------------------------------------
   # 2b. The output gate. "Every artifact leaving the harness is either verified
@@ -99,6 +122,10 @@ jobs:
   # -------------------------------------------------------------------------
   field-liveness:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -106,10 +133,14 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -e .
-      - name: field liveness ratchet (frep)
+      - name: field liveness ratchet (frep) shard ${{ matrix.shard }}/8
+        # Each shard runs its (op, field) stripe's geometry and applies the
+        # ratchet to the census entries for those cells (the census is keyed
+        # per (backend, op, field), so the partition is exact). The global,
+        # geometry-free `unmapped()` schema check runs in FULL in every shard.
         run: |
           if python -c "import harnesscad.eval.selftest.field_liveness" 2>/dev/null; then
-            python -m harnesscad.eval.gates.liveness_floor --backend frep
+            python -m harnesscad.eval.gates.liveness_floor --backend frep --shard ${{ matrix.shard }} --nshard 8
           else
             echo "field_liveness oracle not present on this ref; nothing to gate."
           fi
@@ -150,8 +181,15 @@ jobs:
           run_one() {
             f="$1"; mod="${f%.py}"; mod="${mod//\//.}"
             out="$(mktemp)"
+            t0=$(date +%s.%N)
             python -m unittest "$mod" >"$out" 2>&1
             rc=$?
+            t1=$(date +%s.%N)
+            # Per-module wall time, machine-parseable. Scraped to regenerate
+            # tests/module_runtimes.json, which drives the balanced sharding
+            # below (a few modules cost 100x the median; round-robin by name
+            # would pile them into one shard).
+            awk "BEGIN{printf \"MODTIME\\t%.2f\\t%s\\n\", $t1-$t0, \"$mod\"}"
             if [ "$rc" -eq 0 ]; then rm -f "$out"; return 0; fi
             # A nonzero exit is NOT automatically a test failure. cadquery/OCP
             # segfault the interpreter at teardown (exit 139), AFTER unittest has
