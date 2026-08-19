@@ -205,6 +205,8 @@ INPUT_KINDS: Tuple[str, ...] = (
     "correction_traces",  # {"traces": [{"task_id": str, "attempts":
                      #   [{"executed": bool, "valid": bool}, ...]}, ...],
                      #   "budget": int|None}  -- one generate/check/correct loop
+    "point_sets",    # list[list[(x, y, z)]]  -- a SET of sampled point clouds
+    "token_sequences",  # list[list[token]]   -- a SET of command sequences
 )
 
 
@@ -1651,6 +1653,62 @@ def _correction_budget(pred: dict, gold: dict):
     return out
 
 
+def _rlcad_set_metrics(pred: dict, gold: dict):
+    """RLCAD COV / MMD-CD / JSD over two point-cloud SETS (arXiv:2503.18549).
+
+    COV walks generated -> nearest reference (Achlioptas direction); MMD-CD is
+    the mean over reference shapes of the raw mean-form symmetric Chamfer to the
+    nearest generated shape; JSD is base-2 over pooled 28^3 voxel occupancy in
+    [-1, 1]. MMD-EMD is left off: it needs equal-cardinality clouds and a cubic
+    Hungarian solve, so the caller must ask for it explicitly.
+    """
+    from harnesscad.eval.bench.generative import rlcad_set_metrics as m
+    return m.set_report(list(pred["point_sets"]), list(gold["point_sets"]))
+
+
+def _brep_set_coverage_mmd(pred: dict, gold: dict):
+    """The OTHER coverage direction, from ``generative.brep_set_metrics``.
+
+    Its ``coverage`` walks reference -> nearest generated and counts distinct
+    GENERATED indices over |R|, so it is renamed here to
+    ``coverage_reference_nearest`` and never reported as plain "COV". Its
+    ``mmd`` is the same quantity as RLCAD's MMD-CD when handed the same
+    distance, which is what this adapter does.
+    """
+    from harnesscad.eval.bench.generative import brep_set_metrics as m
+    from harnesscad.eval.bench.generative import rlcad_set_metrics as rl
+    report = m.coverage_mmd(list(pred["point_sets"]), list(gold["point_sets"]),
+                            rl.chamfer_distance)
+    return {"coverage_reference_nearest": float(report["coverage"]),
+            "mmd_cd": float(report["mmd"])}
+
+
+def _sequence_set_ratios(pred: dict, gold: dict):
+    """Diffusion-CAD set ratios in PERCENT over generated command sequences.
+
+    ``unique_pct`` is the share of generated sequences occurring exactly ONCE
+    (a singleton rate), ``novel_pct`` the share absent from the gold-side
+    training set, ``invalidity_pct`` the share failing the SOL/L/A/C/E/EOS
+    grammar. All three are 0-100, and the invalidity term is a GRAMMAR check --
+    a third distinct thing called "invalidity" in this tree.
+
+    ``generative.brep_set_metrics.ratios`` also reports "unique" and "novel" but
+    its unique is |distinct signatures| / |generated| (a DISTINCT ratio, a
+    fraction) rather than a singleton rate, and its third term, ``valid``, is
+    computed from an injected validity predicate that defaults to "everything is
+    valid". Neither is bound: they would collide on the name "unique" while
+    measuring something else, and the vacuous ``valid`` would read as 1.0. That
+    module enters the registry through its coverage/MMD half instead.
+    """
+    from harnesscad.eval.bench.generative import sequence_set_ratios as m
+    report = m.generation_report(list(pred["token_sequences"]),
+                                 list(gold["token_sequences"]))
+    return {"count": float(report["count"]),
+            "unique_pct": float(report["unique_pct"]),
+            "novel_pct": float(report["novel_pct"]),
+            "invalidity_pct": float(report["invalidity_pct"])}
+
+
 # ---------------------------------------------------------------------------
 # The adapter table: metric name -> (module dotted, kind, inputs, adapter).
 #
@@ -1932,6 +1990,12 @@ _ADAPTER_TABLE: Tuple[Tuple[str, str, str, Tuple[str, ...], Adapter], ...] = (
     ("process.correction_budget", _P + "harness.correction_budget", "process",
      ("correction_traces",), _correction_budget),
 
+    ("generative.rlcad_set_metrics", _P + "generative.rlcad_set_metrics",
+     "generative", ("point_sets",), _rlcad_set_metrics),
+    ("generative.brep_set_coverage_mmd", _P + "generative.brep_set_metrics",
+     "generative", ("point_sets",), _brep_set_coverage_mmd),
+    ("generative.sequence_set_ratios", _P + "generative.sequence_set_ratios",
+     "generative", ("token_sequences",), _sequence_set_ratios),
 )
 
 
@@ -1969,10 +2033,6 @@ UNADAPTED_REASONS: Tuple[Tuple[str, str], ...] = (
      "needs a set of KNOWN and a set of UNKNOWN query scores; a sample carries neither"),
     (_P + "retrieval.fewshot_scaling",
      "a dataset-level scaling protocol over train/test splits and repeats"),
-    (_P + "generative.brep_set_metrics",
-     "set-level COV/MMD/JSD over a generated corpus vs a training corpus"),
-    (_P + "generative.sequence_set_ratios",
-     "set-level unique/novel ratios over a generated corpus vs a training corpus"),
     (_P + "generative.prompt_similarity",
      "cross-product similarity between generation SETTINGS; needs an embed function"),
     (_P + "generative.render_distribution",
@@ -2354,6 +2414,13 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
         "generative.diversity",               # mean pairwise DISTANCE in feature space
         "generative.diversity_similarity_matrix",  # 1 - mean pairwise SIMILARITY
     )),
+    # -- families introduced with the fifth adapter wave -----------------------
+    ("set_coverage", (
+        "generative.rlcad_set_metrics",       # COV: generated -> nearest reference,
+                                              # distinct REFERENCE shapes / |R| (RLCAD)
+        "generative.brep_set_coverage_mmd",   # reference -> nearest generated,
+                                              # distinct GENERATED indices / |R|
+    )),
 )
 
 
@@ -2464,6 +2531,15 @@ _SUITE_DEFS: Tuple[Tuple[str, str, Tuple[str, ...]], ...] = (
      "against a reference labelling plus internal validity indices on the "
      "embedding itself.",
      ("retrieval.clustering_external", "retrieval.clustering_internal")),
+
+    ("rlcad",
+     "RLCAD set-level generative protocol (arXiv:2503.18549, Tables 1/4/5/6): "
+     "COV (generated -> nearest reference) and MMD-CD over raw mean-form "
+     "symmetric Chamfer, base-2 JSD over pooled 28^3 voxel occupancy, sparse "
+     "voxel IoU, plus the Diffusion-CAD singleton-unique / novel percentages. "
+     "Deliberately NOT the brep_set_metrics coverage direction.",
+     ("generative.rlcad_set_metrics", "generative.sequence_set_ratios",
+      "geometry.voxel_iou_points")),
 
     ("process_stability",
      "Process/stability protocol as the CAD-RL and agent papers report it: "
