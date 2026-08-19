@@ -88,6 +88,32 @@ def reward_from_apply(result) -> float:
     return max(0.0, 1.0 - 0.1 * warns)
 
 
+def composite_reward_from_apply(result, target, candidate=None, **kwargs):
+    """Target-comparing composite reward for an applyOps result.
+
+    ``reward_from_apply`` above is a *process* reward: it never looks at the
+    geometry, so a clean-but-wrong batch still scores 1.0. This is the *outcome*
+    channel, and it is ADDITIVE -- ``reward_from_apply`` keeps its contract
+    unchanged for existing callers.
+
+    Returns a
+    :class:`harnesscad.eval.rl.reward.RewardBreakdown` --
+    ``R_exec * [w_geom * R_geom + w_process * R_process]`` with
+    ``R_geom = 0.2*IoU + 0.5*R_MMD + 0.3*NC`` (RLCAD, arXiv:2503.18549) and a
+    binary multiplicative execution gate (CAD-RL, arXiv:2508.10118). ``.total``
+    is the scalar; the rest of the object is the saturation guard. See
+    ``harnesscad.eval.rl.reward`` for the exact chamfer variant, the
+    normalisation choice and its consequence, and why CAD-RL's GPT-4o ``R_eval``
+    term is deliberately not implemented.
+
+    The import is function-local: the surface layer must not drag the whole
+    eval/bench stack in at import time (and eval/bench may not be installed).
+    """
+    from harnesscad.eval.rl.reward import composite_reward
+
+    return composite_reward(result, target, candidate, **kwargs)
+
+
 def reward_from_verify(ok: bool, diagnostics: List) -> float:
     """Reward for a read-only verify: +1.0 clean, penalised by warnings, -1.0 fail."""
     if not ok:
