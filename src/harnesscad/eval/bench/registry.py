@@ -93,6 +93,11 @@ BENCH_PACKAGE = "bench"
 #: The metric families this layer knows about.
 KINDS: Tuple[str, ...] = (
     "geometry", "sequence", "sketch", "vision", "retrieval", "generative",
+    # "process" metrics do not score a shape at all: they score the RUN that
+    # produced it (does the output build? how many corrections did it take?).
+    # The CAD-RL / agent literature reports these alongside the geometric
+    # numbers, so they get their own kind rather than being filed as "sequence".
+    "process",
 )
 
 #: The payload keys an adapter may require of a sample's ``pred``/``gold`` dicts.
@@ -190,6 +195,16 @@ INPUT_KINDS: Tuple[str, ...] = (
     "functional_design",     # {"structures","must_have","nice_to_have",
                      #  "parameters","parameter_ranges","ground_contacts",
                      #  "center_of_mass","load_bearing_members"}
+    # -- kinds added with the fifth wave: process + set-level generative --------
+    # Each carries a WHOLE POPULATION in one payload, exactly like the
+    # existing "latents" kind does for FID / 1-NNA. pred carries the GENERATED
+    # population, gold the REFERENCE population; that is the only reading under
+    # which a set-level number means anything.
+    "build_outcomes",  # list[{"id": str, "built": bool} | {"error": str|None}]
+                     #   -- recorded parse/build outcome per generated output
+    "correction_traces",  # {"traces": [{"task_id": str, "attempts":
+                     #   [{"executed": bool, "valid": bool}, ...]}, ...],
+                     #   "budget": int|None}  -- one generate/check/correct loop
 )
 
 
@@ -1588,6 +1603,55 @@ def _functionality(pred: dict, gold: dict):
 
 
 # ---------------------------------------------------------------------------
+# Fifth adapter wave. Two groups, both set-level: PROCESS/STABILITY metrics (how
+# the CAD-RL and agent papers report) and SET-LEVEL GENERATIVE statistics (how
+# RLCAD reports). Every one of these consumes a whole POPULATION in a single
+# payload -- the same convention the FID / 1-NNA adapters already use for
+# "latents" -- with pred carrying the GENERATED population and gold the
+# REFERENCE population. Each adapter names the exact variant it computes,
+# because in every case a metric with the same NAME exists elsewhere in this
+# tree under a DIFFERENT definition.
+# ---------------------------------------------------------------------------
+
+def _build_invalidity_ratio(pred: dict, gold: dict):
+    """ReCAD IR / CAD-RL Executability, in PERCENT, over the generated set.
+
+    IR = 100 * #(outputs that did not parse/build) / #(outputs). Its complement
+    on the same population is CAD-RL's Executability. The reference population's
+    IR is reported alongside so the number is never read without its baseline
+    (both papers table it against one). This is NOT the structural
+    ``sequence.invalidity_ratio`` -- see the rival family ``validity_rate``.
+    """
+    from harnesscad.eval.bench.harness import build_invalidity as m
+    report = m.build_report(list(pred["build_outcomes"]))
+    out = report.as_dict()
+    out["reference_ir_percent"] = float(
+        m.invalidity_ratio_percent(list(gold["build_outcomes"])))
+    return out
+
+
+def _correction_budget(pred: dict, gold: dict):
+    """SUC / Pass@1 / AVG Re as ONE linked report (arXiv:2605.19748, Table 1).
+
+    SUC is the fraction of tasks solved within the correction budget, Pass@1 the
+    fraction solved on the first attempt with no correction, AVG Re the mean
+    retries over the SUCCESSFUL tasks only. The three are returned together,
+    with the deltas against the gold-side reference run and the verdict that
+    refuses to rank two configurations on AVG Re alone.
+    """
+    from harnesscad.eval.bench.harness import correction_budget as m
+    p, g = pred["correction_traces"], gold["correction_traces"]
+    run = m.stability_report(list(p["traces"]), p.get("budget"))
+    ref = m.stability_report(list(g["traces"]), g.get("budget"))
+    out = run.as_dict()
+    out["reference_suc"] = ref.suc
+    out["reference_pass_at_1"] = ref.pass_at_1
+    out["reference_avg_retries"] = ref.avg_retries
+    out.update(m.compare(ref, run))
+    return out
+
+
+# ---------------------------------------------------------------------------
 # The adapter table: metric name -> (module dotted, kind, inputs, adapter).
 #
 # It binds adapters to MODULES; the metric objects themselves are materialised
@@ -1861,6 +1925,13 @@ _ADAPTER_TABLE: Tuple[Tuple[str, str, str, Tuple[str, ...], Adapter], ...] = (
 
     ("vision.scene_reconstruction", _P + "vision.scene_reconstruction", "vision",
      ("scene",), _scene_reconstruction),
+
+    # -- fifth adapter wave: process/stability + set-level generative ----------
+    ("process.build_invalidity_ratio", _P + "harness.build_invalidity", "process",
+     ("build_outcomes",), _build_invalidity_ratio),
+    ("process.correction_budget", _P + "harness.correction_budget", "process",
+     ("correction_traces",), _correction_budget),
+
 )
 
 
@@ -2271,6 +2342,7 @@ RIVAL_FAMILIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ("validity_rate", (
         "sequence.invalidity_ratio",          # structural CAD-sequence invalidity
         "sequence.code_validity",             # static AST safety/output contract
+        "process.build_invalidity_ratio",     # ReCAD IR: did it PARSE/BUILD, in percent
     )),
     ("latent_retrieval_accuracy", (
         "retrieval.graded_retrieval",         # GC-CAD graded Recall@k / NDCG@k
@@ -2392,6 +2464,13 @@ _SUITE_DEFS: Tuple[Tuple[str, str, Tuple[str, ...]], ...] = (
      "against a reference labelling plus internal validity indices on the "
      "embedding itself.",
      ("retrieval.clustering_external", "retrieval.clustering_internal")),
+
+    ("process_stability",
+     "Process/stability protocol as the CAD-RL and agent papers report it: "
+     "ReCAD Invalidity Ratio / CAD-RL Executability in percent over the "
+     "generated population, and the linked SUC / Pass@1 / AVG Re triple over a "
+     "correction budget. Rivals the structural sequence.invalidity_ratio.",
+     ("process.build_invalidity_ratio", "process.correction_budget")),
 
     ("geometry_smoke",
      "Every geometry metric that only needs a point cloud, EXCEPT the rivals: one "
