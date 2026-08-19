@@ -44,6 +44,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: fleet precision floor (fails if any model-facing verifier lies)
         run: python -m harnesscad.eval.gates.precision_floor
@@ -68,6 +69,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: selftest --${{ matrix.oracle }} --strict
         run: python -m harnesscad.core.cli selftest --${{ matrix.oracle }} --backend frep --strict
@@ -84,6 +86,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - run: python -m unittest tests.io.test_gate
 
@@ -101,6 +104,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: field liveness ratchet (frep)
         run: |
@@ -123,33 +127,48 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
-      - name: run each test module as its own process (shard ${{ matrix.shard }}/4)
+      - name: run each test module as its own process, N-way parallel (shard ${{ matrix.shard }}/8)
+        env:
+          SHARD: ${{ matrix.shard }}
+          NSHARD: "8"
         run: |
           set -uo pipefail
-          fails=0
-          total=0
-          i=0
-          while IFS= read -r f; do
-            if [ $(( i % 4 )) -ne ${{ matrix.shard }} ]; then i=$((i+1)); continue; fi
-            i=$((i+1))
-            total=$((total+1))
-            mod="${f%.py}"
-            mod="${mod//\//.}"
-            if ! python -m unittest "$mod" >/tmp/out.txt 2>&1; then
-              fails=$((fails+1))
+          # Each module still runs in its OWN process (a monolithic discover
+          # segfaults at OCCT teardown; per-module isolation is why a green tick
+          # means something). The only change here is CONCURRENCY: the ~1165
+          # modules were run serially per shard, paying ~0.5s of interpreter
+          # cold-start each. We now run this shard's modules `nproc`-way parallel
+          # with per-process temp files -- same isolation, a fraction of the wall.
+          run_one() {
+            f="$1"; mod="${f%.py}"; mod="${mod//\//.}"
+            out="$(mktemp)"
+            if ! python -m unittest "$mod" >"$out" 2>&1; then
               echo "::error file=$f::FAILED $mod"
-              tail -n 40 /tmp/out.txt
+              tail -n 40 "$out"
+              rm -f "$out"
+              return 1
             fi
+            rm -f "$out"
+          }
+          export -f run_one
+          sel="$(mktemp)"; i=0
+          while IFS= read -r f; do
+            if [ $(( i % NSHARD )) -eq "$SHARD" ]; then echo "$f" >> "$sel"; fi
+            i=$((i+1))
           done < <(find tests -name 'test_*.py' | sort)
-          echo "shard ${{ matrix.shard }}: $total module(s), $fails failing"
-          [ "$fails" -eq 0 ]
+          echo "shard $SHARD/$NSHARD: $(wc -l < "$sel") module(s), $(nproc)-way parallel"
+          # xargs keeps going on failures (no -exit) and returns 123 if any
+          # invocation failed, so the whole shard runs and the step still fails
+          # loudly if any module failed.
+          xargs -a "$sel" -P "$(nproc)" -I{} bash -c 'run_one "$@"' _ {}
 
   # -------------------------------------------------------------------------
   # 5. The orphan ledger. A capability nothing imports is not a capability.
@@ -162,6 +181,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: orphan ceiling
         run: python -m unittest tests.test_registry
@@ -181,6 +201,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: held-out split reachable only through its scorer
         run: python -m harnesscad.eval.gates.heldout_isolation
@@ -199,6 +220,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: no verifier warns on the majority of provably-correct parts
         run: python -m harnesscad.eval.gates.warning_channel --backend frep
@@ -218,6 +240,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: every wired orphan is reachable and computes on its fixture
         run: |
@@ -243,6 +266,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: corpus grader and held-out isolation unit test
         run: |
@@ -265,6 +289,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: orphan-provenance selfcheck (kernel-free synthetic fixture)
         run: python -m harnesscad.eval.gates.orphan_provenance --selfcheck
@@ -286,6 +311,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: verifier-fleet mutation score selfcheck (synthetic, no kernel)
         run: python -m harnesscad.eval.gates.mutation_score --selfcheck
@@ -307,6 +333,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
       - run: pip install -e .
       - name: coverage-matrix selfcheck (synthetic classification + drift-down)
         run: python -m harnesscad.eval.gates.coverage_matrix --selfcheck
